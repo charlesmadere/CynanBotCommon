@@ -1,3 +1,4 @@
+import urllib
 from typing import List
 
 
@@ -86,6 +87,15 @@ def getStrFromDict(d: dict, key: str, fallback: str = None, clean: bool = False)
 
 def isValidStr(s: str):
     return s is not None and len(s) >= 1 and not s.isspace()
+
+def isValidUrl(s: str):
+    if not isValidStr(s):
+        return False
+
+    sParsed = urllib.parse.urlparse(s)
+    sUrl = sParsed.geturl()
+
+    return isValidStr(sUrl)
 
 def hasItems(l: List):
     return l is not None and len(l) >= 1
