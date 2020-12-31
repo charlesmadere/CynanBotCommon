@@ -5,7 +5,7 @@ import requests
 import xmltodict
 
 import CynanBotCommon.utils as utils
-from timedDict import TimedDict
+from CynanBotCommon.timedDict import TimedDict
 
 
 class WordOfTheDayRepository():
