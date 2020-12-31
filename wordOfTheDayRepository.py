@@ -4,7 +4,7 @@ from typing import List
 import requests
 import xmltodict
 
-import utils
+import CynanBotCommon.utils as utils
 from timedDict import TimedDict
 
 
