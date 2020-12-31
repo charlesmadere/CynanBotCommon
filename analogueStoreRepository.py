@@ -20,11 +20,15 @@ class AnalogueStoreRepository():
 
     def __init__(
         self,
+        storeUrl: str='https://www.analogue.co/store',
         cacheTimeDelta=timedelta(hours=1)
     ):
-        if cacheTimeDelta is None:
+        if not utils.isValidUrl(storeUrl):
+            raise ValueError(f'storeUrl argument is malformed: \"{storeUrl}\"')
+        elif cacheTimeDelta is None:
             raise ValueError(f'cacheTimeDelta argument is malformed: \"{cacheTimeDelta}\"')
 
+        self.__storeUrl = storeUrl
         self.__cacheTime = datetime.now() - cacheTimeDelta
         self.__cacheTimeDelta = cacheTimeDelta
         self.__storeStock = None
@@ -36,9 +40,12 @@ class AnalogueStoreRepository():
 
         return self.__storeStock
 
+    def getStoreUrl(self):
+        return self.__storeUrl
+
     def __refreshStoreStock(self):
         print('Refreshing Analogue store stock...')
-        rawResponse = requests.get('https://www.analogue.co/store')
+        rawResponse = requests.get(self.__storeUrl)
         htmlTree = html.fromstring(rawResponse.content)
 
         if htmlTree is None:
