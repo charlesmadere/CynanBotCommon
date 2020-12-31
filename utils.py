@@ -84,11 +84,11 @@ def getStrFromDict(d: dict, key: str, fallback: str = None, clean: bool = False)
 
     return value
 
-def isValidList(l: List):
-    return l is not None and len(l) >= 1
-
 def isValidStr(s: str):
     return s is not None and len(s) >= 1 and not s.isspace()
+
+def hasItems(l: List):
+    return l is not None and len(l) >= 1
 
 def removePreceedingAt(s: str):
     if not isValidStr(s):

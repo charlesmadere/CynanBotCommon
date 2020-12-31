@@ -38,7 +38,7 @@ class AnalogueStoreRepository():
 
         productTrees = htmlTree.find_class('store_product-header__1rLY-')
 
-        if not utils.isValidList(productTrees):
+        if not utils.hasItems(productTrees):
             print(f'productTrees is malformed: {productTrees}')
             return None
 
@@ -75,7 +75,7 @@ class AnalogueStoreRepository():
 
             inStock = True
             outOfStockElement = productTree.find_class('button_Disabled__2CEbR')
-            if utils.isValidList(outOfStockElement):
+            if utils.hasItems(outOfStockElement):
                 inStock = False
 
             products.append(AnalogueStoreProduct(
