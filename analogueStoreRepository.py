@@ -1,10 +1,19 @@
 from datetime import datetime, timedelta
+from enum import Enum
 from typing import List
 
 import requests
 from lxml import html
 
 import CynanBotCommon.utils as utils
+
+
+class AnalogueProductType(Enum):
+    MEGA_SG = 0
+    NT_MINI = 1
+    OTHER = 2
+    POCKET = 3
+    SUPER_NT = 4
 
 
 class AnalogueStoreRepository():
@@ -73,12 +82,23 @@ class AnalogueStoreRepository():
             if name[len(name) - 1] == '1':
                 name = name[0:len(name) - 1]
 
+            productType = AnalogueProductType.OTHER
+            if 'mega sg -' in name.lower():
+                productType = AnalogueProductType.MEGA_SG
+            elif 'nt mini' in name.lower():
+                productType = AnalogueProductType.NT_MINI
+            elif 'pocket -' in name.lower():
+                productType = AnalogueProductType.POCKET
+            elif 'super nt -' in name.lower():
+                productType = AnalogueProductType.SUPER_NT
+
             inStock = True
             outOfStockElement = productTree.find_class('button_Disabled__2CEbR')
             if utils.hasItems(outOfStockElement):
                 inStock = False
 
-            products.append(AnalogueStoreProduct(
+            products.append(AnalogueStoreEntry(
+                productType=productType,
                 inStock=inStock,
                 name=name,
                 price=price
@@ -89,14 +109,23 @@ class AnalogueStoreRepository():
         )
 
 
-class AnalogueStoreProduct():
+class AnalogueStoreEntry():
 
-    def __init__(self, inStock: bool, name: str, price: str):
-        if inStock is None:
+    def __init__(
+        self,
+        productType: AnalogueProductType,
+        inStock: bool,
+        name: str,
+        price: str
+    ):
+        if productType is None:
+            raise ValueError(f'productType argument is malformed: \"{productType}\"')
+        elif inStock is None:
             raise ValueError(f'inStock argument is malformed: \"{inStock}\"')
         elif not utils.isValidStr(name):
             raise ValueError(f'name argument is malformed: \"{name}\"')
 
+        self.__productType = productType
         self.__inStock = inStock
         self.__name = name
         self.__price = price
@@ -106,6 +135,9 @@ class AnalogueStoreProduct():
 
     def getPrice(self):
         return self.__price
+
+    def getProductType(self):
+        return self.__productType
 
     def hasPrice(self):
         return utils.isValidStr(self.__price)
