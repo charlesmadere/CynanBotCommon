@@ -43,7 +43,7 @@ def getCleanedSplits(s: str):
 def getIntFromDict(d: dict, key: str, fallback: int = None):
     if d is None:
         raise ValueError(f'd argument is malformed: \"{d}\"')
-    elif key is None or len(key) == 0 or key.isspace():
+    elif not isValidStr(key):
         raise ValueError(f'key argument is malformed: \"{key}\"')
 
     value = None
