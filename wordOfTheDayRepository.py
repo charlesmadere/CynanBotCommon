@@ -49,7 +49,7 @@ class WordOfTheDayRepository():
         if cacheValue is not None:
             return cacheValue
 
-        print(f'Refreshing \"{languageEntry.getCommandName()}\" word of the day... ({utils.formatTimeShort()})')
+        print(f'Refreshing \"{languageEntry.getCommandName()}\" word of the day... ({utils.getNowTimeText()})')
 
         ##############################################################################
         # retrieve word of the day from https://www.transparent.com/word-of-the-day/ #

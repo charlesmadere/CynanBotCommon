@@ -44,7 +44,7 @@ class AnalogueStoreRepository():
         return self.__storeUrl
 
     def __refreshStoreStock(self):
-        print(f'Refreshing Analogue store stock... ({utils.formatTimeShort()})')
+        print(f'Refreshing Analogue store stock... ({utils.getNowTimeText()})')
         rawResponse = requests.get(self.__storeUrl)
         htmlTree = html.fromstring(rawResponse.content)
 
