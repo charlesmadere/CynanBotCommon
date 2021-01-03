@@ -9,11 +9,13 @@ import CynanBotCommon.utils as utils
 
 
 class AnalogueProductType(Enum):
-    MEGA_SG = 0
-    NT_MINI = 1
-    OTHER = 2
-    POCKET = 3
-    SUPER_NT = 4
+    DAC = 0
+    DUO = 1
+    MEGA_SG = 2
+    NT_MINI = 3
+    OTHER = 4
+    POCKET = 5
+    SUPER_NT = 6
 
 
 class AnalogueStoreRepository():
@@ -90,7 +92,11 @@ class AnalogueStoreRepository():
                 name = name[0:len(name) - 1]
 
             productType = AnalogueProductType.OTHER
-            if 'mega sg -' in name.lower():
+            if 'dac' in name.lower():
+                productType = AnalogueProductType.DAC
+            elif 'duo' in name.lower():
+                productType = AnalogueProductType.DUO
+            elif 'mega sg -' in name.lower():
                 productType = AnalogueProductType.MEGA_SG
             elif 'nt mini' in name.lower():
                 productType = AnalogueProductType.NT_MINI
