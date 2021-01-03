@@ -9,13 +9,13 @@ def cleanStr(s: str):
 
     return s.replace('\r\n', ' ').replace('\r', ' ').replace('\n', ' ').strip()
 
-def formatTime(time = datetime.now()):
+def formatTime(time):
     if time is None:
         raise ValueError(f'time argument is malformed: \"{time}\"')
 
     return time.strftime("%A, %b %d, %Y %I:%M%p")
 
-def formatTimeShort(time = datetime.now()):
+def formatTimeShort(time):
     if time is None:
         raise ValueError(f'time argument is malformed: \"{time}\"')
 
@@ -60,6 +60,9 @@ def getIntFromDict(d: dict, key: str, fallback: int = None):
         value = int(value)
 
     return value
+
+def getNowTimeText():
+    return formatTimeShort(datetime.now())
 
 def getStrFromDict(d: dict, key: str, fallback: str = None, clean: bool = False):
     if d is None:
