@@ -49,14 +49,13 @@ class WordOfTheDayRepository():
         if cacheValue is not None:
             return cacheValue
 
-        print(f'Refreshing word of the day for \"{languageEntry.getCommandName()}\"...')
+        print(f'Refreshing \"{languageEntry.getCommandName()}\" word of the day... ({utils.formatTimeShort()})')
 
         ##############################################################################
         # retrieve word of the day from https://www.transparent.com/word-of-the-day/ #
         ##############################################################################
 
-        rawResponse = requests.get(
-            f'https://wotd.transparent.com/rss/{languageEntry.getApiName()}-widget.xml?t=0')
+        rawResponse = requests.get(f'https://wotd.transparent.com/rss/{languageEntry.getApiName()}-widget.xml?t=0')
         xmlTree = xmltodict.parse(rawResponse.content)['xml']['words']
 
         if xmlTree is None:
