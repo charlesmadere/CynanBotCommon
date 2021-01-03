@@ -1,4 +1,5 @@
 import urllib
+from datetime import datetime
 from typing import List
 
 
@@ -8,13 +9,13 @@ def cleanStr(s: str):
 
     return s.replace('\r\n', ' ').replace('\r', ' ').replace('\n', ' ').strip()
 
-def formatTime(time):
+def formatTime(time = datetime.now()):
     if time is None:
         raise ValueError(f'time argument is malformed: \"{time}\"')
 
     return time.strftime("%A, %b %d, %Y %I:%M%p")
 
-def formatTimeShort(time):
+def formatTimeShort(time = datetime.now()):
     if time is None:
         raise ValueError(f'time argument is malformed: \"{time}\"')
 
