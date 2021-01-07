@@ -5,9 +5,9 @@ from typing import List
 
 def cleanStr(s: str):
     if s is None:
-        raise ValueError(f's argument is malformed: \"{s}\"')
-
-    return s.replace('\r\n', ' ').replace('\r', ' ').replace('\n', ' ').strip()
+        return ''
+    else:
+        return s.replace('\r\n', ' ').replace('\r', ' ').replace('\n', ' ').strip()
 
 def formatTime(time):
     if time is None:
