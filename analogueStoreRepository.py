@@ -67,11 +67,7 @@ class AnalogueStoreRepository():
             if productTrees is None or len(productTrees) != 1:
                 continue
 
-            nameAndPrice = productTrees[0].text_content()
-            if nameAndPrice is None:
-                continue
-
-            nameAndPrice = utils.cleanStr(nameAndPrice)
+            nameAndPrice = utils.cleanStr(productTrees[0].text_content())
             if len(nameAndPrice) == 0:
                 continue
             elif '8BitDo'.lower() in nameAndPrice.lower():

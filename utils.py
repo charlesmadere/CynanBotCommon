@@ -33,8 +33,7 @@ def getCleanedSplits(s: str):
         return words
 
     for split in splits:
-        if split is not None:
-            split = cleanStr(split)
+        split = cleanStr(split)
 
         if isValidStr(split):
             words.append(split)
