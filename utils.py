@@ -1,3 +1,4 @@
+import math
 import urllib
 from datetime import datetime
 from typing import List
@@ -87,6 +88,9 @@ def getStrFromDict(d: dict, key: str, fallback: str = None, clean: bool = False)
         value = cleanStr(value)
 
     return value
+
+def isValidNum(n):
+    return n is not None and not math.isfinite(n)
 
 def isValidStr(s: str):
     return s is not None and len(s) >= 1 and not s.isspace()
