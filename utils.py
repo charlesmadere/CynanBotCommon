@@ -95,10 +95,10 @@ def isValidUrl(s: str):
     if not isValidStr(s):
         return False
 
-    sParsed = urllib.parse.urlparse(s)
-    sUrl = sParsed.geturl()
+    parsed = urllib.parse.urlparse(s)
+    url = parsed.geturl()
 
-    return isValidStr(sUrl)
+    return isValidStr(url)
 
 def hasItems(l: List):
     return l is not None and len(l) >= 1
