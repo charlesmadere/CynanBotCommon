@@ -90,7 +90,7 @@ def getStrFromDict(d: dict, key: str, fallback: str = None, clean: bool = False)
     return value
 
 def isValidNum(n):
-    return n is not None and not math.isfinite(n)
+    return n is not None and math.isfinite(n)
 
 def isValidStr(s: str):
     return s is not None and len(s) >= 1 and not s.isspace()
