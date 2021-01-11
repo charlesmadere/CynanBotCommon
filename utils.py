@@ -89,6 +89,9 @@ def getStrFromDict(d: dict, key: str, fallback: str = None, clean: bool = False)
 
     return value
 
+def hasItems(l: List):
+    return l is not None and len(l) >= 1
+
 def isValidNum(n):
     return n is not None and math.isfinite(n)
 
@@ -103,9 +106,6 @@ def isValidUrl(s: str):
     url = parsed.geturl()
 
     return isValidStr(url)
-
-def hasItems(l: List):
-    return l is not None and len(l) >= 1
 
 def removePreceedingAt(s: str):
     if not isValidStr(s):
