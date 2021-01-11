@@ -59,6 +59,9 @@ def getIntFromDict(d: dict, key: str, fallback: int = None):
     if not isinstance(value, int):
         value = int(value)
 
+    if not isValidNum(value):
+        raise ValueError(f'value \"{value}\" for key \"{key}\" is malformed in d: \"{d}\"')
+
     return value
 
 def getNowTimeText():
