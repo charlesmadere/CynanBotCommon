@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from enum import Enum
+from enum import auto, Enum
 from typing import List
 
 import requests
@@ -9,13 +9,13 @@ import CynanBotCommon.utils as utils
 
 
 class AnalogueProductType(Enum):
-    DAC = 0
-    DUO = 1
-    MEGA_SG = 2
-    NT_MINI = 3
-    OTHER = 4
-    POCKET = 5
-    SUPER_NT = 6
+    DAC = auto()
+    DUO = auto()
+    MEGA_SG = auto()
+    NT_MINI = auto()
+    OTHER = auto()
+    POCKET = auto()
+    SUPER_NT = auto()
 
 
 class AnalogueStoreRepository():
