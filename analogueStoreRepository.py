@@ -1,9 +1,10 @@
 from datetime import datetime, timedelta
-from enum import auto, Enum
+from enum import Enum, auto
 from typing import List
 
 import requests
 from lxml import html
+from requests import HTTPError, Timeout
 
 import CynanBotCommon.utils as utils
 
@@ -47,7 +48,15 @@ class AnalogueStoreRepository():
 
     def __refreshStoreStock(self):
         print(f'Refreshing Analogue store stock... ({utils.getNowTimeText()})')
-        rawResponse = requests.get(self.__storeUrl)
+
+        try:
+            rawResponse = requests.get(self.__storeUrl)
+        except (ConnectionError, HTTPError, Timeout) as e:
+            print(f'Exception occurred when attempting to fetch Analogue store stock: {e}')
+
+        if rawResponse is None:
+            return None
+
         htmlTree = html.fromstring(rawResponse.content)
 
         if htmlTree is None:
