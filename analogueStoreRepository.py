@@ -55,6 +55,7 @@ class AnalogueStoreRepository():
             print(f'Exception occurred when attempting to fetch Analogue store stock: {e}')
 
         if rawResponse is None:
+            print(f'rawResponse is malformed: {rawResponse}')
             return None
 
         htmlTree = html.fromstring(rawResponse.content)
