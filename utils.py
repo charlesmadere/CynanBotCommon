@@ -16,11 +16,16 @@ def formatTime(time):
 
     return time.strftime("%A, %b %d, %Y %I:%M%p")
 
-def formatTimeShort(time):
+def formatTimeShort(time, includeSeconds: bool = False):
     if time is None:
         raise ValueError(f'time argument is malformed: \"{time}\"')
+    elif includeSeconds is None:
+        raise ValueError(f'includeSeconds argument is malformed: \"{includeSeconds}\"')
 
-    return time.strftime("%b %d %I:%M%p")
+    if includeSeconds:
+        return time.strftime("%b %d %I:%M%S%p")
+    else:
+        return time.strftime("%b %d %I:%M%p")
 
 def getCleanedSplits(s: str):
     splits = list()
@@ -64,8 +69,14 @@ def getIntFromDict(d: dict, key: str, fallback: int = None):
 
     return value
 
-def getNowTimeText():
-    return formatTimeShort(datetime.now())
+def getNowTimeText(includeSeconds: bool = False):
+    if includeSeconds is None:
+        raise ValueError(f'includeSeconds argument is malformed: \"{includeSeconds}\"')
+
+    return formatTimeShort(
+        time=datetime.now(),
+        includeSeconds=includeSeconds
+    )
 
 def getStrFromDict(d: dict, key: str, fallback: str = None, clean: bool = False):
     if d is None:
