@@ -23,7 +23,7 @@ def formatTimeShort(time, includeSeconds: bool = False):
         raise ValueError(f'includeSeconds argument is malformed: \"{includeSeconds}\"')
 
     if includeSeconds:
-        return time.strftime("%b %d %I:%M%S%p")
+        return time.strftime("%b %d %I:%M:%S%p")
     else:
         return time.strftime("%b %d %I:%M%p")
 
