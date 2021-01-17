@@ -5,6 +5,7 @@ from typing import List
 import requests
 from lxml import html
 from requests import HTTPError, Timeout
+from urllib3.exceptions import MaxRetryError, NewConnectionError
 
 import CynanBotCommon.utils as utils
 
@@ -51,7 +52,7 @@ class AnalogueStoreRepository():
 
         try:
             rawResponse = requests.get(self.__storeUrl)
-        except (ConnectionError, HTTPError, Timeout) as e:
+        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, Timeout) as e:
             print(f'Exception occurred when attempting to fetch Analogue store stock: {e}')
 
         if rawResponse is None:
