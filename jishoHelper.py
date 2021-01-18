@@ -23,7 +23,7 @@ class JishoHelper():
         encodedQuery = urllib.parse.quote(query)
         url = f'https://jisho.org/search/{encodedQuery}'
 
-        rawResponse = requests.get(url)
+        rawResponse = requests.get(url=url, timeout=utils.getDefaultTimeout())
 
         htmlTree = html.fromstring(rawResponse.content)
         if htmlTree is None:
