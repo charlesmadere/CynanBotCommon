@@ -46,6 +46,9 @@ def getCleanedSplits(s: str):
 
     return words
 
+def getDefaultTimeout():
+    return 10 # seconds
+
 def getIntFromDict(d: dict, key: str, fallback: int = None):
     if d is None:
         raise ValueError(f'd argument is malformed: \"{d}\"')
