@@ -50,6 +50,8 @@ class AnalogueStoreRepository():
     def __refreshStoreStock(self):
         print(f'Refreshing Analogue store stock... ({utils.getNowTimeText()})')
 
+        rawResponse = None
+
         try:
             rawResponse = requests.get(url=self.__storeUrl, timeout=utils.getDefaultTimeout())
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, Timeout) as e:
