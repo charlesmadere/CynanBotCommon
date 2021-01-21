@@ -24,8 +24,8 @@ class AnalogueStoreRepository():
 
     def __init__(
         self,
-        storeUrl: str='https://www.analogue.co/store',
-        cacheTimeDelta=timedelta(hours=1)
+        storeUrl: str = 'https://www.analogue.co/store',
+        cacheTimeDelta = timedelta(hours=1)
     ):
         if not utils.isValidUrl(storeUrl):
             raise ValueError(f'storeUrl argument is malformed: \"{storeUrl}\"')
