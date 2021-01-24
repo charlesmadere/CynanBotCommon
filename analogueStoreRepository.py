@@ -25,7 +25,7 @@ class AnalogueStoreRepository():
     def __init__(
         self,
         storeUrl: str = 'https://www.analogue.co/store',
-        cacheTimeDelta = timedelta(hours=1)
+        cacheTimeDelta: timedelta = timedelta(hours=1)
     ):
         if not utils.isValidUrl(storeUrl):
             raise ValueError(f'storeUrl argument is malformed: \"{storeUrl}\"')
@@ -62,13 +62,11 @@ class AnalogueStoreRepository():
             return None
 
         htmlTree = html.fromstring(rawResponse.content)
-
         if htmlTree is None:
             print(f'htmlTree is malformed: {htmlTree}')
             return None
 
         productTrees = htmlTree.find_class('store_product-header__1rLY-')
-
         if not utils.hasItems(productTrees):
             print(f'productTrees is malformed: {productTrees}')
             return None
