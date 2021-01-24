@@ -4,7 +4,7 @@ from typing import List
 
 import requests
 from lxml import html
-from requests import HTTPError, Timeout
+from requests import ConnectionError, HTTPError, Timeout
 from urllib3.exceptions import MaxRetryError, NewConnectionError
 
 import CynanBotCommon.utils as utils
