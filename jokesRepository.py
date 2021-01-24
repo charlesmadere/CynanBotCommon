@@ -23,10 +23,10 @@ class JokesRepository():
         self.__apiUrl = apiUrl
         self.__cacheTime = datetime.now() - cacheTimeDelta
         self.__cacheTimeDelta = cacheTimeDelta
-        self.__jokeReponse = None
+        self.__jokeResponse = None
 
     def fetchJoke(self):
-        if self.__cacheTime + self.__cacheTimeDelta < datetime.now() or self.__jokeReponse is None:
+        if self.__cacheTime + self.__cacheTimeDelta < datetime.now() or self.__jokeResponse is None:
             self.__jokeResponse = self.__refreshJoke()
             self.__cacheTime = datetime.now()
 
