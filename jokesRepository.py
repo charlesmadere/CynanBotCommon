@@ -12,7 +12,7 @@ class JokesRepository():
 
     def __init__(
         self,
-        apiUrl: str = 'https://v2.jokeapi.dev/joke/Miscellaneous,Pun,Spooky,Christmas?blacklistFlags=nsfw,religious,political,racist,sexist,explicit',
+        apiUrl: str = 'https://v2.jokeapi.dev/joke/Miscellaneous,Pun,Spooky,Christmas?blacklistFlags=nsfw,religious,political,racist,sexist,explicit&safe-mode',
         cacheTimeDelta: timedelta = timedelta(minutes=10)
     ):
         if not utils.isValidUrl(apiUrl):
