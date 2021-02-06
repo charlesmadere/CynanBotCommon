@@ -19,25 +19,25 @@ class LanguageEntry():
         self.__apiName = apiName
         self.__commandName = commandName
 
-    def getApiName(self):
+    def getApiName(self) -> str:
         return self.__apiName
 
-    def getCommandName(self):
+    def getCommandName(self) -> str:
         return self.__commandName
 
 
 class LanguageList():
 
-    def __init__(self, entries: List):
+    def __init__(self, entries: List[LanguageEntry]):
         if not utils.hasItems(entries):
             raise ValueError(f'entries argument is malformed: \"{entries}\"')
 
         self.__entries = entries
 
-    def getLanguages(self):
+    def getLanguages(self) -> List[LanguageEntry]:
         return self.__entries
 
-    def getLanguageForCommand(self, command: str):
+    def getLanguageForCommand(self, command: str) -> LanguageEntry:
         if not utils.isValidStr(command):
             raise ValueError(f'command argument is malformed: \"{command}\"')
 
@@ -47,7 +47,7 @@ class LanguageList():
 
         raise RuntimeError(f'Unable to find language for \"{command}\"')
 
-    def toApiNameStr(self, delimiter: str = ', '):
+    def toApiNameStr(self, delimiter: str = ', ') -> str:
         if delimiter is None:
             raise ValueError(f'delimiter argument is malformed: \"{delimiter}\"')
 
@@ -59,7 +59,7 @@ class LanguageList():
         apiNames.sort()
         return delimiter.join(apiNames)
 
-    def toCommandNameStr(self, delimiter: str = ', '):
+    def toCommandNameStr(self, delimiter: str = ', ') -> str:
         if delimiter is None:
             raise ValueError(f'delimiter argument is malformed: \"{delimiter}\"')
 
@@ -76,6 +76,7 @@ class Wotd():
 
     def __init__(
         self,
+        languageEntry: LanguageEntry,
         definition: str,
         englishExample: str,
         foreignExample: str,
@@ -83,13 +84,16 @@ class Wotd():
         transliteration: str,
         word: str
     ):
-        if not utils.isValidStr(definition):
+        if languageEntry is None:
+            raise ValueError(f'languageEntry argument is malformed: \"{languageEntry}\"')
+        elif not utils.isValidStr(definition):
             raise ValueError(f'definition argument is malformed: \"{definition}\"')
         elif not utils.isValidStr(language):
             raise ValueError(f'language argument is malformed: \"{language}\"')
         elif not utils.isValidStr(word):
             raise ValueError(f'word argument is malformed: \"{word}\"')
 
+        self.__languageEntry = languageEntry
         self.__definition = definition
         self.__englishExample = englishExample
         self.__foreignExample = foreignExample
@@ -108,6 +112,9 @@ class Wotd():
 
     def getLanguage(self) -> str:
         return self.__language
+
+    def getLanguageEntry(self) -> LanguageEntry:
+        return self.__languageEntry
 
     def getTransliteration(self) -> str:
         return self.__transliteration
@@ -137,15 +144,15 @@ class WordOfTheDayRepository():
 
     def __init__(
         self,
-        cacheTimeDelta=timedelta(hours=1)
+        cacheTimeDelta: timedelta = timedelta(hours = 1)
     ):
         if cacheTimeDelta is None:
             raise ValueError(f'cacheTimeDelta argument is malformed: \"{cacheTimeDelta}\"')
 
-        self.__cache = TimedDict(timeDelta=cacheTimeDelta)
+        self.__cache = TimedDict(timeDelta = cacheTimeDelta)
         self.__languageList = self.__createLanguageList()
 
-    def __createLanguageList(self):
+    def __createLanguageList(self) -> LanguageList:
         entries = list()
         entries.append(LanguageEntry(apiName='de', commandName='de'))
         entries.append(LanguageEntry(apiName='en-es', commandName='en-es'))
@@ -163,7 +170,7 @@ class WordOfTheDayRepository():
         entries.append(LanguageEntry(apiName='swedish', commandName='sv'))
         entries.append(LanguageEntry(apiName='zh', commandName='zh'))
 
-        return LanguageList(entries=entries)
+        return LanguageList(entries = entries)
 
     def fetchWotd(self, languageEntry) -> Wotd:
         if languageEntry is None:
@@ -181,8 +188,8 @@ class WordOfTheDayRepository():
         ##############################################################################
 
         rawResponse = requests.get(
-            url=f'https://wotd.transparent.com/rss/{languageEntry.getApiName()}-widget.xml?t=0',
-            timeout=utils.getDefaultTimeout()
+            url = f'https://wotd.transparent.com/rss/{languageEntry.getApiName()}-widget.xml?t=0',
+            timeout = utils.getDefaultTimeout()
         )
 
         xmlTree = xmltodict.parse(rawResponse.content)['xml']['words']
@@ -205,12 +212,13 @@ class WordOfTheDayRepository():
 
         try:
             wotd = Wotd(
-                word=word,
-                definition=definition,
-                englishExample=englishExample,
-                language=language,
-                foreignExample=foreignExample,
-                transliteration=transliteration
+                lanuageEntry = languageEntry,
+                word = word,
+                definition = definition,
+                englishExample = englishExample,
+                language = language,
+                foreignExample = foreignExample,
+                transliteration = transliteration
             )
         except ValueError:
             print(f'Word Of The Day for \"{languageEntry.getCommandName()}\" has a data error')

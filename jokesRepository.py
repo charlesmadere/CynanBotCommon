@@ -1,4 +1,3 @@
-import json
 from datetime import datetime, timedelta
 
 import requests
@@ -8,12 +7,27 @@ from urllib3.exceptions import MaxRetryError, NewConnectionError
 import CynanBotCommon.utils as utils
 
 
+class JokeResponse():
+
+    def __init__(self, text: str):
+        if not utils.isValidStr(text):
+            raise ValueError(f'text argument is malformed: \"{text}\"')
+
+        self.__text = text
+
+    def getText(self):
+        return self.__text
+
+    def toStr(self):
+        return f'{self.__text} 🥁'
+
+
 class JokesRepository():
 
     def __init__(
         self,
         apiUrl: str = 'https://v2.jokeapi.dev/joke/Miscellaneous,Pun,Spooky,Christmas?blacklistFlags=nsfw,religious,political,racist,sexist,explicit&safe-mode',
-        cacheTimeDelta: timedelta = timedelta(minutes=10)
+        cacheTimeDelta: timedelta = timedelta(minutes = 10)
     ):
         if not utils.isValidUrl(apiUrl):
             raise ValueError(f'apiUrl argument is malformed: \"{apiUrl}\"')
@@ -25,20 +39,20 @@ class JokesRepository():
         self.__cacheTimeDelta = cacheTimeDelta
         self.__jokeResponse = None
 
-    def fetchJoke(self):
+    def fetchJoke(self) -> JokeResponse:
         if self.__cacheTime + self.__cacheTimeDelta < datetime.now() or self.__jokeResponse is None:
             self.__jokeResponse = self.__refreshJoke()
             self.__cacheTime = datetime.now()
 
         return self.__jokeResponse
 
-    def __refreshJoke(self):
+    def __refreshJoke(self) -> JokeResponse:
         print(f'Refreshing joke... ({utils.getNowTimeText()})')
 
         rawResponse = None
 
         try:
-            rawResponse = requests.get(url=self.__apiUrl, timeout=utils.getDefaultTimeout())
+            rawResponse = requests.get(url = self.__apiUrl, timeout = utils.getDefaultTimeout())
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, Timeout) as e:
             print(f'Exception occurred when attempting to fetch new joke: {e}')
 
@@ -83,25 +97,8 @@ class JokesRepository():
         jokeResponse = None
 
         try:
-            jokeResponse = JokeResponse(
-                text=jokeText
-            )
+            jokeResponse = JokeResponse(text = jokeText)
         except ValueError:
             print(f'Joke has a data error: \"{jsonResponse}\"')
 
         return jokeResponse
-
-
-class JokeResponse():
-
-    def __init__(self, text: str):
-        if not utils.isValidStr(text):
-            raise ValueError(f'text argument is malformed: \"{text}\"')
-
-        self.__text = text
-
-    def getText(self):
-        return self.__text
-
-    def toStr(self):
-        return f'{self.__text} 🥁'

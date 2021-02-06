@@ -1,9 +1,9 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 class TimedDict():
 
-    def __init__(self, timeDelta):
+    def __init__(self, timeDelta: timedelta):
         if timeDelta is None:
             raise ValueError(f'timeDelta argument is malformed: \"{timeDelta}\"')
 

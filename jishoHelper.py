@@ -71,7 +71,7 @@ class JishoHelper():
         encodedQuery = urllib.parse.quote(query)
         url = f'https://jisho.org/search/{encodedQuery}'
 
-        rawResponse = requests.get(url=url, timeout=utils.getDefaultTimeout())
+        rawResponse = requests.get(url = url, timeout = utils.getDefaultTimeout())
 
         htmlTree = html.fromstring(rawResponse.content)
         if htmlTree is None:
@@ -109,7 +109,7 @@ class JishoHelper():
             if len(definition) == 0:
                 continue
 
-            number = locale.format_string("%d", len(definitions) + 1, grouping=True)
+            number = locale.format_string("%d", len(definitions) + 1, grouping = True)
             definitions.append(f'#{number} {definition}')
 
             if len(definitions) >= 3:
@@ -126,8 +126,8 @@ class JishoHelper():
             furigana = utils.cleanStr(furiganaElements[0].text_content())
 
         return JishoResult(
-            definitions=definitions,
-            furigana=furigana,
-            url=url,
-            word=word
+            definitions = definitions,
+            furigana = furigana,
+            url = url,
+            word = word
         )

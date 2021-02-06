@@ -53,7 +53,7 @@ class WeatherReport():
         return self.__airQuality
 
     def getAirQualityStr(self) -> str:
-        return locale.format_string("%d", self.getAirQuality(), grouping=True)
+        return locale.format_string("%d", self.getAirQuality(), grouping = True)
 
     def getAlerts(self) -> List[str]:
         return self.__alerts
@@ -68,19 +68,19 @@ class WeatherReport():
         return self.__pressure
 
     def getPressureStr(self) -> str:
-        return locale.format_string("%d", self.getPressure(), grouping=True)
+        return locale.format_string("%d", self.getPressure(), grouping = True)
 
     def getTemperature(self):
         return int(round(self.__temperature))
 
     def getTemperatureStr(self):
-        return locale.format_string("%d", self.getTemperature(), grouping=True)
+        return locale.format_string("%d", self.getTemperature(), grouping = True)
 
     def getTemperatureImperial(self):
         return int(round(self.__cToF(self.__temperature)))
 
     def getTemperatureImperialStr(self):
-        return locale.format_string("%d", self.getTemperatureImperial(), grouping=True)
+        return locale.format_string("%d", self.getTemperatureImperial(), grouping = True)
 
     def getTomorrowsConditions(self) -> List[str]:
         return self.__tomorrowsConditions
@@ -89,25 +89,25 @@ class WeatherReport():
         return int(round(self.__tomorrowsLowTemperature))
 
     def getTomorrowsLowTemperatureStr(self) -> str:
-        return locale.format_string("%d", self.getTomorrowsLowTemperature(), grouping=True)
+        return locale.format_string("%d", self.getTomorrowsLowTemperature(), grouping = True)
 
     def getTomorrowsLowTemperatureImperial(self) -> int:
         return int(round(self.__cToF(self.__tomorrowsLowTemperature)))
 
     def getTomorrowsLowTemperatureImperialStr(self) -> str:
-        return locale.format_string("%d", self.getTomorrowsLowTemperatureImperial(), grouping=True)
+        return locale.format_string("%d", self.getTomorrowsLowTemperatureImperial(), grouping = True)
 
     def getTomorrowsHighTemperature(self) -> int:
         return int(round(self.__tomorrowsHighTemperature))
 
     def getTomorrowsHighTemperatureStr(self) -> str:
-        return locale.format_string("%d", self.getTomorrowsHighTemperature(), grouping=True)
+        return locale.format_string("%d", self.getTomorrowsHighTemperature(), grouping = True)
 
     def getTomorrowsHighTemperatureImperial(self) -> int:
         return int(round(self.__cToF(self.__tomorrowsHighTemperature)))
 
     def getTomorrowsHighTemperatureImperialStr(self) -> str:
-        return locale.format_string("%d", self.getTomorrowsHighTemperatureImperial(), grouping=True)
+        return locale.format_string("%d", self.getTomorrowsHighTemperatureImperial(), grouping = True)
 
     def hasAirQuality(self) -> bool:
         return utils.isValidNum(self.__airQuality)
@@ -160,7 +160,7 @@ class WeatherRepository():
         self,
         oneWeatherApiKey: str,
         iqAirApiKey: str = None,
-        cacheTimeDelta: timedelta = timedelta(hours=1, minutes=30)
+        cacheTimeDelta: timedelta = timedelta(hours = 1, minutes = 30)
     ):
         if not utils.isValidStr(oneWeatherApiKey):
             raise ValueError(f'oneWeatherApiKey argument is malformed: \"{oneWeatherApiKey}\"')
@@ -172,7 +172,7 @@ class WeatherRepository():
 
         self.__iqAirApiKey = iqAirApiKey
         self.__oneWeatherApiKey = oneWeatherApiKey
-        self.__cache = TimedDict(timeDelta=cacheTimeDelta)
+        self.__cache = TimedDict(timeDelta = cacheTimeDelta)
         self.__conditionIcons = self.__createConditionIconsDict()
 
     def __chooseTomorrowFromForecast(self, jsonResponse: dict):

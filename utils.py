@@ -77,8 +77,8 @@ def getNowTimeText(includeSeconds: bool = False) -> str:
         raise ValueError(f'includeSeconds argument is malformed: \"{includeSeconds}\"')
 
     return formatTimeShort(
-        time=datetime.now(),
-        includeSeconds=includeSeconds
+        time = datetime.now(),
+        includeSeconds = includeSeconds
     )
 
 def getStrFromDict(d: dict, key: str, fallback: str = None, clean: bool = False) -> str:

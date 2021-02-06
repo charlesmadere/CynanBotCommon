@@ -111,9 +111,15 @@ class AnalogueStoreStock():
         for product in self.__products:
             if inStockProductsOnly:
                 if product.inStock():
-                    productStrings.append(product.toStr(includePrice=includePrices, includeStockInfo=False))
+                    productStrings.append(product.toStr(
+                        includePrice = includePrices,
+                        includeStockInfo = False
+                    ))
             else:
-                productStrings.append(product.toStr(includePrice=includePrices, includeStockInfo=True))
+                productStrings.append(product.toStr(
+                    includePrice = includePrices,
+                    includeStockInfo = True
+                ))
 
         if inStockProductsOnly and len(productStrings) == 0:
             return '🍃 Analogue store has nothing in stock'
@@ -131,7 +137,7 @@ class AnalogueStoreRepository():
     def __init__(
         self,
         storeUrl: str = 'https://www.analogue.co/store',
-        cacheTimeDelta: timedelta = timedelta(hours=1)
+        cacheTimeDelta: timedelta = timedelta(hours = 1)
     ):
         if not utils.isValidUrl(storeUrl):
             raise ValueError(f'storeUrl argument is malformed: \"{storeUrl}\"')
@@ -159,7 +165,7 @@ class AnalogueStoreRepository():
         rawResponse = None
 
         try:
-            rawResponse = requests.get(url=self.__storeUrl, timeout=utils.getDefaultTimeout())
+            rawResponse = requests.get(url = self.__storeUrl, timeout = utils.getDefaultTimeout())
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, Timeout) as e:
             print(f'Exception occurred when attempting to fetch Analogue store stock: {e}')
 
@@ -224,12 +230,10 @@ class AnalogueStoreRepository():
                 inStock = False
 
             products.append(AnalogueStoreEntry(
-                productType=productType,
-                inStock=inStock,
-                name=name,
-                price=price
+                productType = productType,
+                inStock = inStock,
+                name = name,
+                price = price
             ))
 
-        return AnalogueStoreStock(
-            products=products
-        )
+        return AnalogueStoreStock(products = products)
