@@ -6,7 +6,7 @@ class NonceRepository():
     def __init__(self):
         self.__cache = dict()
 
-    def getNonce(self, key: str):
+    def getNonce(self, key: str) -> str:
         if not utils.isValidStr(key):
             raise ValueError(f'key argument is malformed: \"{key}\"')
 

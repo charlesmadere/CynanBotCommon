@@ -4,19 +4,19 @@ from datetime import datetime
 from typing import List
 
 
-def cleanStr(s: str):
+def cleanStr(s: str) -> str:
     if s is None:
         return ''
     else:
         return s.replace('\r\n', ' ').replace('\r', ' ').replace('\n', ' ').strip()
 
-def formatTime(time):
+def formatTime(time) -> str:
     if time is None:
         raise ValueError(f'time argument is malformed: \"{time}\"')
 
     return time.strftime("%A, %b %d, %Y %I:%M%p")
 
-def formatTimeShort(time, includeSeconds: bool = False):
+def formatTimeShort(time, includeSeconds: bool = False) -> str:
     if time is None:
         raise ValueError(f'time argument is malformed: \"{time}\"')
     elif includeSeconds is None:
@@ -27,7 +27,7 @@ def formatTimeShort(time, includeSeconds: bool = False):
     else:
         return time.strftime("%b %d %I:%M%p")
 
-def getCleanedSplits(s: str):
+def getCleanedSplits(s: str) -> List[str]:
     splits = list()
 
     if not isValidStr(s):
@@ -46,10 +46,10 @@ def getCleanedSplits(s: str):
 
     return words
 
-def getDefaultTimeout():
+def getDefaultTimeout() -> int:
     return 10 # seconds
 
-def getIntFromDict(d: dict, key: str, fallback: int = None):
+def getIntFromDict(d: dict, key: str, fallback: int = None) -> int:
     if d is None:
         raise ValueError(f'd argument is malformed: \"{d}\"')
     elif not isValidStr(key):
@@ -72,7 +72,7 @@ def getIntFromDict(d: dict, key: str, fallback: int = None):
 
     return value
 
-def getNowTimeText(includeSeconds: bool = False):
+def getNowTimeText(includeSeconds: bool = False) -> str:
     if includeSeconds is None:
         raise ValueError(f'includeSeconds argument is malformed: \"{includeSeconds}\"')
 
@@ -81,7 +81,7 @@ def getNowTimeText(includeSeconds: bool = False):
         includeSeconds=includeSeconds
     )
 
-def getStrFromDict(d: dict, key: str, fallback: str = None, clean: bool = False):
+def getStrFromDict(d: dict, key: str, fallback: str = None, clean: bool = False) -> str:
     if d is None:
         raise ValueError(f'd argument is malformed: \"{d}\"')
     elif not isValidStr(key):
@@ -106,16 +106,16 @@ def getStrFromDict(d: dict, key: str, fallback: str = None, clean: bool = False)
 
     return value
 
-def hasItems(l: List):
+def hasItems(l: List) -> bool:
     return l is not None and len(l) >= 1
 
-def isValidNum(n):
+def isValidNum(n) -> bool:
     return n is not None and math.isfinite(n)
 
-def isValidStr(s: str):
+def isValidStr(s: str) -> bool:
     return s is not None and len(s) >= 1 and not s.isspace()
 
-def isValidUrl(s: str):
+def isValidUrl(s: str) -> bool:
     if not isValidStr(s):
         return False
 
@@ -124,7 +124,7 @@ def isValidUrl(s: str):
 
     return isValidStr(url)
 
-def removePreceedingAt(s: str):
+def removePreceedingAt(s: str) -> str:
     if not isValidStr(s):
         return s
     elif s[0] != '@':

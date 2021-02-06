@@ -8,12 +8,60 @@ from lxml import html
 import CynanBotCommon.utils as utils
 
 
+class JishoResult():
+
+    def __init__(
+        self,
+        definitions: List[str],
+        furigana: str,
+        url: str,
+        word: str
+    ):
+        if not utils.hasItems(definitions):
+            raise ValueError(f'definitions argument is malformed: \"{definitions}\"')
+        elif not utils.isValidUrl(url):
+            raise ValueError(f'url argument is malformed: \"{url}\"')
+        elif not utils.isValidStr(word):
+            raise ValueError(f'word argument is malformed: \"{word}\"')
+
+        self.__definitions = definitions
+        self.__furigana = furigana
+        self.__url = url
+        self.__word = word
+
+    def getDefinitions(self) -> List[str]:
+        return self.__definitions
+
+    def getFurigana(self) -> str:
+        return self.__furigana
+
+    def getUrl(self) -> str:
+        return self.__url
+
+    def getWord(self) -> str:
+        return self.__word
+
+    def hasFurigana(self) -> bool:
+        return utils.isValidStr(self.__furigana)
+
+    def toStr(self, definitionDelimiter: str = ' ') -> str:
+        if definitionDelimiter is None:
+            raise ValueError(f'definitionDelimiter argument is malformed: \"{definitionDelimiter}\"')
+
+        furigana = ''
+        if self.hasFurigana():
+            furigana = f'({self.__furigana}) '
+
+        definitions = definitionDelimiter.join(self.__definitions)
+        return f'{furigana}{self.__word} — {definitions}'
+
+
 class JishoHelper():
 
     def __init__(self):
         pass
 
-    def search(self, query: str):
+    def search(self, query: str) -> JishoResult:
         if not utils.isValidStr(query):
             raise ValueError(f'query argument is malformed: \"{query}\"')
 
@@ -83,51 +131,3 @@ class JishoHelper():
             url=url,
             word=word
         )
-
-
-class JishoResult():
-
-    def __init__(
-        self,
-        definitions: List[str],
-        furigana: str,
-        url: str,
-        word: str
-    ):
-        if not utils.hasItems(definitions):
-            raise ValueError(f'definitions argument is malformed: \"{definitions}\"')
-        elif not utils.isValidStr(url):
-            raise ValueError(f'url argument is malformed: \"{url}\"')
-        elif not utils.isValidStr(word):
-            raise ValueError(f'word argument is malformed: \"{word}\"')
-
-        self.__definitions = definitions
-        self.__furigana = furigana
-        self.__url = url
-        self.__word = word
-
-    def getDefinitions(self):
-        return self.__definitions
-
-    def getFurigana(self):
-        return self.__furigana
-
-    def getUrl(self):
-        return self.__url
-
-    def getWord(self):
-        return self.__word
-
-    def hasFurigana(self):
-        return utils.isValidStr(self.__furigana)
-
-    def toStr(self, definitionDelimiter: str = ' '):
-        if definitionDelimiter is None:
-            raise ValueError(f'definitionDelimiter argument is malformed: \"{definitionDelimiter}\"')
-
-        furigana = ''
-        if self.hasFurigana():
-            furigana = f'({self.__furigana}) '
-
-        definitions = definitionDelimiter.join(self.__definitions)
-        return f'{furigana}{self.__word} — {definitions}'

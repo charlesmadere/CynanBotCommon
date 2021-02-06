@@ -20,6 +20,112 @@ class AnalogueProductType(Enum):
     SUPER_NT = auto()
 
 
+class AnalogueStoreEntry():
+
+    def __init__(
+        self,
+        productType: AnalogueProductType,
+        inStock: bool,
+        name: str,
+        price: str
+    ):
+        if productType is None:
+            raise ValueError(f'productType argument is malformed: \"{productType}\"')
+        elif inStock is None:
+            raise ValueError(f'inStock argument is malformed: \"{inStock}\"')
+        elif not utils.isValidStr(name):
+            raise ValueError(f'name argument is malformed: \"{name}\"')
+
+        self.__productType = productType
+        self.__inStock = inStock
+        self.__name = name
+        self.__price = price
+
+    def getName(self) -> str:
+        return self.__name
+
+    def getPrice(self) -> str:
+        return self.__price
+
+    def getProductType(self) -> AnalogueProductType:
+        return self.__productType
+
+    def hasPrice(self) -> bool:
+        return utils.isValidStr(self.__price)
+
+    def inStock(self) -> bool:
+        return self.__inStock
+
+    def toStr(self, includePrice: bool = False, includeStockInfo: bool = False) -> str:
+        if includePrice is None:
+            raise ValueError(f'includePrice argument is malformed: \"{includePrice}\"')
+        elif includeStockInfo is None:
+            raise ValueError(f'includeStockInfo argument is malformed: \"{includeStockInfo}\"')
+
+        priceAndStockText = ''
+        if includePrice or includeStockInfo:
+            if includePrice and self.hasPrice():
+                if includeStockInfo:
+                    if self.inStock():
+                        priceAndStockText = f' (in stock, {self.__price})'
+                    else:
+                        priceAndStockText = f' (out of stock, {self.__price})'
+                else:
+                    priceAndStockText = f' ({self.__price})'
+            elif includeStockInfo:
+                if self.inStock():
+                    priceAndStockText = f' (in stock)'
+                else:
+                    priceAndStockText = f' (out of stock)'
+
+        return f'{self.__name}{priceAndStockText}'
+
+
+class AnalogueStoreStock():
+
+    def __init__(self, products: List[AnalogueStoreEntry]):
+        if products == None:
+            raise ValueError(f'products argument is malformed: \"{products}\"')
+
+        self.__products = products
+
+    def getProducts(self) -> List[AnalogueStoreEntry]:
+        return self.__products
+
+    def hasProducts(self) -> bool:
+        return len(self.__products) >= 1
+
+    def toStr(self, includePrices: bool = False, inStockProductsOnly: bool = True, delimiter: str = ', ') -> str:
+        if includePrices is None:
+            raise ValueError(f'includePrices argument is malformed: \"{includePrices}\"')
+        elif inStockProductsOnly is None:
+            raise ValueError(f'inStockProductsOnly argument is malformed: \"{inStockProductsOnly}\"')
+        elif delimiter is None:
+            raise ValueError(f'delimiter argument is malformed: \"{delimiter}\"')
+
+        if not self.hasProducts():
+            return '🍃 Analogue store is empty'
+
+        productStrings = list()
+
+        for product in self.__products:
+            if inStockProductsOnly:
+                if product.inStock():
+                    productStrings.append(product.toStr(includePrice=includePrices, includeStockInfo=False))
+            else:
+                productStrings.append(product.toStr(includePrice=includePrices, includeStockInfo=True))
+
+        if inStockProductsOnly and len(productStrings) == 0:
+            return '🍃 Analogue store has nothing in stock'
+
+        productsString = delimiter.join(productStrings)
+
+        if inStockProductsOnly:
+            return f'Analogue products in stock: {productsString}'
+        else:
+            return f'Analogue products: {productsString}'
+
+
 class AnalogueStoreRepository():
 
     def __init__(
@@ -37,14 +143,14 @@ class AnalogueStoreRepository():
         self.__cacheTimeDelta = cacheTimeDelta
         self.__storeStock = None
 
-    def fetchStoreStock(self):
+    def fetchStoreStock(self) -> AnalogueStoreStock:
         if self.__cacheTime + self.__cacheTimeDelta < datetime.now() or self.__storeStock is None:
             self.__storeStock = self.__refreshStoreStock()
             self.__cacheTime = datetime.now()
 
         return self.__storeStock
 
-    def getStoreUrl(self):
+    def getStoreUrl(self) -> str:
         return self.__storeUrl
 
     def __refreshStoreStock(self):
@@ -127,109 +233,3 @@ class AnalogueStoreRepository():
         return AnalogueStoreStock(
             products=products
         )
-
-
-class AnalogueStoreEntry():
-
-    def __init__(
-        self,
-        productType: AnalogueProductType,
-        inStock: bool,
-        name: str,
-        price: str
-    ):
-        if productType is None:
-            raise ValueError(f'productType argument is malformed: \"{productType}\"')
-        elif inStock is None:
-            raise ValueError(f'inStock argument is malformed: \"{inStock}\"')
-        elif not utils.isValidStr(name):
-            raise ValueError(f'name argument is malformed: \"{name}\"')
-
-        self.__productType = productType
-        self.__inStock = inStock
-        self.__name = name
-        self.__price = price
-
-    def getName(self):
-        return self.__name
-
-    def getPrice(self):
-        return self.__price
-
-    def getProductType(self):
-        return self.__productType
-
-    def hasPrice(self):
-        return utils.isValidStr(self.__price)
-
-    def inStock(self):
-        return self.__inStock
-
-    def toStr(self, includePrice: bool = False, includeStockInfo: bool = False):
-        if includePrice is None:
-            raise ValueError(f'includePrice argument is malformed: \"{includePrice}\"')
-        elif includeStockInfo is None:
-            raise ValueError(f'includeStockInfo argument is malformed: \"{includeStockInfo}\"')
-
-        priceAndStockText = ''
-        if includePrice or includeStockInfo:
-            if includePrice and self.hasPrice():
-                if includeStockInfo:
-                    if self.inStock():
-                        priceAndStockText = f' (in stock, {self.__price})'
-                    else:
-                        priceAndStockText = f' (out of stock, {self.__price})'
-                else:
-                    priceAndStockText = f' ({self.__price})'
-            elif includeStockInfo:
-                if self.inStock():
-                    priceAndStockText = f' (in stock)'
-                else:
-                    priceAndStockText = f' (out of stock)'
-
-        return f'{self.__name}{priceAndStockText}'
-
-
-class AnalogueStoreStock():
-
-    def __init__(self, products: List):
-        if products == None:
-            raise ValueError(f'products argument is malformed: \"{products}\"')
-
-        self.__products = products
-
-    def getProducts(self):
-        return self.__products
-
-    def hasProducts(self):
-        return len(self.__products) >= 1
-
-    def toStr(self, includePrices: bool = False, inStockProductsOnly: bool = True, delimiter: str = ', '):
-        if includePrices is None:
-            raise ValueError(f'includePrices argument is malformed: \"{includePrices}\"')
-        elif inStockProductsOnly is None:
-            raise ValueError(f'inStockProductsOnly argument is malformed: \"{inStockProductsOnly}\"')
-        elif delimiter is None:
-            raise ValueError(f'delimiter argument is malformed: \"{delimiter}\"')
-
-        if not self.hasProducts():
-            return '🍃 Analogue store is empty'
-
-        productStrings = list()
-
-        for product in self.__products:
-            if inStockProductsOnly:
-                if product.inStock():
-                    productStrings.append(product.toStr(includePrice=includePrices, includeStockInfo=False))
-            else:
-                productStrings.append(product.toStr(includePrice=includePrices, includeStockInfo=True))
-
-        if inStockProductsOnly and len(productStrings) == 0:
-            return '🍃 Analogue store has nothing in stock'
-
-        productsString = delimiter.join(productStrings)
-
-        if inStockProductsOnly:
-            return f'Analogue products in stock: {productsString}'
-        else:
-            return f'Analogue products: {productsString}'
