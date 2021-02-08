@@ -212,7 +212,7 @@ class WordOfTheDayRepository():
 
         try:
             wotd = Wotd(
-                lanuageEntry = languageEntry,
+                languageEntry = languageEntry,
                 word = word,
                 definition = definition,
                 englishExample = englishExample,
