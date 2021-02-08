@@ -5,7 +5,7 @@ import CynanBotCommon.utils as utils
 
 class BackingDatabase():
 
-    def __init__(self, databaseFile: str = 'database.sqlite'):
+    def __init__(self, databaseFile: str = 'CynanBotCommon/database.sqlite'):
         if not utils.isValidStr(databaseFile):
             raise ValueError(f'databaseFile argument is malformed: \"{databaseFile}\"')
 

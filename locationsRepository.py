@@ -47,7 +47,7 @@ class LocationsRepository():
     def __init__(
         self,
         timeZoneRepository: TimeZoneRepository,
-        locationsFile: str = 'locationsRepository.json'
+        locationsFile: str = 'CynanBotCommon/locationsRepository.json'
     ):
         if not utils.isValidStr(locationsFile):
             raise ValueError(f'locationsFile argument is malformed: \"{locationsFile}\"')
