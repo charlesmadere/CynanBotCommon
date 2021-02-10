@@ -242,10 +242,9 @@ class WeatherRepository():
         # Doing this requires an API key, which you can get here:
         # https://www.iqair.com/us/commercial/air-quality-monitors/airvisual-platform/api
 
-        requestUrl = "https://api.airvisual.com/v2/nearest_city?key={}&lat={}&lon={}".format(
+        requestUrl = 'https://api.airvisual.com/v2/nearest_city?key={}&lat={}&lon={}'.format(
             self.__iqAirApiKey, location.getLatitude(), location.getLongitude())
 
-        
         rawResponse = None
 
         try:
