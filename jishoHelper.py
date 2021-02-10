@@ -66,7 +66,7 @@ class JishoHelper():
             raise ValueError(f'query argument is malformed: \"{query}\"')
 
         query = query.strip()
-        print(f'Looking up \"{query}\"...')
+        print(f'Looking up \"{query}\"... ({utils.getNowTimeText()})')
 
         encodedQuery = urllib.parse.quote(query)
         url = f'https://jisho.org/search/{encodedQuery}'
