@@ -1,6 +1,95 @@
+import urllib
+from typing import List
+
+import requests
+from requests import ConnectionError, HTTPError, Timeout
+from urllib3.exceptions import MaxRetryError, NewConnectionError
+
 import CynanBotCommon.utils as utils
+
+
+class EnEsDictionaryResult():
+
+    def __init__(self, definitions: List[str], word: str):
+        if not utils.hasItems(definitions):
+            raise ValueError(f'definitions argument is malformed: \"{definitions}\"')
+        elif not utils.isValidStr(word):
+            raise ValueError(f'word argument is malformed: \"{word}\"')
+
+        self.__definitions = definitions
+        self.__word = word
+
+    def getDefinitions(self) -> List[str]:
+        return self.__definitions
+
+    def getWord(self) -> str:
+        return self.__word
+
+    def toStr(self, delimiter: str = ', ') -> str:
+        if delimiter is None:
+            raise ValueError(f'delimiter argument is malformed: \"{delimiter}\"')
+
+        definitionsJoin = delimiter.join(self.__definitions)
+        return f'{self.__word} — {definitionsJoin}'
+
 
 class EnEsDictionary():
 
-    def __init__(self):
-        pass
+    def __init__(
+        self,
+        merriamWebsterApiKey: str,
+        definitionsMaxSize: int = 3
+    ):
+        if not utils.isValidStr(merriamWebsterApiKey):
+            raise ValueError(f'merriamWebsterApiKey argument is malformed: \"{merriamWebsterApiKey}\"')
+        elif not utils.isValidNum(definitionsMaxSize) or definitionsMaxSize < 1:
+            raise ValueError(f'definitionsMaxSize argument is malformed: \"{definitionsMaxSize}\"')
+
+        self.__definitionsMaxSize = definitionsMaxSize
+        self.__merriamWebsterApiKey = merriamWebsterApiKey
+
+    def search(self, query: str) -> EnEsDictionaryResult:
+        if not utils.isValidStr(query):
+            raise ValueError(f'query argument is malformed: \"{query}\"')
+
+        query = query.strip()
+        print(f'Looking up \"{query}\"... ({utils.getNowTimeText()})')
+
+        encodedQuery = urllib.parse.quote(query)
+        requestUrl = 'https://www.dictionaryapi.com/api/v3/references/spanish/json/{}?key={}'.format(
+            encodedQuery, self.__merriamWebsterApiKey)
+
+        rawResponse = None
+
+        try:
+            rawResponse = requests.get(url = requestUrl, timeout = utils.getDefaultTimeout())
+        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, Timeout) as e:
+            print(f'Exception occurred when attempting to search Merriam Webster for \"{query}\": {e}')
+
+        if rawResponse is None:
+            print(f'rawResponse for \"{query}\" is malformed: \"{rawResponse}\"')
+            return None
+
+        jsonResponse = rawResponse.json()
+
+        if not utils.hasItems(jsonResponse):
+            print(f'jsonResponse for \"{query}\" has no definitions: \"{jsonResponse}\"')
+            raise ValueError(f'\"{query}\" has no definitions')
+
+        definitions = list()
+
+        for entry in jsonResponse:
+            if not entry['meta'].get('offensive', True) and utils.hasItems(entry['shortdef']):
+                definitions.append(utils.cleanStr(entry['shortdef'][0]))
+
+                if len(definitions) >= self.__definitionsMaxSize:
+                    break
+
+        if not utils.hasItems(definitions):
+            print(f'Unable to find any viable definitions for \"{query}\"')
+            raise ValueError(f'\"{query}\" has no viable definitions')
+
+        return EnEsDictionaryResult(
+            definitions = definitions,
+            word = query
+        )
