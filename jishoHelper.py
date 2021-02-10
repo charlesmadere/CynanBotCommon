@@ -78,15 +78,15 @@ class JishoHelper():
         try:
             rawResponse = requests.get(url = requestUrl, timeout = utils.getDefaultTimeout())
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, Timeout) as e:
-            print(f'Exception occurred when attempting to search Jisho: {e}')
+            print(f'Exception occurred when attempting to search Jisho for \"{query}\": {e}')
 
         if rawResponse is None:
-            print(f'rawResponse is malformed: \"{rawResponse}\"')
+            print(f'rawResponse for \"{query}\" is malformed: \"{rawResponse}\"')
             return None
 
         htmlTree = html.fromstring(rawResponse.content)
         if htmlTree is None:
-            print(f'htmlTree is malformed: \"{htmlTree}\"')
+            print(f'htmlTree for \"{query}\" is malformed: \"{htmlTree}\"')
             return None
 
         parentElements = htmlTree.find_class('concept_light-representation')
