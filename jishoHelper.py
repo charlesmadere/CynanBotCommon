@@ -4,6 +4,8 @@ from typing import List
 
 import requests
 from lxml import html
+from requests import ConnectionError, HTTPError, Timeout
+from urllib3.exceptions import MaxRetryError, NewConnectionError
 
 import CynanBotCommon.utils as utils
 
@@ -69,9 +71,18 @@ class JishoHelper():
         print(f'Looking up \"{query}\"... ({utils.getNowTimeText()})')
 
         encodedQuery = urllib.parse.quote(query)
-        url = f'https://jisho.org/search/{encodedQuery}'
+        requestUrl = f'https://jisho.org/search/{encodedQuery}'
 
-        rawResponse = requests.get(url = url, timeout = utils.getDefaultTimeout())
+        rawResponse = None
+
+        try:
+            rawResponse = requests.get(url = requestUrl, timeout = utils.getDefaultTimeout())
+        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, Timeout) as e:
+            print(f'Exception occurred when attempting to search Jisho: {e}')
+
+        if rawResponse is None:
+            print(f'rawResponse is malformed: \"{rawResponse}\"')
+            return None
 
         htmlTree = html.fromstring(rawResponse.content)
         if htmlTree is None:
@@ -128,6 +139,6 @@ class JishoHelper():
         return JishoResult(
             definitions = definitions,
             furigana = furigana,
-            url = url,
+            url = requestUrl,
             word = word
         )
