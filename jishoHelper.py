@@ -116,7 +116,7 @@ class JishoHelper():
                 continue
 
             definition = utils.cleanStr(definitionElement.text_content())
-            if len(definition) == 0:
+            if not utils.isValidStr(definition):
                 continue
 
             number = locale.format_string("%d", len(definitions) + 1, grouping = True)
@@ -126,7 +126,7 @@ class JishoHelper():
                 # keep from adding tons of definitions
                 break
 
-        if len(definitions) == 0:
+        if not utils.hasItems(definitions):
             print(f'Unable to find any viable definitions for \"{query}\"')
             raise ValueError(f'Unable to find any viable definitions for \"{query}\"')
 
