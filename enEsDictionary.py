@@ -1,4 +1,5 @@
 import urllib
+from json.decoder import JSONDecodeError
 from typing import List
 
 import requests
@@ -60,34 +61,54 @@ class EnEsDictionary():
             encodedQuery, self.__merriamWebsterApiKey)
 
         rawResponse = None
-
         try:
             rawResponse = requests.get(url = requestUrl, timeout = utils.getDefaultTimeout())
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, Timeout) as e:
             print(f'Exception occurred when attempting to search Merriam Webster for \"{query}\": {e}')
+            raise ValueError(f'Exception occurred when attempting to search Merriam Webster for \"{query}\": {e}')
 
-        if rawResponse is None:
-            print(f'rawResponse for \"{query}\" is malformed: \"{rawResponse}\"')
-            return None
-
-        jsonResponse = rawResponse.json()
+        jsonResponse = None
+        try:
+            jsonResponse = rawResponse.json()
+        except JSONDecodeError as e:
+            print(f'Exception occurred when attempting to decode Merriam Webster\'s response into JSON for \"{query}\": {e}')
+            raise ValueError(f'Exception occurred when attempting to decode Merriam Webster\'s response into JSON for \"{query}\": {e}')
 
         if not utils.hasItems(jsonResponse):
-            print(f'jsonResponse for \"{query}\" has no definitions: \"{jsonResponse}\"')
-            raise ValueError(f'\"{query}\" has no definitions')
+            print(f'jsonResponse for \"{query}\" has no definitions: {jsonResponse}')
+            raise ValueError(f'jsonResposne \"{query}\" has no definitions: {jsonResponse}')
 
         definitions = list()
 
         for entry in jsonResponse:
-            if not entry['meta'].get('offensive', True) and utils.hasItems(entry['shortdef']):
-                definitions.append(utils.cleanStr(entry['shortdef'][0]))
+            definition = None
+
+            if isinstance(entry, str):
+                definition = utils.cleanStr(entry)
+            elif not entry['meta'].get('offensive', True) and utils.hasItems(entry['shortdef']):
+                definition = utils.cleanStr(entry['shortdef'][0])
+
+            if not utils.isValidStr(definition):
+                continue
+
+            index = 0
+            add = True
+
+            while (index < len(definitions) and add):
+                if definitions[index].lower() == definition.lower():
+                    add = False
+
+                index = index + 1
+
+            if add:
+                definitions.append(definition)
 
                 if len(definitions) >= self.__definitionsMaxSize:
                     break
 
         if not utils.hasItems(definitions):
             print(f'Unable to find any viable definitions for \"{query}\"')
-            raise ValueError(f'\"{query}\" has no viable definitions')
+            raise ValueError(f'Unable to find any viable definitions for \"{query}\"')
 
         return EnEsDictionaryResult(
             definitions = definitions,
