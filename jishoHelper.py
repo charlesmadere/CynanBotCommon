@@ -78,12 +78,12 @@ class JishoHelper():
             rawResponse = requests.get(url = requestUrl, timeout = utils.getDefaultTimeout())
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, Timeout) as e:
             print(f'Exception occurred when attempting to search Jisho for \"{query}\": {e}')
-            raise ValueError(f'Exception occurred when attempting to search Jisho for \"{query}\": {e}')
+            raise RuntimeError(f'Exception occurred when attempting to search Jisho for \"{query}\": {e}')
 
         htmlTree = html.fromstring(rawResponse.content)
         if htmlTree is None:
             print(f'Exception occurred when attempting to decode Jisho\'s response for \"{query}\" into HTML tree')
-            raise ValueError(f'Exception occurred when attempting to decode Jisho\'s response for \"{query}\" into HTML tree')
+            raise RuntimeError(f'Exception occurred when attempting to decode Jisho\'s response for \"{query}\" into HTML tree')
 
         parentElements = htmlTree.find_class('concept_light-representation')
         if not utils.hasItems(parentElements):

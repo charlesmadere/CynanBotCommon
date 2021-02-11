@@ -65,18 +65,18 @@ class EnEsDictionary():
             rawResponse = requests.get(url = requestUrl, timeout = utils.getDefaultTimeout())
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, Timeout) as e:
             print(f'Exception occurred when attempting to search Merriam Webster for \"{query}\": {e}')
-            raise ValueError(f'Exception occurred when attempting to search Merriam Webster for \"{query}\": {e}')
+            raise RuntimeError(f'Exception occurred when attempting to search Merriam Webster for \"{query}\": {e}')
 
         jsonResponse = None
         try:
             jsonResponse = rawResponse.json()
         except JSONDecodeError as e:
             print(f'Exception occurred when attempting to decode Merriam Webster\'s response into JSON for \"{query}\": {e}')
-            raise ValueError(f'Exception occurred when attempting to decode Merriam Webster\'s response into JSON for \"{query}\": {e}')
+            raise RuntimeError(f'Exception occurred when attempting to decode Merriam Webster\'s response into JSON for \"{query}\": {e}')
 
         if not utils.hasItems(jsonResponse):
             print(f'jsonResponse for \"{query}\" has no definitions: {jsonResponse}')
-            raise ValueError(f'jsonResposne \"{query}\" has no definitions: {jsonResponse}')
+            raise ValueError(f'jsonResponse \"{query}\" has no definitions: {jsonResponse}')
 
         definitions = list()
 
