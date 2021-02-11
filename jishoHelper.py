@@ -74,40 +74,36 @@ class JishoHelper():
         requestUrl = f'https://jisho.org/search/{encodedQuery}'
 
         rawResponse = None
-
         try:
             rawResponse = requests.get(url = requestUrl, timeout = utils.getDefaultTimeout())
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, Timeout) as e:
             print(f'Exception occurred when attempting to search Jisho for \"{query}\": {e}')
-
-        if rawResponse is None:
-            print(f'rawResponse for \"{query}\" is malformed: \"{rawResponse}\"')
-            return None
+            raise ValueError(f'Exception occurred when attempting to search Jisho for \"{query}\": {e}')
 
         htmlTree = html.fromstring(rawResponse.content)
         if htmlTree is None:
-            print(f'htmlTree for \"{query}\" is malformed: \"{htmlTree}\"')
-            return None
+            print(f'Exception occurred when attempting to decode Jisho\'s response for \"{query}\" into HTML tree')
+            raise ValueError(f'Exception occurred when attempting to decode Jisho\'s response for \"{query}\" into HTML tree')
 
         parentElements = htmlTree.find_class('concept_light-representation')
         if not utils.hasItems(parentElements):
-            print(f'parentElements is malformed: \"{parentElements}\"')
-            return None
+            print(f'Exception occurred when attempting to find parent elements in Jisho\'s HTML tree in query for \"{query}\"')
+            raise ValueError(f'Exception occurred when attempting to find parent elements in Jisho\'s HTML tree in query for \"{query}\"')
 
         textElements = parentElements[0].find_class('text')
         if textElements is None or len(textElements) != 1:
-            print(f'textElements is malformed: \"{textElements}\"')
-            return None
+            print(f'Exception occurred when attempting to find text elements in Jisho\'s HTML tree in query for \"{query}\"')
+            raise ValueError(f'Exception occurred when attempting to find text elements in Jisho\'s HTML tree in query for \"{query}\"')
 
         word = utils.cleanStr(textElements[0].text_content())
-        if len(word) == 0:
-            print(f'word is malformed: \"{word}\"')
-            return None
+        if not utils.isValidStr(word):
+            print(f'Exception occurred when checking that Jisho\'s word is valid in query for \"{query}\"')
+            raise ValueError(f'Exception occurred when checking that Jisho\'s word is valid in query for \"{query}\"')
 
         definitionElements = htmlTree.find_class('meaning-meaning')
         if not utils.hasItems(definitionElements):
-            print(f'definitionElements is malformed: \"{definitionElements}\"')
-            return None
+            print(f'Exception occurred when attempting to find definition elements in Jisho\'s HTML tree in query for \"{query}\"')
+            raise ValueError(f'Exception occurred when attempting to find definition elements in Jisho\'s HTML tree in query for \"{query}\"')
 
         definitions = list()
 
@@ -128,8 +124,8 @@ class JishoHelper():
                 break
 
         if len(definitions) == 0:
-            print(f'Found no definitions within definitionElements: \"{definitionElements}\"')
-            return None
+            print(f'Unable to find any viable definitions for \"{query}\"')
+            raise ValueError(f'Unable to find any viable definitions for \"{query}\"')
 
         furigana = None
         furiganaElements = htmlTree.find_class('furigana')
