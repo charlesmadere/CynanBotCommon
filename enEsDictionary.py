@@ -1,3 +1,4 @@
+import locale
 import urllib
 from json.decoder import JSONDecodeError
 from typing import List
@@ -102,9 +103,11 @@ class EnEsDictionary():
                 index = index + 1
 
             if add:
-                definitions.append(definition)
+                number = locale.format_string("%d", len(definitions) + 1, grouping = True)
+                definitions.append(f'#{number} {definition}')
 
                 if len(definitions) >= self.__definitionsMaxSize:
+                    # keep from adding tons of definitions
                     break
 
         if not utils.hasItems(definitions):
