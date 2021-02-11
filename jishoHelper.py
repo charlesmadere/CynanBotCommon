@@ -60,8 +60,11 @@ class JishoResult():
 
 class JishoHelper():
 
-    def __init__(self):
-        pass
+    def __init__(self, definitionsMaxSize: int = 3):
+        if not utils.isValidNum(definitionsMaxSize) or definitionsMaxSize < 1:
+            raise ValueError(f'definitionsMaxSize argument is malformed: \"{definitionsMaxSize}\"')
+
+        self.__definitionsMaxSize = definitionsMaxSize
 
     def search(self, query: str) -> JishoResult:
         if not utils.isValidStr(query):
@@ -119,7 +122,7 @@ class JishoHelper():
             number = locale.format_string("%d", len(definitions) + 1, grouping = True)
             definitions.append(f'#{number} {definition}')
 
-            if len(definitions) >= 3:
+            if len(definitions) >= self.__definitionsMaxSize:
                 # keep from adding tons of definitions
                 break
 
