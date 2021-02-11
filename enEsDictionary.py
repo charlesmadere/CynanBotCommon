@@ -84,10 +84,11 @@ class EnEsDictionary():
             definition = None
 
             if isinstance(entry, str):
-                definition = utils.cleanStr(entry)
+                definition = entry
             elif not entry['meta'].get('offensive', True) and utils.hasItems(entry['shortdef']):
-                definition = utils.cleanStr(entry['shortdef'][0])
+                definition = entry['shortdef'][0]
 
+            definition = utils.cleanStr(definition)
             if not utils.isValidStr(definition):
                 continue
 
