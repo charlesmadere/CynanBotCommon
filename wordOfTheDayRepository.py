@@ -117,11 +117,11 @@ class Wotd():
     def getForeignExample(self) -> str:
         return self.__foreignExample
 
-    def getLanguageName(self) -> str:
-        return self.__languageName
-
     def getLanguageEntry(self) -> LanguageEntry:
         return self.__languageEntry
+
+    def getLanguageName(self) -> str:
+        return self.__languageName
 
     def getTransliteration(self) -> str:
         return self.__transliteration
@@ -138,13 +138,13 @@ class Wotd():
     def toStr(self) -> str:
         if self.hasExamples():
             if self.hasTransliteration():
-                return f'({self.getLanguage()}) {self.getWord()} ({self.getTransliteration()}) — {self.getDefinition()}. Example: {self.getForeignExample()} {self.getEnglishExample()}'
+                return f'({self.getLanguageName()}) {self.getWord()} ({self.getTransliteration()}) — {self.getDefinition()}. Example: {self.getForeignExample()} {self.getEnglishExample()}'
             else:
-                return f'({self.getLanguage()}) {self.getWord()} — {self.getDefinition()}. Example: {self.getForeignExample()} {self.getEnglishExample()}'
+                return f'({self.getLanguageName()}) {self.getWord()} — {self.getDefinition()}. Example: {self.getForeignExample()} {self.getEnglishExample()}'
         elif self.hasTransliteration():
-            return f'({self.getLanguage()}) {self.getWord()} ({self.getTransliteration()}) — {self.getDefinition()}'
+            return f'({self.getLanguageName()}) {self.getWord()} ({self.getTransliteration()}) — {self.getDefinition()}'
         else:
-            return f'({self.getLanguage()}) {self.getWord()} — {self.getDefinition()}'
+            return f'({self.getLanguageName()}) {self.getWord()} — {self.getDefinition()}'
 
 
 class WordOfTheDayRepository():
