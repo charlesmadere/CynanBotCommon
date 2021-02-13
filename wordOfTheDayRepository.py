@@ -10,20 +10,24 @@ from CynanBotCommon.timedDict import TimedDict
 
 class LanguageEntry():
 
-    def __init__(self, apiName: str, commandName: str):
-        if not utils.isValidStr(apiName):
+    def __init__(
+        self,
+        commandNames: List[str],
+        apiName: str
+    ):
+        if not utils.hasItems(commandNames):
+            raise ValueError(f'commandNames argument is malformed: \"{commandNames}\"')
+        elif not utils.isValidStr(apiName):
             raise ValueError(f'apiName argument is malformed: \"{apiName}\"')
-        elif not utils.isValidStr(commandName):
-            raise ValueError(f'commandName argument is malformed: \"{commandName}\"')
 
+        self.__commandNames = commandNames
         self.__apiName = apiName
-        self.__commandName = commandName
 
     def getApiName(self) -> str:
         return self.__apiName
 
-    def getCommandName(self) -> str:
-        return self.__commandName
+    def getCommandNames(self) -> List[str]:
+        return self.__commandNames
 
 
 class LanguageList():
@@ -42,8 +46,9 @@ class LanguageList():
             raise ValueError(f'command argument is malformed: \"{command}\"')
 
         for entry in self.__entries:
-            if command.lower() == entry.getCommandName().lower():
-                return entry
+            for commandName in entry.getCommandNames():
+                if commandName.lower() == command.lower():
+                    return entry
 
         raise RuntimeError(f'Unable to find language for \"{command}\"')
 
@@ -154,21 +159,81 @@ class WordOfTheDayRepository():
 
     def __createLanguageList(self) -> LanguageList:
         entries = list()
-        entries.append(LanguageEntry(apiName='de', commandName='de'))
-        entries.append(LanguageEntry(apiName='en-es', commandName='en-es'))
-        entries.append(LanguageEntry(apiName='en-pt', commandName='en-pt'))
-        entries.append(LanguageEntry(apiName='es', commandName='es'))
-        entries.append(LanguageEntry(apiName='fr', commandName='fr'))
-        entries.append(LanguageEntry(apiName='it', commandName='it'))
-        entries.append(LanguageEntry(apiName='ja', commandName='ja'))
-        entries.append(LanguageEntry(apiName='korean', commandName='ko'))
-        entries.append(LanguageEntry(apiName='nl', commandName='nl'))
-        entries.append(LanguageEntry(apiName='norwegian', commandName='no'))
-        entries.append(LanguageEntry(apiName='polish', commandName='po'))
-        entries.append(LanguageEntry(apiName='pt', commandName='pt'))
-        entries.append(LanguageEntry(apiName='ru', commandName='ru'))
-        entries.append(LanguageEntry(apiName='swedish', commandName='sv'))
-        entries.append(LanguageEntry(apiName='zh', commandName='zh'))
+
+        entries.append(LanguageEntry(
+            apiName = 'de',
+            commandNames = [ 'de', 'german', 'germany' ]
+        ))
+
+        entries.append(LanguageEntry(
+            apiName = 'en-es',
+            commandNames = [ 'en-es' ]
+        ))
+
+        entries.append(LanguageEntry(
+            apiName = 'en-pt',
+            commandNames = [ 'en-pt' ]
+        ))
+
+        entries.append(LanguageEntry(
+            apiName = 'es',
+            commandNames = [ 'es', 'spanish' ]
+        ))
+
+        entries.append(LanguageEntry(
+            apiName = 'fr',
+            commandNames = [ 'fr', 'french', 'france' ]
+        ))
+
+        entries.append(LanguageEntry(
+            apiName = 'it',
+            commandNames = [ 'it', 'italian', 'italy' ]
+        ))
+
+        entries.append(LanguageEntry(
+            apiName = 'ja',
+            commandNames = [ 'ja', 'japanese', 'jp', 'japan' ]
+        ))
+
+        entries.append(LanguageEntry(
+            apiName = 'korean',
+            commandNames = [ 'ko', 'korean', 'korea' ]
+        ))
+
+        entries.append(LanguageEntry(
+            apiName = 'nl',
+            commandNames = [ 'nl', 'dutch' ]
+        ))
+
+        entries.append(LanguageEntry(
+            apiName = 'norwegian',
+            commandNames = [ 'no', 'norwegian' ]
+        ))
+
+        entries.append(LanguageEntry(
+            apiName = 'polish',
+            commandNames = [ 'po', 'polish', 'poland' ]
+        ))
+
+        entries.append(LanguageEntry(
+            apiName = 'pt',
+            commandNames = [ 'pt', 'portuguese' ]
+        ))
+
+        entries.append(LanguageEntry(
+            apiName = 'ru',
+            commandNames = [ 'ru', 'russian', 'russia' ]
+        ))
+
+        entries.append(LanguageEntry(
+            apiName = 'swedish',
+            commandNames = [ 'sv', 'swedish', 'sw', 'sweden' ]
+        ))
+
+        entries.append(LanguageEntry(
+            apiName = 'zh',
+            commandNames = [ 'zh', 'chinese', 'china' ]
+        ))
 
         return LanguageList(entries = entries)
 
