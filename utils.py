@@ -27,6 +27,26 @@ def formatTimeShort(time, includeSeconds: bool = False) -> str:
     else:
         return time.strftime("%b %d %I:%M%p")
 
+def getBoolFromDict(d: dict, key: str, fallback: bool = None) -> bool:
+    if d is None:
+        raise ValueError(f'd argument is malformed: \"{d}\"')
+    elif not isValidStr(key):
+        raise ValueError(f'key argument is malformed: \"{key}\"')
+
+    value = None
+
+    if key in d and d[key] is not None:
+        value = d[key]
+    elif fallback is not None:
+        value = fallback
+    else:
+        raise KeyError(f'there is no fallback and key \"{key}\" doesn\'t exist in d: \"{d}\"')
+
+    if not isinstance(value, bool):
+        value = bool(value)
+
+    return value
+
 def getCleanedSplits(s: str) -> List[str]:
     splits = list()
 
