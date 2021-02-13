@@ -163,25 +163,21 @@ class AnalogueStoreRepository():
         print(f'Refreshing Analogue store stock... ({utils.getNowTimeText()})')
 
         rawResponse = None
-
         try:
             rawResponse = requests.get(url = self.__storeUrl, timeout = utils.getDefaultTimeout())
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, Timeout) as e:
             print(f'Exception occurred when attempting to fetch Analogue store stock: {e}')
-
-        if rawResponse is None:
-            print(f'rawResponse is malformed: {rawResponse}')
-            return None
+            raise RuntimeError(f'Exception occurred when attempting to fetch Analogue store stock: {e}')
 
         htmlTree = html.fromstring(rawResponse.content)
         if htmlTree is None:
-            print(f'htmlTree is malformed: {htmlTree}')
-            return None
+            print(f'Analogue store\'s htmlTree is malformed: \"{htmlTree}\"')
+            raise RuntimeError(f'Analogue store\'s htmlTree is malformed: \"{htmlTree}\"')
 
         productTrees = htmlTree.find_class('store_product-header__1rLY-')
         if not utils.hasItems(productTrees):
-            print(f'productTrees is malformed: {productTrees}')
-            return None
+            print(f'Analogue store\'s productTrees list is malformed: \"{productTrees}\"')
+            raise RuntimeError(f'Analogue store\'s productTrees list is malformed: \"{productTrees}\"')
 
         products = list()
 
