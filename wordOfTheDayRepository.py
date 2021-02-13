@@ -3,6 +3,8 @@ from typing import List
 
 import requests
 import xmltodict
+from requests import ConnectionError, HTTPError, Timeout
+from urllib3.exceptions import MaxRetryError, NewConnectionError
 
 import CynanBotCommon.utils as utils
 from CynanBotCommon.timedDict import TimedDict
@@ -85,7 +87,7 @@ class Wotd():
         definition: str,
         englishExample: str,
         foreignExample: str,
-        language: str,
+        languageName: str,
         transliteration: str,
         word: str
     ):
@@ -93,8 +95,8 @@ class Wotd():
             raise ValueError(f'languageEntry argument is malformed: \"{languageEntry}\"')
         elif not utils.isValidStr(definition):
             raise ValueError(f'definition argument is malformed: \"{definition}\"')
-        elif not utils.isValidStr(language):
-            raise ValueError(f'language argument is malformed: \"{language}\"')
+        elif not utils.isValidStr(languageName):
+            raise ValueError(f'languageName argument is malformed: \"{languageName}\"')
         elif not utils.isValidStr(word):
             raise ValueError(f'word argument is malformed: \"{word}\"')
 
@@ -102,7 +104,7 @@ class Wotd():
         self.__definition = definition
         self.__englishExample = englishExample
         self.__foreignExample = foreignExample
-        self.__language = language
+        self.__languageName = languageName
         self.__transliteration = transliteration
         self.__word = word
 
@@ -115,8 +117,8 @@ class Wotd():
     def getForeignExample(self) -> str:
         return self.__foreignExample
 
-    def getLanguage(self) -> str:
-        return self.__language
+    def getLanguageName(self) -> str:
+        return self.__languageName
 
     def getLanguageEntry(self) -> LanguageEntry:
         return self.__languageEntry
@@ -237,7 +239,20 @@ class WordOfTheDayRepository():
 
         return LanguageList(entries = entries)
 
-    def fetchWotd(self, languageEntry) -> Wotd:
+    def fetchWotd(self, languageEntry: LanguageEntry) -> Wotd:
+        if languageEntry is None:
+            raise ValueError(f'languageEntry argument is malformed: \"{languageEntry}\"')
+
+        cacheValue = self.__cache[languageEntry]
+        if cacheValue is not None:
+            return cacheValue
+
+        wotd = self.__fetchWotd(languageEntry)
+        self.__cache[languageEntry] = wotd
+
+        return wotd
+
+    def __fetchWotd(self, languageEntry: LanguageEntry) -> Wotd:
         if languageEntry is None:
             raise ValueError(f'languageEntry argument is malformed: \"{languageEntry}\"')
 
@@ -246,54 +261,44 @@ class WordOfTheDayRepository():
         if cacheValue is not None:
             return cacheValue
 
-        print(f'Refreshing \"{languageEntry.getCommandName()}\" word of the day... ({utils.getNowTimeText()})')
+        print(f'Refreshing Word Of The Day for \"{languageEntry.getApiName()}\"... ({utils.getNowTimeText()})')
 
         ##############################################################################
         # retrieve word of the day from https://www.transparent.com/word-of-the-day/ #
         ##############################################################################
 
-        rawResponse = requests.get(
-            url = f'https://wotd.transparent.com/rss/{languageEntry.getApiName()}-widget.xml?t=0',
-            timeout = utils.getDefaultTimeout()
-        )
-
-        xmlTree = xmltodict.parse(rawResponse.content)['xml']['words']
-
-        if xmlTree is None:
-            print(f'xmlTree for \"{languageEntry.getCommandName()}\" is malformed: \"{xmlTree}\"')
-            return None
-        elif len(xmlTree) == 0:
-            print(f'xmlTree for \"{languageEntry.getCommandName()}\" is empty: \"{xmlTree}\"')
-            return None
-
-        word = xmlTree.get('word')
-        definition = xmlTree.get('translation')
-        englishExample = xmlTree.get('enphrase')
-        foreignExample = xmlTree.get('fnphrase')
-        language = xmlTree.get('langname')
-        transliteration = xmlTree.get('wotd:transliteratedWord')
-
-        wotd = None
-
+        rawResponse = None
         try:
-            wotd = Wotd(
-                languageEntry = languageEntry,
-                word = word,
-                definition = definition,
-                englishExample = englishExample,
-                language = language,
-                foreignExample = foreignExample,
-                transliteration = transliteration
+            rawResponse = requests.get(
+                url = f'https://wotd.transparent.com/rss/{languageEntry.getApiName()}-widget.xml?t=0',
+                timeout = utils.getDefaultTimeout()
             )
-        except ValueError:
-            print(f'Word Of The Day for \"{languageEntry.getCommandName()}\" has a data error')
+        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, Timeout) as e:
+            print(f'Exception occurred when attempting to fetch Word Of The Day for \"{languageEntry.getApiName()}\": {e}')
+            raise RuntimeError(f'Exception occurred when attempting to fetch Word Of The Day for \"{languageEntry.getApiName()}\": {e}')
 
-        if wotd is None:
-            del self.__cache[languageEntry]
-        else:
-            self.__cache[languageEntry] = wotd
+        xmlTree = xmltodict.parse(rawResponse.content)
+        if not utils.hasItems(xmlTree):
+            print(f'xmlTree for \"{languageEntry.getApiName()}\" is malformed: \"{xmlTree}\"')
+            raise RuntimeError(f'xmlTree for \"{languageEntry.getApiName()}\" is malformed: \"{xmlTree}\"')
 
-        return wotd
+        wordsTree = xmlTree['xml']['words']
+        word = wordsTree['word']
+        definition = wordsTree['translation']
+        englishExample = wordsTree.get('enphrase')
+        foreignExample = wordsTree.get('fnphrase')
+        languageName = wordsTree['langname']
+        transliteration = wordsTree.get('wotd:transliteratedWord')
+
+        return Wotd(
+            languageEntry = languageEntry,
+            word = word,
+            definition = definition,
+            englishExample = englishExample,
+            languageName = languageName,
+            foreignExample = foreignExample,
+            transliteration = transliteration
+        )
 
     def getLanguageList(self) -> LanguageList:
         return self.__languageList

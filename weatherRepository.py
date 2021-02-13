@@ -1,5 +1,6 @@
 import locale
 from datetime import timedelta
+from json.decoder import JSONDecodeError
 from typing import List
 
 import requests
@@ -235,9 +236,6 @@ class WeatherRepository():
         if location is None:
             raise ValueError(f'location argument is malformed: \"{location}\"')
 
-        if not utils.isValidStr(self.__iqAirApiKey):
-            return None
-
         # Retrieve air quality from: https://api-docs.iqair.com/
         # Doing this requires an API key, which you can get here:
         # https://www.iqair.com/us/commercial/air-quality-monitors/airvisual-platform/api
@@ -246,17 +244,18 @@ class WeatherRepository():
             self.__iqAirApiKey, location.getLatitude(), location.getLongitude())
 
         rawResponse = None
-
         try:
             rawResponse = requests.get(url = requestUrl, timeout = utils.getDefaultTimeout())
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, Timeout) as e:
-            print(f'Exception occurred when attempting to fetch air quality from IQAir: {e}')
+            print(f'Exception occurred when attempting to fetch air quality from IQAir for \"{location.getId()}\": {e}')
+            raise RuntimeError(f'Exception occurred when attempting to fetch air quality from IQAir for \"{location.getId()}\": {e}')
 
-        if rawResponse is None:
-            print(f'rawResponse is malformed: \"{rawResponse}\"')
-            return None
-
-        jsonResponse = rawResponse.json()
+        jsonResponse = None
+        try:
+            jsonResponse = rawResponse.json()
+        except JSONDecodeError as e:
+            print(f'Exception occurred when attempting to decode IQAir\'s response into JSON for \"{location.getId()}\": {e}')
+            raise RuntimeError(f'Exception occurred when attempting to decode IQAir\'s response into JSON for \"{location.getId()}\": {e}')
 
         if jsonResponse.get('status') != 'success':
             return None
@@ -267,6 +266,19 @@ class WeatherRepository():
         )
 
     def fetchWeather(self, location: Location) -> WeatherReport:
+        if location is None:
+            raise ValueError(f'location argument is malformed: \"{location}\"')
+
+        cacheValue = self.__cache[location.getId()]
+        if cacheValue is not None:
+            return cacheValue
+
+        weatherReport = self.__fetchWeather(location)
+        self.__cache[location.getId()] = weatherReport
+
+        return weatherReport
+
+    def __fetchWeather(self, location: Location) -> WeatherReport:
         if location is None:
             raise ValueError(f'location argument is malformed: \"{location}\"')
 
@@ -285,18 +297,18 @@ class WeatherRepository():
             self.__oneWeatherApiKey, location.getLatitude(), location.getLongitude())
 
         rawResponse = None
-
         try:
             rawResponse = requests.get(url = requestUrl, timeout = utils.getDefaultTimeout())
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, Timeout) as e:
-            print(f'Exception occurred when attempting to fetch weather conditions from Open Weather: {e}')
-
-        if rawResponse is None:
-            print(f'rawResponse is malformed: \"{rawResponse}\"')
-            del self.__cache[location.getId()]
-            return None
-
-        jsonResponse = rawResponse.json()
+            print(f'Exception occurred when attempting to fetch weather conditions from Open Weather for \"{location.getId()}\": {e}')
+            raise RuntimeError(f'Exception occurred when attempting to fetch weather conditions from Open Weather for \"{location.getId()}\": {e}')
+ 
+        jsonResponse = None
+        try:
+            jsonResponse = rawResponse.json()
+        except JSONDecodeError as e:
+            print(f'Exception occurred when attempting to decode Open Weather\'s response into JSON for \"{location.getId()}\": {e}')
+            raise RuntimeError(f'Exception occurred when attempting to decode Open Weather\'s response into JSON for \"{location.getId()}\": {e}')
 
         currentJson = jsonResponse['current']
         humidity = currentJson['humidity']
@@ -329,30 +341,21 @@ class WeatherRepository():
             for conditionJson in tomorrowsJson['weather']:
                 tomorrowsConditions.append(conditionJson['description'])
 
-        airQuality = self.__fetchAirQuality(location)
-        weatherReport = None
+        airQuality = None
+        if utils.isValidStr(self.__iqAirApiKey):
+            airQuality = self.__fetchAirQuality(location)
 
-        try:
-            weatherReport = WeatherReport(
-                airQuality = airQuality,
-                humidity = int(round(humidity)),
-                pressure = int(round(pressure)),
-                temperature = temperature,
-                tomorrowsHighTemperature = tomorrowsHighTemperature,
-                tomorrowsLowTemperature = tomorrowsLowTemperature,
-                alerts = alerts,
-                conditions = conditions,
-                tomorrowsConditions = tomorrowsConditions
-            )
-        except ValueError:
-            print(f'Weather Report for \"{location.getId()}\" has a data error')
-
-        if weatherReport is None:
-            del self.__cache[location.getId()]
-        else:
-            self.__cache[location.getId()] = weatherReport
-
-        return weatherReport
+        return WeatherReport(
+            airQuality = airQuality,
+            humidity = int(round(humidity)),
+            pressure = int(round(pressure)),
+            temperature = temperature,
+            tomorrowsHighTemperature = tomorrowsHighTemperature,
+            tomorrowsLowTemperature = tomorrowsLowTemperature,
+            alerts = alerts,
+            conditions = conditions,
+            tomorrowsConditions = tomorrowsConditions
+        )
 
     def __prettifyCondition(self, conditionJson: dict) -> str:
         conditionIcon = ''
