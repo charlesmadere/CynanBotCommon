@@ -93,7 +93,7 @@ class AnalogueStoreStock():
         return self.__products
 
     def hasProducts(self) -> bool:
-        return len(self.__products) >= 1
+        return utils.hasItems(self.__products)
 
     def toStr(self, includePrices: bool = False, inStockProductsOnly: bool = True, delimiter: str = ', ') -> str:
         if includePrices is None:
@@ -121,7 +121,7 @@ class AnalogueStoreStock():
                     includeStockInfo = True
                 ))
 
-        if inStockProductsOnly and len(productStrings) == 0:
+        if inStockProductsOnly and not utils.hasItems(productStrings):
             return '🍃 Analogue store has nothing in stock'
 
         productsString = delimiter.join(productStrings)
