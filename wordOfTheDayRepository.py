@@ -31,6 +31,9 @@ class LanguageEntry():
     def getCommandNames(self) -> List[str]:
         return self.__commandNames
 
+    def getPrimaryCommandName(self) -> str:
+        return self.__commandNames[0]
+
 
 class LanguageList():
 
@@ -66,14 +69,14 @@ class LanguageList():
         apiNames.sort()
         return delimiter.join(apiNames)
 
-    def toCommandNameStr(self, delimiter: str = ', ') -> str:
+    def toCommandNamesStr(self, delimiter: str = ', ') -> str:
         if delimiter is None:
             raise ValueError(f'delimiter argument is malformed: \"{delimiter}\"')
 
         commandNames = list()
 
         for entry in self.__entries:
-            commandNames.append(entry.getCommandName())
+            commandNames.append(entry.getPrimaryCommandName())
 
         commandNames.sort()
         return delimiter.join(commandNames)
