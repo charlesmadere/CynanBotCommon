@@ -61,8 +61,7 @@ class LanguageList():
         if delimiter is None:
             raise ValueError(f'delimiter argument is malformed: \"{delimiter}\"')
 
-        apiNames = list()
-
+        apiNames = list[str]()
         for entry in self.__entries:
             apiNames.append(entry.getApiName())
 
@@ -73,8 +72,7 @@ class LanguageList():
         if delimiter is None:
             raise ValueError(f'delimiter argument is malformed: \"{delimiter}\"')
 
-        commandNames = list()
-
+        commandNames = list[str]()
         for entry in self.__entries:
             commandNames.append(entry.getPrimaryCommandName())
 
