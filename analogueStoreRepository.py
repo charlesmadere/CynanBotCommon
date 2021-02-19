@@ -106,7 +106,7 @@ class AnalogueStoreStock():
         if not self.hasProducts():
             return '🍃 Analogue store is empty'
 
-        productStrings = list[str]()
+        productStrings = list()
         for product in self.__products:
             if inStockProductsOnly:
                 if product.inStock():
