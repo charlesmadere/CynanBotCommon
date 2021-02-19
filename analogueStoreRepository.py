@@ -178,7 +178,7 @@ class AnalogueStoreRepository():
             print(f'Analogue store\'s productTrees list is malformed: \"{productTrees}\"')
             raise RuntimeError(f'Analogue store\'s productTrees list is malformed: \"{productTrees}\"')
 
-        products = list[AnalogueStoreEntry]()
+        products = list()
 
         for productTree in productTrees:
             productTrees = productTree.find_class('store_title__3eCzb')
