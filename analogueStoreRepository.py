@@ -19,6 +19,28 @@ class AnalogueProductType(Enum):
     POCKET = auto()
     SUPER_NT = auto()
 
+    @classmethod
+    def fromStr(cls, text: str):
+        if not utils.isValidStr(text):
+            return cls.OTHER
+
+        text = text.lower()
+
+        if 'dac' in text or 'dac' == text:
+            return cls.DAC
+        elif 'duo' in text or 'duo' == text:
+            return cls.DUO
+        elif 'mega sg -' in text or 'mega sg' == text:
+            return cls.MEGA_SG
+        elif 'nt mini' in text or 'nt mini' == text:
+            return cls.NT_MINI
+        elif 'pocket -' in text or 'pocket' == text:
+            return cls.POCKET
+        elif 'super nt -' in text or 'super nt' == text:
+            return cls.SUPER_NT
+        else:
+            return cls.OTHER
+
 
 class AnalogueStoreEntry():
 
@@ -158,7 +180,7 @@ class AnalogueStoreRepository():
     def getStoreUrl(self) -> str:
         return self.__storeUrl
 
-    def __refreshStoreStock(self):
+    def __refreshStoreStock(self) -> AnalogueStoreStock:
         print(f'Refreshing Analogue store stock... ({utils.getNowTimeText()})')
 
         rawResponse = None
@@ -171,12 +193,12 @@ class AnalogueStoreRepository():
         htmlTree = html.fromstring(rawResponse.content)
         if htmlTree is None:
             print(f'Analogue store\'s htmlTree is malformed: \"{htmlTree}\"')
-            raise RuntimeError(f'Analogue store\'s htmlTree is malformed: \"{htmlTree}\"')
+            raise ValueError(f'Analogue store\'s htmlTree is malformed: \"{htmlTree}\"')
 
         productTrees = htmlTree.find_class('store_product-header__1rLY-')
         if not utils.hasItems(productTrees):
             print(f'Analogue store\'s productTrees list is malformed: \"{productTrees}\"')
-            raise RuntimeError(f'Analogue store\'s productTrees list is malformed: \"{productTrees}\"')
+            raise ValueError(f'Analogue store\'s productTrees list is malformed: \"{productTrees}\"')
 
         products = list()
 
@@ -205,19 +227,7 @@ class AnalogueStoreRepository():
             if name[len(name) - 1] == '1':
                 name = name[0:len(name) - 1]
 
-            productType = AnalogueProductType.OTHER
-            if 'dac' in name.lower():
-                productType = AnalogueProductType.DAC
-            elif 'duo' in name.lower():
-                productType = AnalogueProductType.DUO
-            elif 'mega sg -' in name.lower():
-                productType = AnalogueProductType.MEGA_SG
-            elif 'nt mini' in name.lower():
-                productType = AnalogueProductType.NT_MINI
-            elif 'pocket -' in name.lower():
-                productType = AnalogueProductType.POCKET
-            elif 'super nt -' in name.lower():
-                productType = AnalogueProductType.SUPER_NT
+            productType = AnalogueProductType.fromStr(name)
 
             inStock = True
             outOfStockElement = productTree.find_class('button_Disabled__2CEbR')

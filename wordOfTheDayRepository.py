@@ -280,8 +280,8 @@ class WordOfTheDayRepository():
 
         xmlTree = xmltodict.parse(rawResponse.content)
         if not utils.hasItems(xmlTree):
-            print(f'xmlTree for \"{languageEntry.getApiName()}\" is malformed: \"{xmlTree}\"')
-            raise RuntimeError(f'xmlTree for \"{languageEntry.getApiName()}\" is malformed: \"{xmlTree}\"')
+            print(f'xmlTree for \"{languageEntry.getApiName()}\" is malformed: {xmlTree}')
+            raise RuntimeError(f'xmlTree for \"{languageEntry.getApiName()}\" is malformed: {xmlTree}')
 
         wordsTree = xmlTree['xml']['words']
         word = wordsTree['word']

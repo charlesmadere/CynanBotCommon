@@ -35,7 +35,7 @@ class TimeZoneRepository():
             if newTimeZone is not None:
                 newTimeZones.append(newTimeZone)
 
-        if len(newTimeZones) == 0:
-            return None
-        else:
+        if utils.hasItems(newTimeZones):
             return newTimeZones
+        else:
+            return None

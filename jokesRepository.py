@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from json.decoder import JSONDecodeError
 
 import requests
 from requests import ConnectionError, HTTPError, Timeout
@@ -55,20 +56,21 @@ class JokesRepository():
             rawResponse = requests.get(url = self.__apiUrl, timeout = utils.getDefaultTimeout())
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, Timeout) as e:
             print(f'Exception occurred when attempting to fetch new joke: {e}')
+            raise RuntimeError(f'Exception occurred when attempting to fetch new joke: {e}')
 
-        if rawResponse is None:
-            print(f'rawResponse is malformed: \"{rawResponse}\"')
-            return None
+        jsonResponse = None
+        try:
+            jsonResponse = rawResponse.json()
+        except JSONDecodeError as e:
+            print(f'Exception occurred when attempting to decode joke\'s response into JSON: {e}')
+            raise RuntimeError(f'Exception occurred when attempting to decode joke\'s response into JSON: {e}')
 
-        jsonResponse = rawResponse.json()
-
-        if jsonResponse['error']:
-            print(f'Rejecting joke due to bad \"error\" value: \"{jsonResponse}\"')
-            return None
-
-        if not jsonResponse['safe']:
-            print(f'Rejecting joke due to bad \"safe\" value: \"{jsonResponse}\"')
-            return None
+        if utils.getBoolFromDict(jsonResponse, 'error', True):
+            print(f'Rejecting joke due to bad \"error\" value: {jsonResponse}')
+            raise ValueError(f'Rejecting joke due to bad \"error\" value: {jsonResponse}')
+        elif utils.getBoolFromDict(jsonResponse, 'safe', False):
+            print(f'Rejecting joke due to bad \"safe\" value: {jsonResponse}')
+            raise ValueError(f'Rejecting joke due to bad \"safe\" value: {jsonResponse}')
 
         flagsJson = jsonResponse['flags']
         isExplicit = flagsJson['explicit']
@@ -80,7 +82,7 @@ class JokesRepository():
 
         if isExplicit or isNsfw or isPolitical or isRacist or isReligious or isSexist:
             print(f'Rejecting joke due to one or more bad flags: {jsonResponse}')
-            return None
+            raise ValueError(f'Rejecting joke due to one or more bad flags: {jsonResponse}')
 
         jokeText = None
 
@@ -91,14 +93,9 @@ class JokesRepository():
         elif jsonResponse['type'] == 'single':
             jokeText = utils.cleanStr(jsonResponse['joke'])
         else:
-            print(f'Rejecting joke due to unknown type: {jsonResponse}')
-            return None
+            print(f'Rejecting joke due to unknown \"type\": {jsonResponse}')
+            raise ValueError(f'Rejecting joke due to unknown \"type\": {jsonResponse}')
 
-        jokeResponse = None
-
-        try:
-            jokeResponse = JokeResponse(text = jokeText)
-        except ValueError:
-            print(f'Joke has a data error: \"{jsonResponse}\"')
-
-        return jokeResponse
+        return JokeResponse(
+            text = jokeText
+        )

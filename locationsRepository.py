@@ -1,5 +1,6 @@
 import json
 from os import path
+from typing import Dict
 
 import CynanBotCommon.utils as utils
 from CynanBotCommon.location import Location
@@ -22,13 +23,34 @@ class LocationsRepository():
         self.__locationsFile = locationsFile
         self.__timeZoneRepository = timeZoneRepository
 
-    def getLocation(self, id_: str) -> Location:
-        if not utils.isValidStr(id_):
-            raise ValueError(f'id_ argument is malformed: \"{id_}\"')
+    def getLocation(self, locationId: str) -> Location:
+        if not utils.isValidStr(locationId):
+            raise ValueError(f'locationId argument is malformed: \"{locationId}\"')
 
-        if id_.lower() in self.__locationsCache:
-            return self.__locationsCache[id_.lower()]
+        if locationId.lower() in self.__locationsCache:
+            return self.__locationsCache[locationId.lower()]
 
+        jsonContents = self.__readJson()
+
+        for locationId in jsonContents:
+            if locationId.lower() == locationId.lower():
+                timeZoneStr = jsonContents[locationId]['timeZone']
+                timeZone = self.__timeZoneRepository.getTimeZone(timeZoneStr)
+
+                location = Location(
+                    latitude = jsonContents[locationId]['lat'],
+                    longitude = jsonContents[locationId]['lon'],
+                    locationId = locationId,
+                    name = jsonContents[locationId]['name'],
+                    timeZone = timeZone
+                )
+
+                self.__locationsCache[locationId.lower()] = location
+                return location
+
+        raise RuntimeError(f'Unable to find location with ID \"{locationId}\" in locations file: \"{self.__locationsFile}\"')
+
+    def __readJson(self) -> Dict:
         if not path.exists(self.__locationsFile):
             raise FileNotFoundError(f'Locations file not found: \"{self.__locationsFile}\"')
 
@@ -40,20 +62,4 @@ class LocationsRepository():
         elif len(jsonContents) == 0:
             raise ValueError(f'JSON contents of locations file \"{self.__locationsFile}\" is empty')
 
-        for locationId in jsonContents:
-            if id_.lower() == locationId.lower():
-                timeZoneStr = jsonContents[locationId]['timeZone']
-                timeZone = self.__timeZoneRepository.getTimeZone(timeZoneStr)
-
-                location = Location(
-                    lat = jsonContents[locationId]['lat'],
-                    lon = jsonContents[locationId]['lon'],
-                    id_ = locationId,
-                    name = jsonContents[locationId]['name'],
-                    timeZone = timeZone
-                )
-
-                self.__locationsCache[id_.lower()] = location
-                return location
-
-        raise RuntimeError(f'Unable to find location with ID \"{id_}\" in locations file: \"{self.__locationsFile}\"')
+        return jsonContents

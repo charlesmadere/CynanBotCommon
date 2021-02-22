@@ -103,18 +103,19 @@ class WeatherRepository():
         try:
             rawResponse = requests.get(url = requestUrl, timeout = utils.getDefaultTimeout())
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, Timeout) as e:
-            print(f'Exception occurred when attempting to fetch air quality from IQAir for \"{location.getId()}\": {e}')
-            raise RuntimeError(f'Exception occurred when attempting to fetch air quality from IQAir for \"{location.getId()}\": {e}')
+            print(f'Exception occurred when attempting to fetch air quality from IQAir for \"{location.getLocationId()}\": {e}')
+            raise RuntimeError(f'Exception occurred when attempting to fetch air quality from IQAir for \"{location.getLocationId()}\": {e}')
 
         jsonResponse = None
         try:
             jsonResponse = rawResponse.json()
         except JSONDecodeError as e:
-            print(f'Exception occurred when attempting to decode IQAir\'s response into JSON for \"{location.getId()}\": {e}')
-            raise RuntimeError(f'Exception occurred when attempting to decode IQAir\'s response into JSON for \"{location.getId()}\": {e}')
+            print(f'Exception occurred when attempting to decode IQAir\'s response into JSON for \"{location.getLocationId()}\": {e}')
+            raise RuntimeError(f'Exception occurred when attempting to decode IQAir\'s response into JSON for \"{location.getLocationId()}\": {e}')
 
         if jsonResponse.get('status') != 'success':
-            return None
+            print(f'IQAir\'s response \"status\" was not \"success\": {jsonResponse}')
+            raise ValueError(f'IQAir\'s response \"status\" was not \"success\": {jsonResponse}')
 
         return utils.getIntFromDict(
             d = jsonResponse['data']['current']['pollution'],
@@ -125,12 +126,12 @@ class WeatherRepository():
         if location is None:
             raise ValueError(f'location argument is malformed: \"{location}\"')
 
-        cacheValue = self.__cache[location.getId()]
+        cacheValue = self.__cache[location.getLocationId()]
         if cacheValue is not None:
             return cacheValue
 
         weatherReport = self.__fetchWeather(location)
-        self.__cache[location.getId()] = weatherReport
+        self.__cache[location.getLocationId()] = weatherReport
 
         return weatherReport
 
@@ -138,12 +139,12 @@ class WeatherRepository():
         if location is None:
             raise ValueError(f'location argument is malformed: \"{location}\"')
 
-        cacheValue = self.__cache[location.getId()]
+        cacheValue = self.__cache[location.getLocationId()]
 
         if cacheValue is not None:
             return cacheValue
 
-        print(f'Refreshing weather for \"{location.getId()}\"... ({utils.getNowTimeText()})')
+        print(f'Refreshing weather for \"{location.getLocationId()}\"... ({utils.getNowTimeText()})')
 
         # Retrieve weather report from https://openweathermap.org/api/one-call-api
         # Doing this requires an API key, which you can get here:
@@ -156,15 +157,15 @@ class WeatherRepository():
         try:
             rawResponse = requests.get(url = requestUrl, timeout = utils.getDefaultTimeout())
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, Timeout) as e:
-            print(f'Exception occurred when attempting to fetch weather conditions from Open Weather for \"{location.getId()}\": {e}')
-            raise RuntimeError(f'Exception occurred when attempting to fetch weather conditions from Open Weather for \"{location.getId()}\": {e}')
+            print(f'Exception occurred when attempting to fetch weather conditions from Open Weather for \"{location.getLocationId()}\": {e}')
+            raise RuntimeError(f'Exception occurred when attempting to fetch weather conditions from Open Weather for \"{location.getLocationId()}\": {e}')
  
         jsonResponse = None
         try:
             jsonResponse = rawResponse.json()
         except JSONDecodeError as e:
-            print(f'Exception occurred when attempting to decode Open Weather\'s response into JSON for \"{location.getId()}\": {e}')
-            raise RuntimeError(f'Exception occurred when attempting to decode Open Weather\'s response into JSON for \"{location.getId()}\": {e}')
+            print(f'Exception occurred when attempting to decode Open Weather\'s response into JSON for \"{location.getLocationId()}\": {e}')
+            raise RuntimeError(f'Exception occurred when attempting to decode Open Weather\'s response into JSON for \"{location.getLocationId()}\": {e}')
 
         currentJson = jsonResponse['current']
         humidity = currentJson['humidity']
