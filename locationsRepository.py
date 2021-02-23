@@ -14,14 +14,15 @@ class LocationsRepository():
         timeZoneRepository: TimeZoneRepository,
         locationsFile: str = 'CynanBotCommon/locationsRepository.json'
     ):
-        if not utils.isValidStr(locationsFile):
-            raise ValueError(f'locationsFile argument is malformed: \"{locationsFile}\"')
-        elif timeZoneRepository is None:
+        if timeZoneRepository is None:
             raise ValueError(f'timeZoneRepository argument is malformed: \"{timeZoneRepository}\"')
+        elif not utils.isValidStr(locationsFile):
+            raise ValueError(f'locationsFile argument is malformed: \"{locationsFile}\"')
+
+        self.__timeZoneRepository = timeZoneRepository
+        self.__locationsFile = locationsFile
 
         self.__locationsCache = dict()
-        self.__locationsFile = locationsFile
-        self.__timeZoneRepository = timeZoneRepository
 
     def getLocation(self, locationId: str) -> Location:
         if not utils.isValidStr(locationId):
