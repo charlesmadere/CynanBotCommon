@@ -103,7 +103,7 @@ class TwitchTokensRepository():
                     'client_id': twitchClientId,
                     'client_secret': twitchClientSecret,
                     'grant_type': 'refresh_token',
-                    'refresh_token': self.getRefreshToken()
+                    'refresh_token': self.getRefreshToken(twitchHandle)
                 },
                 timeout = utils.getDefaultTimeout()
             )
@@ -154,7 +154,7 @@ class TwitchTokensRepository():
             rawResponse = requests.get(
                 url = self.__oauth2ValidateUrl,
                 params = {
-                    'Authorization': f'OAuth {self.getAccessToken()}'
+                    'Authorization': f'OAuth {self.getAccessToken(twitchHandle)}'
                 },
                 timeout = utils.getDefaultTimeout()
             )
