@@ -103,7 +103,7 @@ def getNowTimeText(includeSeconds: bool = False) -> str:
         raise ValueError(f'includeSeconds argument is malformed: \"{includeSeconds}\"')
 
     return formatTimeShort(
-        time = datetime.utcnow(),
+        time = datetime.now(),
         includeSeconds = includeSeconds
     )
 
