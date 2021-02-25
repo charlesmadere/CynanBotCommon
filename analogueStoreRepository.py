@@ -166,14 +166,14 @@ class AnalogueStoreRepository():
             raise ValueError(f'cacheTimeDelta argument is malformed: \"{cacheTimeDelta}\"')
 
         self.__storeUrl = storeUrl
-        self.__cacheTime = datetime.now() - cacheTimeDelta
+        self.__cacheTime = datetime.utcnow() - cacheTimeDelta
         self.__cacheTimeDelta = cacheTimeDelta
         self.__storeStock = None
 
     def fetchStoreStock(self) -> AnalogueStoreStock:
-        if self.__cacheTime + self.__cacheTimeDelta < datetime.now() or self.__storeStock is None:
+        if self.__cacheTime + self.__cacheTimeDelta < datetime.utcnow() or self.__storeStock is None:
             self.__storeStock = self.__refreshStoreStock()
-            self.__cacheTime = datetime.now()
+            self.__cacheTime = datetime.utcnow()
 
         return self.__storeStock
 

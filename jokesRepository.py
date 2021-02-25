@@ -36,14 +36,14 @@ class JokesRepository():
             raise ValueError(f'cacheTimeDelta argument is malformed: \"{cacheTimeDelta}\"')
 
         self.__apiUrl = apiUrl
-        self.__cacheTime = datetime.now() - cacheTimeDelta
+        self.__cacheTime = datetime.utcnow() - cacheTimeDelta
         self.__cacheTimeDelta = cacheTimeDelta
         self.__jokeResponse = None
 
     def fetchJoke(self) -> JokeResponse:
-        if self.__cacheTime + self.__cacheTimeDelta < datetime.now() or self.__jokeResponse is None:
+        if self.__cacheTime + self.__cacheTimeDelta < datetime.utcnow() or self.__jokeResponse is None:
             self.__jokeResponse = self.__refreshJoke()
-            self.__cacheTime = datetime.now()
+            self.__cacheTime = datetime.utcnow()
 
         return self.__jokeResponse
 

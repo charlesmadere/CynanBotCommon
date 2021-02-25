@@ -19,7 +19,7 @@ class TimedDict():
         if key not in self.__times or key not in self.__values:
             return None
 
-        now = datetime.now()
+        now = datetime.utcnow()
 
         if now > self.__times[key]:
             return None
@@ -37,9 +37,9 @@ class TimedDict():
             return False
 
     def __setitem__(self, key, value):
-        self.__times[key] = datetime.now() + self.__timeDelta
+        self.__times[key] = datetime.utcnow() + self.__timeDelta
         self.__values[key] = value
 
     def update(self, key):
-        self.__times[key] = datetime.now() + self.__timeDelta
+        self.__times[key] = datetime.utcnow() + self.__timeDelta
         self.__values[key] = self.__times[key]
