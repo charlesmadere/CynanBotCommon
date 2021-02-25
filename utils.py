@@ -66,6 +66,12 @@ def getCleanedSplits(s: str) -> List[str]:
 
     return words
 
+def getDateTimeFromStr(text: str) -> datetime:
+    if isValidStr(text):
+        return datetime.fromisoformat(text)
+    else:
+        return None
+
 def getDefaultTimeout() -> int:
     return 10 # seconds
 
@@ -100,6 +106,12 @@ def getNowTimeText(includeSeconds: bool = False) -> str:
         time = datetime.utcnow(),
         includeSeconds = includeSeconds
     )
+
+def getStrFromDateTime(dt: datetime) -> str:
+    if dt is None:
+        return None
+    else:
+        return dt.isoformat()
 
 def getStrFromDict(d: dict, key: str, fallback: str = None, clean: bool = False) -> str:
     if d is None:
