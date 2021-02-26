@@ -41,6 +41,24 @@ class AnalogueProductType(Enum):
         else:
             return cls.OTHER
 
+    def toStr(self) -> str:
+        if self is self.DAC:
+            return 'DAC'
+        elif self is self.DUO:
+            return 'Duo'
+        elif self is self.MEGA_SG:
+            return 'Mega Sg'
+        elif self is self.NT_MINI:
+            return 'Nt mini'
+        elif self is self.OTHER:
+            return 'other'
+        elif self is self.POCKET:
+            return 'Pocket'
+        elif self is self.SUPER_NT:
+            return 'Super Nt'
+        else:
+            return 'other'
+
 
 class AnalogueStoreEntry():
 
