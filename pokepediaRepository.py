@@ -140,11 +140,11 @@ class PokepediaRepository():
 
         for name in names:
             if name['language']['name'] == 'en':
-                return name['name']
+                return name['name'].capitalize()
 
         raise RuntimeError(f'can\'t find \"en\" language name in \"names\" field: {names}')
 
-    def searchMoves(self, name: str):
+    def searchMoves(self, name: str) -> PokepediaMove:
         if not utils.isValidStr(name):
             raise ValueError(f'name argument is malformed: \"{name}\"')
 
@@ -173,8 +173,29 @@ class PokepediaRepository():
             rawName = jsonResponse['name']
         )
 
-    def searchPokemon(self, name: str):
+    def searchPokemon(self, name: str) -> PokepediaPokemon:
         if not utils.isValidStr(name):
             raise ValueError(f'name argument is malformed: \"{name}\"')
 
-        # TODO
+        name = utils.cleanStr(name)
+
+        rawResponse = None
+        try:
+            rawResponse = requests.get(
+                url = f'https://pokeapi.co/api/v2/pokemon/{name}/',
+                timeout = utils.getDefaultTimeout()
+            )
+        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, Timeout) as e:
+            print(f'Exception occurred when attempting to fetch Pokemon \"{name}\": {e}')
+            raise RuntimeError(f'Exception occurred when attempting to fetch Pokemon \"{name}\": {e}')
+
+        jsonResponse = None
+        try:
+            jsonResponse = rawResponse.json()
+        except JSONDecodeError as e:
+            print(f'Exception occurred when attempting to decode Pokemon response into JSON for \"{name}\": {e}')
+            raise RuntimeError(f'Exception occurred when attempting to decode Pokemon response into JSON for \"{name}\": {e}')
+
+        return PokepediaPokemon(
+            name = jsonResponse['name'].capitalize()
+        )
