@@ -1,3 +1,4 @@
+import locale
 from enum import Enum, auto
 from json.decoder import JSONDecodeError
 from typing import Dict, List
@@ -36,30 +37,92 @@ class PokepediaGeneration(Enum):
             return cls.GENERATION_6
         elif text == 'sun-moon' or text == 'ultra-sun-ultra-moon':
             return cls.GENERATION_7
+        elif text == 'sword-shield' or text == 'brilliant-diamond-shining-pearl':
+            return cls.GENERATION_8
+        else:
+            return cls.GENERATION_1
 
-        raise ValueError(f'text argument pertains to unknown generation: \"{text}\"')
+
+class PokepediaType(Enum):
+    BUG = auto()
+    DARK = auto()
+    DRAGON = auto()
+    ELECTRIC = auto()
+    FAIRY = auto()
+    FIGHTING = auto()
+    FIRE = auto()
+    FLYING = auto()
+    GHOST = auto()
+    GRASS = auto()
+    GROUND = auto()
+    ICE = auto()
+    NORMAL = auto()
+    POISON = auto()
+    PSYCHIC = auto()
+    ROCK = auto()
+    STEEL = auto()
+    WATER = auto()
 
 
 class PokepediaMove():
 
     def __init__(
         self,
+        pokepediaType: PokepediaType,
         name: str,
         rawName: str
     ):
-        if not utils.isValidStr(name):
+        if pokepediaType is None:
+            raise ValueError(f'pokepediaType argument is malformed: \"{pokepediaType}\"')
+        elif not utils.isValidStr(name):
             raise ValueError(f'name argument is malformed: \"{name}\"')
         elif not utils.isValidStr(rawName):
             raise ValueError(f'rawName argument is malformed: \"{rawName}\"')
 
+        self.__pokepediaType = pokepediaType
         self.__name = name
         self.__rawName = rawName
 
     def getName(self) -> str:
         return self.__name
 
+    def getPokepediaType(self) -> PokepediaType:
+        return self.__pokepediaType
+
     def getRawName(self) -> str:
         return self.__rawName
+
+
+class PokepediaPokemon():
+
+    def __init__(
+        self,
+        pokedexId: int,
+        pokepediaTypes: Dict[PokepediaGeneration, PokepediaType],
+        name: str
+    ):
+        if not utils.isValidNum(pokedexId):
+            raise ValueError(f'pokedexId argument is malformed: \"{pokedexId}\"')
+        if not utils.hasItems(pokepediaTypes):
+            raise ValueError(f'pokepediaTypes argument is malformed: \"{pokepediaTypes}\"')
+        elif not utils.isValidStr(name):
+            raise ValueError(f'name argument is malformed: \"{name}\"')
+
+        self.__pokedexId = pokedexId
+        self.__pokepediaTypes = pokepediaTypes
+        self.__name = name
+
+    def getName(self) -> str:
+        return self.__name
+
+    def getPokedexId(self) -> int:
+        return self.__pokedexId
+
+    def getPokedexIdStr(self) -> str:
+        return locale.format_string("%d", self.__pokedexId, grouping = True)
+
+    def getPokepediaTypes(self) -> List[PokepediaType]:
+        return self.__pokepediaTypes
 
 
 class PokepediaRepository():
