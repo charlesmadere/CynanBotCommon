@@ -11,6 +11,7 @@ import CynanBotCommon.utils as utils
 
 
 class PokepediaGeneration(Enum):
+
     GENERATION_1 = auto()
     GENERATION_2 = auto()
     GENERATION_3 = auto()
@@ -44,6 +45,7 @@ class PokepediaGeneration(Enum):
 
 
 class PokepediaType(Enum):
+
     BUG = auto()
     DARK = auto()
     DRAGON = auto()
@@ -62,6 +64,55 @@ class PokepediaType(Enum):
     ROCK = auto()
     STEEL = auto()
     WATER = auto()
+
+
+class PokepediaMoveType(Enum):
+
+    NORMAL = auto()
+    SPECIAL = auto()
+
+
+class PokepediaMoveGeneration():
+
+    def __init__(
+        self,
+        accuracy: float,
+        power: int,
+        pp: int,
+        moveType: PokepediaMoveType,
+        pokepediaType: PokepediaType
+    ):
+        if not utils.isValidNum(accuracy):
+            raise ValueError(f'accuracy argument is malformed: \"{accuracy}\"')
+        elif not utils.isValidNum(power):
+            raise ValueError(f'power argument is malformed: \"{power}\"')
+        elif not utils.isValidNum(pp):
+            raise ValueError(f'pp argument is malformed: \"{pp}\"')
+        elif moveType is None:
+            raise ValueError(f'moveType argument is malformed: \"{moveType}\"')
+        elif pokepediaType is None:
+            raise ValueError(f'pokepediaType argument is malformed: \"{pokepediaType}\"')
+
+        self.__accuracy = accuracy
+        self.__power = power
+        self.__pp = pp
+        self.__moveType = moveType
+        self.__pokepediaType = pokepediaType
+
+    def getAccuracy(self) -> float:
+        return self.__accuracy
+
+    def getMoveType(self) -> PokepediaMoveType:
+        return self.__moveType
+
+    def getPower(self) -> int:
+        return self.__power
+
+    def getPp(self) -> int:
+        return self.__pp
+
+    def getType(self) -> PokepediaType:
+        return self.__pokepediaType
 
 
 class PokepediaMove():
@@ -85,9 +136,6 @@ class PokepediaMove():
 
     def getName(self) -> str:
         return self.__name
-
-    def getPokepediaType(self) -> PokepediaType:
-        return self.__pokepediaType
 
     def getRawName(self) -> str:
         return self.__rawName
