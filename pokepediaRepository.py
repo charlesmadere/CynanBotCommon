@@ -199,7 +199,10 @@ class PokepediaMove():
 
     def toStr(self) -> str:
         # format string output for generations
-        genText = "aaa"
+        genText = ""
+        for key in reversed(self.__genDictionary.keys()):
+            move = self.__genDictionary[key]
+            genText += f"{key.value}: Pwr {move.getPower()}, Acc {move.getAccuracy()}, PP {move.getPp()}, Type {move.getType().value}, Class {move.getMoveType().value} "
         return f"{self.getName()} - {genText}"
 
 class PokepediaPokemon():
@@ -257,26 +260,39 @@ class PokepediaRepository():
         if jsonResponse is None:
             raise ValueError(f'jsonResponse argument is malformed: \"{jsonResponse}\"')
 
-        # for gen8
+        pokepediaMoveDictionary = {}
+
+        # begin with current gen stats
         accuracy = jsonResponse['accuracy']
         power = jsonResponse['power']
         pp = jsonResponse['pp']
-        moveType = PokepediaMoveType.fromStr(jsonResponse['damage_class'])
-        pokepediaType = PokepediaType.fromStr(jsonResponse['type'])
+        moveType = PokepediaMoveType.fromStr(jsonResponse['damage_class']['name'])
+        pokepediaType = PokepediaType.fromStr(jsonResponse['type']['name'])
+        move = None
         #
-        
-        generation = jsonResponse['generation']['name']
+
         past_values = jsonResponse['past_values']
-        pokepediaMoveDictionary = {}
 
+        # iterate backwards and insert to dictionary once a gen is found. then 'un-patch' for previous gens
+        for past_value in reversed(past_values):
+            generation = PokepediaGeneration.fromStr(past_value['version_group']['name'])
+            move = PokepediaMoveGeneration(accuracy, power, pp, moveType, pokepediaType)
+            pokepediaMoveDictionary[generation] = move
+            if past_value['accuracy'] is not None:
+                accuracy = past_value['accuracy']
+            if past_value['power'] is not None:
+                power = past_value['power']
+            if past_value['pp'] is not None:
+                pp = past_value['pp']
+            if past_value['type'] is not None:
+                pokepediaType = PokepediaType.fromStr(past_value['type']['name'])
+            # moveType needs to be updated here, gen 1-3 have hardcoded movetypes based off pokepediaType
+            #
+            #
+
+        generation = PokepediaGeneration.fromStr(jsonResponse['generation']['name'])
         move = PokepediaMoveGeneration(accuracy, power, pp, moveType, pokepediaType)
-        pokepediaMoveDictionary[PokepediaGeneration.GENERATION_8] = move
-
-
-        # for past_value in past_values:
-            # add to dictionary
-        
-        # pokepediaMoveDictionary[PokepediaGeneration.fromStr(generation)] = move
+        pokepediaMoveDictionary[generation] = move
 
         return pokepediaMoveDictionary
 
