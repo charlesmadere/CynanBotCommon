@@ -12,14 +12,14 @@ import utils
 
 class PokepediaGeneration(Enum):
 
-    GENERATION_1 = auto()
-    GENERATION_2 = auto()
-    GENERATION_3 = auto()
-    GENERATION_4 = auto()
-    GENERATION_5 = auto()
-    GENERATION_6 = auto()
-    GENERATION_7 = auto()
-    GENERATION_8 = auto()
+    GENERATION_1 = "Gen1"
+    GENERATION_2 = "Gen2"
+    GENERATION_3 = "Gen3"
+    GENERATION_4 = "Gen4"
+    GENERATION_5 = "Gen5"
+    GENERATION_6 = "Gen6"
+    GENERATION_7 = "Gen7"
+    GENERATION_8 = "Gen8"
 
     @classmethod
     def fromStr(cls, text: str):
@@ -46,30 +46,30 @@ class PokepediaGeneration(Enum):
 
 class PokepediaType(Enum):
 
-    BUG = auto()
-    DARK = auto()
-    DRAGON = auto()
-    ELECTRIC = auto()
-    FAIRY = auto()
-    FIGHTING = auto()
-    FIRE = auto()
-    FLYING = auto()
-    GHOST = auto()
-    GRASS = auto()
-    GROUND = auto()
-    ICE = auto()
-    NORMAL = auto()
-    POISON = auto()
-    PSYCHIC = auto()
-    ROCK = auto()
-    STEEL = auto()
-    WATER = auto()
+    BUG = "Bug"
+    DARK = "Dark"
+    DRAGON = "Dragon"
+    ELECTRIC = "Electric"
+    FAIRY = "Fairy"
+    FIGHTING = "Fighting"
+    FIRE = "Fire"
+    FLYING = "Flying"
+    GHOST = "Ghost"
+    GRASS = "Grass"
+    GROUND = "Ground"
+    ICE = "Ice"
+    NORMAL = "Normal"
+    POISON = "Poison"
+    PSYCHIC = "Psychic"
+    ROCK = "Rock"
+    STEEL = "Steel"
+    WATER = "Water"
 
 
 class PokepediaMoveType(Enum):
 
-    NORMAL = auto()
-    SPECIAL = auto()
+    PHYSICAL = "Physical"
+    SPECIAL = "Special"
 
 
 class PokepediaMoveGeneration():
@@ -124,16 +124,7 @@ class PokepediaMove():
         rawName: str,
         genDictionary: Dict[PokepediaGeneration, PokepediaMoveGeneration]
     ):
-        '''
-        if pokepediaType is None:
-            raise ValueError(f'pokepediaType argument is malformed: \"{pokepediaType}\"')
-        elif not utils.isValidStr(name):
-            raise ValueError(f'name argument is malformed: \"{name}\"')
-        elif not utils.isValidStr(rawName):
-            raise ValueError(f'rawName argument is malformed: \"{rawName}\"')
-        '''
 
-        # self.__pokepediaType = pokepediaType
         self.__name = name
         self.__rawName = rawName
         self.__genDictionary = genDictionary
@@ -146,6 +137,11 @@ class PokepediaMove():
 
     def getGenDictionary(self) -> Dict[PokepediaGeneration, PokepediaMoveGeneration]:
         return self.__genDictionary
+
+    def toStr(self) -> str:
+        # format string output for generations
+        genText = "aaa"
+        return f"{self.getName()} - {genText}"
 
 class PokepediaPokemon():
 
