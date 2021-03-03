@@ -7,8 +7,8 @@ import requests
 from requests import ConnectionError, HTTPError, Timeout
 from urllib3.exceptions import MaxRetryError, NewConnectionError
 
-import CynanBotCommon.utils as utils
-
+# import CynanBotCommon.utils as utils
+import utils
 
 class PokepediaGeneration(Enum):
 
@@ -26,19 +26,19 @@ class PokepediaGeneration(Enum):
         if not utils.isValidStr(text):
             raise ValueError(f'text argument is malformed: \"{text}\"')
 
-        if text == 'gold-silver' or text == 'crystal':
+        if text == 'gold-silver' or text == 'crystal' or text == 'generation-ii':
             return cls.GENERATION_2
-        elif text == 'ruby-sapphire' or text == 'emerald' or text == 'firered-leafgreen':
+        elif text == 'ruby-sapphire' or text == 'emerald' or text == 'firered-leafgreen' or text == 'generation-iii':
             return cls.GENERATION_3
-        elif text == 'diamond-pearl' or text == 'platinum' or text == 'heartgold-soulsilver':
+        elif text == 'diamond-pearl' or text == 'platinum' or text == 'heartgold-soulsilver' or text == 'generation-iv':
             return cls.GENERATION_4
-        elif text == 'black-white' or text == 'black-2-white-2':
+        elif text == 'black-white' or text == 'black-2-white-2' or text == 'generation-v':
             return cls.GENERATION_5
-        elif text == 'x-y' or text == 'omega-ruby-alpha-sapphire':
+        elif text == 'x-y' or text == 'omega-ruby-alpha-sapphire' or text == 'generation-vi':
             return cls.GENERATION_6
-        elif text == 'sun-moon' or text == 'ultra-sun-ultra-moon':
+        elif text == 'sun-moon' or text == 'ultra-sun-ultra-moon' or text == 'generation-vii':
             return cls.GENERATION_7
-        elif text == 'sword-shield' or text == 'brilliant-diamond-shining-pearl':
+        elif text == 'sword-shield' or text == 'brilliant-diamond-shining-pearl' or text == 'generation-viii':
             return cls.GENERATION_8
         else:
             return cls.GENERATION_1
@@ -119,20 +119,24 @@ class PokepediaMove():
 
     def __init__(
         self,
-        pokepediaType: PokepediaType,
+        # pokepediaType: PokepediaType,
         name: str,
-        rawName: str
+        rawName: str,
+        genDictionary: Dict[PokepediaGeneration, PokepediaMoveGeneration]
     ):
+        '''
         if pokepediaType is None:
             raise ValueError(f'pokepediaType argument is malformed: \"{pokepediaType}\"')
         elif not utils.isValidStr(name):
             raise ValueError(f'name argument is malformed: \"{name}\"')
         elif not utils.isValidStr(rawName):
             raise ValueError(f'rawName argument is malformed: \"{rawName}\"')
+        '''
 
-        self.__pokepediaType = pokepediaType
+        # self.__pokepediaType = pokepediaType
         self.__name = name
         self.__rawName = rawName
+        self.__genDictionary = genDictionary
 
     def getName(self) -> str:
         return self.__name
@@ -140,6 +144,8 @@ class PokepediaMove():
     def getRawName(self) -> str:
         return self.__rawName
 
+    def getGenDictionary(self) -> Dict[PokepediaGeneration, PokepediaMoveGeneration]:
+        return self.__genDictionary
 
 class PokepediaPokemon():
 
@@ -178,7 +184,7 @@ class PokepediaRepository():
     def __init__(self):
         pass
 
-    def __getEnName(jsonResponse: Dict) -> str:
+    def __getEnName(self, jsonResponse: Dict) -> str:
         if jsonResponse is None:
             raise ValueError(f'jsonResponse argument is malformed: \"{jsonResponse}\"')
 
@@ -191,6 +197,28 @@ class PokepediaRepository():
                 return name['name'].capitalize()
 
         raise RuntimeError(f'can\'t find \"en\" language name in \"names\" field: {names}')
+
+    def __getPokepediaMoveDictionary(self, jsonResponse: Dict) -> Dict[PokepediaGeneration, PokepediaMoveGeneration]:
+        if jsonResponse is None:
+            raise ValueError(f'jsonResponse argument is malformed: \"{jsonResponse}\"')
+
+        generation = jsonResponse['generation']['name']
+        accuracy = jsonResponse['accuracy']
+        power = jsonResponse['power']
+        pp = jsonResponse['pp']
+        moveType = PokepediaMoveType.NORMAL
+        pokepediaType = PokepediaType.FIRE
+        past_values = jsonResponse['past_values']
+        pokepediaMoveDictionary = {}
+
+        move = PokepediaMoveGeneration(accuracy, power, pp, moveType, pokepediaType)
+
+        pokepediaMoveDictionary[PokepediaGeneration.fromStr(generation)] = move
+
+        # for past_value in past_values:
+            # add to dictionary
+        
+        return pokepediaMoveDictionary
 
     def searchMoves(self, name: str) -> PokepediaMove:
         if not utils.isValidStr(name):
@@ -218,7 +246,8 @@ class PokepediaRepository():
 
         return PokepediaMove(
             name = self.__getEnName(jsonResponse),
-            rawName = jsonResponse['name']
+            rawName = jsonResponse['name'],
+            genDictionary = self.__getPokepediaMoveDictionary(jsonResponse)
         )
 
     def searchPokemon(self, name: str) -> PokepediaPokemon:
