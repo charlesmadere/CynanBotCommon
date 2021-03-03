@@ -10,60 +10,58 @@ from urllib3.exceptions import MaxRetryError, NewConnectionError
 # import CynanBotCommon.utils as utils
 import utils
 
-class PokepediaGeneration(Enum):
 
-    GENERATION_1 = "Gen1"
-    GENERATION_2 = "Gen2"
-    GENERATION_3 = "Gen3"
-    GENERATION_4 = "Gen4"
-    GENERATION_5 = "Gen5"
-    GENERATION_6 = "Gen6"
-    GENERATION_7 = "Gen7"
-    GENERATION_8 = "Gen8"
+class PokepediaDamageClass(Enum):
+
+    PHYSICAL = auto()
+    SPECIAL = auto()
+    STATUS = auto()
 
     @classmethod
     def fromStr(cls, text: str):
         if not utils.isValidStr(text):
             raise ValueError(f'text argument is malformed: \"{text}\"')
 
-        if text == 'gold-silver' or text == 'crystal' or text == 'generation-ii':
-            return cls.GENERATION_2
-        elif text == 'ruby-sapphire' or text == 'emerald' or text == 'firered-leafgreen' or text == 'generation-iii':
-            return cls.GENERATION_3
-        elif text == 'diamond-pearl' or text == 'platinum' or text == 'heartgold-soulsilver' or text == 'generation-iv':
-            return cls.GENERATION_4
-        elif text == 'black-white' or text == 'black-2-white-2' or text == 'generation-v':
-            return cls.GENERATION_5
-        elif text == 'x-y' or text == 'omega-ruby-alpha-sapphire' or text == 'generation-vi':
-            return cls.GENERATION_6
-        elif text == 'sun-moon' or text == 'ultra-sun-ultra-moon' or text == 'generation-vii':
-            return cls.GENERATION_7
-        elif text == 'sword-shield' or text == 'brilliant-diamond-shining-pearl' or text == 'generation-viii':
-            return cls.GENERATION_8
+        if text == 'physical':
+            return cls.PHYSICAL
+        elif text == 'special':
+            return cls.SPECIAL
+        elif text == 'status':
+            return cls.STATUS
         else:
-            return cls.GENERATION_1
+            raise ValueError(f'unknown PokepediaDamageClass: \"{text}\"')
+
+    def toStr(self) -> str:
+        if self is PokepediaDamageClass.PHYSICAL:
+            return 'Physical'
+        elif self is PokepediaDamageClass.SPECIAL:
+            return 'Special'
+        elif self is PokepediaDamageClass.STATUS:
+            return 'Status'
+        else:
+            raise RuntimeError(f'unknown PokepediaDamageClass: \"{self}\"')
 
 
-class PokepediaType(Enum):
+class PokepediaElementType(Enum):
 
-    BUG = "Bug"
-    DARK = "Dark"
-    DRAGON = "Dragon"
-    ELECTRIC = "Electric"
-    FAIRY = "Fairy"
-    FIGHTING = "Fighting"
-    FIRE = "Fire"
-    FLYING = "Flying"
-    GHOST = "Ghost"
-    GRASS = "Grass"
-    GROUND = "Ground"
-    ICE = "Ice"
-    NORMAL = "Normal"
-    POISON = "Poison"
-    PSYCHIC = "Psychic"
-    ROCK = "Rock"
-    STEEL = "Steel"
-    WATER = "Water"
+    BUG = auto()
+    DARK = auto()
+    DRAGON = auto()
+    ELECTRIC = auto()
+    FAIRY = auto()
+    FIGHTING = auto()
+    FIRE = auto()
+    FLYING = auto()
+    GHOST = auto()
+    GRASS = auto()
+    GROUND = auto()
+    ICE = auto()
+    NORMAL = auto()
+    POISON = auto()
+    PSYCHIC = auto()
+    ROCK = auto()
+    STEEL = auto()
+    WATER = auto()
 
     @classmethod
     def fromStr(cls, text: str):
@@ -107,39 +105,148 @@ class PokepediaType(Enum):
         elif text == 'water':
             return cls.WATER
         else:
-            raise ValueError(f'unknown type')
+            raise ValueError(f'unknown PokepediaElementType: \"{text}\'')
+
+    def getEmoji(self) -> str:
+        if self is PokepediaElementType.BUG:
+            return '🐛'
+        elif self is PokepediaElementType.DRAGON:
+            return '🐲'
+        elif self is PokepediaElementType.ELECTRIC:
+            return '⚡'
+        elif self is PokepediaElementType.FIGHTING:
+            return '🥊'
+        elif self is PokepediaElementType.FIRE:
+            return '🔥'
+        elif self is PokepediaElementType.FLYING:
+            return '🐦'
+        elif self is PokepediaElementType.GHOST:
+            return '👻'
+        elif self is PokepediaElementType.ICE:
+            return '❄'
+        elif self is PokepediaElementType.POISON:
+            return '🧪'
+        elif self is PokepediaElementType.PSYCHIC:
+            return '🧠'
+        elif self is PokepediaElementType.WATER:
+            return '🌊'
+        else:
+            return None
+
+    def getEmojiOrStr(self) -> str:
+        emoji = self.getEmoji()
+
+        if utils.isValidStr(emoji):
+            return emoji
+        else:
+            return self.toStr()
+
+    def toStr(self) -> str:
+        if self is PokepediaElementType.BUG:
+            return 'Bug'
+        elif self is PokepediaElementType.DARK:
+            return 'Dark'
+        elif self is PokepediaElementType.DRAGON:
+            return 'Dragon'
+        elif self is PokepediaElementType.ELECTRIC:
+            return 'Electric'
+        elif self is PokepediaElementType.FAIRY:
+            return 'Fairy'
+        elif self is PokepediaElementType.FIGHTING:
+            return 'Fighting'
+        elif self is PokepediaElementType.FIRE:
+            return 'Fire'
+        elif self is PokepediaElementType.FLYING:
+            return 'Flying'
+        elif self is PokepediaElementType.GHOST:
+            return 'Ghost'
+        elif self is PokepediaElementType.GRASS:
+            return 'Grass'
+        elif self is PokepediaElementType.GROUND:
+            return 'Ground'
+        elif self is PokepediaElementType.ICE:
+            return 'Ice'
+        elif self is PokepediaElementType.NORMAL:
+            return 'Normal'
+        elif self is PokepediaElementType.POISON:
+            return 'Poison'
+        elif self is PokepediaElementType.PSYCHIC:
+            return 'Psychic'
+        elif self is PokepediaElementType.ROCK:
+            return 'Rock'
+        elif self is PokepediaElementType.STEEL:
+            return 'Steel'
+        elif self is PokepediaElementType.WATER:
+            return 'Water'
+        else:
+            raise RuntimeError(f'unknown PokepediaElementType: \"{self}\"')
 
 
-class PokepediaMoveType(Enum):
+class PokepediaGeneration(Enum):
 
-    PHYSICAL = "Physical"
-    SPECIAL = "Special"
-    STATUS = "Status"
+    GENERATION_1 = auto()
+    GENERATION_2 = auto()
+    GENERATION_3 = auto()
+    GENERATION_4 = auto()
+    GENERATION_5 = auto()
+    GENERATION_6 = auto()
+    GENERATION_7 = auto()
+    GENERATION_8 = auto()
 
     @classmethod
     def fromStr(cls, text: str):
         if not utils.isValidStr(text):
             raise ValueError(f'text argument is malformed: \"{text}\"')
 
-        if text == 'physical':
-            return cls.PHYSICAL
-        elif text == 'special':
-            return cls.SPECIAL
-        elif text == 'status':
-            return cls.STATUS
+        if text == 'gold-silver' or text == 'crystal' or text == 'generation-ii':
+            return cls.GENERATION_2
+        elif text == 'ruby-sapphire' or text == 'emerald' or text == 'firered-leafgreen' or text == 'generation-iii':
+            return cls.GENERATION_3
+        elif text == 'diamond-pearl' or text == 'platinum' or text == 'heartgold-soulsilver' or text == 'generation-iv':
+            return cls.GENERATION_4
+        elif text == 'black-white' or text == 'black-2-white-2' or text == 'generation-v':
+            return cls.GENERATION_5
+        elif text == 'x-y' or text == 'omega-ruby-alpha-sapphire' or text == 'generation-vi':
+            return cls.GENERATION_6
+        elif text == 'sun-moon' or text == 'ultra-sun-ultra-moon' or text == 'generation-vii':
+            return cls.GENERATION_7
+        elif text == 'sword-shield' or text == 'brilliant-diamond-shining-pearl' or text == 'generation-viii':
+            return cls.GENERATION_8
         else:
-            raise ValueError(f'unknown move type')
+            return cls.GENERATION_1
+
+    def toStr(self) -> str:
+        if self is PokepediaGeneration.GENERATION_1:
+            return 'G1'
+        elif self is PokepediaGeneration.GENERATION_2:
+            return 'G2'
+        elif self is PokepediaGeneration.GENERATION_3:
+            return 'G3'
+        elif self is PokepediaGeneration.GENERATION_4:
+            return 'G4'
+        elif self is PokepediaGeneration.GENERATION_5:
+            return 'G5'
+        elif self is PokepediaGeneration.GENERATION_6:
+            return 'G6'
+        elif self is PokepediaGeneration.GENERATION_7:
+            return 'G7'
+        elif self is PokepediaGeneration.GENERATION_8:
+            return 'G8'
+        else:
+            raise RuntimeError(f'unknown PokepediaGeneration: \"{self}\"')
+
 
 
 class PokepediaMoveGeneration():
 
     def __init__(
         self,
-        accuracy: float,
+        accuracy: int,
         power: int,
         pp: int,
-        moveType: PokepediaMoveType,
-        pokepediaType: PokepediaType
+        damageClass: PokepediaDamageClass,
+        elementType: PokepediaElementType,
+        generation: PokepediaGeneration
     ):
         if not utils.isValidNum(accuracy):
             raise ValueError(f'accuracy argument is malformed: \"{accuracy}\"')
@@ -147,46 +254,74 @@ class PokepediaMoveGeneration():
             raise ValueError(f'power argument is malformed: \"{power}\"')
         elif not utils.isValidNum(pp):
             raise ValueError(f'pp argument is malformed: \"{pp}\"')
-        elif moveType is None:
-            raise ValueError(f'moveType argument is malformed: \"{moveType}\"')
-        elif pokepediaType is None:
-            raise ValueError(f'pokepediaType argument is malformed: \"{pokepediaType}\"')
+        elif damageClass is None:
+            raise ValueError(f'damageClass argument is malformed: \"{damageClass}\"')
+        elif elementType is None:
+            raise ValueError(f'elementType argument is malformed: \"{elementType}\"')
+        elif generation is None:
+            raise ValueError(f'generation argument is malformed: \"{generation}\"')
 
         self.__accuracy = accuracy
         self.__power = power
         self.__pp = pp
-        self.__moveType = moveType
-        self.__pokepediaType = pokepediaType
+        self.__damageClass = damageClass
+        self.__elementType = elementType
+        self.__generation = generation
 
-    def getAccuracy(self) -> float:
+    def getAccuracy(self) -> int:
         return self.__accuracy
 
-    def getMoveType(self) -> PokepediaMoveType:
-        return self.__moveType
+    def getAccuracyStr(self) -> str:
+        formattedAccuracy = locale.format_string("%d", self.__accuracy, grouping = True)
+        return f'{formattedAccuracy}%'
+
+    def getDamageClass(self) -> PokepediaDamageClass:
+        return self.__damageClass
+
+    def getElementType(self) -> PokepediaElementType:
+        return self.__elementType
+
+    def getGeneration(self) -> PokepediaGeneration:
+        return self.__generation
 
     def getPower(self) -> int:
         return self.__power
 
+    def getPowerStr(self) -> str:
+        return locale.format_string("%d", self.__power, grouping = True)
+
     def getPp(self) -> int:
         return self.__pp
 
-    def getType(self) -> PokepediaType:
-        return self.__pokepediaType
+    def getPpStr(self) -> str:
+        formattedPp = locale.format_string("%d", self.__pp, grouping = True)
+        return f'{formattedPp}pp'
+
+    def toStr(self) -> str:
+        return f'{self.__generation.toStr()}: 👊 {self.getPowerStr()}, 🎯 {self.getAccuracyStr()}, {self.getPpStr()}, {self.__elementType.getEmojiOrStr().lower()} type, {self.__damageClass.toStr().lower()}'
 
 
 class PokepediaMove():
 
     def __init__(
         self,
-        # pokepediaType: PokepediaType,
+        generationMoves: Dict[PokepediaGeneration, PokepediaMoveGeneration],
         name: str,
-        rawName: str,
-        genDictionary: Dict[PokepediaGeneration, PokepediaMoveGeneration]
+        rawName: str
     ):
+        if not utils.hasItems(generationMoves):
+            raise ValueError(f'generationMoves argument is malformed: \"{generationMoves}\"')
+        elif not utils.isValidStr(name):
+            raise ValueError(f'name argument is malformed: \"{name}\"')
+        elif not utils.isValidStr(rawName):
+            raise ValueError(f'rawName argument is malformed: \"{rawName}\"')
 
+        self.__generationMoves = generationMoves
         self.__name = name
         self.__rawName = rawName
-        self.__genDictionary = genDictionary
+
+    def getGenerationMoves(self) -> Dict[PokepediaGeneration, PokepediaMoveGeneration]:
+        return self.__generationMoves
 
     def getName(self) -> str:
         return self.__name
@@ -194,35 +329,42 @@ class PokepediaMove():
     def getRawName(self) -> str:
         return self.__rawName
 
-    def getGenDictionary(self) -> Dict[PokepediaGeneration, PokepediaMoveGeneration]:
-        return self.__genDictionary
+    def toStr(self, delimiter: str = '; ') -> str:
+        if delimiter is None:
+            raise ValueError(f'delimiter argument is malformed: \"{delimiter}\"')
 
-    def toStr(self) -> str:
-        # format string output for generations
-        genText = ""
-        for key in reversed(self.__genDictionary.keys()):
-            move = self.__genDictionary[key]
-            genText += f"{key.value}: Pwr {move.getPower()}, Acc {move.getAccuracy()}, PP {move.getPp()}, Type {move.getType().value}, Class {move.getMoveType().value} "
-        return f"{self.getName()} - {genText}"
+        genMoveStrings = list()
+
+        for gen in PokepediaGeneration:
+            if gen in self.__generationMoves:
+                genMove = self.__generationMoves[gen]
+                genMoveStrings.append(genMove.toStr())
+
+        genMoveString = delimiter.join(genMoveStrings)
+        return f"{self.getName()} — {genMoveString}"
+
 
 class PokepediaPokemon():
 
     def __init__(
         self,
+        generationElementTypes: Dict[PokepediaGeneration, PokepediaElementType],
         pokedexId: int,
-        pokepediaTypes: Dict[PokepediaGeneration, PokepediaType],
         name: str
     ):
-        if not utils.isValidNum(pokedexId):
+        if not utils.hasItems(generationElementTypes):
+            raise ValueError(f'generationElementTypes argument is malformed: \"{generationElementTypes}\"')
+        elif not utils.isValidNum(pokedexId):
             raise ValueError(f'pokedexId argument is malformed: \"{pokedexId}\"')
-        if not utils.hasItems(pokepediaTypes):
-            raise ValueError(f'pokepediaTypes argument is malformed: \"{pokepediaTypes}\"')
         elif not utils.isValidStr(name):
             raise ValueError(f'name argument is malformed: \"{name}\"')
 
+        self.__generationElementTypes = generationElementTypes
         self.__pokedexId = pokedexId
-        self.__pokepediaTypes = pokepediaTypes
         self.__name = name
+
+    def getGenerationElementTypes(self) -> Dict[PokepediaGeneration, PokepediaElementType]:
+        return self.__generationElementTypes
 
     def getName(self) -> str:
         return self.__name
@@ -232,9 +374,6 @@ class PokepediaPokemon():
 
     def getPokedexIdStr(self) -> str:
         return locale.format_string("%d", self.__pokedexId, grouping = True)
-
-    def getPokepediaTypes(self) -> List[PokepediaType]:
-        return self.__pokepediaTypes
 
 
 class PokepediaRepository():
@@ -252,7 +391,7 @@ class PokepediaRepository():
 
         for name in names:
             if name['language']['name'] == 'en':
-                return name['name'].capitalize()
+                return name['name'].title()
 
         raise RuntimeError(f'can\'t find \"en\" language name in \"names\" field: {names}')
 
@@ -266,8 +405,8 @@ class PokepediaRepository():
         accuracy = jsonResponse['accuracy']
         power = jsonResponse['power']
         pp = jsonResponse['pp']
-        moveType = PokepediaMoveType.fromStr(jsonResponse['damage_class']['name'])
-        pokepediaType = PokepediaType.fromStr(jsonResponse['type']['name'])
+        damageClass = PokepediaDamageClass.fromStr(jsonResponse['damage_class']['name'])
+        elementType = PokepediaElementType.fromStr(jsonResponse['type']['name'])
         move = None
         #
 
@@ -276,7 +415,16 @@ class PokepediaRepository():
         # iterate backwards and insert to dictionary once a gen is found. then 'un-patch' for previous gens
         for past_value in reversed(past_values):
             generation = PokepediaGeneration.fromStr(past_value['version_group']['name'])
-            move = PokepediaMoveGeneration(accuracy, power, pp, moveType, pokepediaType)
+
+            move = PokepediaMoveGeneration(
+                accuracy = accuracy,
+                power = power,
+                pp = pp,
+                damageClass = damageClass,
+                elementType = elementType,
+                generation = generation
+            )
+
             pokepediaMoveDictionary[generation] = move
             if past_value['accuracy'] is not None:
                 accuracy = past_value['accuracy']
@@ -285,13 +433,22 @@ class PokepediaRepository():
             if past_value['pp'] is not None:
                 pp = past_value['pp']
             if past_value['type'] is not None:
-                pokepediaType = PokepediaType.fromStr(past_value['type']['name'])
+                elementType = PokepediaElementType.fromStr(past_value['type']['name'])
             # moveType needs to be updated here, gen 1-3 have hardcoded movetypes based off pokepediaType
             #
             #
 
         generation = PokepediaGeneration.fromStr(jsonResponse['generation']['name'])
-        move = PokepediaMoveGeneration(accuracy, power, pp, moveType, pokepediaType)
+
+        move = PokepediaMoveGeneration(
+            accuracy = accuracy,
+            power = power,
+            pp = pp,
+            damageClass = damageClass,
+            elementType = elementType,
+            generation = generation
+        )
+
         pokepediaMoveDictionary[generation] = move
 
         return pokepediaMoveDictionary
@@ -321,9 +478,9 @@ class PokepediaRepository():
             raise RuntimeError(f'Exception occurred when attempting to decode Pokemon move response into JSON for \"{name}\": {e}')
 
         return PokepediaMove(
+            generationMoves = self.__getPokepediaMoveDictionary(jsonResponse),
             name = self.__getEnName(jsonResponse),
-            rawName = jsonResponse['name'],
-            genDictionary = self.__getPokepediaMoveDictionary(jsonResponse)
+            rawName = jsonResponse['name']
         )
 
     def searchPokemon(self, name: str) -> PokepediaPokemon:
@@ -350,5 +507,5 @@ class PokepediaRepository():
             raise RuntimeError(f'Exception occurred when attempting to decode Pokemon response into JSON for \"{name}\": {e}')
 
         return PokepediaPokemon(
-            name = jsonResponse['name'].capitalize()
+            name = jsonResponse['name'].title()
         )
