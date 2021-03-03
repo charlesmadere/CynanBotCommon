@@ -65,11 +65,70 @@ class PokepediaType(Enum):
     STEEL = "Steel"
     WATER = "Water"
 
+    @classmethod
+    def fromStr(cls, text: str):
+        if not utils.isValidStr(text):
+            raise ValueError(f'text argument is malformed: \"{text}\"')
+
+        if text == 'bug':
+            return cls.BUG
+        elif text == 'dark':
+            return cls.DARK
+        elif text == 'dragon':
+            return cls.DRAGON
+        elif text == 'electric':
+            return cls.ELECTRIC
+        elif text == 'fairy':
+            return cls.FAIRY
+        elif text == 'fighting':
+            return cls.FIGHTING
+        elif text == 'fire':
+            return cls.FIRE
+        elif text == 'flying':
+            return cls.FLYING
+        elif text == 'ghost':
+            return cls.GHOST
+        elif text == 'grass':
+            return cls.GRASS
+        elif text == 'ground':
+            return cls.GROUND
+        elif text == 'ice':
+            return cls.ICE
+        elif text == 'normal':
+            return cls.NORMAL
+        elif text == 'poison':
+            return cls.POISON
+        elif text == 'psychic':
+            return cls.PSYCHIC
+        elif text == 'rock':
+            return cls.ROCK
+        elif text == 'steel':
+            return cls.STEEL
+        elif text == 'water':
+            return cls.WATER
+        else:
+            raise ValueError(f'unknown type')
+
 
 class PokepediaMoveType(Enum):
 
     PHYSICAL = "Physical"
     SPECIAL = "Special"
+    STATUS = "Status"
+
+    @classmethod
+    def fromStr(cls, text: str):
+        if not utils.isValidStr(text):
+            raise ValueError(f'text argument is malformed: \"{text}\"')
+
+        if text == 'physical':
+            return cls.PHYSICAL
+        elif text == 'special':
+            return cls.SPECIAL
+        elif text == 'status':
+            return cls.STATUS
+        else:
+            raise ValueError(f'unknown move type')
 
 
 class PokepediaMoveGeneration():
@@ -198,22 +257,27 @@ class PokepediaRepository():
         if jsonResponse is None:
             raise ValueError(f'jsonResponse argument is malformed: \"{jsonResponse}\"')
 
-        generation = jsonResponse['generation']['name']
+        # for gen8
         accuracy = jsonResponse['accuracy']
         power = jsonResponse['power']
         pp = jsonResponse['pp']
-        moveType = PokepediaMoveType.NORMAL
-        pokepediaType = PokepediaType.FIRE
+        moveType = PokepediaMoveType.fromStr(jsonResponse['damage_class'])
+        pokepediaType = PokepediaType.fromStr(jsonResponse['type'])
+        #
+        
+        generation = jsonResponse['generation']['name']
         past_values = jsonResponse['past_values']
         pokepediaMoveDictionary = {}
 
         move = PokepediaMoveGeneration(accuracy, power, pp, moveType, pokepediaType)
+        pokepediaMoveDictionary[PokepediaGeneration.GENERATION_8] = move
 
-        pokepediaMoveDictionary[PokepediaGeneration.fromStr(generation)] = move
 
         # for past_value in past_values:
             # add to dictionary
         
+        # pokepediaMoveDictionary[PokepediaGeneration.fromStr(generation)] = move
+
         return pokepediaMoveDictionary
 
     def searchMoves(self, name: str) -> PokepediaMove:
