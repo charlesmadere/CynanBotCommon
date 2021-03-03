@@ -250,8 +250,6 @@ class PokepediaMoveGeneration():
     ):
         if not utils.isValidNum(accuracy):
             raise ValueError(f'accuracy argument is malformed: \"{accuracy}\"')
-        elif not utils.isValidNum(power):
-            raise ValueError(f'power argument is malformed: \"{power}\"')
         elif not utils.isValidNum(pp):
             raise ValueError(f'pp argument is malformed: \"{pp}\"')
         elif damageClass is None:
@@ -285,10 +283,16 @@ class PokepediaMoveGeneration():
         return self.__generation
 
     def getPower(self) -> int:
-        return self.__power
+        if self.hasPower():
+            return self.__power
+        else:
+            return RuntimeError(f'This PokepediaGenerationMove does not have a power value!')
 
     def getPowerStr(self) -> str:
-        return locale.format_string("%d", self.__power, grouping = True)
+        if self.hasPower():
+            return locale.format_string("%d", self.__power, grouping = True)
+        else:
+            return None
 
     def getPp(self) -> int:
         return self.__pp
@@ -297,8 +301,15 @@ class PokepediaMoveGeneration():
         formattedPp = locale.format_string("%d", self.__pp, grouping = True)
         return f'{formattedPp}pp'
 
+    def hasPower(self) -> bool:
+        return utils.isValidNum(self.__power)
+
     def toStr(self) -> str:
-        return f'{self.__generation.toStr()}: 👊 {self.getPowerStr()}, 🎯 {self.getAccuracyStr()}, {self.getPpStr()}, {self.__elementType.getEmojiOrStr().lower()} type, {self.__damageClass.toStr().lower()}'
+        powerStr = ''
+        if self.hasPower():
+            powerStr = f'👊 {self.getPowerStr()}, '
+
+        return f'{self.__generation.toStr()}: {powerStr}🎯 {self.getAccuracyStr()}, {self.getPpStr()}, {self.__elementType.getEmojiOrStr().lower()} type, {self.__damageClass.toStr().lower()}'
 
 
 class PokepediaMove():
