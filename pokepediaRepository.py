@@ -331,7 +331,8 @@ class PokepediaMove():
         self,
         generationMoves: Dict[PokepediaGeneration, PokepediaMoveGeneration],
         name: str,
-        rawName: str
+        rawName: str,
+        description: str
     ):
         if not utils.hasItems(generationMoves):
             raise ValueError(f'generationMoves argument is malformed: \"{generationMoves}\"')
@@ -343,6 +344,7 @@ class PokepediaMove():
         self.__generationMoves = generationMoves
         self.__name = name
         self.__rawName = rawName
+        self.__description = description
 
     def getGenerationMoves(self) -> Dict[PokepediaGeneration, PokepediaMoveGeneration]:
         return self.__generationMoves
@@ -352,6 +354,9 @@ class PokepediaMove():
 
     def getRawName(self) -> str:
         return self.__rawName
+
+    def getDescription(self) -> str:
+        return self.__description
 
     def toStr(self, delimiter: str = '; ') -> str:
         if delimiter is None:
@@ -369,7 +374,7 @@ class PokepediaMove():
     
     def toStrList(self) -> List[str]:
         genMoveStrings = list()
-        genMoveStrings.append(self.getName())
+        genMoveStrings.append(f"{self.getName()} - {self.getDescription()}")
 
         for gen in PokepediaGeneration:
             if gen in self.__generationMoves:
@@ -551,10 +556,22 @@ class PokepediaRepository():
             print(f'Exception occurred when attempting to decode Pokemon move response into JSON for \"{name}\": {e}')
             raise RuntimeError(f'Exception occurred when attempting to decode Pokemon move response into JSON for \"{name}\": {e}')
 
+        description = ""
+        flavor_text_entries = jsonResponse['flavor_text_entries']
+        if not utils.hasItems(flavor_text_entries):
+            raise ValueError(f'\"flavor_text_entries\" field in JSON response is empty: {jsonResponse}')
+
+        
+        for flavor_text_entry in flavor_text_entries:
+            if flavor_text_entry['language']['name'] == 'en':
+                description = utils.cleanStr(flavor_text_entry['flavor_text'])
+                break
+
         return PokepediaMove(
             generationMoves = self.__getPokepediaMoveDictionary(jsonResponse),
             name = self.__getEnName(jsonResponse),
-            rawName = jsonResponse['name']
+            rawName = jsonResponse['name'],
+            description = description
         )
 
     def searchPokemon(self, name: str) -> PokepediaPokemon:
