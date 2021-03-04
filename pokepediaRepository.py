@@ -307,8 +307,7 @@ class PokepediaMoveGeneration():
     def toStr(self) -> str:
         powerStr = ''
         if self.hasPower():
-            powerStr = f'👊 {self.getPowerStr()}, '
-
+            powerStr = f'💪 {self.getPowerStr()}, '
         return f'{self.__generation.toStr()}: {powerStr}🎯 {self.getAccuracyStr()}, {self.getPpStr()}, {self.__elementType.getEmojiOrStr().lower()} type, {self.__damageClass.toStr().lower()}'
 
 
@@ -353,7 +352,17 @@ class PokepediaMove():
 
         genMoveString = delimiter.join(genMoveStrings)
         return f"{self.getName()} — {genMoveString}"
+    
+    def toStrList(self) -> List[str]:
+        genMoveStrings = list()
+        genMoveStrings.append(self.getName())
 
+        for gen in PokepediaGeneration:
+            if gen in self.__generationMoves:
+                genMove = self.__generationMoves[gen]
+                genMoveStrings.append(genMove.toStr())
+
+        return genMoveStrings
 
 class PokepediaPokemon():
 
