@@ -11,37 +11,6 @@ from urllib3.exceptions import MaxRetryError, NewConnectionError
 import utils
 
 
-class PokepediaDamageClass(Enum):
-
-    PHYSICAL = auto()
-    SPECIAL = auto()
-    STATUS = auto()
-
-    @classmethod
-    def fromStr(cls, text: str):
-        if not utils.isValidStr(text):
-            raise ValueError(f'text argument is malformed: \"{text}\"')
-
-        if text == 'physical':
-            return cls.PHYSICAL
-        elif text == 'special':
-            return cls.SPECIAL
-        elif text == 'status':
-            return cls.STATUS
-        else:
-            raise ValueError(f'unknown PokepediaDamageClass: \"{text}\"')
-
-    def toStr(self) -> str:
-        if self is PokepediaDamageClass.PHYSICAL:
-            return 'Physical'
-        elif self is PokepediaDamageClass.SPECIAL:
-            return 'Special'
-        elif self is PokepediaDamageClass.STATUS:
-            return 'Status'
-        else:
-            raise RuntimeError(f'unknown PokepediaDamageClass: \"{self}\"')
-
-
 class PokepediaElementType(Enum):
 
     BUG = auto()
@@ -120,6 +89,8 @@ class PokepediaElementType(Enum):
             return '🔥'
         elif self is PokepediaElementType.FLYING:
             return '🐦'
+        elif self is PokepediaElementType.GRASS:
+            return '🍃'
         elif self is PokepediaElementType.GHOST:
             return '👻'
         elif self is PokepediaElementType.ICE:
@@ -182,6 +153,50 @@ class PokepediaElementType(Enum):
             raise RuntimeError(f'unknown PokepediaElementType: \"{self}\"')
 
 
+class PokepediaDamageClass(Enum):
+
+    PHYSICAL = auto()
+    SPECIAL = auto()
+    STATUS = auto()
+
+    @classmethod
+    def fromStr(cls, text: str):
+        if not utils.isValidStr(text):
+            raise ValueError(f'text argument is malformed: \"{text}\"')
+
+        if text == 'physical':
+            return cls.PHYSICAL
+        elif text == 'special':
+            return cls.SPECIAL
+        elif text == 'status':
+            return cls.STATUS
+        else:
+            raise ValueError(f'unknown PokepediaDamageClass: \"{text}\"')
+
+    def toStr(self) -> str:
+        if self is PokepediaDamageClass.PHYSICAL:
+            return 'Physical'
+        elif self is PokepediaDamageClass.SPECIAL:
+            return 'Special'
+        elif self is PokepediaDamageClass.STATUS:
+            return 'Status'
+        else:
+            raise RuntimeError(f'unknown PokepediaDamageClass: \"{self}\"')
+
+    # gen 1-3 have damage classes based off element type
+    @classmethod
+    def getTypeBasedClass(cls, element: PokepediaElementType):
+        physicalList = [PokepediaElementType.NORMAL,PokepediaElementType.FIGHTING,PokepediaElementType.FLYING,PokepediaElementType.POISON,PokepediaElementType.GROUND,PokepediaElementType.ROCK,PokepediaElementType.BUG,PokepediaElementType.GHOST,PokepediaElementType.STEEL]
+        specialList = [PokepediaElementType.FIRE,PokepediaElementType.WATER,PokepediaElementType.GRASS,PokepediaElementType.ELECTRIC,PokepediaElementType.PSYCHIC,PokepediaElementType.ICE,PokepediaElementType.DRAGON,PokepediaElementType.DARK]
+
+        if element in physicalList:
+            return cls.PHYSICAL
+        elif element in specialList:
+            return cls.SPECIAL
+        else:
+            raise ValueError(f'unknown PokepediaElementType: \"{element}\"')
+
+
 class PokepediaGeneration(Enum):
 
     GENERATION_1 = auto()
@@ -234,7 +249,6 @@ class PokepediaGeneration(Enum):
             return 'G8'
         else:
             raise RuntimeError(f'unknown PokepediaGeneration: \"{self}\"')
-
 
 
 class PokepediaMoveGeneration():
@@ -364,6 +378,7 @@ class PokepediaMove():
 
         return genMoveStrings
 
+
 class PokepediaPokemon():
 
     def __init__(
@@ -436,6 +451,9 @@ class PokepediaRepository():
         for past_value in reversed(past_values):
             generation = PokepediaGeneration.fromStr(past_value['version_group']['name'])
 
+            if damageClass is not PokepediaDamageClass.STATUS and generation is PokepediaGeneration.GENERATION_1 or generation is PokepediaGeneration.GENERATION_2 or generation is PokepediaGeneration.GENERATION_3:
+                damageClass = PokepediaDamageClass.getTypeBasedClass(elementType)
+
             move = PokepediaMoveGeneration(
                 accuracy = accuracy,
                 power = power,
@@ -454,11 +472,11 @@ class PokepediaRepository():
                 pp = past_value['pp']
             if past_value['type'] is not None:
                 elementType = PokepediaElementType.fromStr(past_value['type']['name'])
-            # moveType needs to be updated here, gen 1-3 have hardcoded movetypes based off pokepediaType
-            #
-            #
 
         generation = PokepediaGeneration.fromStr(jsonResponse['generation']['name'])
+
+        if damageClass is not PokepediaDamageClass.STATUS and generation is PokepediaGeneration.GENERATION_1 or generation is PokepediaGeneration.GENERATION_2 or generation is PokepediaGeneration.GENERATION_3:
+            damageClass = PokepediaDamageClass.getTypeBasedClass(elementType)
 
         move = PokepediaMoveGeneration(
             accuracy = accuracy,
@@ -470,6 +488,8 @@ class PokepediaRepository():
         )
 
         pokepediaMoveDictionary[generation] = move
+
+        # TODO scan for case where gen4+ type changed but not reflected in past values
 
         return pokepediaMoveDictionary
 
