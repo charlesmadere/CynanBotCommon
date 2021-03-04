@@ -262,9 +262,7 @@ class PokepediaMoveGeneration():
         elementType: PokepediaElementType,
         generation: PokepediaGeneration
     ):
-        if not utils.isValidNum(accuracy):
-            raise ValueError(f'accuracy argument is malformed: \"{accuracy}\"')
-        elif not utils.isValidNum(pp):
+        if not utils.isValidNum(pp):
             raise ValueError(f'pp argument is malformed: \"{pp}\"')
         elif damageClass is None:
             raise ValueError(f'damageClass argument is malformed: \"{damageClass}\"')
@@ -318,11 +316,17 @@ class PokepediaMoveGeneration():
     def hasPower(self) -> bool:
         return utils.isValidNum(self.__power)
 
+    def hasAccuracy(self) -> bool:
+        return utils.isValidNum(self.__accuracy)
+
     def toStr(self) -> str:
         powerStr = ''
+        accuracyStr = ''
         if self.hasPower():
             powerStr = f'💪 {self.getPowerStr()}, '
-        return f'{self.__generation.toStr()}: {powerStr}🎯 {self.getAccuracyStr()}, {self.getPpStr()}, {self.__elementType.getEmojiOrStr().lower()} type, {self.__damageClass.toStr().lower()}'
+        if self.hasAccuracy():
+            accuracyStr = f'🎯 {self.getAccuracyStr()}, '
+        return f'{self.__generation.toStr()}: {powerStr}{accuracyStr}{self.getPpStr()}, {self.__elementType.getEmojiOrStr().lower()} type, {self.__damageClass.toStr().lower()}'
 
 
 class PokepediaMove():
