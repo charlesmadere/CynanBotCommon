@@ -7,8 +7,8 @@ import requests
 from requests import ConnectionError, HTTPError, Timeout
 from urllib3.exceptions import MaxRetryError, NewConnectionError
 
-# import CynanBotCommon.utils as utils
-import utils
+import CynanBotCommon.utils as utils
+# import utils
 
 
 class PokepediaElementType(Enum):
