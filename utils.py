@@ -4,11 +4,14 @@ from datetime import datetime
 from typing import List
 
 
-def cleanStr(s: str) -> str:
+def cleanStr(s: str, replacement: str = ' ') -> str:
+    if replacement is None:
+        raise ValueError(f'replacement argument is malformed: \"{replacement}\"')
+
     if s is None:
         return ''
     else:
-        return s.replace('\r\n', ' ').replace('\r', ' ').replace('\n', ' ').strip()
+        return s.replace('\r\n', replacement).replace('\r', replacement).replace('\n', replacement).strip()
 
 def formatTime(time) -> str:
     if time is None:
