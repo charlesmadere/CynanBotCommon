@@ -7,8 +7,10 @@ import requests
 from requests import ConnectionError, HTTPError, Timeout
 from urllib3.exceptions import MaxRetryError, NewConnectionError
 
-import CynanBotCommon.utils as utils
-# import utils
+try:
+    import CynanBotCommon.utils as utils
+except:
+    import utils
 
 
 class PokepediaElementType(Enum):
@@ -89,10 +91,10 @@ class PokepediaElementType(Enum):
             return '🔥'
         elif self is PokepediaElementType.FLYING:
             return '🐦'
-        elif self is PokepediaElementType.GRASS:
-            return '🍃'
         elif self is PokepediaElementType.GHOST:
             return '👻'
+        elif self is PokepediaElementType.GRASS:
+            return '🍃'
         elif self is PokepediaElementType.ICE:
             return '❄'
         elif self is PokepediaElementType.POISON:
@@ -173,6 +175,22 @@ class PokepediaDamageClass(Enum):
         else:
             raise ValueError(f'unknown PokepediaDamageClass: \"{text}\"')
 
+    # gen 1-3 have damage classes based off element type
+    @classmethod
+    def getTypeBasedDamageClass(cls, elementType: PokepediaElementType):
+        if elementType is None:
+            raise ValueError(f'elementType argument is malformed: \"{elementType}\"')
+
+        physicalList = [ PokepediaElementType.NORMAL, PokepediaElementType.FIGHTING, PokepediaElementType.FLYING, PokepediaElementType.POISON, PokepediaElementType.GROUND, PokepediaElementType.ROCK, PokepediaElementType.BUG, PokepediaElementType.GHOST, PokepediaElementType.STEEL ]
+        specialList = [ PokepediaElementType.FIRE, PokepediaElementType.WATER, PokepediaElementType.GRASS, PokepediaElementType.ELECTRIC, PokepediaElementType.PSYCHIC, PokepediaElementType.ICE, PokepediaElementType.DRAGON, PokepediaElementType.DARK ]
+
+        if elementType in physicalList:
+            return cls.PHYSICAL
+        elif elementType in specialList:
+            return cls.SPECIAL
+        else:
+            raise ValueError(f'unknown PokepediaElementType: \"{elementType}\"')
+
     def toStr(self) -> str:
         if self is PokepediaDamageClass.PHYSICAL:
             return 'Physical'
@@ -182,19 +200,6 @@ class PokepediaDamageClass(Enum):
             return 'Status'
         else:
             raise RuntimeError(f'unknown PokepediaDamageClass: \"{self}\"')
-
-    # gen 1-3 have damage classes based off element type
-    @classmethod
-    def getTypeBasedClass(cls, element: PokepediaElementType):
-        physicalList = [PokepediaElementType.NORMAL,PokepediaElementType.FIGHTING,PokepediaElementType.FLYING,PokepediaElementType.POISON,PokepediaElementType.GROUND,PokepediaElementType.ROCK,PokepediaElementType.BUG,PokepediaElementType.GHOST,PokepediaElementType.STEEL]
-        specialList = [PokepediaElementType.FIRE,PokepediaElementType.WATER,PokepediaElementType.GRASS,PokepediaElementType.ELECTRIC,PokepediaElementType.PSYCHIC,PokepediaElementType.ICE,PokepediaElementType.DRAGON,PokepediaElementType.DARK]
-
-        if element in physicalList:
-            return cls.PHYSICAL
-        elif element in specialList:
-            return cls.SPECIAL
-        else:
-            raise ValueError(f'unknown PokepediaElementType: \"{element}\"')
 
 
 class PokepediaGeneration(Enum):
@@ -229,6 +234,9 @@ class PokepediaGeneration(Enum):
             return cls.GENERATION_8
         else:
             return cls.GENERATION_1
+
+    def isEarlyGeneration(self) -> bool:
+        return self is PokepediaGeneration.GENERATION_1 or self is PokepediaGeneration.GENERATION_2 or self is PokepediaGeneration.GENERATION_3
 
     def toStr(self) -> str:
         if self is PokepediaGeneration.GENERATION_1:
@@ -282,8 +290,11 @@ class PokepediaMoveGeneration():
         return self.__accuracy
 
     def getAccuracyStr(self) -> str:
-        formattedAccuracy = locale.format_string("%d", self.__accuracy, grouping = True)
-        return f'{formattedAccuracy}%'
+        if self.hasAccuracy():
+            formattedAccuracy = locale.format_string("%d", self.__accuracy, grouping = True)
+            return f'{formattedAccuracy}%'
+        else:
+            raise RuntimeError(f'This PokepediaGenerationMove ({self}) does not have an accuracy value!')
 
     def getDamageClass(self) -> PokepediaDamageClass:
         return self.__damageClass
@@ -295,16 +306,13 @@ class PokepediaMoveGeneration():
         return self.__generation
 
     def getPower(self) -> int:
-        if self.hasPower():
-            return self.__power
-        else:
-            return RuntimeError(f'This PokepediaGenerationMove does not have a power value!')
+        return self.__power
 
     def getPowerStr(self) -> str:
         if self.hasPower():
             return locale.format_string("%d", self.__power, grouping = True)
         else:
-            return None
+            raise RuntimeError(f'This PokepediaGenerationMove ({self}) does not have a power value!')
 
     def getPp(self) -> int:
         return self.__pp
@@ -313,19 +321,21 @@ class PokepediaMoveGeneration():
         formattedPp = locale.format_string("%d", self.__pp, grouping = True)
         return f'{formattedPp}pp'
 
-    def hasPower(self) -> bool:
-        return utils.isValidNum(self.__power)
-
     def hasAccuracy(self) -> bool:
         return utils.isValidNum(self.__accuracy)
 
+    def hasPower(self) -> bool:
+        return utils.isValidNum(self.__power)
+
     def toStr(self) -> str:
         powerStr = ''
-        accuracyStr = ''
         if self.hasPower():
             powerStr = f'💪 {self.getPowerStr()}, '
+
+        accuracyStr = ''
         if self.hasAccuracy():
             accuracyStr = f'🎯 {self.getAccuracyStr()}, '
+
         return f'{self.__generation.toStr()}: {powerStr}{accuracyStr}{self.getPpStr()}, {self.__elementType.getEmojiOrStr().lower()} type, {self.__damageClass.toStr().lower()}'
 
 
@@ -352,6 +362,9 @@ class PokepediaMove():
         self.__name = name
         self.__rawName = rawName
 
+    def getDescription(self) -> str:
+        return self.__description
+
     def getGenerationMoves(self) -> Dict[PokepediaGeneration, PokepediaMoveGeneration]:
         return self.__generationMoves
 
@@ -360,9 +373,6 @@ class PokepediaMove():
 
     def getRawName(self) -> str:
         return self.__rawName
-
-    def getDescription(self) -> str:
-        return self.__description
 
     def toStr(self, delimiter: str = '; ') -> str:
         if delimiter is None:
@@ -377,7 +387,7 @@ class PokepediaMove():
 
         genMoveString = delimiter.join(genMoveStrings)
         return f'{self.getName()} — {genMoveString}'
-    
+
     def toStrList(self) -> List[str]:
         genMoveStrings = list()
         genMoveStrings.append(f'{self.getName()} — {self.getDescription()}')
@@ -428,7 +438,7 @@ class PokepediaRepository():
         pass
 
     def __getEnName(self, jsonResponse: Dict) -> str:
-        if jsonResponse is None:
+        if not utils.hasItems(jsonResponse):
             raise ValueError(f'jsonResponse argument is malformed: \"{jsonResponse}\"')
 
         names = jsonResponse['names']
@@ -439,13 +449,13 @@ class PokepediaRepository():
             if name['language']['name'] == 'en':
                 return utils.cleanStr(name['name'].title())
 
-        raise RuntimeError(f'can\'t find \"en\" language name in \"names\" field: {names}')
+        raise RuntimeError(f'can\'t find \"en\" language name in \"names\" field: {jsonResponse}')
 
-    def __getPokepediaMoveDictionary(self, jsonResponse: Dict) -> Dict[PokepediaGeneration, PokepediaMoveGeneration]:
-        if jsonResponse is None:
+    def __getMoveDictionary(self, jsonResponse: Dict) -> Dict[PokepediaGeneration, PokepediaMoveGeneration]:
+        if not utils.hasItems(jsonResponse):
             raise ValueError(f'jsonResponse argument is malformed: \"{jsonResponse}\"')
 
-        pokepediaMoveDictionary = {}
+        moveDictionary = dict()
 
         # begin with current gen stats
         accuracy = jsonResponse['accuracy']
@@ -454,7 +464,6 @@ class PokepediaRepository():
         damageClass = PokepediaDamageClass.fromStr(jsonResponse['damage_class']['name'])
         elementType = PokepediaElementType.fromStr(jsonResponse['type']['name'])
         move = None
-        #
 
         past_values = jsonResponse['past_values']
 
@@ -462,8 +471,8 @@ class PokepediaRepository():
         for past_value in reversed(past_values):
             generation = PokepediaGeneration.fromStr(past_value['version_group']['name'])
 
-            if damageClass is not PokepediaDamageClass.STATUS and generation is PokepediaGeneration.GENERATION_1 or generation is PokepediaGeneration.GENERATION_2 or generation is PokepediaGeneration.GENERATION_3:
-                damageClass = PokepediaDamageClass.getTypeBasedClass(elementType)
+            if damageClass is not PokepediaDamageClass.STATUS and generation.isEarlyGeneration():
+                damageClass = PokepediaDamageClass.getTypeBasedDamageClass(elementType)
 
             move = PokepediaMoveGeneration(
                 accuracy = accuracy,
@@ -474,20 +483,24 @@ class PokepediaRepository():
                 generation = generation
             )
 
-            pokepediaMoveDictionary[generation] = move
-            if past_value['accuracy'] is not None:
+            moveDictionary[generation] = move
+
+            if utils.isValidNum(past_value.get('accuracy')):
                 accuracy = past_value['accuracy']
-            if past_value['power'] is not None:
+
+            if utils.isValidNum(past_value.get('power')):
                 power = past_value['power']
-            if past_value['pp'] is not None:
+
+            if utils.isValidNum(past_value.get('pp')):
                 pp = past_value['pp']
-            if past_value['type'] is not None:
+
+            if past_value.get('type') is not None:
                 elementType = PokepediaElementType.fromStr(past_value['type']['name'])
 
         generation = PokepediaGeneration.fromStr(jsonResponse['generation']['name'])
 
-        if damageClass is not PokepediaDamageClass.STATUS and generation is PokepediaGeneration.GENERATION_1 or generation is PokepediaGeneration.GENERATION_2 or generation is PokepediaGeneration.GENERATION_3:
-            damageClass = PokepediaDamageClass.getTypeBasedClass(elementType)
+        if damageClass is not PokepediaDamageClass.STATUS and generation.isEarlyGeneration():
+            damageClass = PokepediaDamageClass.getTypeBasedDamageClass(elementType)
 
         move = PokepediaMoveGeneration(
             accuracy = accuracy,
@@ -498,45 +511,48 @@ class PokepediaRepository():
             generation = generation
         )
 
-        pokepediaMoveDictionary[generation] = move
+        moveDictionary[generation] = move
 
         # TODO scan for case where gen4+ type changed but not reflected in past values
-        if PokepediaGeneration.GENERATION_4 not in pokepediaMoveDictionary:
-            if PokepediaGeneration.GENERATION_3 in pokepediaMoveDictionary:
-                if pokepediaMoveDictionary[PokepediaGeneration.GENERATION_3].getDamageClass() is not PokepediaDamageClass.fromStr(jsonResponse['damage_class']['name']):
+        if PokepediaGeneration.GENERATION_4 not in moveDictionary:
+            if PokepediaGeneration.GENERATION_3 in moveDictionary:
+                if moveDictionary[PokepediaGeneration.GENERATION_3].getDamageClass() is not PokepediaDamageClass.fromStr(jsonResponse['damage_class']['name']):
                     move = PokepediaMoveGeneration(
-                        accuracy = pokepediaMoveDictionary[PokepediaGeneration.GENERATION_3].getAccuracy(),
-                        power = pokepediaMoveDictionary[PokepediaGeneration.GENERATION_3].getPower(),
-                        pp = pokepediaMoveDictionary[PokepediaGeneration.GENERATION_3].getPp(),
+                        accuracy = moveDictionary[PokepediaGeneration.GENERATION_3].getAccuracy(),
+                        power = moveDictionary[PokepediaGeneration.GENERATION_3].getPower(),
+                        pp = moveDictionary[PokepediaGeneration.GENERATION_3].getPp(),
                         damageClass = PokepediaDamageClass.fromStr(jsonResponse['damage_class']['name']),
-                        elementType = pokepediaMoveDictionary[PokepediaGeneration.GENERATION_3].getElementType(),
+                        elementType = moveDictionary[PokepediaGeneration.GENERATION_3].getElementType(),
                         generation = PokepediaGeneration.GENERATION_4
                     )
-                    pokepediaMoveDictionary[PokepediaGeneration.GENERATION_4] = move
-            elif PokepediaGeneration.GENERATION_2 in pokepediaMoveDictionary:
-                if pokepediaMoveDictionary[PokepediaGeneration.GENERATION_2].getDamageClass() is not PokepediaDamageClass.fromStr(jsonResponse['damage_class']['name']):
-                    move = PokepediaMoveGeneration(
-                        accuracy = pokepediaMoveDictionary[PokepediaGeneration.GENERATION_2].getAccuracy(),
-                        power = pokepediaMoveDictionary[PokepediaGeneration.GENERATION_2].getPower(),
-                        pp = pokepediaMoveDictionary[PokepediaGeneration.GENERATION_2].getPp(),
-                        damageClass = PokepediaDamageClass.fromStr(jsonResponse['damage_class']['name']),
-                        elementType = pokepediaMoveDictionary[PokepediaGeneration.GENERATION_2].getElementType(),
-                        generation = PokepediaGeneration.GENERATION_4
-                    )
-                    pokepediaMoveDictionary[PokepediaGeneration.GENERATION_4] = move
-            elif PokepediaGeneration.GENERATION_1 in pokepediaMoveDictionary:
-                if pokepediaMoveDictionary[PokepediaGeneration.GENERATION_1].getDamageClass() is not PokepediaDamageClass.fromStr(jsonResponse['damage_class']['name']):
-                    move = PokepediaMoveGeneration(
-                        accuracy = pokepediaMoveDictionary[PokepediaGeneration.GENERATION_1].getAccuracy(),
-                        power = pokepediaMoveDictionary[PokepediaGeneration.GENERATION_1].getPower(),
-                        pp = pokepediaMoveDictionary[PokepediaGeneration.GENERATION_1].getPp(),
-                        damageClass = PokepediaDamageClass.fromStr(jsonResponse['damage_class']['name']),
-                        elementType = pokepediaMoveDictionary[PokepediaGeneration.GENERATION_1].getElementType(),
-                        generation = PokepediaGeneration.GENERATION_4
-                    )
-                    pokepediaMoveDictionary[PokepediaGeneration.GENERATION_4] = move
 
-        return pokepediaMoveDictionary
+                    moveDictionary[PokepediaGeneration.GENERATION_4] = move
+            elif PokepediaGeneration.GENERATION_2 in moveDictionary:
+                if moveDictionary[PokepediaGeneration.GENERATION_2].getDamageClass() is not PokepediaDamageClass.fromStr(jsonResponse['damage_class']['name']):
+                    move = PokepediaMoveGeneration(
+                        accuracy = moveDictionary[PokepediaGeneration.GENERATION_2].getAccuracy(),
+                        power = moveDictionary[PokepediaGeneration.GENERATION_2].getPower(),
+                        pp = moveDictionary[PokepediaGeneration.GENERATION_2].getPp(),
+                        damageClass = PokepediaDamageClass.fromStr(jsonResponse['damage_class']['name']),
+                        elementType = moveDictionary[PokepediaGeneration.GENERATION_2].getElementType(),
+                        generation = PokepediaGeneration.GENERATION_4
+                    )
+
+                    moveDictionary[PokepediaGeneration.GENERATION_4] = move
+            elif PokepediaGeneration.GENERATION_1 in moveDictionary:
+                if moveDictionary[PokepediaGeneration.GENERATION_1].getDamageClass() is not PokepediaDamageClass.fromStr(jsonResponse['damage_class']['name']):
+                    move = PokepediaMoveGeneration(
+                        accuracy = moveDictionary[PokepediaGeneration.GENERATION_1].getAccuracy(),
+                        power = moveDictionary[PokepediaGeneration.GENERATION_1].getPower(),
+                        pp = moveDictionary[PokepediaGeneration.GENERATION_1].getPp(),
+                        damageClass = PokepediaDamageClass.fromStr(jsonResponse['damage_class']['name']),
+                        elementType = moveDictionary[PokepediaGeneration.GENERATION_1].getElementType(),
+                        generation = PokepediaGeneration.GENERATION_4
+                    )
+
+                    moveDictionary[PokepediaGeneration.GENERATION_4] = move
+
+        return moveDictionary
 
     def searchMoves(self, name: str) -> PokepediaMove:
         if not utils.isValidStr(name):
@@ -568,13 +584,13 @@ class PokepediaRepository():
         if not utils.hasItems(flavor_text_entries):
             raise ValueError(f'\"flavor_text_entries\" field in JSON response is empty: {jsonResponse}')
 
-        for flavor_text_entry in flavor_text_entries:
-            if flavor_text_entry['language']['name'] == 'en':
-                description = utils.cleanStr(flavor_text_entry['flavor_text'])
+        for flavorTextEntry in flavor_text_entries:
+            if flavorTextEntry['language']['name'] == 'en':
+                description = utils.cleanStr(flavorTextEntry['flavor_text'], '')
                 break
 
         return PokepediaMove(
-            generationMoves = self.__getPokepediaMoveDictionary(jsonResponse),
+            generationMoves = self.__getMoveDictionary(jsonResponse),
             description = description,
             name = self.__getEnName(jsonResponse),
             rawName = jsonResponse['name']
