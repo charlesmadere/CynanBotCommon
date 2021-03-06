@@ -334,21 +334,23 @@ class PokepediaMove():
     def __init__(
         self,
         generationMoves: Dict[PokepediaGeneration, PokepediaMoveGeneration],
+        description: str,
         name: str,
-        rawName: str,
-        description: str
+        rawName: str
     ):
         if not utils.hasItems(generationMoves):
             raise ValueError(f'generationMoves argument is malformed: \"{generationMoves}\"')
+        elif not utils.isValidStr(description):
+            raise ValueError(f'description argument is malformed: \"{description}\"')
         elif not utils.isValidStr(name):
             raise ValueError(f'name argument is malformed: \"{name}\"')
         elif not utils.isValidStr(rawName):
             raise ValueError(f'rawName argument is malformed: \"{rawName}\"')
 
         self.__generationMoves = generationMoves
+        self.__description = description
         self.__name = name
         self.__rawName = rawName
-        self.__description = description
 
     def getGenerationMoves(self) -> Dict[PokepediaGeneration, PokepediaMoveGeneration]:
         return self.__generationMoves
@@ -374,11 +376,11 @@ class PokepediaMove():
                 genMoveStrings.append(genMove.toStr())
 
         genMoveString = delimiter.join(genMoveStrings)
-        return f"{self.getName()} — {genMoveString}"
+        return f'{self.getName()} — {genMoveString}'
     
     def toStrList(self) -> List[str]:
         genMoveStrings = list()
-        genMoveStrings.append(f"{self.getName()} - {self.getDescription()}")
+        genMoveStrings.append(f'{self.getName()} — {self.getDescription()}')
 
         for gen in PokepediaGeneration:
             if gen in self.__generationMoves:
@@ -435,7 +437,7 @@ class PokepediaRepository():
 
         for name in names:
             if name['language']['name'] == 'en':
-                return name['name'].title()
+                return utils.cleanStr(name['name'].title())
 
         raise RuntimeError(f'can\'t find \"en\" language name in \"names\" field: {names}')
 
@@ -542,6 +544,7 @@ class PokepediaRepository():
 
         name = utils.cleanStr(name)
         name = name.replace(' ', '-')
+        print(f'Searching for Pokemon move \"{name}\"...')
 
         rawResponse = None
         try:
@@ -560,12 +563,11 @@ class PokepediaRepository():
             print(f'Exception occurred when attempting to decode Pokemon move response into JSON for \"{name}\": {e}')
             raise RuntimeError(f'Exception occurred when attempting to decode Pokemon move response into JSON for \"{name}\": {e}')
 
-        description = ""
-        flavor_text_entries = jsonResponse['flavor_text_entries']
+        description = ''
+        flavor_text_entries = jsonResponse.get('flavor_text_entries')
         if not utils.hasItems(flavor_text_entries):
             raise ValueError(f'\"flavor_text_entries\" field in JSON response is empty: {jsonResponse}')
 
-        
         for flavor_text_entry in flavor_text_entries:
             if flavor_text_entry['language']['name'] == 'en':
                 description = utils.cleanStr(flavor_text_entry['flavor_text'])
@@ -573,9 +575,9 @@ class PokepediaRepository():
 
         return PokepediaMove(
             generationMoves = self.__getPokepediaMoveDictionary(jsonResponse),
+            description = description,
             name = self.__getEnName(jsonResponse),
-            rawName = jsonResponse['name'],
-            description = description
+            rawName = jsonResponse['name']
         )
 
     def searchPokemon(self, name: str) -> PokepediaPokemon:
@@ -583,6 +585,8 @@ class PokepediaRepository():
             raise ValueError(f'name argument is malformed: \"{name}\"')
 
         name = utils.cleanStr(name)
+        name = name.replace(' ', '-')
+        print(f'Searching for Pokemon \"{name}\"...')
 
         rawResponse = None
         try:
