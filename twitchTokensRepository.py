@@ -34,7 +34,7 @@ class TwitchTokensRepository():
             raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
 
         jsonContents = self.__readJson(twitchHandle)
-        accessToken = jsonContents['accessToken']
+        accessToken = jsonContents.get('accessToken')
 
         if not utils.isValidStr(accessToken):
             raise ValueError(f'\"accessToken\" value in \"{self.__twitchTokensFile}\" is malformed: \"{accessToken}\"')
@@ -46,7 +46,7 @@ class TwitchTokensRepository():
             raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
 
         jsonContents = self.__readJson(twitchHandle)
-        refreshToken = jsonContents['refreshToken']
+        refreshToken = jsonContents.get('refreshToken')
 
         if not utils.isValidStr(refreshToken):
             raise ValueError(f'\"refreshToken\" value in \"{self.__twitchTokensFile}\" is malformed: \"{refreshToken}\"')
