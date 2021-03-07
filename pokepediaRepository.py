@@ -586,7 +586,7 @@ class PokepediaRepository():
 
         for flavorTextEntry in flavor_text_entries:
             if flavorTextEntry['language']['name'] == 'en':
-                description = utils.cleanStr(flavorTextEntry['flavor_text'], '')
+                description = utils.cleanStr(flavorTextEntry['flavor_text'])
                 break
 
         return PokepediaMove(
