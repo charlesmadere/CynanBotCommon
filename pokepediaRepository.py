@@ -583,12 +583,12 @@ class PokepediaRepository():
                 continue
             elif move is None:
                 move = moveGenerationDictionary[pokepediaGeneration]
-                continue
+            else:
+                comparison = moveGenerationDictionary[pokepediaGeneration]
 
-            comparison = moveGenerationDictionary[pokepediaGeneration]
+                if move.getAccuracy() == comparison.getAccuracy() and move.getDamageClass() == comparison.getDamageClass() and move.getElementType() == comparison.getElementType() and move.getPower() == comparison.getPower() and move.getPp() == comparison.getPp():
+                    del moveGenerationDictionary[pokepediaGeneration]
 
-            if move.getAccuracy() == comparison.getAccuracy() and move.getDamageClass() == comparison.getDamageClass() and move.getElementType() == comparison.getElementType() and move.getPower() == comparison.getPower() and move.getPp() == comparison.getPp():
-                del moveGenerationDictionary[pokepediaGeneration]
                 move = comparison
 
         return moveGenerationDictionary
