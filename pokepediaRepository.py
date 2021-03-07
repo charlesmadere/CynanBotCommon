@@ -437,13 +437,27 @@ class PokepediaRepository():
     def __init__(self):
         pass
 
+    def __getEnDescription(self, jsonResponse: Dict) -> str:
+        if not utils.hasItems(jsonResponse):
+            raise ValueError(f'jsonResponse argument is malformed: \"{jsonResponse}\"')
+
+        flavorTextEntries = jsonResponse.get('flavor_text_entries')
+        if not utils.hasItems(flavorTextEntries):
+            raise ValueError(f'\"flavor_text_entries\" field in JSON response is null or empty: {jsonResponse}')
+
+        for flavorTextEntry in flavorTextEntries:
+            if flavorTextEntry['language']['name'] == 'en':
+                return utils.cleanStr(flavorTextEntry['flavor_text'])
+
+        raise RuntimeError(f'can\'t find \"en\" language name in \"flavor_text_entries\" field: {jsonResponse}')
+
     def __getEnName(self, jsonResponse: Dict) -> str:
         if not utils.hasItems(jsonResponse):
             raise ValueError(f'jsonResponse argument is malformed: \"{jsonResponse}\"')
 
-        names = jsonResponse['names']
+        names = jsonResponse.get('names')
         if not utils.hasItems(names):
-            raise ValueError(f'\"names\" field in JSON response is empty: {jsonResponse}')
+            raise ValueError(f'\"names\" field in JSON response is null or empty: {jsonResponse}')
 
         for name in names:
             if name['language']['name'] == 'en':
@@ -579,19 +593,9 @@ class PokepediaRepository():
             print(f'Exception occurred when attempting to decode Pokemon move response into JSON for \"{name}\": {e}')
             raise RuntimeError(f'Exception occurred when attempting to decode Pokemon move response into JSON for \"{name}\": {e}')
 
-        description = ''
-        flavor_text_entries = jsonResponse.get('flavor_text_entries')
-        if not utils.hasItems(flavor_text_entries):
-            raise ValueError(f'\"flavor_text_entries\" field in JSON response is empty: {jsonResponse}')
-
-        for flavorTextEntry in flavor_text_entries:
-            if flavorTextEntry['language']['name'] == 'en':
-                description = utils.cleanStr(flavorTextEntry['flavor_text'])
-                break
-
         return PokepediaMove(
             generationMoves = self.__getMoveGenerationDictionary(jsonResponse),
-            description = description,
+            description = self.__getEnDescription(jsonResponse),
             name = self.__getEnName(jsonResponse),
             rawName = jsonResponse['name']
         )
