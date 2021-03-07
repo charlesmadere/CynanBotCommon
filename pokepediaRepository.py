@@ -481,7 +481,8 @@ class PokepediaRepository():
 
         pastValues = jsonResponse['past_values']
 
-        # iterate backwards and insert to dictionary once a gen is found. then 'un-patch' for previous gens
+        # iterate backwards and insert to dictionary once a gen is found. then 'un-patch' for
+        # previous gens
         for pastValue in reversed(pastValues):
             generation = PokepediaGeneration.fromStr(pastValue['version_group']['name'])
 
@@ -527,7 +528,7 @@ class PokepediaRepository():
 
         moveGenerationDictionary[generation] = move
 
-        # scan for case where gen4+ type changed but not reflected in past_values array
+        # scan for case where gen4+ type changed but not reflected in past_values JSON array
         if PokepediaGeneration.GENERATION_4 not in moveGenerationDictionary:
             if PokepediaGeneration.GENERATION_3 in moveGenerationDictionary:
                 if moveGenerationDictionary[PokepediaGeneration.GENERATION_3].getDamageClass() != damageClass:
