@@ -567,6 +567,23 @@ class PokepediaRepository():
 
                     moveGenerationDictionary[PokepediaGeneration.GENERATION_4] = move
 
+        # This loop goes through the dictionary of generational moves we've now built up and stored
+        # within moveGenerationDictionary and removes any generations that are exact duplicates,
+        # UNLESS there exists a generation between the between the duplicate(s) that is different.
+        move = None
+        for pokepediaGeneration in PokepediaGeneration:
+            if pokepediaGeneration not in moveGenerationDictionary:
+                continue
+            elif move is None:
+                move = moveGenerationDictionary[pokepediaGeneration]
+                continue
+
+            comparison = moveGenerationDictionary[pokepediaGeneration]
+
+            if move.getAccuracy() == comparison.getAccuracy() and move.getDamageClass() == comparison.getDamageClass() and move.getElementType() == comparison.getElementType() and move.getPower() == comparison.getPower() and move.getPp() == comparison.getPp():
+                del moveGenerationDictionary[pokepediaGeneration]
+                move = comparison
+
         return moveGenerationDictionary
 
     def searchMoves(self, name: str) -> PokepediaMove:
