@@ -1,3 +1,4 @@
+import html
 import random
 from datetime import datetime, timedelta
 from enum import Enum, auto
@@ -190,11 +191,11 @@ class TriviaRepository():
         correctMultipleChoiceAnswer = None
 
         if triviaType is TriviaType.MULTIPLE_CHOICE:
-            correctMultipleChoiceAnswer = utils.cleanStr(resultJson['correct_answer'])
+            correctMultipleChoiceAnswer = html.unescape(utils.cleanStr(resultJson['correct_answer']))
 
             multipleChoiceResponses = list()
             for answer in resultJson['incorrect_answers']:
-                multipleChoiceResponses.append(utils.cleanStr(answer))
+                multipleChoiceResponses.append(html.unescape(utils.cleanStr(answer)))
 
             multipleChoiceResponses.append(correctMultipleChoiceAnswer)
             random.shuffle(multipleChoiceResponses)
@@ -203,7 +204,7 @@ class TriviaRepository():
 
             trueFalseResponses = list()
             for answer in resultJson['incorrect_answers']:
-                trueFalseResponses.append(utils.cleanStr(answer))
+                trueFalseResponses.append(html.unescape(utils.cleanStr(answer)))
 
             trueFalseResponses.append(utils.cleanStr(resultJson['correct_answer']))
             random.shuffle(trueFalseResponses)
@@ -211,8 +212,8 @@ class TriviaRepository():
             raise ValueError(f'triviaType value is unknown: \"{triviaType}\"')
 
         return TriviaResponse(
-            category = utils.cleanStr(resultJson['category']),
-            question = utils.cleanStr(resultJson['question']),
+            category = html.unescape(utils.cleanStr(resultJson['category'])),
+            question = html.unescape(utils.cleanStr(resultJson['question'])),
             triviaType = triviaType,
             trueFalseResponses = trueFalseResponses,
             correctTrueFalseAnswer = correctTrueFalseAnswer,
