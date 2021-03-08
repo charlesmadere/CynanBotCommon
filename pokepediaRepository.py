@@ -76,7 +76,7 @@ class PokepediaElementType(Enum):
         elif text == 'water':
             return cls.WATER
         else:
-            raise ValueError(f'unknown PokepediaElementType: \"{text}\'')
+            raise ValueError(f'unknown PokepediaElementType: \"{text}\"')
 
     def getEmoji(self) -> str:
         if self is PokepediaElementType.BUG:
