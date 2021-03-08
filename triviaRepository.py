@@ -102,9 +102,9 @@ class TriviaResponse():
 
     def toAnswerStr(self) -> str:
         if self.__triviaType is TriviaType.MULTIPLE_CHOICE:
-            return self.__correctMultipleChoiceAnswer
+            return f'The trivia answer is: {self.__correctMultipleChoiceAnswer}'
         elif self.__triviaType is TriviaType.TRUE_FALSE:
-            return self.__correctTrueFalseAnswer
+            return f'The trivia answer is: {self.__correctTrueFalseAnswer}'
         else:
             raise RuntimeError(f'triviaType is unknown value: \"{self.__triviaType}\"')
 
