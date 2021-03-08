@@ -1,9 +1,8 @@
-import locale
 import random
 from datetime import datetime, timedelta
 from enum import Enum, auto
 from json.decoder import JSONDecodeError
-from typing import Dict, List
+from typing import List
 
 import requests
 from requests import ConnectionError, HTTPError, Timeout
@@ -101,41 +100,48 @@ class TriviaResponse():
         else:
             raise RuntimeError(f'triviaType is {self.__triviaType}, so trueFalseResponses is inaccessible')
 
-    def toStrList(self, delimiter: str = ', ') -> List[str]:
+    def toAnswerStr(self) -> str:
+        if self.__triviaType is TriviaType.MULTIPLE_CHOICE:
+            return self.__correctMultipleChoiceAnswer
+        elif self.__triviaType is TriviaType.TRUE_FALSE:
+            return self.__correctTrueFalseAnswer
+        else:
+            raise RuntimeError(f'triviaType is unknown value: \"{self.__triviaType}\"')
+
+    def toPromptStr(self, delimiter: str = ', ') -> str:
         if delimiter is None:
             raise ValueError(f'delimiter argument is malformed: \"{delimiter}\"')
 
         responses = None
-        answer = None
 
         if self.__triviaType is TriviaType.MULTIPLE_CHOICE:
             responses = delimiter.join(self.__multipleChoiceResponses)
-            answer = self.__correctMultipleChoiceAnswer
         elif self.__triviaType is TriviaType.TRUE_FALSE:
             responses = delimiter.join(self.__trueFalseResponses)
-            answer = self.__correctTrueFalseAnswer
         else:
             raise RuntimeError(f'triviaType is unknown value: \"{self.__triviaType}\"')
 
-        strings = list()
-        strings.append(f'{self.__question}: {responses}')
-        strings.append(answer)
-
-        return strings
+        return f'{self.__question} {responses}'
 
 
 class TriviaRepository():
 
     def __init__(
         self,
+        waitBeforeAnswerSeconds: int = 30,
         apiUrl: str = 'https://opentdb.com/api.php?amount=1',
         cacheTimeDelta: timedelta = timedelta(minutes = 30)
     ):
-        if not utils.isValidUrl(apiUrl):
+        if not utils.isValidNum(waitBeforeAnswerSeconds):
+            raise ValueError(f'waitBeforeAnswerSeconds is malformed: \"{waitBeforeAnswerSeconds}\"')
+        elif waitBeforeAnswerSeconds < 10:
+            raise ValueError(f'waitBeforeAnswerSeconds is too aggressive: \"{waitBeforeAnswerSeconds}\"')
+        elif not utils.isValidUrl(apiUrl):
             raise ValueError(f'apiUrl argument is malformed: \"{apiUrl}\"')
         elif cacheTimeDelta is None:
             raise ValueError(f'cacheTimeDelta argument is malformed: \"{cacheTimeDelta}\"')
 
+        self.__waitBeforeAnswerSeconds = waitBeforeAnswerSeconds
         self.__apiUrl = apiUrl
         self.__cacheTime = datetime.utcnow() - cacheTimeDelta
         self.__cacheTimeDelta = cacheTimeDelta
@@ -147,6 +153,9 @@ class TriviaRepository():
             self.__cacheTime = datetime.utcnow()
 
         return self.__triviaResponse
+
+    def getWaitBeforeAnswerSeconds(self) -> int:
+        return self.__waitBeforeAnswerSeconds
 
     def __refreshTrivia(self) -> TriviaResponse:
         print(f'Refreshing trivia... ({utils.getNowTimeText()})')
