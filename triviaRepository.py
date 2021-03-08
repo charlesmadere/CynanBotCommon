@@ -200,7 +200,7 @@ class TriviaRepository():
             multipleChoiceResponses.append(correctMultipleChoiceAnswer)
             random.shuffle(multipleChoiceResponses)
         elif triviaType is TriviaType.TRUE_FALSE:
-            correctTrueFalseAnswer = utils.getBoolFromDict(resultJson['correct_answer'])
+            correctTrueFalseAnswer = utils.getBoolFromDict(resultJson, 'correct_answer')
 
             trueFalseResponses = list()
             for answer in resultJson['incorrect_answers']:
