@@ -1,0 +1,212 @@
+import locale
+import random
+from datetime import datetime, timedelta
+from enum import Enum, auto
+from json.decoder import JSONDecodeError
+from typing import Dict, List
+
+import requests
+from requests import ConnectionError, HTTPError, Timeout
+from urllib3.exceptions import MaxRetryError, NewConnectionError
+
+try:
+    import CynanBotCommon.utils as utils
+except:
+    import utils as utils
+
+
+class TriviaType(Enum):
+
+    MULTIPLE_CHOICE = auto()
+    TRUE_FALSE = auto()
+
+    @classmethod
+    def fromStr(cls, text: str):
+        if not utils.isValidStr(text):
+            raise ValueError(f'text argument is malformed: \"{text}\"')
+
+        if text == 'boolean':
+            return cls.TRUE_FALSE
+        elif text == 'multiple':
+            return cls.MULTIPLE_CHOICE
+        else:
+            raise ValueError(f'unknown TriviaType: \"{text}\"')
+
+
+class TriviaResponse():
+
+    def __init__(
+        self,
+        category: str,
+        question: str,
+        triviaType: TriviaType,
+        trueFalseResponses: List[str] = None,
+        correctTrueFalseAnswer: bool = None,
+        multipleChoiceResponses: List[str] = None,
+        correctMultipleChoiceAnswer: str = None
+    ):
+        if not utils.isValidStr(category):
+            raise ValueError(f'category argument is malformed: \"{category}\"')
+        elif not utils.isValidStr(question):
+            raise ValueError(f'question argument is malformed: \"{question}\"')
+        elif triviaType is None:
+            raise ValueError(f'triviaType argument is malformed: \"{triviaType}\"')
+        elif triviaType is TriviaType.TRUE_FALSE and not utils.hasItems(trueFalseResponses):
+            raise ValueError(f'triviaType is {triviaType} but trueFalseResponses is malformed: \"{trueFalseResponses}\"')
+        elif triviaType is TriviaType.TRUE_FALSE and correctTrueFalseAnswer is None:
+            raise ValueError(f'triviaType is {triviaType} but correctTrueFalseAnswer is malformed: \"{correctTrueFalseAnswer}\"')
+        elif triviaType is TriviaType.MULTIPLE_CHOICE and not utils.hasItems(multipleChoiceResponses):
+            raise ValueError(f'triviaType is {triviaType} but multipleChoiceResponses is malformed: \"{multipleChoiceResponses}\"')
+        elif triviaType is TriviaType.MULTIPLE_CHOICE and not utils.isValidStr(correctMultipleChoiceAnswer):
+            raise ValueError(f'triviaType is {triviaType} but correctMultipleChoiceAnswer is malformed: \"{correctMultipleChoiceAnswer}\"')
+
+        self.__category = category
+        self.__question = question
+        self.__triviaType = triviaType
+        self.__trueFalseResponses = trueFalseResponses
+        self.__correctTrueFalseAnswer = correctTrueFalseAnswer
+        self.__multipleChoiceResponses = multipleChoiceResponses
+        self.__correctMultipleChoiceAnswer = correctMultipleChoiceAnswer
+
+    def getCategory(self) -> str:
+        return self.__category
+
+    def getCorrectMultipleChoiceAnswer(self) -> str:
+        if self.__triviaType is TriviaType.MULTIPLE_CHOICE:
+            return self.__correctMultipleChoiceAnswer
+        else:
+            raise RuntimeError(f'triviaType is {self.__triviaType}, so correctMultipleChoiceAnswer is inaccessible')
+
+    def getCorrectTrueFalseAnswer(self) -> bool:
+        if self.__triviaType is TriviaType.TRUE_FALSE:
+            return self.__correctTrueFalseAnswer
+        else:
+            raise RuntimeError(f'triviaType is {self.__triviaType}, so correctTrueFalseAnswer is inaccessible')
+
+    def getMultipleChoiceResponses(self) -> List[str]:
+        if self.__triviaType is TriviaType.MULTIPLE_CHOICE:
+            return self.__multipleChoiceResponses
+        else:
+            raise RuntimeError(f'triviaType is {self.__triviaType}, so multipleChoiceResponses is inaccessible')
+
+    def getQuestion(self) -> str:
+        return self.__question
+
+    def getTriviaType(self) -> TriviaType:
+        return self.__triviaType
+
+    def getTrueFalseResponses(self) -> List[str]:
+        if self.__triviaType is TriviaType.TRUE_FALSE:
+            return self.__trueFalseResponses
+        else:
+            raise RuntimeError(f'triviaType is {self.__triviaType}, so trueFalseResponses is inaccessible')
+
+    def toStrList(self, delimiter: str = ', ') -> List[str]:
+        if delimiter is None:
+            raise ValueError(f'delimiter argument is malformed: \"{delimiter}\"')
+
+        responses = None
+        answer = None
+
+        if self.__triviaType is TriviaType.MULTIPLE_CHOICE:
+            responses = delimiter.join(self.__multipleChoiceResponses)
+            answer = self.__correctMultipleChoiceAnswer
+        elif self.__triviaType is TriviaType.TRUE_FALSE:
+            responses = delimiter.join(self.__trueFalseResponses)
+            answer = self.__correctTrueFalseAnswer
+        else:
+            raise RuntimeError(f'triviaType is unknown value: \"{self.__triviaType}\"')
+
+        strings = list()
+        strings.append(f'{self.__question}: {responses}')
+        strings.append(answer)
+
+        return strings
+
+
+class TriviaRepository():
+
+    def __init__(
+        self,
+        apiUrl: str = 'https://opentdb.com/api.php?amount=1',
+        cacheTimeDelta: timedelta = timedelta(minutes = 30)
+    ):
+        if not utils.isValidUrl(apiUrl):
+            raise ValueError(f'apiUrl argument is malformed: \"{apiUrl}\"')
+        elif cacheTimeDelta is None:
+            raise ValueError(f'cacheTimeDelta argument is malformed: \"{cacheTimeDelta}\"')
+
+        self.__apiUrl = apiUrl
+        self.__cacheTime = datetime.utcnow() - cacheTimeDelta
+        self.__cacheTimeDelta = cacheTimeDelta
+        self.__triviaResponse = None
+
+    def fetchTrivia(self) -> TriviaResponse:
+        if self.__cacheTime + self.__cacheTimeDelta < datetime.utcnow() or self.__triviaResponse is None:
+            self.__triviaResponse = self.__refreshTrivia()
+            self.__cacheTime = datetime.utcnow()
+
+        return self.__triviaResponse
+
+    def __refreshTrivia(self) -> TriviaResponse:
+        print(f'Refreshing trivia... ({utils.getNowTimeText()})')
+
+        rawResponse = None
+        try:
+            rawResponse = requests.get(url = self.__apiUrl, timeout = utils.getDefaultTimeout())
+        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, Timeout) as e:
+            print(f'Exception occurred when attempting to fetch new trivia: {e}')
+            raise RuntimeError(f'Exception occurred when attempting to fetch new trivia: {e}')
+
+        jsonResponse = None
+        try:
+            jsonResponse = rawResponse.json()
+        except JSONDecodeError as e:
+            print(f'Exception occurred when attempting to decode trivia\'s response into JSON: {e}')
+            raise RuntimeError(f'Exception occurred when attempting to decode trivia\'s response into JSON: {e}')
+
+        if utils.getIntFromDict(jsonResponse, 'response_code', -1) != 0:
+            print(f'Rejecting trivia due to bad \"response_code\" value: {jsonResponse}')
+            raise ValueError(f'Rejecting trivia due to bad \"response_code\" value: {jsonResponse}')
+        elif not utils.hasItems(jsonResponse.get('results')):
+            print(f'Rejecting trivia due to null/empty \"results\" array: {jsonResponse}')
+            raise ValueError(f'Rejecting trivia due to null/empty \"results\" array: {jsonResponse}')
+
+        resultJson = jsonResponse['results'][0]
+        triviaType = TriviaType.fromStr(resultJson['type'])
+
+        trueFalseResponses = None
+        correctTrueFalseAnswer = None
+        multipleChoiceResponses = None
+        correctMultipleChoiceAnswer = None
+
+        if triviaType is TriviaType.MULTIPLE_CHOICE:
+            correctMultipleChoiceAnswer = utils.cleanStr(resultJson['correct_answer'])
+
+            multipleChoiceResponses = list()
+            for answer in resultJson['incorrect_answers']:
+                multipleChoiceResponses.append(utils.cleanStr(answer))
+
+            multipleChoiceResponses.append(correctMultipleChoiceAnswer)
+            random.shuffle(multipleChoiceResponses)
+        elif triviaType is TriviaType.TRUE_FALSE:
+            correctTrueFalseAnswer = utils.getBoolFromDict(resultJson['correct_answer'])
+
+            trueFalseResponses = list()
+            for answer in resultJson['incorrect_answers']:
+                trueFalseResponses.append(utils.cleanStr(answer))
+
+            trueFalseResponses.append(utils.cleanStr(resultJson['correct_answer']))
+            random.shuffle(trueFalseResponses)
+        else:
+            raise ValueError(f'triviaType value is unknown: \"{triviaType}\"')
+
+        return TriviaResponse(
+            category = utils.cleanStr(resultJson['category']),
+            question = utils.cleanStr(resultJson['question']),
+            triviaType = triviaType,
+            trueFalseResponses = trueFalseResponses,
+            correctTrueFalseAnswer = correctTrueFalseAnswer,
+            multipleChoiceResponses = multipleChoiceResponses,
+            correctMultipleChoiceAnswer = correctMultipleChoiceAnswer
+        )
