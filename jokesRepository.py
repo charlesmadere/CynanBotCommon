@@ -5,7 +5,10 @@ import requests
 from requests import ConnectionError, HTTPError, Timeout
 from urllib3.exceptions import MaxRetryError, NewConnectionError
 
-import CynanBotCommon.utils as utils
+try:
+    import CynanBotCommon.utils as utils
+except:
+    import utils as utils
 
 
 class JokeResponse():
@@ -51,7 +54,6 @@ class JokesRepository():
         print(f'Refreshing joke... ({utils.getNowTimeText()})')
 
         rawResponse = None
-
         try:
             rawResponse = requests.get(url = self.__apiUrl, timeout = utils.getDefaultTimeout())
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, Timeout) as e:
