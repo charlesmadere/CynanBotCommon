@@ -103,9 +103,9 @@ class TriviaResponse():
 
     def toAnswerStr(self) -> str:
         if self.__triviaType is TriviaType.MULTIPLE_CHOICE:
-            return f'The trivia answer is: {self.__correctMultipleChoiceAnswer}'
+            return f'and the answer is: {self.__correctMultipleChoiceAnswer}'
         elif self.__triviaType is TriviaType.TRUE_FALSE:
-            return f'The trivia answer is: {self.__correctTrueFalseAnswer}'
+            return f'and the answer is: {self.__correctTrueFalseAnswer}'
         else:
             raise RuntimeError(f'triviaType is unknown value: \"{self.__triviaType}\"')
 
@@ -113,16 +113,18 @@ class TriviaResponse():
         if delimiter is None:
             raise ValueError(f'delimiter argument is malformed: \"{delimiter}\"')
 
-        responses = None
-
         if self.__triviaType is TriviaType.MULTIPLE_CHOICE:
             responses = delimiter.join(self.__multipleChoiceResponses)
+            return f'{self.__question} {responses}'
         elif self.__triviaType is TriviaType.TRUE_FALSE:
-            responses = delimiter.join(self.__trueFalseResponses)
+            question = self.__question
+
+            if question[0].isalpha():
+                question = f'{question[0].lower()}{question[1:]}'
+
+            return f'True or false: {question}'
         else:
             raise RuntimeError(f'triviaType is unknown value: \"{self.__triviaType}\"')
-
-        return f'{self.__question} {responses}'
 
 
 class TriviaRepository():
