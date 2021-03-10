@@ -1,6 +1,7 @@
 import math
 import urllib
 from datetime import datetime
+from numbers import Number
 from typing import List
 
 
@@ -144,11 +145,11 @@ def getStrFromDict(d: dict, key: str, fallback: str = None, clean: bool = False)
 def hasItems(l: List) -> bool:
     return l is not None and len(l) >= 1
 
-def isValidNum(n) -> bool:
-    return n is not None and math.isfinite(n)
+def isValidNum(n: Number) -> bool:
+    return n is not None and isinstance(n, Number) and math.isfinite(n)
 
 def isValidStr(s: str) -> bool:
-    return s is not None and len(s) >= 1 and not s.isspace()
+    return s is not None and isinstance(s, str) and len(s) >= 1 and not s.isspace()
 
 def isValidUrl(s: str) -> bool:
     if not isValidStr(s):
