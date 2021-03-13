@@ -133,7 +133,7 @@ class TriviaRepository():
         self,
         waitBeforeAnswerSeconds: int = 30,
         apiUrl: str = 'https://opentdb.com/api.php?amount=1',
-        cacheTimeDelta: timedelta = timedelta(minutes = 30)
+        cacheTimeDelta: timedelta = timedelta(minutes = 10)
     ):
         if not utils.isValidNum(waitBeforeAnswerSeconds):
             raise ValueError(f'waitBeforeAnswerSeconds is malformed: \"{waitBeforeAnswerSeconds}\"')
