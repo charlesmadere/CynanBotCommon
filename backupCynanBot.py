@@ -1,6 +1,7 @@
 import os
 import shutil
 import sys
+from shutil import SameFileError
 
 
 def find_files(src):
@@ -16,7 +17,11 @@ def copy_files(dest, file_list):
     for file in file_list:
         dir = os.path.join(dest, os.path.dirname(file))
         os.makedirs(dir, exist_ok = True)
-        shutil.copy2(file, dir)
+
+        try:
+            shutil.copy2(file, dir)
+        except SameFileError as e:
+            print(f'Encountered crazy copy error with file \"{file}\" in dir \"{dir}\"')
 
 
 def main():
