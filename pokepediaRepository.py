@@ -411,7 +411,7 @@ class PokepediaPokemon():
 
     def __init__(
         self,
-        generationElementTypes: Dict[PokepediaGeneration, PokepediaElementType],
+        generationElementTypes: Dict[PokepediaGeneration, List[PokepediaElementType]],
         pokedexId: int,
         name: str
     ):
@@ -426,7 +426,7 @@ class PokepediaPokemon():
         self.__pokedexId = pokedexId
         self.__name = name
 
-    def getGenerationElementTypes(self) -> Dict[PokepediaGeneration, PokepediaElementType]:
+    def getGenerationElementTypes(self) -> Dict[PokepediaGeneration, List[PokepediaElementType]]:
         return self.__generationElementTypes
 
     def getName(self) -> str:
@@ -439,10 +439,60 @@ class PokepediaPokemon():
         return locale.format_string("%d", self.__pokedexId, grouping = True)
 
 
+class PokepediaTypeChart(Enum):
+
+    GENERATION_1 = auto()
+    GENERATION_2_THRU_5 = auto()
+    GENERATION_6_AND_ON = auto()
+
+    @classmethod
+    def fromPokepediaGeneration(cls, pokepediaGeneration: PokepediaGeneration):
+        if pokepediaGeneration is None:
+            raise ValueError(f'pokepediaGeneration argument is malformed: \"{pokepediaGeneration}\"')
+
+        if pokepediaGeneration is PokepediaGeneration.GENERATION_1:
+            return cls.GENERATION_1
+        elif pokepediaGeneration is PokepediaGeneration.GENERATION_2 or pokepediaGeneration is PokepediaGeneration.GENERATION_3 or pokepediaGeneration is PokepediaGeneration.GENERATION_4 or pokepediaGeneration is PokepediaGeneration.GENERATION_5:
+            return cls.GENERATION_2_THRU_5
+        else:
+            return cls.GENERATION_6_AND_ON
+
+    def getWeaknessesFor(self, pokepediaElementType: PokepediaElementType) -> List[PokepediaElementType]:
+        if pokepediaElementType is None:
+            raise ValueError(f'pokepediaElementType argument is malformed: \"{pokepediaElementType}\"')
+
+        # TODO
+        raise RuntimeError('Not implemented!')
+
+
 class PokepediaRepository():
 
     def __init__(self):
         pass
+
+    def __getElementTypeGenerationDictionary(self, jsonResponse: Dict) -> Dict[PokepediaGeneration, List[PokepediaElementType]]:
+        if jsonResponse is None:
+            raise ValueError(f'jsonResponse argument is malformed: \"{jsonResponse}\"')
+
+        typesJson = jsonResponse.get('types')
+        if not utils.hasItems(typesJson):
+            raise ValueError(f'\"types\" field in JSON response is null or empty: {jsonResponse}')
+
+        currentTypes = list()
+        for currentTypeJson in typesJson:
+            currentTypes.append(PokepediaElementType.fromStr(currentTypeJson['type']['name']))
+
+        pastTypesJson = jsonResponse.get('past_types')
+        elementTypeGenerationDictionary = dict()
+
+        if utils.hasItems(pastTypesJson):
+            # TODO
+            pass
+        else:
+            # TODO
+            pass
+
+        return elementTypeGenerationDictionary
 
     def __getEnDescription(self, jsonResponse: Dict) -> str:
         if not utils.hasItems(jsonResponse):
@@ -651,7 +701,8 @@ class PokepediaRepository():
             print(f'Exception occurred when attempting to decode Pokemon response into JSON for \"{name}\": {e}')
             raise RuntimeError(f'Exception occurred when attempting to decode Pokemon response into JSON for \"{name}\": {e}')
 
-        # TODO
         return PokepediaPokemon(
+            generationElementTypes = self.__getElementTypeGenerationDictionary(jsonResponse),
+            pokedexId = utils.getIntFromDict(jsonResponse, 'id'),
             name = jsonResponse['name'].title()
         )
