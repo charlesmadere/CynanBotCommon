@@ -181,12 +181,12 @@ class PokepediaDamageClass(Enum):
         if elementType is None:
             raise ValueError(f'elementType argument is malformed: \"{elementType}\"')
 
-        physicalList = [ PokepediaElementType.NORMAL, PokepediaElementType.FIGHTING, PokepediaElementType.FLYING, PokepediaElementType.POISON, PokepediaElementType.GROUND, PokepediaElementType.ROCK, PokepediaElementType.BUG, PokepediaElementType.GHOST, PokepediaElementType.STEEL ]
-        specialList = [ PokepediaElementType.FIRE, PokepediaElementType.WATER, PokepediaElementType.GRASS, PokepediaElementType.ELECTRIC, PokepediaElementType.PSYCHIC, PokepediaElementType.ICE, PokepediaElementType.DRAGON, PokepediaElementType.DARK ]
+        physicalElementTypes = [ PokepediaElementType.BUG, PokepediaElementType.FIGHTING, PokepediaElementType.FLYING, PokepediaElementType.GHOST, PokepediaElementType.GROUND, PokepediaElementType.NORMAL, PokepediaElementType.POISON, PokepediaElementType.ROCK, PokepediaElementType.STEEL ]
+        specialElementTypes = [ PokepediaElementType.DARK, PokepediaElementType.DRAGON, PokepediaElementType.ELECTRIC, PokepediaElementType.FIRE, PokepediaElementType.GRASS, PokepediaElementType.ICE, PokepediaElementType.PSYCHIC, PokepediaElementType.WATER ]
 
-        if elementType in physicalList:
+        if elementType in physicalElementTypes:
             return cls.PHYSICAL
-        elif elementType in specialList:
+        elif elementType in specialElementTypes:
             return cls.SPECIAL
         else:
             raise ValueError(f'unknown PokepediaElementType: \"{elementType}\"')
