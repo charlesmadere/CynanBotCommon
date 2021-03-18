@@ -640,24 +640,26 @@ class PokepediaRepository():
         if not utils.hasItems(jsonResponse):
             raise ValueError(f'jsonResponse argument is malformed: \"{jsonResponse}\"')
 
-        moveGenerationDictionary = dict()
-
         # begin with current gen stats
         accuracy = jsonResponse['accuracy']
         power = jsonResponse['power']
-        pp = jsonResponse['pp']
+        pp = utils.getIntFromDict(jsonResponse, 'pp')
         damageClass = PokepediaDamageClass.fromStr(jsonResponse['damage_class']['name'])
         elementType = PokepediaElementType.fromStr(jsonResponse['type']['name'])
         move = None
 
-        pastValues = jsonResponse['past_values']
+        pastValuesJson = jsonResponse.get('past_values')
+        if pastValuesJson is None:
+            raise ValueError(f'\"past_values\" field in JSON response is null: {jsonResponse}')
+
+        moveGenerationDictionary = dict()
 
         # iterate backwards and insert to dictionary once a gen is found. then 'un-patch' for
         # previous gens
-        for pastValue in reversed(pastValues):
-            generation = PokepediaGeneration.fromStr(pastValue['version_group']['name'])
+        for pastValueJson in reversed(pastValuesJson):
+            generation = PokepediaGeneration.fromStr(pastValueJson['version_group']['name'])
 
-            if damageClass is not PokepediaDamageClass.STATUS and generation.isEarlyGeneration():
+            if generation.isEarlyGeneration() and damageClass is not PokepediaDamageClass.STATUS:
                 damageClass = PokepediaDamageClass.getTypeBasedDamageClass(elementType)
 
             move = PokepediaMoveGeneration(
@@ -671,17 +673,17 @@ class PokepediaRepository():
 
             moveGenerationDictionary[generation] = move
 
-            if utils.isValidNum(pastValue.get('accuracy')):
-                accuracy = pastValue['accuracy']
+            if utils.isValidNum(pastValueJson.get('accuracy')):
+                accuracy = utils.getIntFromDict(pastValueJson, 'accuracy')
 
-            if utils.isValidNum(pastValue.get('power')):
-                power = pastValue['power']
+            if utils.isValidNum(pastValueJson.get('power')):
+                power = utils.getIntFromDict(pastValueJson, 'power')
 
-            if utils.isValidNum(pastValue.get('pp')):
-                pp = pastValue['pp']
+            if utils.isValidNum(pastValueJson.get('pp')):
+                pp = utils.getIntFromDict(pastValueJson, 'pp')
 
-            if pastValue.get('type') is not None:
-                elementType = PokepediaElementType.fromStr(pastValue['type']['name'])
+            if pastValueJson.get('type') is not None:
+                elementType = PokepediaElementType.fromStr(pastValueJson['type']['name'])
 
         generation = PokepediaGeneration.fromStr(jsonResponse['generation']['name'])
 
