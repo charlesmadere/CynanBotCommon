@@ -542,6 +542,15 @@ class PokepediaPokemon():
     def getWeightStr(self) -> str:
         return locale.format_string("%d", self.__weight, grouping = True)
 
+    def toStrList(self) -> List[str]:
+        strings = list()
+        strings.append(f'{self.__name} (#{self.getPokedexIdStr()}) — added in {self.__initialGeneration.toStr()}, weight is {self.getWeightStr()} and height is {self.getHeightStr()}.')
+
+        # TODO
+        # print type weaknesses per generation in self.__generationElementTypes
+
+        return strings
+
 
 class PokepediaTypeChart(Enum):
 
