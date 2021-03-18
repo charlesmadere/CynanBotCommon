@@ -473,15 +473,15 @@ class PokepediaMove():
         return f'{self.getName()} — {genMoveString}'
 
     def toStrList(self) -> List[str]:
-        genMoveStrings = list()
-        genMoveStrings.append(f'{self.getName()} — {self.getDescription()}')
+        strings = list()
+        strings.append(f'{self.getName()} — {self.getDescription()}')
 
         for gen in PokepediaGeneration:
             if gen in self.__generationMoves:
                 genMove = self.__generationMoves[gen]
-                genMoveStrings.append(genMove.toStr())
+                strings.append(genMove.toStr())
 
-        return genMoveStrings
+        return strings
 
 
 class PokepediaPokemon():
