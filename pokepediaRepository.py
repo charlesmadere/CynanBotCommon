@@ -202,6 +202,61 @@ class PokepediaDamageClass(Enum):
             raise RuntimeError(f'unknown PokepediaDamageClass: \"{self}\"')
 
 
+class PokepediaDamageMultiplier(Enum):
+
+    ZERO = auto()
+    ZERO_POINT_TWO_FIVE = auto()
+    ZERO_POINT_FIVE = auto()
+    ONE = auto()
+    TWO = auto()
+    FOUR = auto()
+
+    def multiply(self, other: PokepediaDamageMultiplier) -> PokepediaDamageMultiplier:
+        if other is None:
+            raise ValueError(f'other argument is malformed: \"{other}\"')
+        elif other is PokepediaDamageMultiplier.ZERO_POINT_TWO_FIVE or other is PokepediaDamageMultiplier.FOUR:
+            raise RuntimeError(f'We should never be multiplying this PokepediaDamageMultiplier ({self}) by anything else ({other} in this case)')
+
+        if self is PokepediaDamageMultiplier.ZERO:
+            return PokepediaDamageMultiplier.ZERO
+        elif self is PokepediaDamageMultiplier.ZERO_POINT_TWO_FIVE:
+            raise RuntimeError(f'We should never be multiplying this PokepediaDamageMultiplier ({self}) by anything else ({other} in this case)')
+        elif self is PokepediaDamageMultiplier.ZERO_POINT_FIVE:
+            if other is PokepediaDamageMultiplier.ZERO:
+                return PokepediaDamageMultiplier.ZERO
+            elif other is PokepediaDamageMultiplier.ZERO_POINT_FIVE:
+                return PokepediaDamageMultiplier.ZERO_POINT_TWO_FIVE
+            elif other is PokepediaDamageMultiplier.TWO:
+                return PokepediaDamageMultiplier.ONE
+        elif self is PokepediaDamageMultiplier.ONE:
+            return other
+        elif self is PokepediaDamageMultiplier.TWO:
+            if other is PokepediaDamageMultiplier.ZERO:
+                return PokepediaDamageMultiplier.ZERO
+            elif other is PokepediaDamageMultiplier.ZERO_POINT_FIVE:
+                return PokepediaDamageMultiplier.ONE
+            elif other is PokepediaDamageMultiplier.TWO:
+                return PokepediaDamageMultiplier.FOUR
+
+        raise RuntimeError(f'unknown PokepediaDamageMultiplier: \"{self}\"')
+
+    def toStr(self) -> str:
+        if self is PokepediaDamageMultiplier.ZERO:
+            return '0x'
+        elif self is PokepediaDamageMultiplier.ZERO_POINT_TWO_FIVE:
+            return '0.25x'
+        elif self is PokepediaDamageMultiplier.ZERO_POINT_FIVE:
+            return '0.5x'
+        elif self is PokepediaDamageMultiplier.ONE:
+            return '1x'
+        elif self is PokepediaDamageMultiplier.TWO:
+            return '2x'
+        elif self is PokepediaDamageMultiplier.FOUR:
+            return '4x'
+        else:
+            raise RuntimeError(f'unknown PokepediaDamageMultiplier: \"{self}\"')
+
+
 class PokepediaGeneration(Enum):
 
     GENERATION_1 = auto()
@@ -412,22 +467,36 @@ class PokepediaPokemon():
     def __init__(
         self,
         generationElementTypes: Dict[PokepediaGeneration, List[PokepediaElementType]],
+        height: int,
         pokedexId: int,
+        weight: int,
         name: str
     ):
         if not utils.hasItems(generationElementTypes):
             raise ValueError(f'generationElementTypes argument is malformed: \"{generationElementTypes}\"')
+        elif not utils.isValidNum(height):
+            raise ValueError(f'height argument is malformed: \"{height}\"')
         elif not utils.isValidNum(pokedexId):
             raise ValueError(f'pokedexId argument is malformed: \"{pokedexId}\"')
+        elif not utils.isValidNum(weight):
+            raise ValueError(f'weight argument is malformed: \"{weight}\"')
         elif not utils.isValidStr(name):
             raise ValueError(f'name argument is malformed: \"{name}\"')
 
         self.__generationElementTypes = generationElementTypes
+        self.__height = height
         self.__pokedexId = pokedexId
+        self.__weight = weight
         self.__name = name
 
     def getGenerationElementTypes(self) -> Dict[PokepediaGeneration, List[PokepediaElementType]]:
         return self.__generationElementTypes
+
+    def getHeight(self) -> int:
+        return self.__height
+
+    def getHeightStr(self) -> str:
+        return locale.format_string("%d", self.__height, grouping = True)
 
     def getName(self) -> str:
         return self.__name
@@ -437,6 +506,12 @@ class PokepediaPokemon():
 
     def getPokedexIdStr(self) -> str:
         return locale.format_string("%d", self.__pokedexId, grouping = True)
+
+    def getWeight(self) -> int:
+        return self.__weight
+
+    def getWeightStr(self) -> str:
+        return locale.format_string("%d", self.__weight, grouping = True)
 
 
 class PokepediaTypeChart(Enum):
@@ -457,12 +532,51 @@ class PokepediaTypeChart(Enum):
         else:
             return cls.GENERATION_6_AND_ON
 
-    def getWeaknessesFor(self, pokepediaElementType: PokepediaElementType) -> List[PokepediaElementType]:
-        if pokepediaElementType is None:
-            raise ValueError(f'pokepediaElementType argument is malformed: \"{pokepediaElementType}\"')
+    def __getGenerationOneWeaknessesFor(self, types: List[PokepediaElementType]) -> Dict[PokepediaDamageMultiplier, List[PokepediaElementType]]:
+        if not utils.hasItems(types):
+            raise ValueError(f'types argument is malformed: \"{types}\"')
 
-        # TODO
-        raise RuntimeError('Not implemented!')
+        weaknesses = dict()
+
+        for elementType in PokepediaElementType:
+            weaknesses[elementType] = list()
+
+        for elementType in types:
+            if elementType is PokepediaElementType.BUG:
+                weaknesses[PokepediaDamageMultiplier.TWO].append(PokepediaElementType.FIRE)
+                weaknesses[PokepediaDamageMultiplier.TWO].append(PokepediaElementType.FLYING)
+                weaknesses[PokepediaDamageMultiplier.TWO].append(PokepediaElementType.POISON)
+                weaknesses[PokepediaDamageMultiplier.TWO].append(PokepediaElementType.ROCK)
+            elif elementType is PokepediaElementType.DRAGON:
+                weaknesses[PokepediaDamageMultiplier.TWO].append(PokepediaElementType.DRAGON)
+                weaknesses[PokepediaDamageMultiplier.TWO].append(PokepediaElementType.ICE)
+
+        raise RuntimeError('Not yet implemented!')
+
+    def __getGenerationTwoThruFiveWeaknessesFor(self, types: List[PokepediaElementType]) -> Dict[PokepediaDamageMultiplier, List[PokepediaElementType]]:
+        if not utils.hasItems(types):
+            raise ValueError(f'types argument is malformed: \"{types}\"')
+
+        raise RuntimeError('Not yet implemented!')
+
+    def __getGenerationSixAndOnWeaknessesFor(self, types: List[PokepediaElementType]) -> Dict[PokepediaDamageMultiplier, List[PokepediaElementType]]:
+        if not utils.hasItems(types):
+            raise ValueError(f'types argument is malformed: \"{types}\"')
+
+        raise RuntimeError('Not yet implemented!')
+
+    def getWeaknessesFor(self, types: List[PokepediaElementType]) -> Dict[PokepediaDamageMultiplier, List[PokepediaElementType]]:
+        if not utils.hasItems(types):
+            raise ValueError(f'types argument is malformed: \"{types}\"')
+
+        if self is PokepediaTypeChart.GENERATION_1:
+            return self.__getGenerationOneWeaknessesFor(types)
+        elif self is PokepediaTypeChart.GENERATION_2_THRU_5:
+            return self.__getGenerationTwoThruFiveWeaknessesFor(types)
+        elif self is PokepediaTypeChart.GENERATION_6_AND_ON:
+            return self.__getGenerationSixAndOnWeaknessesFor(types)
+        else:
+            raise RuntimeError(f'unknown PokepediaTypeChart: \"{self}\"')
 
 
 class PokepediaRepository():
