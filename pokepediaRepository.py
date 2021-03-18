@@ -817,6 +817,8 @@ class PokepediaRepository():
 
         return PokepediaPokemon(
             generationElementTypes = self.__getElementTypeGenerationDictionary(jsonResponse),
+            height = utils.getIntFromDict(jsonResponse, 'height'),
             pokedexId = utils.getIntFromDict(jsonResponse, 'id'),
+            weight = utils.getIntFromDict(jsonResponse, 'weight'),
             name = jsonResponse['name'].title()
         )
