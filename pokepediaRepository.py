@@ -269,6 +269,28 @@ class PokepediaGeneration(Enum):
     GENERATION_8 = auto()
 
     @classmethod
+    def fromPokedexId(cls, pokedexId: int):
+        if not utils.isValidNum(pokedexId):
+            raise ValueError(f'pokedexId argument is malformed: \"{pokedexId}\"')
+
+        if pokedexId < 152:
+            return PokepediaGeneration.GENERATION_1
+        elif pokedexId < 252:
+            return PokepediaGeneration.GENERATION_2
+        elif pokedexId < 387:
+            return PokepediaGeneration.GENERATION_3
+        elif pokedexId < 494:
+            return PokepediaGeneration.GENERATION_4
+        elif pokedexId < 650:
+            return PokepediaGeneration.GENERATION_5
+        elif pokedexId < 722:
+            return PokepediaGeneration.GENERATION_6
+        elif pokedexId < 810:
+            return PokepediaGeneration.GENERATION_7
+        else:
+            return PokepediaGeneration.GENERATION_8
+
+    @classmethod
     def fromStr(cls, text: str):
         if not utils.isValidStr(text):
             raise ValueError(f'text argument is malformed: \"{text}\"')
@@ -467,6 +489,7 @@ class PokepediaPokemon():
     def __init__(
         self,
         generationElementTypes: Dict[PokepediaGeneration, List[PokepediaElementType]],
+        initialGeneration: PokepediaGeneration,
         height: int,
         pokedexId: int,
         weight: int,
@@ -474,6 +497,8 @@ class PokepediaPokemon():
     ):
         if not utils.hasItems(generationElementTypes):
             raise ValueError(f'generationElementTypes argument is malformed: \"{generationElementTypes}\"')
+        elif initialGeneration is None:
+            raise ValueError(f'initialGeneration argument is malformed: \"{initialGeneration}\"')
         elif not utils.isValidNum(height):
             raise ValueError(f'height argument is malformed: \"{height}\"')
         elif not utils.isValidNum(pokedexId):
@@ -484,6 +509,7 @@ class PokepediaPokemon():
             raise ValueError(f'name argument is malformed: \"{name}\"')
 
         self.__generationElementTypes = generationElementTypes
+        self.__initialGeneration = initialGeneration
         self.__height = height
         self.__pokedexId = pokedexId
         self.__weight = weight
@@ -497,6 +523,9 @@ class PokepediaPokemon():
 
     def getHeightStr(self) -> str:
         return locale.format_string("%d", self.__height, grouping = True)
+
+    def getInitialGeneration(self) -> PokepediaGeneration:
+        return self.__initialGeneration
 
     def getName(self) -> str:
         return self.__name
@@ -584,27 +613,64 @@ class PokepediaRepository():
     def __init__(self):
         pass
 
-    def __getElementTypeGenerationDictionary(self, jsonResponse: Dict) -> Dict[PokepediaGeneration, List[PokepediaElementType]]:
+    def __getElementTypeGenerationDictionary(
+        self,
+        jsonResponse: Dict,
+        initialGeneration: PokepediaGeneration
+    ) -> Dict[PokepediaGeneration, List[PokepediaElementType]]:
         if jsonResponse is None:
             raise ValueError(f'jsonResponse argument is malformed: \"{jsonResponse}\"')
+        elif initialGeneration is None:
+            raise ValueError(f'initialGeneration argument is malformed: \"{initialGeneration}\"')
 
-        typesJson = jsonResponse.get('types')
-        if not utils.hasItems(typesJson):
+        currentTypesJson = jsonResponse.get('types')
+        if not utils.hasItems(currentTypesJson):
             raise ValueError(f'\"types\" field in JSON response is null or empty: {jsonResponse}')
 
-        currentTypes = list()
-        for currentTypeJson in typesJson:
-            currentTypes.append(PokepediaElementType.fromStr(currentTypeJson['type']['name']))
+        # begin with current generation types
+        currentTypesList = list()
+        for currentTypeJson in currentTypesJson:
+            currentTypesList.append(PokepediaElementType.fromStr(currentTypeJson['type']['name']))
 
         pastTypesJson = jsonResponse.get('past_types')
+        if pastTypesJson is None:
+            raise ValueError(f'\"past_types\" field in JSON response is null: {jsonResponse}')
+
         elementTypeGenerationDictionary = dict()
 
-        if utils.hasItems(pastTypesJson):
-            # TODO
-            pass
-        else:
-            # TODO
-            pass
+        # iterate backwards and insert into dictionary once a generation is found.
+        # then 'un-patch' for previous generations.
+        for pokepediaGeneration in reversed(PokepediaGeneration):
+            for pastTypeJson in pastTypesJson:
+                generation = PokepediaGeneration.fromStr(pastTypeJson['generation']['name'])
+
+                if generation == pokepediaGeneration:
+                    currentTypesList = list()
+
+                    typesJson = pastTypeJson.get('types')
+                    if not utils.hasItems(typesJson):
+                        raise ValueError(f'\"types\" field in \"past_types\" JSON array is null or empty: {jsonResponse}')
+
+                    for typeJson in typesJson:
+                        currentTypesList.append(PokepediaElementType.fromStr(typeJson['type']['name']))
+
+            elementTypeGenerationDictionary[pokepediaGeneration] = currentTypesList
+
+        # only store typing for generations where this Pokemon actually existed
+        for pokepediaGeneration in PokepediaGeneration:
+            if pokepediaGeneration.value < initialGeneration.value:
+                del elementTypeGenerationDictionary[pokepediaGeneration]
+
+        # remove duplicates
+        currentTypesList = None
+        for pokepediaGeneration in PokepediaGeneration:
+            if pokepediaGeneration in elementTypeGenerationDictionary:
+                if currentTypesList is None:
+                    currentTypesList = elementTypeGenerationDictionary[pokepediaGeneration]
+                elif currentTypesList == elementTypeGenerationDictionary[pokepediaGeneration]:
+                    del elementTypeGenerationDictionary[pokepediaGeneration]
+                else:
+                    currentTypesList = elementTypeGenerationDictionary[pokepediaGeneration]
 
         return elementTypeGenerationDictionary
 
@@ -817,10 +883,17 @@ class PokepediaRepository():
             print(f'Exception occurred when attempting to decode Pokemon response into JSON for \"{name}\": {e}')
             raise RuntimeError(f'Exception occurred when attempting to decode Pokemon response into JSON for \"{name}\": {e}')
 
+        pokedexId = utils.getIntFromDict(jsonResponse, 'id')
+        initialGeneration = PokepediaGeneration.fromPokedexId(pokedexId)
+
         return PokepediaPokemon(
-            generationElementTypes = self.__getElementTypeGenerationDictionary(jsonResponse),
+            generationElementTypes = self.__getElementTypeGenerationDictionary(
+                jsonResponse = jsonResponse,
+                initialGeneration = initialGeneration
+            ),
+            initialGeneration = initialGeneration,
             height = utils.getIntFromDict(jsonResponse, 'height'),
-            pokedexId = utils.getIntFromDict(jsonResponse, 'id'),
+            pokedexId = pokedexId,
             weight = utils.getIntFromDict(jsonResponse, 'weight'),
             name = jsonResponse['name'].title()
         )
