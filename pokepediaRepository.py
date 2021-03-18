@@ -640,7 +640,7 @@ class PokepediaRepository():
         if not utils.hasItems(jsonResponse):
             raise ValueError(f'jsonResponse argument is malformed: \"{jsonResponse}\"')
 
-        # begin with current gen stats
+        # begin with current generation stats
         accuracy = jsonResponse['accuracy']
         power = jsonResponse['power']
         pp = utils.getIntFromDict(jsonResponse, 'pp')
@@ -654,8 +654,8 @@ class PokepediaRepository():
 
         moveGenerationDictionary = dict()
 
-        # iterate backwards and insert to dictionary once a gen is found. then 'un-patch' for
-        # previous gens
+        # iterate backwards and insert into dictionary once a generation is found.
+        # then 'un-patch' for previous generations.
         for pastValueJson in reversed(pastValuesJson):
             generation = PokepediaGeneration.fromStr(pastValueJson['version_group']['name'])
 
@@ -687,7 +687,7 @@ class PokepediaRepository():
 
         generation = PokepediaGeneration.fromStr(jsonResponse['generation']['name'])
 
-        if damageClass is not PokepediaDamageClass.STATUS and generation.isEarlyGeneration():
+        if generation.isEarlyGeneration() and  damageClass is not PokepediaDamageClass.STATUS:
             damageClass = PokepediaDamageClass.getTypeBasedDamageClass(elementType)
 
         move = PokepediaMoveGeneration(
