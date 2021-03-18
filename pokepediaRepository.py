@@ -211,7 +211,7 @@ class PokepediaDamageMultiplier(Enum):
     TWO = auto()
     FOUR = auto()
 
-    def multiply(self, other: PokepediaDamageMultiplier) -> PokepediaDamageMultiplier:
+    def multiply(self, other):
         if other is None:
             raise ValueError(f'other argument is malformed: \"{other}\"')
         elif other is PokepediaDamageMultiplier.ZERO_POINT_TWO_FIVE or other is PokepediaDamageMultiplier.FOUR:
