@@ -40,41 +40,41 @@ class PokepediaElementType(Enum):
             raise ValueError(f'text argument is malformed: \"{text}\"')
 
         if text == 'bug':
-            return cls.BUG
+            return PokepediaElementType.BUG
         elif text == 'dark':
-            return cls.DARK
+            return PokepediaElementType.DARK
         elif text == 'dragon':
-            return cls.DRAGON
+            return PokepediaElementType.DRAGON
         elif text == 'electric':
-            return cls.ELECTRIC
+            return PokepediaElementType.ELECTRIC
         elif text == 'fairy':
-            return cls.FAIRY
+            return PokepediaElementType.FAIRY
         elif text == 'fighting':
-            return cls.FIGHTING
+            return PokepediaElementType.FIGHTING
         elif text == 'fire':
-            return cls.FIRE
+            return PokepediaElementType.FIRE
         elif text == 'flying':
-            return cls.FLYING
+            return PokepediaElementType.FLYING
         elif text == 'ghost':
-            return cls.GHOST
+            return PokepediaElementType.GHOST
         elif text == 'grass':
-            return cls.GRASS
+            return PokepediaElementType.GRASS
         elif text == 'ground':
-            return cls.GROUND
+            return PokepediaElementType.GROUND
         elif text == 'ice':
-            return cls.ICE
+            return PokepediaElementType.ICE
         elif text == 'normal':
-            return cls.NORMAL
+            return PokepediaElementType.NORMAL
         elif text == 'poison':
-            return cls.POISON
+            return PokepediaElementType.POISON
         elif text == 'psychic':
-            return cls.PSYCHIC
+            return PokepediaElementType.PSYCHIC
         elif text == 'rock':
-            return cls.ROCK
+            return PokepediaElementType.ROCK
         elif text == 'steel':
-            return cls.STEEL
+            return PokepediaElementType.STEEL
         elif text == 'water':
-            return cls.WATER
+            return PokepediaElementType.WATER
         else:
             raise ValueError(f'unknown PokepediaElementType: \"{text}\"')
 
@@ -167,11 +167,11 @@ class PokepediaDamageClass(Enum):
             raise ValueError(f'text argument is malformed: \"{text}\"')
 
         if text == 'physical':
-            return cls.PHYSICAL
+            return PokepediaDamageClass.PHYSICAL
         elif text == 'special':
-            return cls.SPECIAL
+            return PokepediaDamageClass.SPECIAL
         elif text == 'status':
-            return cls.STATUS
+            return PokepediaDamageClass.STATUS
         else:
             raise ValueError(f'unknown PokepediaDamageClass: \"{text}\"')
 
@@ -185,9 +185,9 @@ class PokepediaDamageClass(Enum):
         specialElementTypes = [ PokepediaElementType.DARK, PokepediaElementType.DRAGON, PokepediaElementType.ELECTRIC, PokepediaElementType.FIRE, PokepediaElementType.GRASS, PokepediaElementType.ICE, PokepediaElementType.PSYCHIC, PokepediaElementType.WATER ]
 
         if elementType in physicalElementTypes:
-            return cls.PHYSICAL
+            return PokepediaDamageClass.PHYSICAL
         elif elementType in specialElementTypes:
-            return cls.SPECIAL
+            return PokepediaDamageClass.SPECIAL
         else:
             raise ValueError(f'unknown PokepediaElementType: \"{elementType}\"')
 
@@ -274,21 +274,21 @@ class PokepediaGeneration(Enum):
             raise ValueError(f'text argument is malformed: \"{text}\"')
 
         if text == 'gold-silver' or text == 'crystal' or text == 'generation-ii':
-            return cls.GENERATION_2
+            return PokepediaGeneration.GENERATION_2
         elif text == 'ruby-sapphire' or text == 'emerald' or text == 'firered-leafgreen' or text == 'generation-iii':
-            return cls.GENERATION_3
+            return PokepediaGeneration.GENERATION_3
         elif text == 'diamond-pearl' or text == 'platinum' or text == 'heartgold-soulsilver' or text == 'generation-iv':
-            return cls.GENERATION_4
+            return PokepediaGeneration.GENERATION_4
         elif text == 'black-white' or text == 'black-2-white-2' or text == 'generation-v':
-            return cls.GENERATION_5
+            return PokepediaGeneration.GENERATION_5
         elif text == 'x-y' or text == 'omega-ruby-alpha-sapphire' or text == 'generation-vi':
-            return cls.GENERATION_6
+            return PokepediaGeneration.GENERATION_6
         elif text == 'sun-moon' or text == 'ultra-sun-ultra-moon' or text == 'generation-vii':
-            return cls.GENERATION_7
+            return PokepediaGeneration.GENERATION_7
         elif text == 'sword-shield' or text == 'brilliant-diamond-shining-pearl' or text == 'generation-viii':
-            return cls.GENERATION_8
+            return PokepediaGeneration.GENERATION_8
         else:
-            return cls.GENERATION_1
+            return PokepediaGeneration.GENERATION_1
 
     def isEarlyGeneration(self) -> bool:
         return self is PokepediaGeneration.GENERATION_1 or self is PokepediaGeneration.GENERATION_2 or self is PokepediaGeneration.GENERATION_3
@@ -526,11 +526,11 @@ class PokepediaTypeChart(Enum):
             raise ValueError(f'pokepediaGeneration argument is malformed: \"{pokepediaGeneration}\"')
 
         if pokepediaGeneration is PokepediaGeneration.GENERATION_1:
-            return cls.GENERATION_1
+            return PokepediaTypeChart.GENERATION_1
         elif pokepediaGeneration is PokepediaGeneration.GENERATION_2 or pokepediaGeneration is PokepediaGeneration.GENERATION_3 or pokepediaGeneration is PokepediaGeneration.GENERATION_4 or pokepediaGeneration is PokepediaGeneration.GENERATION_5:
-            return cls.GENERATION_2_THRU_5
+            return PokepediaTypeChart.GENERATION_2_THRU_5
         else:
-            return cls.GENERATION_6_AND_ON
+            return PokepediaTypeChart.GENERATION_6_AND_ON
 
     def __getGenerationOneWeaknessesFor(self, types: List[PokepediaElementType]) -> Dict[PokepediaDamageMultiplier, List[PokepediaElementType]]:
         if not utils.hasItems(types):
