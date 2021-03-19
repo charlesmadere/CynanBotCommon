@@ -58,10 +58,5 @@ move = pr.searchMoves('horn drill')
 for s in move.toStrList():
   print(s)
 
-mon = pr.searchPokemon('azumarill')
-print(mon.toStrList())
-print(mon.getGenerationElementTypes())
-
 mon = pr.searchPokemon('clefairy')
 print(mon.toStrList())
-print(mon.getGenerationElementTypes())
