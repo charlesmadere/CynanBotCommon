@@ -1029,6 +1029,14 @@ class PokepediaPokemon():
 
                 message = f'{gen.toStr()}:'
 
+                if PokepediaDamageMultiplier.ZERO in weaknessesAndResistances:
+                    elementTypesStrings = list()
+                    for elementType in weaknessesAndResistances[PokepediaDamageMultiplier.ZERO]:
+                        elementTypesStrings.append(elementType.getEmojiOrStr())
+
+                    elementTypesString = delimiter.join(elementTypesStrings)
+                    message = f'{message} {PokepediaDamageMultiplier.ZERO.toStr()} damage from {elementTypesString}.'
+
                 if PokepediaDamageMultiplier.ZERO_POINT_TWO_FIVE in weaknessesAndResistances:
                     elementTypesStrings = list()
                     for elementType in weaknessesAndResistances[PokepediaDamageMultiplier.ZERO_POINT_TWO_FIVE]:
