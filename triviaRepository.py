@@ -117,12 +117,7 @@ class TriviaResponse():
             responses = delimiter.join(self.__multipleChoiceResponses)
             return f'{self.__question} {responses}'
         elif self.__triviaType is TriviaType.TRUE_FALSE:
-            question = self.__question
-
-            if question[0].isalpha():
-                question = f'{question[0].lower()}{question[1:]}'
-
-            return f'True or false: {question}'
+            return f'True or false! {self.__question}'
         else:
             raise RuntimeError(f'triviaType is unknown value: \"{self.__triviaType}\"')
 
