@@ -653,6 +653,15 @@ class PokepediaTypeChart(Enum):
                 resistances.append(PokepediaElementType.FIGHTING)
                 resistances.append(PokepediaElementType.PSYCHIC)
                 weaknesses.append(PokepediaElementType.BUG)
+            elif elementType is PokepediaElementType.ROCK:
+                resistances.append(PokepediaElementType.FIRE)
+                resistances.append(PokepediaElementType.FLYING)
+                resistances.append(PokepediaElementType.NORMAL)
+                resistances.append(PokepediaElementType.POISON)
+                weaknesses.append(PokepediaElementType.FIGHTING)
+                weaknesses.append(PokepediaElementType.GRASS)
+                weaknesses.append(PokepediaElementType.GROUND)
+                weaknesses.append(PokepediaElementType.WATER)
             elif elementType is PokepediaElementType.STEEL:
                 raise ValueError(f'illegal PokepediaElementType for this type chart ({self}): \"{elementType}\"')
             elif elementType is PokepediaElementType.WATER:
@@ -774,6 +783,15 @@ class PokepediaTypeChart(Enum):
                 weaknesses.append(PokepediaElementType.BUG)
                 weaknesses.append(PokepediaElementType.DARK)
                 weaknesses.append(PokepediaElementType.GHOST)
+            elif elementType is PokepediaElementType.ROCK:
+                resistances.append(PokepediaElementType.FIRE)
+                resistances.append(PokepediaElementType.FLYING)
+                resistances.append(PokepediaElementType.NORMAL)
+                resistances.append(PokepediaElementType.POISON)
+                weaknesses.append(PokepediaElementType.FIGHTING)
+                weaknesses.append(PokepediaElementType.GRASS)
+                weaknesses.append(PokepediaElementType.GROUND)
+                weaknesses.append(PokepediaElementType.WATER)
             elif elementType is PokepediaElementType.STEEL:
                 noEffect.append(PokepediaElementType.POISON)
                 resistances.append(PokepediaElementType.BUG)
@@ -914,6 +932,15 @@ class PokepediaTypeChart(Enum):
                 weaknesses.append(PokepediaElementType.BUG)
                 weaknesses.append(PokepediaElementType.DARK)
                 weaknesses.append(PokepediaElementType.GHOST)
+            elif elementType is PokepediaElementType.ROCK:
+                resistances.append(PokepediaElementType.FIRE)
+                resistances.append(PokepediaElementType.FLYING)
+                resistances.append(PokepediaElementType.NORMAL)
+                resistances.append(PokepediaElementType.POISON)
+                weaknesses.append(PokepediaElementType.FIGHTING)
+                weaknesses.append(PokepediaElementType.GRASS)
+                weaknesses.append(PokepediaElementType.GROUND)
+                weaknesses.append(PokepediaElementType.WATER)
             elif elementType is PokepediaElementType.STEEL:
                 noEffect.append(PokepediaElementType.POISON)
                 resistances.append(PokepediaElementType.BUG)
