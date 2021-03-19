@@ -1059,7 +1059,7 @@ class PokepediaPokemon():
                         elementTypesStrings.append(elementType.getEmojiOrStr())
 
                     elementTypesString = delimiter.join(elementTypesStrings)
-                    message = f'{message} {PokepediaDamageMultiplier.TWO.toStr()} weak against {elementTypesString}.'
+                    message = f'{message} {PokepediaDamageMultiplier.TWO.toStr()} weak to {elementTypesString}.'
 
                 if PokepediaDamageMultiplier.FOUR in weaknessesAndResistances:
                     elementTypesStrings = list()
@@ -1067,7 +1067,7 @@ class PokepediaPokemon():
                         elementTypesStrings.append(elementType.getEmojiOrStr())
 
                     elementTypesString = delimiter.join(elementTypesStrings)
-                    message = f'{message} {PokepediaDamageMultiplier.FOUR.toStr()} weak against {elementTypesString}.'
+                    message = f'{message} {PokepediaDamageMultiplier.FOUR.toStr()} weak to {elementTypesString}.'
 
                 strings.append(message)
 
