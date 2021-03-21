@@ -212,6 +212,18 @@ class PokepediaDamageMultiplier(Enum):
     TWO = auto()
     FOUR = auto()
 
+    def getEffectDescription(self) -> str:
+        if self is PokepediaDamageMultiplier.ZERO:
+            return 'damage from'
+        elif self is PokepediaDamageMultiplier.ZERO_POINT_TWO_FIVE or PokepediaDamageMultiplier.ZERO_POINT_FIVE:
+            return 'resistant to'
+        elif self is PokepediaDamageMultiplier.ONE:
+            raise RuntimeError(f'{self} should not be used with this method!')
+        elif self is PokepediaDamageMultiplier.TWO or PokepediaDamageMultiplier.FOUR:
+            return 'weak to'
+        else:
+            raise RuntimeError(f'unknown PokepediaDamageMultiplier: \"{self}\"')
+
     def toStr(self) -> str:
         if self is PokepediaDamageMultiplier.ZERO:
             return '0x'
@@ -1016,6 +1028,29 @@ class PokepediaPokemon():
         self.__weight = weight
         self.__name = name
 
+    def __buildGenerationElementTypesWeaknessesAndResistancesStr(
+        self,
+        weaknessesAndResistances: Dict[PokepediaDamageMultiplier, List[PokepediaElementType]],
+        damageMultiplier: PokepediaDamageMultiplier,
+        delimiter: str
+    ) -> str:
+        if not utils.hasItems(weaknessesAndResistances):
+            raise ValueError(f'weaknessesAndResistances argument is malformed: \"{weaknessesAndResistances}\"')
+        elif damageMultiplier is None:
+            raise ValueError(f'damageMultiplier argument is malformed: \"{damageMultiplier}\"')
+        elif delimiter is None:
+            raise ValueError(f'delimiter argument is malformed: \"{delimiter}\"')
+
+        if damageMultiplier not in weaknessesAndResistances or not utils.hasItems(weaknessesAndResistances[damageMultiplier]):
+            return None
+
+        elementTypesStrings = list()
+        for elementType in weaknessesAndResistances[damageMultiplier]:
+            elementTypesStrings.append(elementType.getEmojiOrStr().lower())
+
+        elementTypesString = delimiter.join(elementTypesStrings)
+        return f'{damageMultiplier.toStr()} {damageMultiplier.getEffectDescription()} {elementTypesString}.'
+
     def getGenerationElementTypes(self) -> Dict[PokepediaGeneration, List[PokepediaElementType]]:
         return self.__generationElementTypes
 
@@ -1064,45 +1099,18 @@ class PokepediaPokemon():
                 typeChart = PokepediaTypeChart.fromPokepediaGeneration(gen)
                 weaknessesAndResistances = typeChart.getWeaknessesAndResistancesFor(genElementTypes)
 
-                if PokepediaDamageMultiplier.ZERO in weaknessesAndResistances:
-                    elementTypesStrings = list()
-                    for elementType in weaknessesAndResistances[PokepediaDamageMultiplier.ZERO]:
-                        elementTypesStrings.append(elementType.getEmojiOrStr().lower())
+                for damageMultiplier in PokepediaDamageMultiplier:
+                    if damageMultiplier is PokepediaDamageMultiplier.ONE:
+                        continue
 
-                    elementTypesString = delimiter.join(elementTypesStrings)
-                    message = f'{message} {PokepediaDamageMultiplier.ZERO.toStr()} damage from {elementTypesString}.'
+                    damageMultiplierMessage = self.__buildGenerationElementTypesWeaknessesAndResistancesStr(
+                        weaknessesAndResistances = weaknessesAndResistances,
+                        damageMultiplier = damageMultiplier,
+                        delimiter = delimiter
+                    )
 
-                if PokepediaDamageMultiplier.ZERO_POINT_TWO_FIVE in weaknessesAndResistances:
-                    elementTypesStrings = list()
-                    for elementType in weaknessesAndResistances[PokepediaDamageMultiplier.ZERO_POINT_TWO_FIVE]:
-                        elementTypesStrings.append(elementType.getEmojiOrStr().lower())
-
-                    elementTypesString = delimiter.join(elementTypesStrings)
-                    message = f'{message} {PokepediaDamageMultiplier.ZERO_POINT_TWO_FIVE.toStr()} resistant to {elementTypesString}.'
-
-                if PokepediaDamageMultiplier.ZERO_POINT_FIVE in weaknessesAndResistances:
-                    elementTypesStrings = list()
-                    for elementType in weaknessesAndResistances[PokepediaDamageMultiplier.ZERO_POINT_FIVE]:
-                        elementTypesStrings.append(elementType.getEmojiOrStr().lower())
-
-                    elementTypesString = delimiter.join(elementTypesStrings)
-                    message = f'{message} {PokepediaDamageMultiplier.ZERO_POINT_FIVE.toStr()} resistant to {elementTypesString}.'
-
-                if PokepediaDamageMultiplier.TWO in weaknessesAndResistances:
-                    elementTypesStrings = list()
-                    for elementType in weaknessesAndResistances[PokepediaDamageMultiplier.TWO]:
-                        elementTypesStrings.append(elementType.getEmojiOrStr().lower())
-
-                    elementTypesString = delimiter.join(elementTypesStrings)
-                    message = f'{message} {PokepediaDamageMultiplier.TWO.toStr()} weak to {elementTypesString}.'
-
-                if PokepediaDamageMultiplier.FOUR in weaknessesAndResistances:
-                    elementTypesStrings = list()
-                    for elementType in weaknessesAndResistances[PokepediaDamageMultiplier.FOUR]:
-                        elementTypesStrings.append(elementType.getEmojiOrStr().lower())
-
-                    elementTypesString = delimiter.join(elementTypesStrings)
-                    message = f'{message} {PokepediaDamageMultiplier.FOUR.toStr()} weak to {elementTypesString}.'
+                    if utils.isValidStr(damageMultiplierMessage):
+                        message = f'{message} {damageMultiplierMessage}'
 
                 strings.append(message)
 
