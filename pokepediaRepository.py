@@ -1048,20 +1048,26 @@ class PokepediaPokemon():
             raise ValueError(f'delimiter argument is malformed: \"{delimiter}\"')
 
         strings = list()
-        strings.append(f'{self.__name} (#{self.getPokedexIdStr()}) — added in {self.__initialGeneration.toStr()}, weight is {self.getWeightStr()} and height is {self.getHeightStr()}.')
+        strings.append(f'{self.__name} (#{self.getPokedexIdStr()}) — introduced in {self.__initialGeneration.toStr()}, weight is {self.getWeightStr()} and height is {self.getHeightStr()}.')
 
         for gen in PokepediaGeneration:
             if gen in self.__generationElementTypes:
-                typeChart = PokepediaTypeChart.fromPokepediaGeneration(gen)
                 genElementTypes = self.__generationElementTypes[gen]
-                weaknessesAndResistances = typeChart.getWeaknessesAndResistancesFor(genElementTypes)
 
-                message = f'{gen.toStr()}:'
+                genElementTypesStrings = list()
+                for genElementType in genElementTypes:
+                    genElementTypesStrings.append(genElementType.toStr().lower())
+
+                genElementTypesString = delimiter.join(genElementTypesStrings)
+                message = f'{gen.toStr()} ({genElementTypesString}):'
+
+                typeChart = PokepediaTypeChart.fromPokepediaGeneration(gen)
+                weaknessesAndResistances = typeChart.getWeaknessesAndResistancesFor(genElementTypes)
 
                 if PokepediaDamageMultiplier.ZERO in weaknessesAndResistances:
                     elementTypesStrings = list()
                     for elementType in weaknessesAndResistances[PokepediaDamageMultiplier.ZERO]:
-                        elementTypesStrings.append(elementType.getEmojiOrStr())
+                        elementTypesStrings.append(elementType.getEmojiOrStr().lower())
 
                     elementTypesString = delimiter.join(elementTypesStrings)
                     message = f'{message} {PokepediaDamageMultiplier.ZERO.toStr()} damage from {elementTypesString}.'
@@ -1069,7 +1075,7 @@ class PokepediaPokemon():
                 if PokepediaDamageMultiplier.ZERO_POINT_TWO_FIVE in weaknessesAndResistances:
                     elementTypesStrings = list()
                     for elementType in weaknessesAndResistances[PokepediaDamageMultiplier.ZERO_POINT_TWO_FIVE]:
-                        elementTypesStrings.append(elementType.getEmojiOrStr())
+                        elementTypesStrings.append(elementType.getEmojiOrStr().lower())
 
                     elementTypesString = delimiter.join(elementTypesStrings)
                     message = f'{message} {PokepediaDamageMultiplier.ZERO_POINT_TWO_FIVE.toStr()} resistant to {elementTypesString}.'
@@ -1077,7 +1083,7 @@ class PokepediaPokemon():
                 if PokepediaDamageMultiplier.ZERO_POINT_FIVE in weaknessesAndResistances:
                     elementTypesStrings = list()
                     for elementType in weaknessesAndResistances[PokepediaDamageMultiplier.ZERO_POINT_FIVE]:
-                        elementTypesStrings.append(elementType.getEmojiOrStr())
+                        elementTypesStrings.append(elementType.getEmojiOrStr().lower())
 
                     elementTypesString = delimiter.join(elementTypesStrings)
                     message = f'{message} {PokepediaDamageMultiplier.ZERO_POINT_FIVE.toStr()} resistant to {elementTypesString}.'
@@ -1085,7 +1091,7 @@ class PokepediaPokemon():
                 if PokepediaDamageMultiplier.TWO in weaknessesAndResistances:
                     elementTypesStrings = list()
                     for elementType in weaknessesAndResistances[PokepediaDamageMultiplier.TWO]:
-                        elementTypesStrings.append(elementType.getEmojiOrStr())
+                        elementTypesStrings.append(elementType.getEmojiOrStr().lower())
 
                     elementTypesString = delimiter.join(elementTypesStrings)
                     message = f'{message} {PokepediaDamageMultiplier.TWO.toStr()} weak to {elementTypesString}.'
@@ -1093,7 +1099,7 @@ class PokepediaPokemon():
                 if PokepediaDamageMultiplier.FOUR in weaknessesAndResistances:
                     elementTypesStrings = list()
                     for elementType in weaknessesAndResistances[PokepediaDamageMultiplier.FOUR]:
-                        elementTypesStrings.append(elementType.getEmojiOrStr())
+                        elementTypesStrings.append(elementType.getEmojiOrStr().lower())
 
                     elementTypesString = delimiter.join(elementTypesStrings)
                     message = f'{message} {PokepediaDamageMultiplier.FOUR.toStr()} weak to {elementTypesString}.'
