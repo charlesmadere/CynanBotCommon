@@ -25,24 +25,24 @@ class AnalogueProductType(Enum):
     @classmethod
     def fromStr(cls, text: str):
         if not utils.isValidStr(text):
-            return cls.OTHER
+            return AnalogueProductType.OTHER
 
         text = text.lower()
 
         if 'dac' in text or 'dac' == text:
-            return cls.DAC
+            return AnalogueProductType.DAC
         elif 'duo' in text or 'duo' == text:
-            return cls.DUO
+            return AnalogueProductType.DUO
         elif 'mega sg -' in text or 'mega sg' == text:
-            return cls.MEGA_SG
+            return AnalogueProductType.MEGA_SG
         elif 'nt mini' in text or 'nt mini' == text:
-            return cls.NT_MINI
+            return AnalogueProductType.NT_MINI
         elif 'pocket -' in text or 'pocket' == text:
-            return cls.POCKET
+            return AnalogueProductType.POCKET
         elif 'super nt -' in text or 'super nt' == text:
-            return cls.SUPER_NT
+            return AnalogueProductType.SUPER_NT
         else:
-            return cls.OTHER
+            return AnalogueProductType.OTHER
 
     def toStr(self) -> str:
         if self is self.DAC:
