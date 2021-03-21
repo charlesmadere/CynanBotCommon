@@ -33,20 +33,20 @@ class LocationsRepository():
 
         jsonContents = self.__readJson()
 
-        for locationId in jsonContents:
-            if locationId.lower() == locationId.lower():
-                timeZoneStr = jsonContents[locationId]['timeZone']
+        for _id in jsonContents:
+            if _id.lower() == locationId.lower():
+                timeZoneStr = jsonContents[_id]['timeZone']
                 timeZone = self.__timeZoneRepository.getTimeZone(timeZoneStr)
 
                 location = Location(
-                    latitude = jsonContents[locationId]['lat'],
-                    longitude = jsonContents[locationId]['lon'],
-                    locationId = locationId,
-                    name = jsonContents[locationId]['name'],
+                    latitude = jsonContents[_id]['lat'],
+                    longitude = jsonContents[_id]['lon'],
+                    locationId = _id,
+                    name = jsonContents[_id]['name'],
                     timeZone = timeZone
                 )
 
-                self.__locationsCache[locationId.lower()] = location
+                self.__locationsCache[_id.lower()] = location
                 return location
 
         raise RuntimeError(f'Unable to find location with ID \"{locationId}\" in locations file: \"{self.__locationsFile}\"')
