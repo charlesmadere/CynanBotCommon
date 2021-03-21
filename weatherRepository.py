@@ -139,11 +139,6 @@ class WeatherRepository():
         if location is None:
             raise ValueError(f'location argument is malformed: \"{location}\"')
 
-        cacheValue = self.__cache[location.getLocationId()]
-
-        if cacheValue is not None:
-            return cacheValue
-
         print(f'Refreshing weather for \"{location.getLocationId()}\"... ({utils.getNowTimeText()})')
 
         # Retrieve weather report from https://openweathermap.org/api/one-call-api
