@@ -244,6 +244,8 @@ class PokepediaGeneration(Enum):
     def fromPokedexId(cls, pokedexId: int):
         if not utils.isValidNum(pokedexId):
             raise ValueError(f'pokedexId argument is malformed: \"{pokedexId}\"')
+        elif pokedexId < 0:
+            raise ValueError(f'pokedexId argument is out of bounds: \"{pokedexId}\"')
 
         if pokedexId < 152:
             return PokepediaGeneration.GENERATION_1
