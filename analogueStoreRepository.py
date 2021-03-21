@@ -7,7 +7,10 @@ from lxml import html
 from requests import ConnectionError, HTTPError, Timeout
 from urllib3.exceptions import MaxRetryError, NewConnectionError
 
-import CynanBotCommon.utils as utils
+try:
+    import CynanBotCommon.utils as utils
+except:
+    import utils
 
 
 class AnalogueProductType(Enum):

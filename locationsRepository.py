@@ -2,9 +2,14 @@ import json
 from os import path
 from typing import Dict
 
-import CynanBotCommon.utils as utils
-from CynanBotCommon.location import Location
-from CynanBotCommon.timeZoneRepository import TimeZoneRepository
+try:
+    import CynanBotCommon.utils as utils
+    from CynanBotCommon.location import Location
+    from CynanBotCommon.timeZoneRepository import TimeZoneRepository
+except:
+    import utils
+    from location import Location
+    from timeZoneRepository import TimeZoneRepository
 
 
 class LocationsRepository():

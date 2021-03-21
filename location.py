@@ -1,6 +1,9 @@
 from datetime import tzinfo
 
-import CynanBotCommon.utils as utils
+try:
+    import CynanBotCommon.utils as utils
+except:
+    import utils
 
 
 class Location():

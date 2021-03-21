@@ -2,7 +2,10 @@ from typing import List
 
 import pytz
 
-import CynanBotCommon.utils as utils
+try:
+    import CynanBotCommon.utils as utils
+except:
+    import utils
 
 
 # A listing of pytz timezones can be found here:

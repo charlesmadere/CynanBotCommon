@@ -5,10 +5,16 @@ import requests
 from requests import ConnectionError, HTTPError, Timeout
 from urllib3.exceptions import MaxRetryError, NewConnectionError
 
-import CynanBotCommon.utils as utils
-from CynanBotCommon.locationsRepository import Location
-from CynanBotCommon.timedDict import TimedDict
-from CynanBotCommon.weatherReport import WeatherReport
+try:
+    import CynanBotCommon.utils as utils
+    from CynanBotCommon.locationsRepository import Location
+    from CynanBotCommon.timedDict import TimedDict
+    from CynanBotCommon.weatherReport import WeatherReport
+except:
+    import utils
+    from locationsRepository import Location
+    from timedDict import TimedDict
+    from weatherReport import WeatherReport
 
 
 class WeatherRepository():

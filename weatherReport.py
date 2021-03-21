@@ -1,7 +1,10 @@
 import locale
 from typing import List
 
-import CynanBotCommon.utils as utils
+try:
+    import CynanBotCommon.utils as utils
+except:
+    import utils
 
 
 class WeatherReport():
