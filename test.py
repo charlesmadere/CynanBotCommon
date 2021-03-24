@@ -1,4 +1,5 @@
 from pokepediaRepository import PokepediaRepository, PokepediaGeneration
+from tamaleGuyRepository import TamaleGuyRepository
 
 pr = PokepediaRepository()
 move = pr.searchMoves('fire spin')
@@ -60,3 +61,9 @@ for s in move.toStrList():
 
 mon = pr.searchPokemon('clefairy')
 print(mon.toStrList())
+
+
+
+tgr = TamaleGuyRepository()
+storeStock = tgr.fetchStoreStock()
+print(storeStock.toStr())
