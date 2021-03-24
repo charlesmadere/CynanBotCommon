@@ -145,6 +145,9 @@ def getStrFromDict(d: dict, key: str, fallback: str = None, clean: bool = False)
 def hasItems(l: List) -> bool:
     return l is not None and len(l) >= 1
 
+def isValidBool(b: bool) -> bool:
+    return b is not None and isinstance(b, bool)
+
 def isValidNum(n: Number) -> bool:
     return n is not None and isinstance(n, Number) and math.isfinite(n)
 
