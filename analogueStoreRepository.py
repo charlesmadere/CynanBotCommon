@@ -75,7 +75,7 @@ class AnalogueStoreEntry():
     ):
         if productType is None:
             raise ValueError(f'productType argument is malformed: \"{productType}\"')
-        elif inStock is None:
+        elif not utils.isValidBool(inStock):
             raise ValueError(f'inStock argument is malformed: \"{inStock}\"')
         elif not utils.isValidStr(name):
             raise ValueError(f'name argument is malformed: \"{name}\"')
