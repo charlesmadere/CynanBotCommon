@@ -14,6 +14,7 @@ except:
 
 
 class AnalogueProductType(Enum):
+
     DAC = auto()
     DUO = auto()
     MEGA_SG = auto()
@@ -45,22 +46,22 @@ class AnalogueProductType(Enum):
             return AnalogueProductType.OTHER
 
     def toStr(self) -> str:
-        if self is self.DAC:
+        if self is AnalogueProductType.DAC:
             return 'DAC'
-        elif self is self.DUO:
+        elif self is AnalogueProductType.DUO:
             return 'Duo'
-        elif self is self.MEGA_SG:
+        elif self is AnalogueProductType.MEGA_SG:
             return 'Mega Sg'
-        elif self is self.NT_MINI:
+        elif self is AnalogueProductType.NT_MINI:
             return 'Nt mini'
-        elif self is self.OTHER:
+        elif self is AnalogueProductType.OTHER:
             return 'other'
-        elif self is self.POCKET:
+        elif self is AnalogueProductType.POCKET:
             return 'Pocket'
-        elif self is self.SUPER_NT:
+        elif self is AnalogueProductType.SUPER_NT:
             return 'Super Nt'
         else:
-            return 'other'
+            raise RuntimeError(f'unknown AnalogueProductType: \"{self}\"')
 
 
 class AnalogueStoreEntry():
@@ -127,7 +128,7 @@ class AnalogueStoreEntry():
 class AnalogueStoreStock():
 
     def __init__(self, products: List[AnalogueStoreEntry]):
-        if products == None:
+        if products is None:
             raise ValueError(f'products argument is malformed: \"{products}\"')
 
         self.__products = products
