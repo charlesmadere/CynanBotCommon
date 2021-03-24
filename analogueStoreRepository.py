@@ -140,9 +140,9 @@ class AnalogueStoreStock():
         return utils.hasItems(self.__products)
 
     def toStr(self, includePrices: bool = False, inStockProductsOnly: bool = True, delimiter: str = ', ') -> str:
-        if includePrices is None:
+        if not utils.isValidBool(includePrices):
             raise ValueError(f'includePrices argument is malformed: \"{includePrices}\"')
-        elif inStockProductsOnly is None:
+        elif not utils.isValidBool(inStockProductsOnly):
             raise ValueError(f'inStockProductsOnly argument is malformed: \"{inStockProductsOnly}\"')
         elif delimiter is None:
             raise ValueError(f'delimiter argument is malformed: \"{delimiter}\"')
