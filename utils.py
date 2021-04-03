@@ -23,7 +23,7 @@ def formatTime(time) -> str:
 def formatTimeShort(time, includeSeconds: bool = False) -> str:
     if time is None:
         raise ValueError(f'time argument is malformed: \"{time}\"')
-    elif includeSeconds is None:
+    elif not isValidBool(includeSeconds):
         raise ValueError(f'includeSeconds argument is malformed: \"{includeSeconds}\"')
 
     if includeSeconds:
@@ -103,7 +103,7 @@ def getIntFromDict(d: dict, key: str, fallback: int = None) -> int:
     return value
 
 def getNowTimeText(includeSeconds: bool = False) -> str:
-    if includeSeconds is None:
+    if not isValidBool(includeSeconds):
         raise ValueError(f'includeSeconds argument is malformed: \"{includeSeconds}\"')
 
     return formatTimeShort(

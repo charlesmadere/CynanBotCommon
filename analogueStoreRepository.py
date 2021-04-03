@@ -101,9 +101,9 @@ class AnalogueStoreEntry():
         return self.__inStock
 
     def toStr(self, includePrice: bool = False, includeStockInfo: bool = False) -> str:
-        if includePrice is None:
+        if not utils.isValidBool(includePrice):
             raise ValueError(f'includePrice argument is malformed: \"{includePrice}\"')
-        elif includeStockInfo is None:
+        elif not utils.isValidBool(includeStockInfo):
             raise ValueError(f'includeStockInfo argument is malformed: \"{includeStockInfo}\"')
 
         priceAndStockText = ''

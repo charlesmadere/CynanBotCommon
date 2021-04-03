@@ -53,7 +53,7 @@ class TriviaResponse():
             raise ValueError(f'triviaType argument is malformed: \"{triviaType}\"')
         elif triviaType is TriviaType.TRUE_FALSE and not utils.hasItems(trueFalseResponses):
             raise ValueError(f'triviaType is {triviaType} but trueFalseResponses is malformed: \"{trueFalseResponses}\"')
-        elif triviaType is TriviaType.TRUE_FALSE and correctTrueFalseAnswer is None:
+        elif triviaType is TriviaType.TRUE_FALSE and not utils.isValidBool(correctTrueFalseAnswer):
             raise ValueError(f'triviaType is {triviaType} but correctTrueFalseAnswer is malformed: \"{correctTrueFalseAnswer}\"')
         elif triviaType is TriviaType.MULTIPLE_CHOICE and not utils.hasItems(multipleChoiceResponses):
             raise ValueError(f'triviaType is {triviaType} but multipleChoiceResponses is malformed: \"{multipleChoiceResponses}\"')
