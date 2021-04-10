@@ -26,9 +26,9 @@ class TriviaType(Enum):
             raise ValueError(f'text argument is malformed: \"{text}\"')
 
         if text == 'boolean':
-            return cls.TRUE_FALSE
+            return TriviaType.TRUE_FALSE
         elif text == 'multiple':
-            return cls.MULTIPLE_CHOICE
+            return TriviaType.MULTIPLE_CHOICE
         else:
             raise ValueError(f'unknown TriviaType: \"{text}\"')
 
