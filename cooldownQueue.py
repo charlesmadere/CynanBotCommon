@@ -8,6 +8,9 @@ class CooldownQueue():
         self.__queue = dict()
 
     def addCooldown(self, channel, data, timeoutInSeconds):
+        if timeoutInSeconds is None:
+            raise ValueError(f'timeoutInSeconds argument is malformed: \"{timeoutInSeconds}\"')
+
         if not channel in self.__queue:
             self.__queue[channel] = list()
 

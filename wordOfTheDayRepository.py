@@ -6,8 +6,12 @@ import xmltodict
 from requests import ConnectionError, HTTPError, Timeout
 from urllib3.exceptions import MaxRetryError, NewConnectionError
 
-import CynanBotCommon.utils as utils
-from CynanBotCommon.timedDict import TimedDict
+try:
+    import CynanBotCommon.utils as utils
+    from CynanBotCommon.timedDict import TimedDict
+except:
+    import utils
+    from timedDict import TimedDict
 
 
 class LanguageEntry():

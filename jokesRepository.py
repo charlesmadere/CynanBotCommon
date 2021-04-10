@@ -8,7 +8,7 @@ from urllib3.exceptions import MaxRetryError, NewConnectionError
 try:
     import CynanBotCommon.utils as utils
 except:
-    import utils as utils
+    import utils
 
 
 class JokeResponse():
