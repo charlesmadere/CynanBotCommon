@@ -19,7 +19,8 @@ class LanguageEntry():
     def __init__(
         self,
         commandNames: List[str],
-        apiName: str
+        apiName: str,
+        flag: str = None
     ):
         if not utils.hasItems(commandNames):
             raise ValueError(f'commandNames argument is malformed: \"{commandNames}\"')
@@ -28,6 +29,7 @@ class LanguageEntry():
 
         self.__commandNames = commandNames
         self.__apiName = apiName
+        self.__flag = flag
 
     def getApiName(self) -> str:
         return self.__apiName
@@ -35,8 +37,14 @@ class LanguageEntry():
     def getCommandNames(self) -> List[str]:
         return self.__commandNames
 
+    def getFlag(self) -> str:
+        return self.__flag
+
     def getPrimaryCommandName(self) -> str:
         return self.__commandNames[0]
+
+    def hasFlag(self) -> bool:
+        return utils.isValidStr(self.__flag)
 
 
 class LanguageList():
@@ -141,15 +149,21 @@ class Wotd():
         return utils.isValidStr(self.__transliteration)
 
     def toStr(self) -> str:
+        languageNameAndFlag = None
+        if self.__languageEntry.hasFlag():
+            languageNameAndFlag = f'{self.__languageEntry.getFlag()} {self.getLanguageName()}'
+        else:
+            languageNameAndFlag = self.getLanguageName()
+
         if self.hasExamples():
             if self.hasTransliteration():
-                return f'({self.getLanguageName()}) {self.getWord()} ({self.getTransliteration()}) — {self.getDefinition()}. Example: {self.getForeignExample()} {self.getEnglishExample()}'
+                return f'{languageNameAndFlag} — {self.getWord()} ({self.getTransliteration()}) — {self.getDefinition()}. Example: {self.getForeignExample()} {self.getEnglishExample()}'
             else:
-                return f'({self.getLanguageName()}) {self.getWord()} — {self.getDefinition()}. Example: {self.getForeignExample()} {self.getEnglishExample()}'
+                return f'{languageNameAndFlag} — {self.getWord()} — {self.getDefinition()}. Example: {self.getForeignExample()} {self.getEnglishExample()}'
         elif self.hasTransliteration():
-            return f'({self.getLanguageName()}) {self.getWord()} ({self.getTransliteration()}) — {self.getDefinition()}'
+            return f'{languageNameAndFlag} — {self.getWord()} ({self.getTransliteration()}) — {self.getDefinition()}'
         else:
-            return f'({self.getLanguageName()}) {self.getWord()} — {self.getDefinition()}'
+            return f'{languageNameAndFlag} — {self.getWord()} — {self.getDefinition()}'
 
 
 class WordOfTheDayRepository():
@@ -169,7 +183,8 @@ class WordOfTheDayRepository():
 
         entries.append(LanguageEntry(
             apiName = 'de',
-            commandNames = [ 'de', 'german', 'germany' ]
+            commandNames = [ 'de', 'german', 'germany' ],
+            flag = '🇩🇪'
         ))
 
         entries.append(LanguageEntry(
@@ -189,22 +204,26 @@ class WordOfTheDayRepository():
 
         entries.append(LanguageEntry(
             apiName = 'fr',
-            commandNames = [ 'fr', 'french', 'france' ]
+            commandNames = [ 'fr', 'french', 'france' ],
+            flag = '🇫🇷'
         ))
 
         entries.append(LanguageEntry(
             apiName = 'it',
-            commandNames = [ 'it', 'italian', 'italy' ]
+            commandNames = [ 'it', 'italian', 'italy' ],
+            flag = '🇮🇹'
         ))
 
         entries.append(LanguageEntry(
             apiName = 'ja',
-            commandNames = [ 'ja', 'japanese', 'jp', 'japan' ]
+            commandNames = [ 'ja', 'japanese', 'jp', 'japan' ],
+            flag = '🇯🇵'
         ))
 
         entries.append(LanguageEntry(
             apiName = 'korean',
-            commandNames = [ 'ko', 'korean', 'korea' ]
+            commandNames = [ 'ko', 'korean', 'korea' ],
+            flag = '🇰🇷'
         ))
 
         entries.append(LanguageEntry(
@@ -214,12 +233,14 @@ class WordOfTheDayRepository():
 
         entries.append(LanguageEntry(
             apiName = 'norwegian',
-            commandNames = [ 'no', 'norwegian' ]
+            commandNames = [ 'no', 'norwegian', 'norway' ],
+            flag = '🇳🇱'
         ))
 
         entries.append(LanguageEntry(
             apiName = 'polish',
-            commandNames = [ 'po', 'polish', 'poland' ]
+            commandNames = [ 'po', 'polish', 'poland' ],
+            flag = '🇵🇱'
         ))
 
         entries.append(LanguageEntry(
@@ -229,17 +250,20 @@ class WordOfTheDayRepository():
 
         entries.append(LanguageEntry(
             apiName = 'ru',
-            commandNames = [ 'ru', 'russian', 'russia' ]
+            commandNames = [ 'ru', 'russian', 'russia' ],
+            flag = '🇷🇺'
         ))
 
         entries.append(LanguageEntry(
             apiName = 'swedish',
-            commandNames = [ 'sv', 'swedish', 'sw', 'sweden' ]
+            commandNames = [ 'sv', 'swedish', 'sw', 'sweden' ],
+            flag = '🇸🇪'
         ))
 
         entries.append(LanguageEntry(
             apiName = 'zh',
-            commandNames = [ 'zh', 'chinese', 'china' ]
+            commandNames = [ 'zh', 'chinese', 'china' ],
+            flag = '🇨🇳'
         ))
 
         return LanguageList(entries = entries)
