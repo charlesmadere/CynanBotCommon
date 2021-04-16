@@ -1,14 +1,21 @@
 import heapq
 import time
 
+try:
+    import CynanBotCommon.utils as utils
+except:
+    import utils
+
 
 class CooldownQueue():
 
     def __init__(self):
         self.__queue = dict()
 
-    def addCooldown(self, channel, data, timeoutInSeconds):
-        if timeoutInSeconds is None:
+    def addCooldown(self, channel: str, data, timeoutInSeconds):
+        if not utils.isValidStr(channel):
+            raise ValueError(f'channel argument is malformed: \"{channel}\"')
+        elif timeoutInSeconds is None:
             raise ValueError(f'timeoutInSeconds argument is malformed: \"{timeoutInSeconds}\"')
 
         if not channel in self.__queue:
@@ -17,7 +24,10 @@ class CooldownQueue():
         # could add dupe checking if you want it, but it's really not necessary tbh
         heapq.heappush(self.__queue[channel], (time.time() + timeoutInSeconds, data))
 
-    def getExpireTime(self, channel, data):
+    def getExpireTime(self, channel: str, data):
+        if not utils.isValidStr(channel):
+            raise ValueError(f'channel argument is malformed: \"{channel}\"')
+
         t = time.time()
 
         if not channel in self.__queue:
