@@ -126,20 +126,14 @@ class TriviaRepository():
 
     def __init__(
         self,
-        waitBeforeAnswerSeconds: int = 30,
         apiUrl: str = 'https://opentdb.com/api.php?amount=1',
         cacheTimeDelta: timedelta = timedelta(minutes = 10)
     ):
-        if not utils.isValidNum(waitBeforeAnswerSeconds):
-            raise ValueError(f'waitBeforeAnswerSeconds is malformed: \"{waitBeforeAnswerSeconds}\"')
-        elif waitBeforeAnswerSeconds < 10:
-            raise ValueError(f'waitBeforeAnswerSeconds is too aggressive: \"{waitBeforeAnswerSeconds}\"')
-        elif not utils.isValidUrl(apiUrl):
+        if not utils.isValidUrl(apiUrl):
             raise ValueError(f'apiUrl argument is malformed: \"{apiUrl}\"')
         elif cacheTimeDelta is None:
             raise ValueError(f'cacheTimeDelta argument is malformed: \"{cacheTimeDelta}\"')
 
-        self.__waitBeforeAnswerSeconds = waitBeforeAnswerSeconds
         self.__apiUrl = apiUrl
         self.__cacheTime = datetime.utcnow() - cacheTimeDelta
         self.__cacheTimeDelta = cacheTimeDelta
@@ -151,9 +145,6 @@ class TriviaRepository():
             self.__cacheTime = datetime.utcnow()
 
         return self.__triviaResponse
-
-    def getWaitBeforeAnswerSeconds(self) -> int:
-        return self.__waitBeforeAnswerSeconds
 
     def __refreshTrivia(self) -> TriviaResponse:
         print(f'Refreshing trivia... ({utils.getNowTimeText()})')
