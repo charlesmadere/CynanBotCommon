@@ -98,7 +98,7 @@ class TwitchTokensRepository():
         elif not utils.isValidStr(twitchHandle):
             raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
 
-        print(f'Attempting to refresh Twitch tokens for \"{twitchHandle}\" ({utils.getNowTimeText(includeSeconds = True)})')
+        print(f'Refreshing Twitch tokens for \"{twitchHandle}\"... ({utils.getNowTimeText(includeSeconds = True)})')
 
         rawResponse = None
         try:
