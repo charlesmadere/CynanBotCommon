@@ -40,7 +40,7 @@ class TwitchTokensRepository():
         accessToken = jsonContents.get('accessToken')
 
         if not utils.isValidStr(accessToken):
-            raise ValueError(f'\"accessToken\" value in \"{self.__twitchTokensFile}\" is malformed: \"{accessToken}\"')
+            raise ValueError(f'\"accessToken\" value for \"{twitchHandle}\" in \"{self.__twitchTokensFile}\" is malformed: \"{accessToken}\"')
 
         return accessToken
 
@@ -52,7 +52,7 @@ class TwitchTokensRepository():
         refreshToken = jsonContents.get('refreshToken')
 
         if not utils.isValidStr(refreshToken):
-            raise ValueError(f'\"refreshToken\" value in \"{self.__twitchTokensFile}\" is malformed: \"{refreshToken}\"')
+            raise ValueError(f'\"refreshToken\" value for \"{twitchHandle}\" in \"{self.__twitchTokensFile}\" is malformed: \"{refreshToken}\"')
 
         return refreshToken
 
@@ -97,6 +97,8 @@ class TwitchTokensRepository():
             raise ValueError(f'twitchClientSecret argument is malformed: \"{twitchClientSecret}\"')
         elif not utils.isValidStr(twitchHandle):
             raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
+
+        print(f'Attempting to refresh Twitch tokens for \"{twitchHandle}\"...')
 
         rawResponse = None
         try:
