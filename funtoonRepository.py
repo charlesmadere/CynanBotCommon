@@ -54,8 +54,33 @@ class FuntoonRepository():
         if not utils.isValidStr(funtoonToken):
             return False
 
-        # TODO
-        return False
+        rawResponse = None
+        try:
+            rawResponse = requests.post(
+                url = f'{self.__funtoonApiUrl}/events/custom',
+                headers = {
+                    'Authorization': funtoonToken,
+                    'Content-Type': 'application/json'
+                },
+                json = {
+                    'channel': twitchChannel,
+                    'data': {
+                        'player': userThatRedeemed,
+                        'opponent': userToBattle
+                    },
+                    'event': 'battle'
+                },
+                timeout = utils.getDefaultTimeout()
+            )
+        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, Timeout) as e:
+            print(f'Exception occurred when attempting to post Funtoon battle event for \"{twitchChannel}\": {e}')
+            raise RuntimeError(f'Exception occurred when attempting to post Funtoon battle event for \"{twitchChannel}\": {e}')
+
+        if rawResponse is None or rawResponse.status_code != 200:
+            print(f'Hit Funtoon pokemon battle API for \"{twitchChannel}\" with token \"{funtoonToken}\"\nrawResponse: \"{rawResponse}\"')
+            return False
+        else:
+            return True
 
     def pkmnCatch(self, userThatRedeemed: str, twitchChannel: str):
         if not utils.isValidStr(userThatRedeemed):
