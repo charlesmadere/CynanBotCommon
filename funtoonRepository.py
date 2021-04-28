@@ -68,10 +68,11 @@ class FuntoonRepository():
         if not utils.isValidStr(funtoonToken):
             return False
 
+        url = f'{self.__funtoonApiUrl}/events/custom'
         rawResponse = None
         try:
             rawResponse = requests.post(
-                url = f'{self.__funtoonApiUrl}/events/custom',
+                url = url,
                 headers = {
                     'Authorization': funtoonToken,
                     'Content-Type': 'application/json'
@@ -86,7 +87,8 @@ class FuntoonRepository():
             print(f'Exception occurred when attempting to post Funtoon catch event for \"{twitchChannel}\": {e}')
             raise RuntimeError(f'Exception occurred when attempting to post Funtoon catch event for \"{twitchChannel}\": {e}')
 
-        return True
+        print(f'Hit Funtoon API: \"{url}\" for \"{twitchChannel}\"\nrawResponse: \"{rawResponse}\"')
+        return rawResponse is not None
 
     def __readJson(self, twitchChannel: str) -> Dict:
         if not utils.isValidStr(twitchChannel):
