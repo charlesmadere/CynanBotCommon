@@ -79,6 +79,7 @@ class FuntoonRepository():
                 },
                 json = {
                     'channel': twitchChannel,
+                    'data': userThatRedeemed,
                     'event': 'catch'
                 },
                 timeout = utils.getDefaultTimeout()
@@ -88,7 +89,7 @@ class FuntoonRepository():
             raise RuntimeError(f'Exception occurred when attempting to post Funtoon catch event for \"{twitchChannel}\": {e}')
 
         print(f'Hit Funtoon API: \"{url}\" for \"{twitchChannel}\"\nrawResponse: \"{rawResponse}\"')
-        return rawResponse is not None
+        return rawResponse is not None and rawResponse.status_code == 200
 
     def __readJson(self, twitchChannel: str) -> Dict:
         if not utils.isValidStr(twitchChannel):
