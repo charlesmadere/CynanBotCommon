@@ -52,7 +52,7 @@ class FuntoonRepository():
             raise ValueError(f'event argument is malformed: \"{event}\"')
         elif not utils.isValidStr(funtoonToken):
             raise ValueError(f'funtoonToken argument is malformed: \"{funtoonToken}\"')
-        elif twitchChannel is not utils.isValidStr(twitchChannel):
+        elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
         rawResponse = None
