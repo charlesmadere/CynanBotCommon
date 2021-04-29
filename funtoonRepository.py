@@ -41,6 +41,45 @@ class FuntoonRepository():
 
         return token
 
+    def __hitFuntoon(
+        self,
+        event: str,
+        funtoonToken: str,
+        twitchChannel: str,
+        data = None
+    ) -> bool:
+        if not utils.isValidStr(event):
+            raise ValueError(f'event argument is malformed: \"{event}\"')
+        elif not utils.isValidStr(funtoonToken):
+            raise ValueError(f'funtoonToken argument is malformed: \"{funtoonToken}\"')
+        elif twitchChannel is not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+
+        rawResponse = None
+        try:
+            rawResponse = requests.post(
+                url = f'{self.__funtoonApiUrl}/events/custom',
+                headers = {
+                    'Authorization': funtoonToken,
+                    'Content-Type': 'application/json'
+                },
+                json = {
+                    'channel': twitchChannel,
+                    'data': data,
+                    'event': event
+                },
+                timeout = utils.getDefaultTimeout()
+            )
+        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, Timeout) as e:
+            print(f'Exception occurred when attempting to post Funtoon \"{event}\" event for \"{twitchChannel}\": {e}')
+            raise RuntimeError(f'Exception occurred when attempting to post Funtoon \"{event}\" event for \"{twitchChannel}\": {e}')
+
+        if rawResponse is not None and rawResponse.status_code == 200:
+            return True
+        else:
+            print(f'Received error when hitting Funtoon API \"{rawResponse.url}\" for \"{twitchChannel}\" for \"{event}\" event with token \"{funtoonToken}\"\nrawResponse: \"{rawResponse}\"')
+            return False
+
     def pkmnBattle(self, userThatRedeemed: str, userToBattle: str, twitchChannel: str) -> bool:
         if not utils.isValidStr(userThatRedeemed):
             raise ValueError(f'userThatRedeemed argument is malformed: \"{userThatRedeemed}\"')
@@ -54,35 +93,17 @@ class FuntoonRepository():
         if not utils.isValidStr(funtoonToken):
             return False
 
-        rawResponse = None
-        try:
-            rawResponse = requests.post(
-                url = f'{self.__funtoonApiUrl}/events/custom',
-                headers = {
-                    'Authorization': funtoonToken,
-                    'Content-Type': 'application/json'
-                },
-                json = {
-                    'channel': twitchChannel,
-                    'data': {
-                        'player': userThatRedeemed,
-                        'opponent': userToBattle
-                    },
-                    'event': 'battle'
-                },
-                timeout = utils.getDefaultTimeout()
-            )
-        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, Timeout) as e:
-            print(f'Exception occurred when attempting to post Funtoon battle event for \"{twitchChannel}\": {e}')
-            raise RuntimeError(f'Exception occurred when attempting to post Funtoon battle event for \"{twitchChannel}\": {e}')
+        return self.__hitFuntoon(
+            event = 'battle',
+            funtoonToken = funtoonToken,
+            twitchChannel = twitchChannel,
+            data = {
+                'player': userThatRedeemed,
+                'opponent': userToBattle
+            }
+        )
 
-        if rawResponse is not None and rawResponse.status_code == 200:
-            return True
-        else:
-            print(f'Received error when hitting Funtoon pokemon battle API for \"{twitchChannel}\" with token \"{funtoonToken}\"\nrawResponse: \"{rawResponse}\"')
-            return False
-
-    def pkmnCatch(self, userThatRedeemed: str, twitchChannel: str):
+    def pkmnCatch(self, userThatRedeemed: str, twitchChannel: str) -> bool:
         if not utils.isValidStr(userThatRedeemed):
             raise ValueError(f'userThatRedeemed argument is malformed: \"{userThatRedeemed}\"')
         elif not utils.isValidStr(twitchChannel):
@@ -93,30 +114,30 @@ class FuntoonRepository():
         if not utils.isValidStr(funtoonToken):
             return False
 
-        rawResponse = None
-        try:
-            rawResponse = requests.post(
-                url = f'{self.__funtoonApiUrl}/events/custom',
-                headers = {
-                    'Authorization': funtoonToken,
-                    'Content-Type': 'application/json'
-                },
-                json = {
-                    'channel': twitchChannel,
-                    'data': userThatRedeemed,
-                    'event': 'catch'
-                },
-                timeout = utils.getDefaultTimeout()
-            )
-        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, Timeout) as e:
-            print(f'Exception occurred when attempting to post Funtoon catch event for \"{twitchChannel}\": {e}')
-            raise RuntimeError(f'Exception occurred when attempting to post Funtoon catch event for \"{twitchChannel}\": {e}')
+        return self.__hitFuntoon(
+            event = 'catch',
+            funtoonToken = funtoonToken,
+            twitchChannel = twitchChannel,
+            data = userThatRedeemed
+        )
 
-        if rawResponse is not None and rawResponse.status_code == 200:
-            return True
-        else:
-            print(f'Received error when hitting Funtoon pokemon catch API for \"{twitchChannel}\" with token \"{funtoonToken}\"\nrawResponse: \"{rawResponse}\"')
+    def pkmnGiveEvolve(self, userThatRedeemed: str, twitchChannel: str) -> bool:
+        if not utils.isValidStr(userThatRedeemed):
+            raise ValueError(f'userThatRedeemed argument is malformed: \"{userThatRedeemed}\"')
+        elif not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+
+        funtoonToken = self.getFuntoonToken(twitchChannel)
+
+        if not utils.isValidStr(funtoonToken):
             return False
+
+        return self.__hitFuntoon(
+            event = 'giveFreeEvolve',
+            funtoonToken = funtoonToken,
+            twitchChannel = twitchChannel,
+            data = userThatRedeemed
+        )
 
     def __readJson(self, twitchChannel: str) -> Dict:
         if not utils.isValidStr(twitchChannel):
