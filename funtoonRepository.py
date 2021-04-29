@@ -76,11 +76,11 @@ class FuntoonRepository():
             print(f'Exception occurred when attempting to post Funtoon battle event for \"{twitchChannel}\": {e}')
             raise RuntimeError(f'Exception occurred when attempting to post Funtoon battle event for \"{twitchChannel}\": {e}')
 
-        if rawResponse is None or rawResponse.status_code != 200:
-            print(f'Hit Funtoon pokemon battle API for \"{twitchChannel}\" with token \"{funtoonToken}\"\nrawResponse: \"{rawResponse}\"')
-            return False
-        else:
+        if rawResponse is not None and rawResponse.status_code == 200:
             return True
+        else:
+            print(f'Received error when hitting Funtoon pokemon battle API for \"{twitchChannel}\" with token \"{funtoonToken}\"\nrawResponse: \"{rawResponse}\"')
+            return False
 
     def pkmnCatch(self, userThatRedeemed: str, twitchChannel: str):
         if not utils.isValidStr(userThatRedeemed):
@@ -112,11 +112,11 @@ class FuntoonRepository():
             print(f'Exception occurred when attempting to post Funtoon catch event for \"{twitchChannel}\": {e}')
             raise RuntimeError(f'Exception occurred when attempting to post Funtoon catch event for \"{twitchChannel}\": {e}')
 
-        if rawResponse is None or rawResponse.status_code != 200:
-            print(f'Hit Funtoon pokemon catch API for \"{twitchChannel}\" with token \"{funtoonToken}\"\nrawResponse: \"{rawResponse}\"')
-            return False
-        else:
+        if rawResponse is not None and rawResponse.status_code == 200:
             return True
+        else:
+            print(f'Received error when hitting Funtoon pokemon catch API for \"{twitchChannel}\" with token \"{funtoonToken}\"\nrawResponse: \"{rawResponse}\"')
+            return False
 
     def __readJson(self, twitchChannel: str) -> Dict:
         if not utils.isValidStr(twitchChannel):
