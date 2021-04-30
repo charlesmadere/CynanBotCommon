@@ -98,7 +98,7 @@ class TwitchTokensRepository():
                     'client_id': twitchClientId,
                     'client_secret': twitchClientSecret,
                     'grant_type': 'refresh_token',
-                    'refresh_token': self.getRefreshToken(twitchHandle)
+                    'refresh_token': self.requireRefreshToken(twitchHandle)
                 },
                 timeout = utils.getDefaultTimeout()
             )
