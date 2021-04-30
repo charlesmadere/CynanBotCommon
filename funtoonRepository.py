@@ -35,7 +35,7 @@ class FuntoonRepository():
         if twitchChannelJson is None:
             return None
 
-        token = twitchChannelJson['token']
+        token = twitchChannelJson.get('token')
         if not utils.isValidStr(token):
             raise ValueError(f'\"token\" value for \"{twitchChannel}\" in Funtoon repository file ({self.__funtoonRepositoryFile}) is malformed: \"{token}\"')
 
