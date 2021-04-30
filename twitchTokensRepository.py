@@ -40,10 +40,7 @@ class TwitchTokensRepository():
         jsonContents = self.__readJson(twitchHandle)
         return jsonContents.get('refreshToken')
 
-    def __readJson(self, twitchHandle: str) -> Dict:
-        if not utils.isValidStr(twitchHandle):
-            raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
-
+    def __readJson(self) -> Dict:
         if not os.path.exists(self.__twitchTokensFile):
             raise FileNotFoundError(f'Twitch tokens file not found: \"{self.__twitchTokensFile}\"')
 
@@ -54,6 +51,14 @@ class TwitchTokensRepository():
             raise IOError(f'Error reading from Twitch tokens file: \"{self.__twitchTokensFile}\"')
         elif len(jsonContents) == 0:
             raise ValueError(f'JSON contents of Twitch tokens file \"{self.__twitchTokensFile}\" is empty')
+
+        return jsonContents
+
+    def __readJson(self, twitchHandle: str) -> Dict:
+        if not utils.isValidStr(twitchHandle):
+            raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
+
+        jsonContents = self.__readJson()
 
         for key in jsonContents:
             if key.lower() == twitchHandle.lower():
@@ -106,7 +111,7 @@ class TwitchTokensRepository():
         elif 'refresh_token' not in jsonResponse or len(jsonResponse['refresh_token']) == 0:
             raise ValueError(f'Received malformed \"refresh_token\" Twitch token: {jsonResponse}')
 
-        jsonContents = dict()
+        jsonContents = self.__readJson()
         jsonContents[twitchHandle] = {
             'accessToken': jsonResponse['access_token'],
             'refreshToken': jsonResponse['refresh_token']
