@@ -37,24 +37,14 @@ class TwitchTokensRepository():
             raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
 
         jsonContents = self.__readJson(twitchHandle)
-        accessToken = jsonContents.get('accessToken')
-
-        if not utils.isValidStr(accessToken):
-            raise ValueError(f'\"accessToken\" value for \"{twitchHandle}\" in \"{self.__twitchTokensFile}\" is malformed: \"{accessToken}\"')
-
-        return accessToken
+        return jsonContents.get('accessToken')
 
     def getRefreshToken(self, twitchHandle: str) -> str:
         if not utils.isValidStr(twitchHandle):
             raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
 
         jsonContents = self.__readJson(twitchHandle)
-        refreshToken = jsonContents.get('refreshToken')
-
-        if not utils.isValidStr(refreshToken):
-            raise ValueError(f'\"refreshToken\" value for \"{twitchHandle}\" in \"{self.__twitchTokensFile}\" is malformed: \"{refreshToken}\"')
-
-        return refreshToken
+        return jsonContents.get('refreshToken')
 
     def __readJson(self, twitchHandle: str) -> Dict:
         if not utils.isValidStr(twitchHandle):
@@ -138,6 +128,22 @@ class TwitchTokensRepository():
             json.dump(jsonContents, file, indent = 4, sort_keys = True)
 
         print(f'Saved new Twitch tokens for \"{twitchHandle}\" ({utils.getNowTimeText(includeSeconds = True)})')
+
+    def requireAccessToken(self, twitchHandle: str) -> str:
+        accessToken = self.getAccessToken(twitchHandle)
+
+        if not utils.isValidStr(accessToken):
+            raise ValueError(f'\"accessToken\" value for \"{twitchHandle}\" in \"{self.__twitchTokensFile}\" is malformed: \"{accessToken}\"')
+
+        return accessToken
+
+    def requireRefreshToken(self, twitchHandle: str) -> str:
+        refreshToken = self.getRefreshToken(twitchHandle)
+
+        if not utils.isValidStr(refreshToken):
+            raise ValueError(f'\"refreshToken\" value for \"{twitchHandle}\" in \"{self.__twitchTokensFile}\" is malformed: \"{refreshToken}\"')
+
+        return refreshToken
 
     def validateAndRefreshAccessToken(
         self,
