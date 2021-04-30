@@ -33,16 +33,10 @@ class TwitchTokensRepository():
         self.__twitchTokensFile = twitchTokensFile
 
     def getAccessToken(self, twitchHandle: str) -> str:
-        if not utils.isValidStr(twitchHandle):
-            raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
-
         jsonContents = self.__readJson(twitchHandle)
         return jsonContents.get('accessToken')
 
     def getRefreshToken(self, twitchHandle: str) -> str:
-        if not utils.isValidStr(twitchHandle):
-            raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
-
         jsonContents = self.__readJson(twitchHandle)
         return jsonContents.get('refreshToken')
 
@@ -61,19 +55,13 @@ class TwitchTokensRepository():
         elif len(jsonContents) == 0:
             raise ValueError(f'JSON contents of Twitch tokens file \"{self.__twitchTokensFile}\" is empty')
 
-        handleJson = None
-
         for key in jsonContents:
             if key.lower() == twitchHandle.lower():
-                handleJson = jsonContents[key]
-                break
+                return jsonContents[key]
 
-        if handleJson is None:
-            raise KeyError(f'Twitch handle \"{twitchHandle}\" does not exist in Twitch tokens file \"{self.__twitchTokensFile}\"')
-        elif len(handleJson) == 0:
-            raise ValueError(f'Twitch handle \"{twitchHandle}\" is empty in Twitch tokens file \"{self.__twitchTokensFile}\"')
-
-        return handleJson
+        # Return an empty dictionary if the given user isn't found in the Twitch tokens file. This
+        # is a good bit easier to handle than throwing an exception, or something else like that.
+        return dict()
 
     def __refreshTokens(
         self,
