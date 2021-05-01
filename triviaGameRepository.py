@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.triviaRepository import (TriviaRepository,
@@ -19,6 +21,7 @@ class TriviaGameRepository():
         self.__triviaRepository = triviaRepository
         self.__triviaResponse = None
         self.__isAnswered = False
+        self.__answerTime = None
 
     def checkAnswer(self, answer: str) -> bool:
         if not utils.isValidStr(answer) or self.__isAnswered:
@@ -41,11 +44,23 @@ class TriviaGameRepository():
         elif self.__triviaResponse != triviaResponse and self.__triviaResponse.getQuestion() != triviaResponse.getQuestion():
             self.__isAnswered = False
 
+        self.__answerTime = datetime.utcnow()
         self.__triviaResponse = triviaResponse
         return triviaResponse
 
     def isAnswered(self) -> bool:
         return self.__isAnswered
+
+    def isWithinAnswerWindow(self, seconds: int) -> bool:
+        if not utils.isValidNum(seconds):
+            raise ValueError(f'seconds argument is malformed: \"{seconds}\"')
+
+        answerTime = self.__answerTime
+
+        if answerTime is None:
+            return False
+
+        return answerTime + timedelta(seconds = seconds) > datetime.utcnow()
 
     def setAnswered(self):
         self.__isAnswered = True
