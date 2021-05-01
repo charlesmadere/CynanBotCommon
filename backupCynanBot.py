@@ -12,7 +12,6 @@ def find_files(src):
 
     return relevant_files
 
-
 def copy_files(dest, file_list):
     for file in file_list:
         dir = os.path.join(dest, os.path.dirname(file))
@@ -23,7 +22,6 @@ def copy_files(dest, file_list):
         except SameFileError as e:
             print(f'Encountered crazy copy error with file \"{file}\" in dir \"{dir}\"')
 
-
 def main():
     args = sys.argv[1:]
 
@@ -33,7 +31,6 @@ def main():
 
     file_list = find_files(args[0])
     copy_files(args[1], file_list)
-
 
 if __name__ == '__main__':
     main()
