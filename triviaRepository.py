@@ -118,7 +118,7 @@ class TriviaRepository():
     def __init__(
         self,
         apiUrl: str = 'https://opentdb.com/api.php?amount=1',
-        cacheTimeDelta: timedelta = timedelta(minutes = 10)
+        cacheTimeDelta: timedelta = timedelta(minutes = 2, seconds = 30)
     ):
         if not utils.isValidUrl(apiUrl):
             raise ValueError(f'apiUrl argument is malformed: \"{apiUrl}\"')
