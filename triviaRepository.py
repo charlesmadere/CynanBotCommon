@@ -71,17 +71,13 @@ class TriviaResponse():
     def getCategory(self) -> str:
         return self.__category
 
-    def getCorrectMultipleChoiceAnswer(self) -> str:
+    def getCorrectAnswer(self) -> str:
         if self.__triviaType is TriviaType.MULTIPLE_CHOICE:
             return self.__correctMultipleChoiceAnswer
-        else:
-            raise RuntimeError(f'triviaType is {self.__triviaType}, so correctMultipleChoiceAnswer is inaccessible')
-
-    def getCorrectTrueFalseAnswer(self) -> bool:
-        if self.__triviaType is TriviaType.TRUE_FALSE:
+        elif self.__triviaType is TriviaType.TRUE_FALSE:
             return self.__correctTrueFalseAnswer
         else:
-            raise RuntimeError(f'triviaType is {self.__triviaType}, so correctTrueFalseAnswer is inaccessible')
+            raise RuntimeError(f'triviaType is unknown value: \"{self.__triviaType}\"')
 
     def getMultipleChoiceResponses(self) -> List[str]:
         if self.__triviaType is TriviaType.MULTIPLE_CHOICE:
@@ -102,12 +98,7 @@ class TriviaResponse():
             raise RuntimeError(f'triviaType is {self.__triviaType}, so trueFalseResponses is inaccessible')
 
     def toAnswerStr(self) -> str:
-        if self.__triviaType is TriviaType.MULTIPLE_CHOICE:
-            return f'and the answer is: {self.__correctMultipleChoiceAnswer}'
-        elif self.__triviaType is TriviaType.TRUE_FALSE:
-            return f'and the answer is: {self.__correctTrueFalseAnswer}'
-        else:
-            raise RuntimeError(f'triviaType is unknown value: \"{self.__triviaType}\"')
+        return f'and the answer is: {self.getCorrectAnswer()}'
 
     def toPromptStr(self, delimiter: str = ', ') -> str:
         if delimiter is None:
