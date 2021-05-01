@@ -75,7 +75,7 @@ class TriviaResponse():
         if self.__triviaType is TriviaType.MULTIPLE_CHOICE:
             return self.__correctMultipleChoiceAnswer
         elif self.__triviaType is TriviaType.TRUE_FALSE:
-            return self.__correctTrueFalseAnswer
+            return str(self.__correctTrueFalseAnswer)
         else:
             raise RuntimeError(f'triviaType is unknown value: \"{self.__triviaType}\"')
 
