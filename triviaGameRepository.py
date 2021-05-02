@@ -21,18 +21,21 @@ class TriviaGameRepository():
         self.__triviaRepository = triviaRepository
         self.__triviaResponse = None
         self.__isAnswered = False
+        self.__userIdThatRedeemed = None
         self.__answerTime = None
 
-    def checkAnswer(self, answer: str) -> bool:
-        if not utils.isValidStr(answer) or self.__isAnswered:
+    def check(self, answer: str, userId: str) -> bool:
+        if not utils.isValidStr(userId):
+            raise ValueError(f'userId argument is malformed: \"{userId}\"')
+
+        if not utils.isValidStr(answer) or self.__isAnswered or not utils.isValidStr(self.__userIdThatRedeemed) or userId.lower() != self.__userIdThatRedeemed:
             return False
 
         triviaResponse = self.__triviaResponse
-
         if triviaResponse is None:
             return False
 
-        self.__isAnswered = True
+        self.setAnswered()
         correctAnswer = triviaResponse.getCorrectAnswer()
         return correctAnswer.lower() == answer.lower()
 
@@ -43,6 +46,9 @@ class TriviaGameRepository():
             self.__isAnswered = False
         elif self.__triviaResponse != triviaResponse and self.__triviaResponse.getQuestion() != triviaResponse.getQuestion():
             self.__isAnswered = False
+
+        if not self.__isAnswered:
+            self.__userIdThatRedeemed = None
 
         self.__answerTime = datetime.utcnow()
         self.__triviaResponse = triviaResponse
@@ -64,3 +70,10 @@ class TriviaGameRepository():
 
     def setAnswered(self):
         self.__isAnswered = True
+        self.__userIdThatRedeemed = None
+
+    def setUserIdThatRedeemed(self, userIdThatRedeemed: str):
+        if not utils.isValidStr(userIdThatRedeemed):
+            raise ValueError(f'userIdThatRedeemed argument is malformed: \"{userIdThatRedeemed}\"')
+
+        self.__userIdThatRedeemed = userIdThatRedeemed
