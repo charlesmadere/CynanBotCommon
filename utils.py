@@ -41,7 +41,7 @@ def getBoolFromDict(d: dict, key: str, fallback: bool = None) -> bool:
 
     if key in d and d[key] is not None:
         value = d[key]
-    elif fallback is not None:
+    elif isValidBool(fallback):
         value = fallback
     else:
         raise KeyError(f'there is no fallback and key \"{key}\" doesn\'t exist in d: \"{d}\"')
@@ -89,7 +89,7 @@ def getIntFromDict(d: dict, key: str, fallback: int = None) -> int:
 
     if key in d and d[key] is not None:
         value = d[key]
-    elif fallback is not None:
+    elif isValidNum(fallback):
         value = fallback
     else:
         raise KeyError(f'there is no fallback and key \"{key}\" doesn\'t exist in d: \"{d}\"')
@@ -122,7 +122,7 @@ def getStrFromDict(d: dict, key: str, fallback: str = None, clean: bool = False)
         raise ValueError(f'd argument is malformed: \"{d}\"')
     elif not isValidStr(key):
         raise ValueError(f'key argument is malformed: \"{key}\"')
-    elif clean is None:
+    elif not isValidBool(clean):
         raise ValueError(f'clean argument is malformed: \"{clean}\"')
 
     value = None
