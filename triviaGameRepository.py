@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from enum import Enum, auto
 
 try:
     import CynanBotCommon.utils as utils
@@ -7,6 +8,15 @@ try:
 except:
     import utils
     from triviaRepository import TriviaRepository, TriviaResponse
+
+
+class TriviaGameCheckResult(Enum):
+
+    ALREADY_ANSWERED = auto()
+    CORRECT = auto()
+    INCORRECT = auto()
+    INVALID_USER_ID = auto()
+    NOT_READY = auto()
 
 
 class TriviaGameRepository():
@@ -24,20 +34,28 @@ class TriviaGameRepository():
         self.__userIdThatRedeemed = None
         self.__answerTime = None
 
-    def check(self, answer: str, userId: str) -> bool:
+    def check(self, answer: str, userId: str) -> TriviaGameCheckResult:
         if not utils.isValidStr(userId):
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
 
-        if not utils.isValidStr(answer) or self.__isAnswered or not utils.isValidStr(self.__userIdThatRedeemed) or userId.lower() != self.__userIdThatRedeemed:
-            return False
-
         triviaResponse = self.__triviaResponse
-        if triviaResponse is None:
-            return False
+        isAnswered = self.__isAnswered
+        userIdThatRedeemed = self.__userIdThatRedeemed
+
+        if triviaResponse is None or not utils.isValidStr(userIdThatRedeemed):
+            return TriviaGameCheckResult.NOT_READY
+        elif isAnswered:
+            return TriviaGameCheckResult.ALREADY_ANSWERED
+        elif userIdThatRedeemed.lower() != userId.lower():
+            return TriviaGameCheckResult.INVALID_USER_ID
 
         self.setAnswered()
         correctAnswer = triviaResponse.getCorrectAnswer()
-        return correctAnswer.lower() == answer.lower()
+
+        if utils.isValidStr(answer) and correctAnswer.lower() == answer.lower():
+            return TriviaGameCheckResult.CORRECT
+        else:
+            return TriviaGameCheckResult.INCORRECT
 
     def fetchTrivia(self) -> TriviaResponse:
         triviaResponse = self.__triviaRepository.fetchTrivia()
