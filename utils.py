@@ -1,4 +1,5 @@
 import math
+import random
 import urllib
 from datetime import datetime
 from numbers import Number
@@ -110,6 +111,11 @@ def getNowTimeText(includeSeconds: bool = False) -> str:
         time = datetime.now(),
         includeSeconds = includeSeconds
     )
+
+def getRandomSpaceEmoji() -> str:
+    spaceEmoji = [ '🚀', '👾', '☄️', '🌌', '👨‍🚀', '👩‍🚀', '👽', '🌠' ]
+    randomIndex = random.randint(0, len(spaceEmoji) - 1)
+    return spaceEmoji[randomIndex]
 
 def getStrFromDateTime(dt: datetime) -> str:
     if dt is None:
