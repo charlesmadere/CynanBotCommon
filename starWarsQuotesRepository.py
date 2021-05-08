@@ -1,35 +1,36 @@
-import random
 import json
+import random
 from os import path
 from typing import Dict, List
 
-class StarWars:
+try:
+    import CynanBotCommon.utils as utils
+except:
+    import utils
+
+
+class StarWarsQuotesRepository:
+
     def __init__(
         self,
-        quotesFile: str = 'swQuotesRepository.json'
+        quotesFile: str = 'CynanBotCommon/starWarsQuotesRepository.json'
     ):
+        if not utils.isValidStr(quotesFile):
+            raise ValueError(f'quotesFile argument is malformed: \"{quotesFile}\"')
+
         self.__quotesFile = quotesFile
-
-    def searchQuote(self, query) -> str:
-        jsonContents = self.__getQuotes()
-
-        for quote in jsonContents:
-            if quote.lower().find(query.lower()) >= 0:
-                return quote
-
-        return "None"
 
     def fetchRandomQuote(self) -> str:
         jsonContents = self.__getQuotes()
-        random_index = random.randint(0, len(jsonContents)-1)
-
-        return jsonContents[random_index]
+        randomIndex = random.randint(0, len(jsonContents) - 1)
+        return jsonContents[randomIndex]
 
     def __getQuotes(self) -> List:
         jsonContents = self.__readJson()
-        if "quotes" not in jsonContents:
+
+        quotes = jsonContents.get("quotes")
+        if not utils.hasItems(quotes):
             raise ValueError(f'JSON contents of quotes file \"{self.__quotesFile}\" is missing \"quotes\" key')
-        quotes = jsonContents["quotes"]
 
         return quotes
 
@@ -46,3 +47,16 @@ class StarWars:
             raise ValueError(f'JSON contents of quotes file \"{self.__quotesFile}\" is empty')
 
         return jsonContents
+
+    def searchQuote(self, query: str) -> str:
+        if not utils.isValidStr(query):
+            raise ValueError(f'query argument is malformed: \"{query}\"')
+
+        query = utils.cleanStr(query)
+        jsonContents = self.__getQuotes()
+
+        for quote in jsonContents:
+            if quote.lower().find(query.lower()) >= 0:
+                return quote
+
+        return None
