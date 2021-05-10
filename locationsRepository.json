@@ -29,11 +29,23 @@
         "name": "London",
         "timeZone": "Europe/London"
     },
-    "2673722": {
-        "lat": 59.5,
-        "lon": 18.0,
+    "2673730": {
+        "lat": 59.332581,
+        "lon": 18.064899,
         "name": "Stockholm",
         "timeZone": "Europe/Stockholm"
+    },
+    "2692969": {
+        "lat": 55.605869,
+        "lon": 13.00073,
+        "name": "Malmö",
+        "timeZone": "Europe/Stockholm"
+    },
+    "2950159": {
+        "lat": 52.524368,
+        "lon": 13.41053,
+        "name": "Berlin",
+        "timeZone": "Europe/Berlin"
     },
     "3143244": {
         "lat": 59.912731,
@@ -46,6 +58,18 @@
         "lon": -71.0,
         "name": "Republic of Chile",
         "timeZone": "Chile/Continental"
+    },
+    "4164138": {
+        "lat": 25.774269,
+        "lon": -80.193657,
+        "name": "Miami",
+        "timeZone": "America/New_York"
+    },
+    "4167147": {
+        "lat": 28.53834,
+        "lon": -81.379242,
+        "name": "Orlando",
+        "timeZone": "America/New_York"
     },
     "4335045": {
         "lat": 29.954651,
@@ -75,6 +99,12 @@
         "lat": 34.052231,
         "lon": -118.243683,
         "name": "Los Angeles",
+        "timeZone": "America/Los_Angeles"
+    },
+    "5379513": {
+        "lat": 33.787788,
+        "lon": -117.853111,
+        "name": "Orange",
         "timeZone": "America/Los_Angeles"
     },
     "5391959": {
