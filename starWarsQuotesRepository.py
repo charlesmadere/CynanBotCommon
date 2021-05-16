@@ -20,19 +20,24 @@ class StarWarsQuotesRepository:
 
         self.__quotesFile = quotesFile
 
-    def fetchRandomQuote(self) -> str:
-        jsonContents = self.__getQuotes()
+    def fetchRandomQuote(self, trilogy: str = None) -> str:
+        jsonContents = self.__getQuotes(trilogy)
         randomIndex = random.randint(0, len(jsonContents) - 1)
         return jsonContents[randomIndex]
 
-    def __getQuotes(self) -> List:
+    def __getQuotes(self, trilogy: str = None) -> List:
         jsonContents = self.__readJson()
 
         quotes = jsonContents.get("quotes")
         if not utils.hasItems(quotes):
             raise ValueError(f'JSON contents of quotes file \"{self.__quotesFile}\" is missing \"quotes\" key')
 
-        return quotes
+        if trilogy not in quotes.keys():
+            result = [item for sublist in quotes.values() for item in sublist]
+        else:
+            result = quotes[trilogy]
+
+        return result
 
     def __readJson(self) -> Dict:
         if not path.exists(self.__quotesFile):
