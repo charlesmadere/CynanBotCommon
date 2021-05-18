@@ -204,7 +204,7 @@ class WordOfTheDayRepository():
 
         entries.append(LanguageEntry(
             apiName = 'fr',
-            commandNames = [ 'fr', 'french', 'france' ],
+            commandNames = [ 'fr', 'france', 'french' ],
             flag = '🇫🇷'
         ))
 
@@ -216,30 +216,31 @@ class WordOfTheDayRepository():
 
         entries.append(LanguageEntry(
             apiName = 'ja',
-            commandNames = [ 'ja', 'japanese', 'jp', 'japan' ],
+            commandNames = [ 'ja', 'jp', 'japan', 'japanese' ],
             flag = '🇯🇵'
         ))
 
         entries.append(LanguageEntry(
             apiName = 'korean',
-            commandNames = [ 'ko', 'korean', 'korea' ],
+            commandNames = [ 'ko', 'korea', 'korean' ],
             flag = '🇰🇷'
         ))
 
         entries.append(LanguageEntry(
             apiName = 'nl',
-            commandNames = [ 'nl', 'dutch' ]
-        ))
-
-        entries.append(LanguageEntry(
-            apiName = 'norwegian',
-            commandNames = [ 'no', 'norwegian', 'norway' ],
+            commandNames = [ 'nl', 'dutch', 'netherlands' ],
             flag = '🇳🇱'
         ))
 
         entries.append(LanguageEntry(
+            apiName = 'norwegian',
+            commandNames = [ 'no', 'norway', 'norwegian' ],
+            flag = '🇳🇴'
+        ))
+
+        entries.append(LanguageEntry(
             apiName = 'polish',
-            commandNames = [ 'po', 'polish', 'poland' ],
+            commandNames = [ 'po', 'poland', 'polish' ],
             flag = '🇵🇱'
         ))
 
@@ -250,13 +251,13 @@ class WordOfTheDayRepository():
 
         entries.append(LanguageEntry(
             apiName = 'ru',
-            commandNames = [ 'ru', 'russian', 'russia' ],
+            commandNames = [ 'ru', 'russia', 'russian' ],
             flag = '🇷🇺'
         ))
 
         entries.append(LanguageEntry(
             apiName = 'swedish',
-            commandNames = [ 'sv', 'swedish', 'sw', 'sweden' ],
+            commandNames = [ 'sv', 'se', 'sw', 'sweden', 'swedish' ],
             flag = '🇸🇪'
         ))
 
