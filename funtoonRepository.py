@@ -72,7 +72,6 @@ class FuntoonRepository():
             )
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, Timeout) as e:
             print(f'Exception occurred when attempting to post Funtoon \"{event}\" event for \"{twitchChannel}\": {e}')
-            raise RuntimeError(f'Exception occurred when attempting to post Funtoon \"{event}\" event for \"{twitchChannel}\": {e}')
 
         if rawResponse is not None and rawResponse.status_code == 200:
             return True
