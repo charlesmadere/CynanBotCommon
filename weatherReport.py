@@ -3,15 +3,17 @@ from typing import List
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.weatherRepository import AirQualityIndex
 except:
     import utils
+    from weatherRepository import AirQualityIndex
 
 
 class WeatherReport():
 
     def __init__(
         self,
-        airQuality: int,
+        airQualityIndex: AirQualityIndex,
         humidity: int,
         pressure: int,
         temperature: float,
@@ -32,7 +34,7 @@ class WeatherReport():
         elif not utils.isValidNum(tomorrowsLowTemperature):
             raise ValueError(f'tomorrowsLowTemperature argument is malformed: \"{tomorrowsLowTemperature}\"')
 
-        self.__airQuality = airQuality
+        self.__airQualityIndex = airQualityIndex
         self.__humidity = humidity
         self.__pressure = pressure
         self.__temperature = temperature
@@ -45,11 +47,8 @@ class WeatherReport():
     def __cToF(self, celsius: float) -> float:
         return (celsius * (9 / 5)) + 32
 
-    def getAirQuality(self) -> int:
-        return self.__airQuality
-
-    def getAirQualityStr(self) -> str:
-        return locale.format_string("%d", self.getAirQuality(), grouping = True)
+    def getAirQualityIndex(self) -> AirQualityIndex:
+        return self.__airQualityIndex
 
     def getAlerts(self) -> List[str]:
         return self.__alerts
@@ -105,8 +104,8 @@ class WeatherReport():
     def getTomorrowsHighTemperatureImperialStr(self) -> str:
         return locale.format_string("%d", self.getTomorrowsHighTemperatureImperial(), grouping = True)
 
-    def hasAirQuality(self) -> bool:
-        return utils.isValidNum(self.__airQuality)
+    def hasAirQualityIndex(self) -> bool:
+        return self.__airQualityIndex is not None
 
     def hasAlerts(self) -> bool:
         return utils.hasItems(self.__alerts)
@@ -125,8 +124,8 @@ class WeatherReport():
         humidity = f'humidity is {self.getHumidity()}%, '
 
         airQuality = ''
-        if self.hasAirQuality():
-            airQuality = f'air quality is {self.getAirQualityStr()}, '
+        if self.hasAirQualityIndex():
+            airQuality = f'air quality index is {self.__airQualityIndex.toStr()}, '
 
         pressure = f'and pressure is {self.getPressureStr()} hPa. '
 

@@ -1,4 +1,5 @@
 from datetime import timedelta
+from enum import Enum, auto
 from json.decoder import JSONDecodeError
 
 import requests
@@ -17,12 +18,52 @@ except:
     from weatherReport import WeatherReport
 
 
+class AirQualityIndex(Enum):
+
+    FAIR = auto()
+    GOOD = auto()
+    MODERATE = auto()
+    POOR = auto()
+    VERY_POOR = auto()
+
+    @classmethod
+    def fromInt(cls, airQualityIndex: int):
+        if not utils.isValidNum(airQualityIndex):
+            raise ValueError(f'airQualityIndex argument is malformed: \"{airQualityIndex}\"')
+
+        if airQualityIndex == 1:
+            return AirQualityIndex.GOOD
+        elif airQualityIndex == 2:
+            return AirQualityIndex.FAIR
+        elif airQualityIndex == 3:
+            return AirQualityIndex.MODERATE
+        elif airQualityIndex == 4:
+            return AirQualityIndex.POOR
+        elif airQualityIndex == 5:
+            return AirQualityIndex.VERY_POOR
+        else:
+            raise ValueError(f'unknown AirQualityIndex: \"{airQualityIndex}\"')
+
+    def toStr(self) -> str:
+        if self is AirQualityIndex.FAIR:
+            return 'fair'
+        elif self is AirQualityIndex.GOOD:
+            return 'good'
+        elif self is AirQualityIndex.MODERATE:
+            return 'moderate'
+        elif self is AirQualityIndex.POOR:
+            return 'poor'
+        elif self is AirQualityIndex.VERY_POOR:
+            return 'very poor'
+        else:
+            raise RuntimeError(f'unknown AirQualityIndex: \"{self}\"')
+
+
 class WeatherRepository():
 
     def __init__(
         self,
         oneWeatherApiKey: str,
-        iqAirApiKey: str = None,
         cacheTimeDelta: timedelta = timedelta(hours = 1, minutes = 30)
     ):
         if not utils.isValidStr(oneWeatherApiKey):
@@ -30,10 +71,6 @@ class WeatherRepository():
         elif cacheTimeDelta is None:
             raise ValueError(f'cacheTimeDelta argument is malformed: \"{cacheTimeDelta}\"')
 
-        if not utils.isValidStr(iqAirApiKey):
-            print(f'IQAir API key is malformed: \"{iqAirApiKey}\". This won\'t prevent us from fetching weather, but it will prevent us from fetching the current air quality conditions at the given location.')
-
-        self.__iqAirApiKey = iqAirApiKey
         self.__oneWeatherApiKey = oneWeatherApiKey
         self.__cache = TimedDict(timeDelta = cacheTimeDelta)
         self.__conditionIcons = self.__createConditionIconsDict()
@@ -94,39 +131,36 @@ class WeatherRepository():
 
         return icons
 
-    def __fetchAirQuality(self, location: Location) -> int:
+    def __fetchAirQualityIndex(self, location: Location) -> AirQualityIndex:
         if location is None:
             raise ValueError(f'location argument is malformed: \"{location}\"')
 
-        # Retrieve air quality from: https://api-docs.iqair.com/
-        # Doing this requires an API key, which you can get here:
-        # https://www.iqair.com/us/commercial/air-quality-monitors/airvisual-platform/api
+        # Retrieve air quality index from: https://openweathermap.org/api/air-pollution
+        # Doing this requires an API key, which you can get here: https://openweathermap.org/api
 
-        requestUrl = 'https://api.airvisual.com/v2/nearest_city?key={}&lat={}&lon={}'.format(
-            self.__iqAirApiKey, location.getLatitude(), location.getLongitude())
+        requestUrl = 'https://api.openweathermap.org/data/2.5/air_pollution?appid={}&lat={}&lon={}'.format(
+            self.__oneWeatherApiKey, location.getLatitude(), location.getLongitude())
 
         rawResponse = None
         try:
             rawResponse = requests.get(url = requestUrl, timeout = utils.getDefaultTimeout())
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, Timeout) as e:
-            print(f'Exception occurred when attempting to fetch air quality from IQAir for \"{location.getLocationId()}\": {e}')
-            raise RuntimeError(f'Exception occurred when attempting to fetch air quality from IQAir for \"{location.getLocationId()}\": {e}')
+            print(f'Exception occurred when attempting to fetch air quality index from Open Weather for \"{location.getLocationId()}\": {e}')
+            raise RuntimeError(f'Exception occurred when attempting to fetch air quality index from Open Weather for \"{location.getLocationId()}\": {e}')
 
         jsonResponse = None
         try:
             jsonResponse = rawResponse.json()
         except JSONDecodeError as e:
-            print(f'Exception occurred when attempting to decode IQAir\'s response into JSON for \"{location.getLocationId()}\": {e}')
-            raise RuntimeError(f'Exception occurred when attempting to decode IQAir\'s response into JSON for \"{location.getLocationId()}\": {e}')
+            print(f'Exception occurred when attempting to decode Open Weather\'s air quality index response into JSON for \"{location.getLocationId()}\": {e}')
+            raise RuntimeError(f'Exception occurred when attempting to decode Open Weather\'s air quality index response into JSON for \"{location.getLocationId()}\": {e}')
 
-        if jsonResponse.get('status') != 'success':
-            print(f'IQAir\'s response \"status\" was not \"success\": {jsonResponse}')
-            raise ValueError(f'IQAir\'s response \"status\" was not \"success\": {jsonResponse}')
-
-        return utils.getIntFromDict(
-            d = jsonResponse['data']['current']['pollution'],
-            key = 'aqius'
+        airQualityIndex = utils.getIntFromDict(
+            d = jsonResponse['list'][0]['main'],
+            key = 'aqi'
         )
+
+        return AirQualityIndex.fromInt(airQualityIndex)
 
     def fetchWeather(self, location: Location) -> WeatherReport:
         if location is None:
@@ -148,10 +182,9 @@ class WeatherRepository():
         print(f'Refreshing weather for \"{location.getLocationId()}\"... ({utils.getNowTimeText()})')
 
         # Retrieve weather report from https://openweathermap.org/api/one-call-api
-        # Doing this requires an API key, which you can get here:
-        # https://openweathermap.org/api
+        # Doing this requires an API key, which you can get here: https://openweathermap.org/api
 
-        requestUrl = "https://api.openweathermap.org/data/2.5/onecall?appid={}&lat={}&lon={}&exclude=minutely,hourly&units=metric".format(
+        requestUrl = 'https://api.openweathermap.org/data/2.5/onecall?appid={}&lat={}&lon={}&exclude=minutely,hourly&units=metric'.format(
             self.__oneWeatherApiKey, location.getLatitude(), location.getLongitude())
 
         rawResponse = None
@@ -199,12 +232,8 @@ class WeatherRepository():
             for conditionJson in tomorrowsJson['weather']:
                 tomorrowsConditions.append(conditionJson['description'])
 
-        airQuality = None
-        if utils.isValidStr(self.__iqAirApiKey):
-            airQuality = self.__fetchAirQuality(location)
-
         return WeatherReport(
-            airQuality = airQuality,
+            airQualityIndex = self.__fetchAirQualityIndex(location),
             humidity = int(round(humidity)),
             pressure = int(round(pressure)),
             temperature = temperature,
