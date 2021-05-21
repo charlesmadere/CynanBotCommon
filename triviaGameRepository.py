@@ -52,15 +52,23 @@ class State():
         self.__answerTime = None
         self.__userIdThatRedeemed = None
         self.__userNameThatRedeemed = None
-        self.__triviaResponse = None
 
     def setTriviaResponse(self, triviaResponse: TriviaResponse):
+        if triviaResponse is None:
+            raise ValueError(f'triviaResponse argument is malformed: \"{triviaResponse}\"')
+
         self.__triviaResponse = triviaResponse
 
     def setUserIdThatRedeemed(self, userIdThatRedeemed: str):
+        if not utils.isValidStr(userIdThatRedeemed):
+            raise ValueError(f'userIdThatRedeemed argument is malformed: \"{userIdThatRedeemed}\"')
+
         self.__userIdThatRedeemed = userIdThatRedeemed
 
     def setUserNameThatRedeemed(self, userNameThatRedeemed: str):
+        if not utils.isValidStr(userNameThatRedeemed):
+            raise ValueError(f'userNameThatRedeemed argument is malformed: \"{userNameThatRedeemed}\"')
+
         self.__userNameThatRedeemed = userNameThatRedeemed
 
 
@@ -138,6 +146,16 @@ class TriviaGameRepository():
         state.setTriviaResponse(triviaResponse)
 
         return triviaResponse
+
+    def getTrivia(self, twitchChannel: str) -> TriviaResponse:
+        if not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+
+        state = self.__states.get(twitchChannel.lower())
+        if state is None:
+            return None
+
+        return state.getTriviaResponse()
 
     def isAnswered(self, twitchChannel: str) -> bool:
         if not utils.isValidStr(twitchChannel):
