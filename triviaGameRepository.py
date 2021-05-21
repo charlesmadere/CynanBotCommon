@@ -116,6 +116,7 @@ class TriviaGameRepository():
         isAnswered = state.isAnswered()
         userIdThatRedeemed = state.getUserIdThatRedeemed()
         userNameThatRedeemed = state.getUserNameThatRedeemed()
+        print(f'{userId}:{userName}:{userIdThatRedeemed}:{userNameThatRedeemed}')
 
         if triviaResponse is None or not utils.isValidStr(userIdThatRedeemed) or not utils.isValidStr(userNameThatRedeemed):
             return TriviaGameCheckResult.NOT_READY
