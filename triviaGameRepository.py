@@ -116,13 +116,12 @@ class TriviaGameRepository():
         isAnswered = state.isAnswered()
         userIdThatRedeemed = state.getUserIdThatRedeemed()
         userNameThatRedeemed = state.getUserNameThatRedeemed()
-        print(f'{userId}:{userName}:{userIdThatRedeemed}:{userNameThatRedeemed}')
 
         if triviaResponse is None or not utils.isValidStr(userIdThatRedeemed) or not utils.isValidStr(userNameThatRedeemed):
             return TriviaGameCheckResult.NOT_READY
         elif isAnswered:
             return TriviaGameCheckResult.ALREADY_ANSWERED
-        elif userIdThatRedeemed.lower() != userId.lower() or userNameThatRedeemed != userName.lower():
+        elif userIdThatRedeemed.lower() != userId.lower() or userNameThatRedeemed.lower() != userName.lower():
             return TriviaGameCheckResult.INVALID_USER
 
         state.setAnswered()
