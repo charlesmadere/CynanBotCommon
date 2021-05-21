@@ -45,6 +45,7 @@ class State():
         return isAnswered is None or isAnswered
 
     def refreshAnswerTime(self):
+        self.__isAnswered = False
         self.__answerTime = datetime.utcnow()
 
     def setAnswered(self):
