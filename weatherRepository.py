@@ -204,7 +204,7 @@ class WeatherRepository():
     def __init__(
         self,
         oneWeatherApiKey: str,
-        cacheTimeDelta: timedelta = timedelta(hours = 1, minutes = 30)
+        cacheTimeDelta: timedelta = timedelta(minutes = 20)
     ):
         if not utils.isValidStr(oneWeatherApiKey):
             raise ValueError(f'oneWeatherApiKey argument is malformed: \"{oneWeatherApiKey}\"')
