@@ -80,6 +80,29 @@ def getDateTimeFromStr(text: str) -> datetime:
 def getDefaultTimeout() -> int:
     return 10 # seconds
 
+def getFloatFromDict(d: dict, key: str, fallback: float = None) -> float:
+    if d is None:
+        raise ValueError(f'd argument is malformed: \"{d}\"')
+    elif not isValidStr(key):
+        raise ValueError(f'key argument is malformed: \"{key}\"')
+
+    value = None
+
+    if key in d and d[key] is not None:
+        value = d[key]
+    elif isValidNum(fallback):
+        value = fallback
+    else:
+        raise KeyError(f'there is no fallback and key \"{key}\" doesn\'t exist in d: \"{d}\"')
+
+    if not isinstance(value, float):
+        value = float(value)
+
+    if not isValidNum(value):
+        raise ValueError(f'value \"{value}\" for key \"{key}\" is malformed in d: \"{d}\"')
+
+    return value
+
 def getIntFromDict(d: dict, key: str, fallback: int = None) -> int:
     if d is None:
         raise ValueError(f'd argument is malformed: \"{d}\"')

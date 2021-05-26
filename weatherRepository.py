@@ -59,6 +59,35 @@ class AirQualityIndex(Enum):
             raise RuntimeError(f'unknown AirQualityIndex: \"{self}\"')
 
 
+class UvIndex(Enum):
+
+    LOW = auto()
+    MODERATE_TO_HIGH = auto()
+    VERY_HIGH_TO_EXTREME = auto()
+
+    @classmethod
+    def fromFloat(cls, uvIndex: float):
+        if not utils.isValidNum(uvIndex):
+            raise ValueError(f'uvIndex argument is malformed: \"{uvIndex}\"')
+
+        if uvIndex <= 2:
+            return UvIndex.LOW
+        elif uvIndex <= 7:
+            return UvIndex.MODERATE_TO_HIGH
+        else:
+            return UvIndex.VERY_HIGH_TO_EXTREME
+
+    def toStr(self) -> str:
+        if self is UvIndex.LOW:
+            return 'low'
+        elif self is UvIndex.MODERATE_TO_HIGH:
+            return 'moderate to high'
+        elif self is UvIndex.VERY_HIGH_TO_EXTREME:
+            return 'very high to extreme'
+        else:
+            raise RuntimeError(f'unknown UvIndex: \"{self}\"')
+
+
 class WeatherReport():
 
     def __init__(
@@ -71,7 +100,8 @@ class WeatherReport():
         tomorrowsLowTemperature: float,
         alerts: List[str],
         conditions: List[str],
-        tomorrowsConditions: List[str]
+        tomorrowsConditions: List[str],
+        uvIndex: UvIndex
     ):
         if not utils.isValidNum(humidity):
             raise ValueError(f'humidity argument is malformed: \"{humidity}\"')
@@ -93,6 +123,7 @@ class WeatherReport():
         self.__alerts = alerts
         self.__conditions = conditions
         self.__tomorrowsConditions = tomorrowsConditions
+        self.__uvIndex = uvIndex
 
     def __cToF(self, celsius: float) -> float:
         return (celsius * (9 / 5)) + 32
@@ -154,6 +185,9 @@ class WeatherReport():
     def getTomorrowsHighTemperatureImperialStr(self) -> str:
         return locale.format_string("%d", self.getTomorrowsHighTemperatureImperial(), grouping = True)
 
+    def getUvIndex(self) -> UvIndex:
+        return self.__uvIndex
+
     def hasAirQualityIndex(self) -> bool:
         return self.__airQualityIndex is not None
 
@@ -173,6 +207,10 @@ class WeatherReport():
         temperature = f'🌡 Temperature is {self.getTemperatureStr()}°C ({self.getTemperatureImperialStr()}°F), '
         humidity = f'humidity is {self.getHumidity()}%, '
 
+        uvIndex = ''
+        if self.__uvIndex is UvIndex.MODERATE_TO_HIGH or self.__uvIndex is UvIndex.VERY_HIGH_TO_EXTREME:
+            uvIndex = f'UV Index is {self.__uvIndex.toStr()}, '
+
         airQuality = ''
         if self.hasAirQualityIndex():
             airQuality = f'air quality index is {self.__airQualityIndex.toStr()}, '
@@ -181,22 +219,22 @@ class WeatherReport():
 
         conditions = ''
         if self.hasConditions():
-            conditionsJoin = delimiter.join(self.getConditions())
+            conditionsJoin = delimiter.join(self.__conditions)
             conditions = f'Current conditions: {conditionsJoin}. '
 
         tomorrowsTemps = f'Tomorrow has a low of {self.getTomorrowsLowTemperatureStr()}°C ({self.getTomorrowsLowTemperatureImperialStr()}°F) and a high of {self.getTomorrowsHighTemperatureStr()}°C ({self.getTomorrowsHighTemperatureImperialStr()}°F). '
 
         tomorrowsConditions = ''
         if self.hasTomorrowsConditions():
-            tomorrowsConditionsJoin = delimiter.join(self.getTomorrowsConditions())
+            tomorrowsConditionsJoin = delimiter.join(self.__tomorrowsConditions)
             tomorrowsConditions = f'Tomorrow\'s conditions: {tomorrowsConditionsJoin}. '
 
         alerts = ''
         if self.hasAlerts():
-            alertsJoin = ' '.join(self.getAlerts())
+            alertsJoin = ' '.join(self.__alerts)
             alerts = f'🚨 {alertsJoin}'
 
-        return f'{temperature}{humidity}{airQuality}{pressure}{conditions}{tomorrowsTemps}{tomorrowsConditions}{alerts}'
+        return f'{temperature}{humidity}{uvIndex}{airQuality}{pressure}{conditions}{tomorrowsTemps}{tomorrowsConditions}{alerts}'
 
 
 class WeatherRepository():
@@ -345,6 +383,7 @@ class WeatherRepository():
         humidity = currentJson['humidity']
         pressure = currentJson['pressure']
         temperature = currentJson['temp']
+        uvIndex = UvIndex.fromFloat(utils.getFloatFromDict(currentJson, 'uvi'))
 
         conditions = list()
         if 'weather' in currentJson and len(currentJson['weather']) >= 1:
@@ -381,7 +420,8 @@ class WeatherRepository():
             tomorrowsLowTemperature = tomorrowsLowTemperature,
             alerts = alerts,
             conditions = conditions,
-            tomorrowsConditions = tomorrowsConditions
+            tomorrowsConditions = tomorrowsConditions,
+            uvIndex = uvIndex
         )
 
     def __prettifyCondition(self, conditionJson: dict) -> str:
