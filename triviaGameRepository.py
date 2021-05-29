@@ -1,3 +1,4 @@
+import re
 from datetime import datetime, timedelta
 from enum import Enum, auto
 from typing import Dict
@@ -94,6 +95,13 @@ class TriviaGameRepository():
         self.__triviaRepository: TriviaRepository = triviaRepository
         self.__states: Dict[str, State] = dict()
 
+    def __applyAnswerCleanup(self, text: str) -> str:
+        if not utils.isValidStr(text):
+            return ''
+
+        regexResult = re.findall("\w+|\d+", text.lower())
+        return ''.join(regexResult)
+
     def checkAnswer(
         self,
         answer: str,
@@ -125,12 +133,22 @@ class TriviaGameRepository():
             return TriviaGameCheckResult.INVALID_USER
 
         state.setAnswered()
-        correctAnswer = triviaResponse.getCorrectAnswer()
 
-        if utils.isValidStr(answer) and correctAnswer.lower() == answer.lower():
+        if self.__checkAnswerStrings(answer, triviaResponse.getCorrectAnswer()):
             return TriviaGameCheckResult.CORRECT_ANSWER
         else:
             return TriviaGameCheckResult.INCORRECT_ANSWER
+
+    def __checkAnswerStrings(self, answer: str, correctAnswer: str) -> bool:
+        if not utils.isValidStr(correctAnswer):
+            raise ValueError(f'correctAnswer argument is malformed: \"{correctAnswer}\"')
+
+        if utils.isValidStr(answer) and correctAnswer.lower() == answer.lower():
+            return True
+
+        answer = self.__applyAnswerCleanup(answer)
+        correctAnswer = self.__applyAnswerCleanup(correctAnswer)
+        return answer == correctAnswer
 
     def fetchTrivia(self, twitchChannel: str) -> TriviaResponse:
         if not utils.isValidStr(twitchChannel):
