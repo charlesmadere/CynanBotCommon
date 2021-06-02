@@ -48,7 +48,12 @@ def getBoolFromDict(d: dict, key: str, fallback: bool = None) -> bool:
         raise KeyError(f'there is no fallback and key \"{key}\" doesn\'t exist in d: \"{d}\"')
 
     if not isinstance(value, bool):
-        value = bool(value)
+        if isinstance(value, Number):
+            value = value == 1
+        elif isinstance(value, str):
+            value = value.lower() == 'true'
+        else:
+            raise RuntimeError(f'encountered unknown type that can\'t be converted to bool: \"{value}\"')
 
     return value
 
