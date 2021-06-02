@@ -17,6 +17,7 @@ except:
 
 class TriviaType(Enum):
 
+    ANY = auto()
     MULTIPLE_CHOICE = auto()
     TRUE_FALSE = auto()
 
@@ -24,6 +25,8 @@ class TriviaType(Enum):
     def fromStr(cls, text: str):
         if not utils.isValidStr(text):
             raise ValueError(f'text argument is malformed: \"{text}\"')
+
+        # TriviaType.ANY is intentionally left out of the below if statements
 
         if text == 'boolean':
             return TriviaType.TRUE_FALSE
@@ -117,32 +120,44 @@ class TriviaRepository():
 
     def __init__(
         self,
-        apiUrl: str = 'https://opentdb.com/api.php?amount=1',
         cacheTimeDelta: timedelta = timedelta(minutes = 2, seconds = 30)
     ):
-        if not utils.isValidUrl(apiUrl):
-            raise ValueError(f'apiUrl argument is malformed: \"{apiUrl}\"')
-        elif cacheTimeDelta is None:
+        if cacheTimeDelta is None:
             raise ValueError(f'cacheTimeDelta argument is malformed: \"{cacheTimeDelta}\"')
 
-        self.__apiUrl = apiUrl
         self.__cacheTime = datetime.utcnow() - cacheTimeDelta
         self.__cacheTimeDelta = cacheTimeDelta
         self.__triviaResponse = None
 
-    def fetchTrivia(self) -> TriviaResponse:
+    def fetchTrivia(self, triviaType: TriviaType = TriviaType.ANY) -> TriviaResponse:
+        if triviaType is None:
+            raise ValueError(f'triviaType argument is malformed: \"{triviaType}\"')
+
         if self.__cacheTime + self.__cacheTimeDelta < datetime.utcnow() or self.__triviaResponse is None:
-            self.__triviaResponse = self.__refreshTrivia()
+            self.__triviaResponse = self.__refreshTrivia(triviaType)
             self.__cacheTime = datetime.utcnow()
 
         return self.__triviaResponse
 
-    def __refreshTrivia(self) -> TriviaResponse:
+    def __refreshTrivia(self, triviaType: TriviaType = TriviaType.ANY) -> TriviaResponse:
+        if triviaType is None:
+            raise ValueError(f'triviaType argument is malformed: \"{triviaType}\"')
+
         print(f'Refreshing trivia... ({utils.getNowTimeText()})')
+
+        apiUrl = 'https://opentdb.com/api.php?amount=1'
+
+        if triviaType is TriviaType.MULTIPLE_CHOICE:
+            apiUrl = f'{apiUrl}&type=multiple'
+        elif triviaType is TriviaType.TRUE_FALSE:
+            apiUrl = f'{apiUrl}&type=boolean'
 
         rawResponse = None
         try:
-            rawResponse = requests.get(url = self.__apiUrl, timeout = utils.getDefaultTimeout())
+            rawResponse = requests.get(
+                url = apiUrl,
+                timeout = utils.getDefaultTimeout()
+            )
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, Timeout) as e:
             print(f'Exception occurred when attempting to fetch new trivia: {e}')
             raise RuntimeError(f'Exception occurred when attempting to fetch new trivia: {e}')
