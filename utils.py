@@ -49,9 +49,9 @@ def getBoolFromDict(d: dict, key: str, fallback: bool = None) -> bool:
 
     if not isinstance(value, bool):
         if isinstance(value, Number):
-            value = value == 1
+            value = value != 0
         elif isinstance(value, str):
-            value = value.lower() == 'true'
+            value = value.lower() != 'false'
         else:
             raise RuntimeError(f'encountered unknown type that can\'t be converted to bool: \"{value}\"')
 
