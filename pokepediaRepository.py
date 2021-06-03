@@ -40,6 +40,8 @@ class PokepediaElementType(Enum):
         if not utils.isValidStr(text):
             raise ValueError(f'text argument is malformed: \"{text}\"')
 
+        text = text.lower()
+
         if text == 'bug':
             return PokepediaElementType.BUG
         elif text == 'dark':
@@ -280,6 +282,8 @@ class PokepediaGeneration(Enum):
     def fromStr(cls, text: str):
         if not utils.isValidStr(text):
             raise ValueError(f'text argument is malformed: \"{text}\"')
+
+        text = text.lower()
 
         if text == 'gold-silver' or text == 'crystal' or text == 'generation-ii':
             return PokepediaGeneration.GENERATION_2
