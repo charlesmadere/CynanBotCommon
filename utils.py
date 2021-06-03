@@ -1,3 +1,4 @@
+import html
 import math
 import random
 import urllib
@@ -6,14 +7,24 @@ from numbers import Number
 from typing import List
 
 
-def cleanStr(s: str, replacement: str = ' ') -> str:
+def cleanStr(s: str, replacement: str = ' ', htmlUnescape: bool = False) -> str:
     if replacement is None:
         raise ValueError(f'replacement argument is malformed: \"{replacement}\"')
+    elif not isValidBool(htmlUnescape):
+        raise ValueError(f'htmlUnescape argument is malformed: \"{htmlUnescape}\"')
 
     if s is None:
         return ''
-    else:
-        return s.replace('\r\n', replacement).replace('\r', replacement).replace('\n', replacement).strip()
+
+    s = s.replace('\r\n', replacement)\
+            .replace('\r', replacement)\
+            .replace('\n', replacement)\
+            .strip()
+
+    if htmlUnescape:
+        s = html.unescape(s)
+
+    return s
 
 def formatTime(time) -> str:
     if time is None:
@@ -151,13 +162,15 @@ def getStrFromDateTime(dt: datetime) -> str:
     else:
         return dt.isoformat()
 
-def getStrFromDict(d: dict, key: str, fallback: str = None, clean: bool = False) -> str:
+def getStrFromDict(d: dict, key: str, fallback: str = None, clean: bool = False, htmlUnescape: bool = False) -> str:
     if d is None:
         raise ValueError(f'd argument is malformed: \"{d}\"')
     elif not isValidStr(key):
         raise ValueError(f'key argument is malformed: \"{key}\"')
     elif not isValidBool(clean):
         raise ValueError(f'clean argument is malformed: \"{clean}\"')
+    elif not isValidBool(htmlUnescape):
+        raise ValueError(f'htmlUnescape argument is malformed: \"{htmlUnescape}\"')
 
     value = None
 
@@ -172,7 +185,7 @@ def getStrFromDict(d: dict, key: str, fallback: str = None, clean: bool = False)
         value = str(value)
 
     if clean:
-        value = cleanStr(value)
+        value = cleanStr(value, htmlUnescape = htmlUnescape)
 
     return value
 
