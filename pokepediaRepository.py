@@ -346,12 +346,12 @@ class PokepediaMoveGeneration():
         elif generation is None:
             raise ValueError(f'generation argument is malformed: \"{generation}\"')
 
-        self.__accuracy = accuracy
-        self.__power = power
-        self.__pp = pp
-        self.__damageClass = damageClass
-        self.__elementType = elementType
-        self.__generation = generation
+        self.__accuracy: int = accuracy
+        self.__power: int = power
+        self.__pp: int = pp
+        self.__damageClass: PokepediaDamageClass = damageClass
+        self.__elementType: PokepediaElementType = elementType
+        self.__generation: PokepediaGeneration = generation
 
     def getAccuracy(self) -> int:
         return self.__accuracy
