@@ -5,11 +5,11 @@ from typing import Dict
 
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.triviaRepository import (TriviaRepository,
-                                                 TriviaResponse)
+    from CynanBotCommon.triviaRepository import (AbsTriviaQuestion,
+                                                 TriviaRepository)
 except:
     import utils
-    from triviaRepository import TriviaRepository, TriviaResponse
+    from triviaRepository import AbsTriviaQuestion, TriviaRepository
 
 
 class State():
@@ -18,19 +18,18 @@ class State():
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
-        self.__twitchChannel: str = twitchChannel
-
+        self.__triviaQuestion: AbsTriviaQuestion = None
         self.__isAnswered: bool = None
         self.__answerTime: datetime = None
+        self.__twitchChannel: str = twitchChannel
         self.__userIdThatRedeemed: str = None
         self.__userNameThatRedeemed: str = None
-        self.__triviaResponse: TriviaResponse = None
 
     def getAnswerTime(self) -> datetime:
         return self.__answerTime
 
-    def getTriviaResponse(self) -> TriviaResponse:
-        return self.__triviaResponse
+    def getTriviaQuestion(self) -> AbsTriviaQuestion:
+        return self.__triviaQuestion
 
     def getTwitchChannel(self) -> str:
         return self.__twitchChannel
@@ -55,11 +54,11 @@ class State():
         self.__userIdThatRedeemed = None
         self.__userNameThatRedeemed = None
 
-    def setTriviaResponse(self, triviaResponse: TriviaResponse):
-        if triviaResponse is None:
-            raise ValueError(f'triviaResponse argument is malformed: \"{triviaResponse}\"')
+    def setTriviaQuestion(self, triviaQuestion: AbsTriviaQuestion):
+        if triviaQuestion is None:
+            raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
 
-        self.__triviaResponse = triviaResponse
+        self.__triviaQuestion = triviaQuestion
 
     def setUserIdThatRedeemed(self, userIdThatRedeemed: str):
         if not utils.isValidStr(userIdThatRedeemed):
@@ -120,12 +119,12 @@ class TriviaGameRepository():
         if state is None:
             return TriviaGameCheckResult.NOT_READY
 
-        triviaResponse = state.getTriviaResponse()
+        triviaQuestion = state.getTriviaQuestion()
         isAnswered = state.isAnswered()
         userIdThatRedeemed = state.getUserIdThatRedeemed()
         userNameThatRedeemed = state.getUserNameThatRedeemed()
 
-        if triviaResponse is None or not utils.isValidStr(userIdThatRedeemed) or not utils.isValidStr(userNameThatRedeemed):
+        if triviaQuestion is None or not utils.isValidStr(userIdThatRedeemed) or not utils.isValidStr(userNameThatRedeemed):
             return TriviaGameCheckResult.NOT_READY
         elif isAnswered:
             return TriviaGameCheckResult.ALREADY_ANSWERED
@@ -134,7 +133,7 @@ class TriviaGameRepository():
 
         state.setAnswered()
 
-        if self.__checkAnswerStrings(answer, triviaResponse.getCorrectAnswer()):
+        if self.__checkAnswerStrings(answer, triviaQuestion.getCorrectAnswer()):
             return TriviaGameCheckResult.CORRECT_ANSWER
         else:
             return TriviaGameCheckResult.INCORRECT_ANSWER
@@ -150,7 +149,7 @@ class TriviaGameRepository():
         correctAnswer = self.__applyAnswerCleanup(correctAnswer)
         return answer == correctAnswer
 
-    def fetchTrivia(self, twitchChannel: str) -> TriviaResponse:
+    def fetchTrivia(self, twitchChannel: str) -> AbsTriviaQuestion:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
@@ -161,12 +160,12 @@ class TriviaGameRepository():
         else:
             state.setAnswered()
 
-        triviaResponse = self.__triviaRepository.fetchTrivia()
-        state.setTriviaResponse(triviaResponse)
+        triviaQuestion = self.__triviaRepository.fetchTrivia()
+        state.setTriviaQuestion(triviaQuestion)
 
-        return triviaResponse
+        return triviaQuestion
 
-    def getTrivia(self, twitchChannel: str) -> TriviaResponse:
+    def getTrivia(self, twitchChannel: str) -> AbsTriviaQuestion:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
@@ -174,7 +173,7 @@ class TriviaGameRepository():
         if state is None:
             return None
 
-        return state.getTriviaResponse()
+        return state.getTriviaQuestion()
 
     def isAnswered(self, twitchChannel: str) -> bool:
         if not utils.isValidStr(twitchChannel):
