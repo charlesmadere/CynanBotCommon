@@ -371,8 +371,10 @@ class TriviaRepository():
             triviaSource = random.choice(list(TriviaSource))
 
         if triviaSource is TriviaSource.J_SERVICE:
-            return self.__fetchTriviaQuestionFromJService(triviaType)
-        elif triviaSource is TriviaSource.OPEN_TRIVIA_DATABASE:
+            # TODO Disabled jService for now, it's a bit too hard, and has html in the answers
+            # return self.__fetchTriviaQuestionFromJService(triviaType)
+            return self.__fetchTriviaQuestionFromWillFryTriviaApi(triviaType)
+        if triviaSource is TriviaSource.OPEN_TRIVIA_DATABASE:
             return self.__fetchTriviaQuestionFromOpenTriviaDatabase(triviaType)
         elif triviaSource is TriviaSource.WILL_FRY_TRIVIA_API:
             return self.__fetchTriviaQuestionFromWillFryTriviaApi(triviaType)
