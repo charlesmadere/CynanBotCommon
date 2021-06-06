@@ -125,11 +125,17 @@ class MultipleChoiceTriviaQuestion(AbsTriviaQuestion):
     def getCorrectAnswer(self) -> str:
         return self.__correctAnswer
 
-    def getPrompt(self, delimiter: str = ', ') -> str:
+    def getPrompt(self, delimiter: str = ' ') -> str:
         if delimiter is None:
             raise ValueError(f'delimiter argument is malformed: \"{delimiter}\"')
 
-        responses = delimiter.join(self.__multipleChoiceResponses)
+        responsesList = list()
+        entryChar = 'A'
+        for response in self.__multipleChoiceResponses:
+            responsesList.append(f'[{entryChar}] {response}')
+            entryChar = chr(ord(entryChar) + 1)
+
+        responses = delimiter.join(responsesList)
         return f'{self.getQuestion()} {responses}'
 
     def getResponses(self) -> List[str]:
