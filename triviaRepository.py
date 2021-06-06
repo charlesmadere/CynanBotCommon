@@ -146,7 +146,7 @@ class QuestionAnswerTriviaQuestion(AbsTriviaQuestion):
     def getPrompt(self, delimiter: str = None) -> str:
         categoryText = ''
         if self.hasCategory():
-            categoryText = f' (category is {self.getCategory()})'
+            categoryText = f' (category is \"{self.getCategory()}\")'
 
         return f'Jeopardy format{categoryText} — {self.getQuestion()}'
 
