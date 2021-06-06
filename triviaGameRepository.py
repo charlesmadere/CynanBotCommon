@@ -98,7 +98,8 @@ class TriviaGameRepository():
         if not utils.isValidStr(text):
             return ''
 
-        regexResult = re.findall("\w+|\d+", text.lower())
+        text = text.lower()
+        regexResult = re.findall("\w+|\d+", text)
         return ''.join(regexResult)
 
     def checkAnswer(
