@@ -7,7 +7,7 @@ from typing import List
 
 import requests
 from requests import ConnectionError, HTTPError, Timeout
-from requests.exceptions import ReadTimeout
+from requests.exceptions import ReadTimeout, TooManyRedirects
 from urllib3.exceptions import MaxRetryError, NewConnectionError
 
 try:
@@ -202,7 +202,7 @@ class TriviaRepository():
                 url = 'https://jservice.io/api/random',
                 timeout = utils.getDefaultTimeout()
             )
-        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout) as e:
+        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
             print(f'Exception occurred when attempting to fetch trivia from jService: {e}')
             raise RuntimeError(f'Exception occurred when attempting to fetch trivia from jService: {e}')
 
@@ -243,7 +243,7 @@ class TriviaRepository():
                 url = apiUrl,
                 timeout = utils.getDefaultTimeout()
             )
-        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout) as e:
+        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
             print(f'Exception occurred when attempting to fetch trivia from Open Trivia Database: {e}')
             raise RuntimeError(f'Exception occurred when attempting to fetch trivia from Open Trivia Database: {e}')
 
@@ -307,7 +307,7 @@ class TriviaRepository():
                 url = 'https://trivia.willfry.co.uk/api/questions?limit=1',
                 timeout = utils.getDefaultTimeout()
             )
-        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout) as e:
+        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
             print(f'Exception occurred when attempting to fetch trivia from Will Fry Trivia API: {e}')
             # This API seems flaky... Let's fallback to a known good one if there's an error.
             return self.__fetchTriviaQuestionFromOpenTriviaDatabase(triviaType)
