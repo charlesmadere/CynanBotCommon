@@ -104,7 +104,9 @@ class MultipleChoiceTriviaQuestion(AbsTriviaQuestion):
             triviaType = TriviaType.MULTIPLE_CHOICE
         )
 
-        if not utils.hasItems(multipleChoiceResponses):
+        if not utils.isValidStr(correctAnswer):
+            raise ValueError(f'correctAnswer argument is malformed: \"{correctAnswer}\"')
+        elif not utils.hasItems(multipleChoiceResponses):
             raise ValueError(f'multipleChoiceResponses argument is malformed: \"{multipleChoiceResponses}\"')
 
         self.__correctAnswer: str = correctAnswer
@@ -138,6 +140,9 @@ class QuestionAnswerTriviaQuestion(AbsTriviaQuestion):
             triviaType = TriviaType.QUESTION_ANSWER
         )
 
+        if not utils.isValidStr(correctAnswer):
+            raise ValueError(f'correctAnswer argument is malformed: \"{correctAnswer}\"')
+
         self.__correctAnswer: str = correctAnswer
 
     def getCorrectAnswer(self) -> str:
@@ -167,6 +172,9 @@ class TrueFalseTriviaQuestion(AbsTriviaQuestion):
             question = question,
             triviaType = TriviaType.TRUE_FALSE
         )
+
+        if not utils.isValidBool(correctAnswer):
+            raise ValueError(f'correctAnswer argument is malformed: \"{correctAnswer}\"')
 
         self.__correctAnswer: bool = correctAnswer
 
