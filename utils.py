@@ -62,7 +62,7 @@ def getBoolFromDict(d: dict, key: str, fallback: bool = None) -> bool:
         if isinstance(value, Number):
             value = value != 0
         elif isinstance(value, str):
-            value = value.lower() != 'false'
+            value = strToBool(value)
         else:
             raise RuntimeError(f'encountered unknown type that can\'t be converted to bool: \"{value}\"')
 
@@ -217,3 +217,16 @@ def removePreceedingAt(s: str) -> str:
         return s
     else:
         return s[1:len(s)]
+
+def strToBool(s: str) -> bool:
+    if not isValidStr(s):
+        raise ValueError(f's argument is malformed: \"{s}\"')
+
+    s = s.lower()
+
+    if s == 'yes':
+        return True
+    elif s == 'no':
+        return False
+    else:
+        return s != 'false'
