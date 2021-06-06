@@ -22,6 +22,16 @@ class TriviaSource(Enum):
     OPEN_TRIVIA_DATABASE = auto()
     WILL_FRY_TRIVIA_API = auto()
 
+    def isEnabled(self) -> bool:
+        if self is TriviaSource.J_SERVICE:
+            return False
+        elif self is TriviaSource.OPEN_TRIVIA_DATABASE:
+            return True
+        elif self is TriviaSource.WILL_FRY_TRIVIA_API:
+            return True
+        else:
+            raise RuntimeError(f'unknown TriviaSource: \"{self}\"')
+
 
 class TriviaType(Enum):
 
@@ -375,13 +385,11 @@ class TriviaRepository():
         triviaSource: TriviaSource = None,
         triviaType: TriviaType = None
     ) -> AbsTriviaQuestion:
-        if triviaSource is None:
+        while triviaSource is None or not triviaSource.isEnabled():
             triviaSource = random.choice(list(TriviaSource))
 
         if triviaSource is TriviaSource.J_SERVICE:
-            # TODO Disabled jService for now, it's a bit too hard, and has html in the answers
-            # return self.__fetchTriviaQuestionFromJService(triviaType)
-            return self.__fetchTriviaQuestionFromWillFryTriviaApi(triviaType)
+            return self.__fetchTriviaQuestionFromJService(triviaType)
         if triviaSource is TriviaSource.OPEN_TRIVIA_DATABASE:
             return self.__fetchTriviaQuestionFromOpenTriviaDatabase(triviaType)
         elif triviaSource is TriviaSource.WILL_FRY_TRIVIA_API:
