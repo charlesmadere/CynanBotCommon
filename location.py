@@ -27,11 +27,11 @@ class Location():
         elif timeZone is None:
             raise ValueError(f'timeZone argument is malformed: \"{timeZone}\"')
 
-        self.__latitude = latitude
-        self.__longitude = longitude
-        self.__locationId = locationId
-        self.__name = name
-        self.__timeZone = timeZone
+        self.__latitude: float = latitude
+        self.__longitude: float = longitude
+        self.__locationId: str = locationId
+        self.__name: str = name
+        self.__timeZone: tzinfo = timeZone
 
     def getLatitude(self) -> float:
         return self.__latitude
