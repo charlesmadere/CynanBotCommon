@@ -6,10 +6,11 @@ from typing import Dict
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.triviaRepository import (AbsTriviaQuestion,
-                                                 TriviaRepository)
+                                                 TriviaRepository, TriviaType)
 except:
     import utils
-    from triviaRepository import AbsTriviaQuestion, TriviaRepository
+    from triviaRepository import (AbsTriviaQuestion, TriviaRepository,
+                                  TriviaType)
 
 
 class State():
@@ -134,21 +135,37 @@ class TriviaGameRepository():
 
         state.setAnswered()
 
-        if self.__checkAnswerStrings(answer, triviaQuestion.getCorrectAnswer()):
+        if self.__checkAnswerStrings(answer, triviaQuestion):
             return TriviaGameCheckResult.CORRECT_ANSWER
         else:
             return TriviaGameCheckResult.INCORRECT_ANSWER
 
-    def __checkAnswerStrings(self, answer: str, correctAnswer: str) -> bool:
-        if not utils.isValidStr(correctAnswer):
-            raise ValueError(f'correctAnswer argument is malformed: \"{correctAnswer}\"')
+    def __checkAnswerStrings(self, answer: str, triviaQuestion: AbsTriviaQuestion) -> bool:
+        if triviaQuestion is None:
+            raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
+
+        correctAnswer = triviaQuestion.getCorrectAnswer()
 
         if utils.isValidStr(answer) and correctAnswer.lower() == answer.lower():
             return True
 
         answer = self.__applyAnswerCleanup(answer)
         correctAnswer = self.__applyAnswerCleanup(correctAnswer)
-        return answer == correctAnswer
+
+        if answer == correctAnswer:
+            return True
+        elif triviaQuestion.getTriviaType() is not TriviaType.MULTIPLE_CHOICE or not self.__isLetterAnswer(answer):
+            return False
+
+        responses = triviaQuestion.getResponses()
+
+        if not utils.hasItems(responses):
+            raise RuntimeError(f'Encountered a {TriviaType.MULTIPLE_CHOICE} trivia question that has no responses!')
+
+        # This converts the answer 'A' into 0, 'B' into 1, 'C' into 2, and so on...
+        index = ord(answer.upper()) % 65
+
+        return index >= 0 and index < len(responses) and responses[index] == triviaQuestion.getCorrectAnswer()
 
     def fetchTrivia(self, twitchChannel: str) -> AbsTriviaQuestion:
         if not utils.isValidStr(twitchChannel):
@@ -185,6 +202,16 @@ class TriviaGameRepository():
             return False
 
         return state.isAnswered()
+
+    def __isLetterAnswer(self, answer: str) -> bool:
+        if not utils.isValidStr(answer) or len(answer) != 1:
+            return False
+
+        answer = answer.upper()
+
+        return answer == 'A' or answer == 'B' or answer == 'C' or answer == 'D' or answer == 'E'\
+            or answer == 'F' or answer == 'G' or answer == 'H' or answer == 'I' or answer == 'J'\
+            or answer == 'K' or answer == 'L' or answer == 'M' or answer == 'N' or answer == 'O'
 
     def isWithinAnswerWindow(self, seconds: int, twitchChannel: str) -> bool:
         if not utils.isValidNum(seconds):
