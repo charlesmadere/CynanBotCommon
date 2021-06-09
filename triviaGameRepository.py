@@ -95,6 +95,7 @@ class TriviaGameRepository():
         self.__triviaRepository: TriviaRepository = triviaRepository
         self.__states: Dict[str, State] = dict()
         self.__fullWordAnswerRegEx: Pattern = re.compile("\w+|\d+")
+        self.__multipleChoiceAnswerRegEx: Pattern = re.compile("[a-zA-Z]")
 
     def __applyAnswerCleanup(self, text: str) -> str:
         if not utils.isValidStr(text):
@@ -208,11 +209,7 @@ class TriviaGameRepository():
         if not utils.isValidStr(answer) or len(answer) != 1:
             return False
 
-        answer = answer.upper()
-
-        return answer == 'A' or answer == 'B' or answer == 'C' or answer == 'D' or answer == 'E'\
-            or answer == 'F' or answer == 'G' or answer == 'H' or answer == 'I' or answer == 'J'\
-            or answer == 'K' or answer == 'L' or answer == 'M' or answer == 'N' or answer == 'O'
+        return self.__multipleChoiceAnswerRegEx.fullmatch(answer) is not None
 
     def isWithinAnswerWindow(self, seconds: int, twitchChannel: str) -> bool:
         if not utils.isValidNum(seconds):
