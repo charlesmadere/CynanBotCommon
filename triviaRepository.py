@@ -381,12 +381,12 @@ class TriviaRepository():
         triviaType: TriviaType = None
     ) -> AbsTriviaQuestion:
         if self.__cacheTime + self.__cacheTimeDelta < datetime.utcnow() or self.__triviaResponse is None:
-            self.__triviaResponse = self.__refreshTrivia(triviaSource, triviaType)
+            self.__triviaResponse = self.__fetchTrivia(triviaSource, triviaType)
             self.__cacheTime = datetime.utcnow()
 
         return self.__triviaResponse
 
-    def __refreshTrivia(
+    def __fetchTrivia(
         self,
         triviaSource: TriviaSource = None,
         triviaType: TriviaType = None
