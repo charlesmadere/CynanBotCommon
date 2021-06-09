@@ -1,7 +1,7 @@
 import re
 from datetime import datetime, timedelta
 from enum import Enum, auto
-from typing import Dict
+from typing import Dict, Pattern
 
 try:
     import CynanBotCommon.utils as utils
@@ -94,13 +94,14 @@ class TriviaGameRepository():
 
         self.__triviaRepository: TriviaRepository = triviaRepository
         self.__states: Dict[str, State] = dict()
+        self.__fullWordAnswerRegEx: Pattern = re.compile("\w+|\d+")
 
     def __applyAnswerCleanup(self, text: str) -> str:
         if not utils.isValidStr(text):
             return ''
 
         text = text.lower()
-        regexResult = re.findall("\w+|\d+", text)
+        regexResult = self.__fullWordAnswerRegEx.findall(text)
         return ''.join(regexResult)
 
     def checkAnswer(
