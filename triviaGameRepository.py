@@ -191,9 +191,13 @@ class TriviaGameRepository():
 
         state = self.__states.get(twitchChannel.lower())
         if state is None:
-            return None
+            raise RuntimeError(f'there is no trivia game State available for Twitch channel \"{twitchChannel}\"!')
 
-        return state.getTriviaQuestion()
+        triviaQuestion = state.getTriviaQuestion()
+        if triviaQuestion is None:
+            raise RuntimeError(f'there is no trivia question available for Twitch channel \"{twitchChannel}\"')
+
+        return triviaQuestion
 
     def isAnswered(self, twitchChannel: str) -> bool:
         if not utils.isValidStr(twitchChannel):
