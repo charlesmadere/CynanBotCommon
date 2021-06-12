@@ -217,11 +217,11 @@ class PokepediaDamageMultiplier(Enum):
     def getEffectDescription(self) -> str:
         if self is PokepediaDamageMultiplier.ZERO:
             return 'damage from'
-        elif self is PokepediaDamageMultiplier.ZERO_POINT_TWO_FIVE or PokepediaDamageMultiplier.ZERO_POINT_FIVE:
+        elif self is PokepediaDamageMultiplier.ZERO_POINT_TWO_FIVE or self is PokepediaDamageMultiplier.ZERO_POINT_FIVE:
             return 'resistant to'
         elif self is PokepediaDamageMultiplier.ONE:
             raise RuntimeError(f'{self} should not be used with this method!')
-        elif self is PokepediaDamageMultiplier.TWO or PokepediaDamageMultiplier.FOUR:
+        elif self is PokepediaDamageMultiplier.TWO or self is PokepediaDamageMultiplier.FOUR:
             return 'weak to'
         else:
             raise RuntimeError(f'unknown PokepediaDamageMultiplier: \"{self}\"')
