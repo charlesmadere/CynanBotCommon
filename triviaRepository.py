@@ -218,7 +218,7 @@ class TriviaRepository():
         self.__triviaResponse = None
 
     def __fetchTriviaQuestionFromJService(self, triviaType: TriviaType = None) -> AbsTriviaQuestion:
-        print(f'Refreshing trivia question from jService... ({utils.getNowTimeText()})')
+        print(f'Fetching trivia question from jService... ({utils.getNowTimeText()})')
 
         rawResponse = None
         try:
@@ -253,7 +253,7 @@ class TriviaRepository():
         )
 
     def __fetchTriviaQuestionFromOpenTriviaDatabase(self, triviaType: TriviaType = None) -> AbsTriviaQuestion:
-        print(f'Refreshing trivia question from Open Trivia Database... ({utils.getNowTimeText()})')
+        print(f'Fetching trivia question from Open Trivia Database... ({utils.getNowTimeText()})')
 
         apiUrl = 'https://opentdb.com/api.php?amount=1'
         if triviaType is TriviaType.MULTIPLE_CHOICE:
@@ -323,7 +323,7 @@ class TriviaRepository():
             raise ValueError(f'triviaType value is unknown: \"{triviaType}\"')
 
     def __fetchTriviaQuestionFromWillFryTriviaApi(self, triviaType: TriviaType = None) -> AbsTriviaQuestion:
-        print(f'Refreshing trivia question from Will Fry Trivia API... ({utils.getNowTimeText()})')
+        print(f'Fetching trivia question from Will Fry Trivia API... ({utils.getNowTimeText()})')
 
         rawResponse = None
         try:
