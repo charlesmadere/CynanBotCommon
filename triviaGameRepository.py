@@ -109,15 +109,12 @@ class TriviaGameRepository():
         self,
         answer: str,
         twitchChannel: str,
-        userId: str,
-        userName: str
+        userId: str
     ) -> TriviaGameCheckResult:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
         elif not utils.isValidStr(userId):
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
-        elif not utils.isValidStr(userName):
-            raise ValueError(f'userName argument is malformed: \"{userName}\"')
 
         state = self.__states.get(twitchChannel.lower())
         if state is None:
@@ -132,7 +129,7 @@ class TriviaGameRepository():
             return TriviaGameCheckResult.NOT_READY
         elif isAnswered:
             return TriviaGameCheckResult.ALREADY_ANSWERED
-        elif userIdThatRedeemed.lower() != userId.lower() or userNameThatRedeemed.lower() != userName.lower():
+        elif userIdThatRedeemed.lower() != userId.lower():
             return TriviaGameCheckResult.INVALID_USER
 
         state.setAnswered()
