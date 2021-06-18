@@ -246,7 +246,8 @@ class WordOfTheDayRepository():
 
         entries.append(LanguageEntry(
             apiName = 'pt',
-            commandNames = [ 'pt', 'portuguese' ]
+            commandNames = [ 'pt', 'portuguese' ],
+            flag = '🇧🇷'
         ))
 
         entries.append(LanguageEntry(
