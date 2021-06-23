@@ -1,5 +1,4 @@
 from datetime import timedelta
-from typing import List
 
 import requests
 import xmltodict
@@ -8,88 +7,12 @@ from urllib3.exceptions import MaxRetryError, NewConnectionError
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.languagesRepository import LanguageEntry
     from CynanBotCommon.timedDict import TimedDict
 except:
     import utils
+    from languagesRepository import LanguageEntry
     from timedDict import TimedDict
-
-
-class LanguageEntry():
-
-    def __init__(
-        self,
-        commandNames: List[str],
-        apiName: str,
-        flag: str = None
-    ):
-        if not utils.hasItems(commandNames):
-            raise ValueError(f'commandNames argument is malformed: \"{commandNames}\"')
-        elif not utils.isValidStr(apiName):
-            raise ValueError(f'apiName argument is malformed: \"{apiName}\"')
-
-        self.__commandNames = commandNames
-        self.__apiName = apiName
-        self.__flag = flag
-
-    def getApiName(self) -> str:
-        return self.__apiName
-
-    def getCommandNames(self) -> List[str]:
-        return self.__commandNames
-
-    def getFlag(self) -> str:
-        return self.__flag
-
-    def getPrimaryCommandName(self) -> str:
-        return self.__commandNames[0]
-
-    def hasFlag(self) -> bool:
-        return utils.isValidStr(self.__flag)
-
-
-class LanguageList():
-
-    def __init__(self, entries: List[LanguageEntry]):
-        if not utils.hasItems(entries):
-            raise ValueError(f'entries argument is malformed: \"{entries}\"')
-
-        self.__entries = entries
-
-    def getLanguages(self) -> List[LanguageEntry]:
-        return self.__entries
-
-    def getLanguageForCommand(self, command: str) -> LanguageEntry:
-        if not utils.isValidStr(command):
-            raise ValueError(f'command argument is malformed: \"{command}\"')
-
-        for entry in self.__entries:
-            for commandName in entry.getCommandNames():
-                if commandName.lower() == command.lower():
-                    return entry
-
-        raise RuntimeError(f'Unable to find language for \"{command}\"')
-
-    def toApiNameStr(self, delimiter: str = ', ') -> str:
-        if delimiter is None:
-            raise ValueError(f'delimiter argument is malformed: \"{delimiter}\"')
-
-        apiNames = list()
-        for entry in self.__entries:
-            apiNames.append(entry.getApiName())
-
-        apiNames.sort()
-        return delimiter.join(apiNames)
-
-    def toCommandNamesStr(self, delimiter: str = ', ') -> str:
-        if delimiter is None:
-            raise ValueError(f'delimiter argument is malformed: \"{delimiter}\"')
-
-        commandNames = list()
-        for entry in self.__entries:
-            commandNames.append(entry.getPrimaryCommandName())
-
-        commandNames.sort()
-        return delimiter.join(commandNames)
 
 
 class Wotd():
@@ -176,99 +99,6 @@ class WordOfTheDayRepository():
             raise ValueError(f'cacheTimeDelta argument is malformed: \"{cacheTimeDelta}\"')
 
         self.__cache = TimedDict(timeDelta = cacheTimeDelta)
-        self.__languageList = self.__createLanguageList()
-
-    def __createLanguageList(self) -> LanguageList:
-        entries = list()
-
-        entries.append(LanguageEntry(
-            apiName = 'de',
-            commandNames = [ 'de', 'german', 'germany' ],
-            flag = '🇩🇪'
-        ))
-
-        entries.append(LanguageEntry(
-            apiName = 'en-es',
-            commandNames = [ 'en-es' ]
-        ))
-
-        entries.append(LanguageEntry(
-            apiName = 'en-pt',
-            commandNames = [ 'en-pt' ]
-        ))
-
-        entries.append(LanguageEntry(
-            apiName = 'es',
-            commandNames = [ 'es', 'spanish' ]
-        ))
-
-        entries.append(LanguageEntry(
-            apiName = 'fr',
-            commandNames = [ 'fr', 'france', 'french' ],
-            flag = '🇫🇷'
-        ))
-
-        entries.append(LanguageEntry(
-            apiName = 'it',
-            commandNames = [ 'it', 'italian', 'italy' ],
-            flag = '🇮🇹'
-        ))
-
-        entries.append(LanguageEntry(
-            apiName = 'ja',
-            commandNames = [ 'ja', 'jp', 'japan', 'japanese' ],
-            flag = '🇯🇵'
-        ))
-
-        entries.append(LanguageEntry(
-            apiName = 'korean',
-            commandNames = [ 'ko', 'korea', 'korean' ],
-            flag = '🇰🇷'
-        ))
-
-        entries.append(LanguageEntry(
-            apiName = 'nl',
-            commandNames = [ 'nl', 'dutch', 'netherlands' ],
-            flag = '🇳🇱'
-        ))
-
-        entries.append(LanguageEntry(
-            apiName = 'norwegian',
-            commandNames = [ 'no', 'norway', 'norwegian' ],
-            flag = '🇳🇴'
-        ))
-
-        entries.append(LanguageEntry(
-            apiName = 'polish',
-            commandNames = [ 'po', 'poland', 'polish' ],
-            flag = '🇵🇱'
-        ))
-
-        entries.append(LanguageEntry(
-            apiName = 'pt',
-            commandNames = [ 'pt', 'portuguese' ],
-            flag = '🇧🇷'
-        ))
-
-        entries.append(LanguageEntry(
-            apiName = 'ru',
-            commandNames = [ 'ru', 'russia', 'russian' ],
-            flag = '🇷🇺'
-        ))
-
-        entries.append(LanguageEntry(
-            apiName = 'swedish',
-            commandNames = [ 'sv', 'se', 'sw', 'sweden', 'swedish' ],
-            flag = '🇸🇪'
-        ))
-
-        entries.append(LanguageEntry(
-            apiName = 'zh',
-            commandNames = [ 'zh', 'chinese', 'china' ],
-            flag = '🇨🇳'
-        ))
-
-        return LanguageList(entries = entries)
 
     def fetchWotd(self, languageEntry: LanguageEntry) -> Wotd:
         if languageEntry is None:
@@ -330,6 +160,3 @@ class WordOfTheDayRepository():
             foreignExample = foreignExample,
             transliteration = transliteration
         )
-
-    def getLanguageList(self) -> LanguageList:
-        return self.__languageList
