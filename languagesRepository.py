@@ -11,17 +11,25 @@ class LanguageEntry():
 
     def __init__(
         self,
+        isEnabledForWotd: bool,
         commandNames: List[str],
         apiName: str,
+        name: str,
         flag: str = None
     ):
-        if not utils.hasItems(commandNames):
+        if not utils.isValidBool(isEnabledForWotd):
+            raise ValueError(f'isEnabledForWotd argument is malformed: \"{isEnabledForWotd}\"')
+        elif not utils.hasItems(commandNames):
             raise ValueError(f'commandNames argument is malformed: \"{commandNames}\"')
         elif not utils.isValidStr(apiName):
             raise ValueError(f'apiName argument is malformed: \"{apiName}\"')
+        elif not utils.isValidStr(name):
+            raise ValueError(f'name argument is malformed: \"{name}\"')
 
+        self.__isEnabledForWotd: bool = isEnabledForWotd
         self.__commandNames: List[str] = commandNames
         self.__apiName: str = apiName
+        self.__name: str = name
         self.__flag: str = flag
 
     def getApiName(self) -> str:
@@ -33,11 +41,18 @@ class LanguageEntry():
     def getFlag(self) -> str:
         return self.__flag
 
+    def getName(self) -> str:
+        return self.__name
+
     def getPrimaryCommandName(self) -> str:
         return self.__commandNames[0]
 
     def hasFlag(self) -> bool:
         return utils.isValidStr(self.__flag)
+
+    def isEnabledForWotd(self) -> bool:
+        return self.__isEnabledForWotd
+
 
 class LanguagesRepository():
 
@@ -48,90 +63,120 @@ class LanguagesRepository():
         languages = list()
 
         languages.append(LanguageEntry(
+            isEnabledForWotd = True,
             apiName = 'de',
             commandNames = [ 'de', 'german', 'germany' ],
-            flag = '🇩🇪'
+            flag = '🇩🇪',
+            name = 'German'
         ))
 
         languages.append(LanguageEntry(
+            isEnabledForWotd = True,
             apiName = 'en-es',
-            commandNames = [ 'en-es' ]
+            commandNames = [ 'en-es' ],
+            name = 'English for Spanish speakers'
         ))
 
         languages.append(LanguageEntry(
+            isEnabledForWotd = True,
             apiName = 'en-pt',
-            commandNames = [ 'en-pt' ]
+            commandNames = [ 'en-pt' ],
+            name = 'English for Portuguese speakers'
         ))
 
         languages.append(LanguageEntry(
+            isEnabledForWotd = True,
             apiName = 'es',
-            commandNames = [ 'es', 'spanish' ]
+            commandNames = [ 'es', 'spanish' ],
+            name = 'Spanish'
         ))
 
         languages.append(LanguageEntry(
+            isEnabledForWotd = True,
             apiName = 'fr',
             commandNames = [ 'fr', 'france', 'french' ],
-            flag = '🇫🇷'
+            flag = '🇫🇷',
+            name = 'French'
         ))
 
         languages.append(LanguageEntry(
+            isEnabledForWotd = True,
             apiName = 'it',
             commandNames = [ 'it', 'italian', 'italy' ],
-            flag = '🇮🇹'
+            flag = '🇮🇹',
+            name = 'Italian'
         ))
 
         languages.append(LanguageEntry(
+            isEnabledForWotd = True,
             apiName = 'ja',
             commandNames = [ 'ja', 'jp', 'japan', 'japanese' ],
-            flag = '🇯🇵'
+            flag = '🇯🇵',
+            name = 'Japanese'
         ))
 
         languages.append(LanguageEntry(
+            isEnabledForWotd = True,
             apiName = 'korean',
             commandNames = [ 'ko', 'korea', 'korean' ],
-            flag = '🇰🇷'
+            flag = '🇰🇷',
+            name = 'Korean'
         ))
 
         languages.append(LanguageEntry(
+            isEnabledForWotd = True,
             apiName = 'nl',
             commandNames = [ 'nl', 'dutch', 'netherlands' ],
-            flag = '🇳🇱'
+            flag = '🇳🇱',
+            name = 'Dutch'
         ))
 
         languages.append(LanguageEntry(
+            isEnabledForWotd = True,
             apiName = 'norwegian',
             commandNames = [ 'no', 'norway', 'norwegian' ],
-            flag = '🇳🇴'
+            flag = '🇳🇴',
+            name = 'Norwegian'
         ))
 
         languages.append(LanguageEntry(
+            isEnabledForWotd = True,
             apiName = 'polish',
             commandNames = [ 'po', 'poland', 'polish' ],
-            flag = '🇵🇱'
+            flag = '🇵🇱',
+            name = 'Polish'
         ))
 
         languages.append(LanguageEntry(
+            isEnabledForWotd = True,
             apiName = 'pt',
             commandNames = [ 'pt', 'portuguese' ],
-            flag = '🇧🇷'
+            flag = '🇧🇷',
+            name = 'Portuguese'
         ))
 
         languages.append(LanguageEntry(
+            isEnabledForWotd = True,
             apiName = 'ru',
             commandNames = [ 'ru', 'russia', 'russian' ],
-            flag = '🇷🇺'
+            flag = '🇷🇺',
+            name = 'Russian'
         ))
 
         languages.append(LanguageEntry(
+            isEnabledForWotd = True,
             apiName = 'swedish',
             commandNames = [ 'sv', 'se', 'sw', 'sweden', 'swedish' ],
-            flag = '🇸🇪'
+            flag = '🇸🇪',
+            name = 'Swedish'
         ))
 
         languages.append(LanguageEntry(
+            isEnabledForWotd = True,
             apiName = 'zh',
             commandNames = [ 'zh', 'chinese', 'china' ],
-            flag = '🇨🇳'
+            flag = '🇨🇳',
+            name = 'Chinese'
         ))
 
         return languages
@@ -170,4 +215,15 @@ class LanguagesRepository():
                 if commandName.lower() == command.lower():
                     return entry
 
-        raise RuntimeError(f'Unable to find language for \"{command}\"')
+        return None
+
+    def requireLanguageForCommand(self, command: str) -> LanguageEntry:
+        if not utils.isValidStr(command):
+            raise ValueError(f'command argument is malformed: \"{command}\"')
+
+        languageEntry = self.getLanguageForCommand(command)
+
+        if languageEntry is None:
+            raise RuntimeError(f'Unable to find LanguageEntry for \"{command}\"')
+
+        return languageEntry
