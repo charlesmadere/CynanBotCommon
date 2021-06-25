@@ -95,7 +95,7 @@ class TranslationHelper():
 
         if targetLanguageEntry is not None and not targetLanguageEntry.hasIso6391Code():
             raise ValueError(f'the given LanguageEntry is not supported for translation: \"{targetLanguageEntry.getName()}\"')
-        else:
+        elif targetLanguageEntry is None:
             targetLanguageEntry = self.__languagesRepository.getLanguageForCommand('en', hasIso6391Code = True)
 
         translationResult = self.__getTranslateClient().translate(
