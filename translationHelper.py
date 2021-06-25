@@ -96,7 +96,7 @@ class TranslationHelper():
         if targetLanguageEntry is not None and not targetLanguageEntry.hasIso6391Code():
             raise ValueError(f'the given LanguageEntry is not supported for translation: \"{targetLanguageEntry.getName()}\"')
         elif targetLanguageEntry is None:
-            targetLanguageEntry = self.__languagesRepository.getLanguageForCommand('en', hasIso6391Code = True)
+            targetLanguageEntry = self.__languagesRepository.requireLanguageForCommand('en', hasIso6391Code = True)
 
         translationResult = self.__getTranslateClient().translate(
             text,
@@ -114,7 +114,7 @@ class TranslationHelper():
         if not utils.isValidStr(translatedText):
             raise RuntimeError(f'\"translatedText\" field is missing or malformed from translation result for \"{text}\": {translationResult}')
 
-        originalLanguage = None
+        originalLanguage: LanguageEntry = None
         detectedSourceLanguage = translationResult.get('detectedSourceLanguage')
         if utils.isValidStr(detectedSourceLanguage):
             originalLanguage = self.__languagesRepository.getLanguageForCommand(detectedSourceLanguage)
