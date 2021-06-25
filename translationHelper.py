@@ -50,8 +50,8 @@ class TranslationResponse():
 
     def toStr(self) -> str:
         flagText = ''
-        if self.hasTranslatedLanguage() and self.__translatedLanguage.hasFlag():
-            flagText = f'{self.__translatedLanguage.getFlag()} '
+        if self.hasOriginalLanguage() and self.__originalLanguage.hasFlag() and self.hasTranslatedLanguage() and self.__translatedLanguage.hasFlag():
+            flagText = f'{self.__originalLanguage.getFlag()}➡{self.__translatedLanguage.getFlag()} '
 
         return f'{flagText}{self.__translatedText}'
 
