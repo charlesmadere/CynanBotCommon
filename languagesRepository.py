@@ -11,29 +11,22 @@ class LanguageEntry():
 
     def __init__(
         self,
-        isEnabledForWotd: bool,
         commandNames: List[str],
-        apiName: str,
         name: str,
-        flag: str = None
+        flag: str = None,
+        iso6391Code: str = None,
+        wotdApiCode: str = None
     ):
-        if not utils.isValidBool(isEnabledForWotd):
-            raise ValueError(f'isEnabledForWotd argument is malformed: \"{isEnabledForWotd}\"')
-        elif not utils.hasItems(commandNames):
+        if not utils.hasItems(commandNames):
             raise ValueError(f'commandNames argument is malformed: \"{commandNames}\"')
-        elif not utils.isValidStr(apiName):
-            raise ValueError(f'apiName argument is malformed: \"{apiName}\"')
         elif not utils.isValidStr(name):
             raise ValueError(f'name argument is malformed: \"{name}\"')
 
-        self.__isEnabledForWotd: bool = isEnabledForWotd
         self.__commandNames: List[str] = commandNames
-        self.__apiName: str = apiName
         self.__name: str = name
         self.__flag: str = flag
-
-    def getApiName(self) -> str:
-        return self.__apiName
+        self.__iso6391Code: str = iso6391Code
+        self.__wotdApiCode: str = wotdApiCode
 
     def getCommandNames(self) -> List[str]:
         return self.__commandNames
@@ -41,17 +34,32 @@ class LanguageEntry():
     def getFlag(self) -> str:
         return self.__flag
 
+    def getIso6391Code(self) -> str:
+        if self.hasIso6391Code():
+            return self.__iso6391Code
+        else:
+            raise RuntimeError(f'this LanguageEntry ({self.getName()} has no ISO 639-1 code!')
+
     def getName(self) -> str:
         return self.__name
 
     def getPrimaryCommandName(self) -> str:
         return self.__commandNames[0]
 
+    def getWotdApiCode(self) -> str:
+        if self.hasWotdApiCode():
+            return self.__wotdApiCode
+        else:
+            raise RuntimeError(f'this LanguageEntry ({self.getName()} has no Word Of The Day API code!')
+
     def hasFlag(self) -> bool:
         return utils.isValidStr(self.__flag)
 
-    def isEnabledForWotd(self) -> bool:
-        return self.__isEnabledForWotd
+    def hasIso6391Code(self) -> bool:
+        return utils.isValidStr(self.__iso6391Code)
+
+    def hasWotdApiCode(self) -> bool:
+        return utils.isValidStr(self.__wotdApiCode)
 
 
 class LanguagesRepository():
@@ -63,165 +71,215 @@ class LanguagesRepository():
         languages = list()
 
         languages.append(LanguageEntry(
-            isEnabledForWotd = True,
-            apiName = 'de',
-            commandNames = [ 'de', 'german', 'germany' ],
+            commandNames = [ 'de', 'deutsche', 'german', 'germany' ],
             flag = '🇩🇪',
-            name = 'German'
+            iso6391Code = 'de',
+            name = 'German',
+            wotdApiCode = 'de'
         ))
 
         languages.append(LanguageEntry(
-            isEnabledForWotd = True,
-            apiName = 'en-es',
+            commandNames = [ 'en', 'english', '英語' ],
+            flag = '🇬🇧',
+            iso6391Code = 'en',
+            name = 'English'
+        ))
+
+        languages.append(LanguageEntry(
             commandNames = [ 'en-es' ],
-            name = 'English for Spanish speakers'
+            name = 'English for Spanish speakers',
+            wotdApiCode = 'en-es'
         ))
 
         languages.append(LanguageEntry(
-            isEnabledForWotd = True,
-            apiName = 'en-pt',
             commandNames = [ 'en-pt' ],
-            name = 'English for Portuguese speakers'
+            name = 'English for Portuguese speakers',
+            wotdApiCode = 'en-pt'
         ))
 
         languages.append(LanguageEntry(
-            isEnabledForWotd = True,
-            apiName = 'es',
-            commandNames = [ 'es', 'spanish' ],
-            name = 'Spanish'
+            commandNames = [ 'es', 'español', 'spanish' ],
+            iso6391Code = 'es',
+            name = 'Spanish',
+            wotdApiCode = 'es'
         ))
 
         languages.append(LanguageEntry(
-            isEnabledForWotd = True,
-            apiName = 'fr',
-            commandNames = [ 'fr', 'france', 'french' ],
+            commandNames = [ 'fr', 'français', 'france', 'french' ],
             flag = '🇫🇷',
-            name = 'French'
+            iso6391Code = 'fr',
+            name = 'French',
+            wotdApiCode = 'fr'
         ))
 
         languages.append(LanguageEntry(
-            isEnabledForWotd = True,
-            apiName = 'it',
-            commandNames = [ 'it', 'italian', 'italy' ],
+            commandNames = [ 'it', 'italian', 'italiano', 'italy' ],
             flag = '🇮🇹',
-            name = 'Italian'
+            iso6391Code = 'it',
+            name = 'Italian',
+            wotdApiCode = 'it'
         ))
 
         languages.append(LanguageEntry(
-            isEnabledForWotd = True,
-            apiName = 'ja',
-            commandNames = [ 'ja', 'jp', 'japan', 'japanese' ],
+            commandNames = [ 'ja', 'jp', 'japan', 'japanese', '日本語', 'にほんご' ],
             flag = '🇯🇵',
-            name = 'Japanese'
+            iso6391Code = 'ja',
+            name = 'Japanese',
+            wotdApiCode = 'ja'
         ))
 
         languages.append(LanguageEntry(
-            isEnabledForWotd = True,
-            apiName = 'korean',
-            commandNames = [ 'ko', 'korea', 'korean' ],
+            commandNames = [ 'ko', 'korea', 'korean', '한국어' ],
             flag = '🇰🇷',
-            name = 'Korean'
+            iso6391Code = 'ko',
+            name = 'Korean',
+            wotdApiCode = 'korean'
         ))
 
         languages.append(LanguageEntry(
-            isEnabledForWotd = True,
-            apiName = 'nl',
-            commandNames = [ 'nl', 'dutch', 'netherlands' ],
+            commandNames = [ 'nl', 'dutch', 'nederlands', 'netherlands', 'vlaams' ],
             flag = '🇳🇱',
-            name = 'Dutch'
+            iso6391Code = 'nl',
+            name = 'Dutch',
+            wotdApiCode = 'nl'
         ))
 
         languages.append(LanguageEntry(
-            isEnabledForWotd = True,
-            apiName = 'norwegian',
-            commandNames = [ 'no', 'norway', 'norwegian' ],
+            commandNames = [ 'no', 'norsk', 'norway', 'norwegian' ],
             flag = '🇳🇴',
-            name = 'Norwegian'
+            iso6391Code = 'no',
+            name = 'Norwegian',
+            wotdApiCode = 'norwegian'
         ))
 
         languages.append(LanguageEntry(
-            isEnabledForWotd = True,
-            apiName = 'polish',
             commandNames = [ 'po', 'poland', 'polish' ],
             flag = '🇵🇱',
-            name = 'Polish'
+            iso6391Code = 'pl',
+            name = 'Polish',
+            wotdApiCode = 'polish',
         ))
 
         languages.append(LanguageEntry(
-            isEnabledForWotd = True,
-            apiName = 'pt',
-            commandNames = [ 'pt', 'portuguese' ],
+            commandNames = [ 'pt', 'portuguese', 'português' ],
             flag = '🇧🇷',
-            name = 'Portuguese'
+            iso6391Code = 'pt',
+            name = 'Portuguese',
+            wotdApiCode = 'pt'
         ))
 
         languages.append(LanguageEntry(
-            isEnabledForWotd = True,
-            apiName = 'ru',
-            commandNames = [ 'ru', 'russia', 'russian' ],
+            commandNames = [ 'ru', 'russia', 'russian', 'русский' ],
             flag = '🇷🇺',
-            name = 'Russian'
+            iso6391Code = 'ru',
+            name = 'Russian',
+            wotdApiCode = 'ru'
         ))
 
         languages.append(LanguageEntry(
-            isEnabledForWotd = True,
-            apiName = 'swedish',
-            commandNames = [ 'sv', 'se', 'sw', 'sweden', 'swedish' ],
+            commandNames = [ 'se', 'sv', 'svenska', 'sw', 'sweden', 'swedish' ],
             flag = '🇸🇪',
-            name = 'Swedish'
+            iso6391Code = 'sv',
+            name = 'Swedish',
+            wotdApiCode = 'swedish',
         ))
 
         languages.append(LanguageEntry(
-            isEnabledForWotd = True,
-            apiName = 'zh',
-            commandNames = [ 'zh', 'chinese', 'china' ],
+            commandNames = [ 'zh', 'chinese', 'china', '中文' ],
             flag = '🇨🇳',
-            name = 'Chinese'
+            iso6391Code = 'zh',
+            name = 'Chinese',
+            wotdApiCode = 'zh'
         ))
 
         return languages
 
-    def getAllApiNames(self, delimiter: str = ', ') -> str:
+    def getAllWotdApiCodes(self, delimiter: str = ', ') -> str:
         if delimiter is None:
             raise ValueError(f'delimiter argument is malformed: \"{delimiter}\"')
 
         apiNames = list()
         for entry in self.__languageList:
-            apiNames.append(entry.getApiName())
+            apiNames.append(entry.getWotdApiCode())
 
         apiNames.sort()
         return delimiter.join(apiNames)
 
-    def getAllCommandNames(self, delimiter: str = ', ') -> str:
-        if delimiter is None:
-            raise ValueError(f'delimiter argument is malformed: \"{delimiter}\"')
+    def getExampleLanguageEntry(
+        self,
+        hasIso6391Code: bool = None,
+        hasWotdApiCode: bool = None
+    ) -> LanguageEntry:
+        if hasIso6391Code is not None and not utils.isValidBool(hasIso6391Code):
+            raise ValueError(f'hasIso6391Code argument is malformed: \"{hasIso6391Code}\"')
+        elif hasWotdApiCode is not None and not utils.isValidBool(hasWotdApiCode):
+            raise ValueError(f'hasWotdApiCode argument is malformed: \"{hasWotdApiCode}\"')
 
-        commandNames = list()
+        validEntries: List[LanguageEntry] = list()
+
         for entry in self.__languageList:
-            commandNames.append(entry.getPrimaryCommandName())
+            if hasIso6391Code is not None and hasWotdApiCode is not None:
+                if hasIso6391Code == entry.hasIso6391Code() and hasWotdApiCode == entry.hasWotdApiCode():
+                    validEntries.append(entry)
+            elif hasIso6391Code is not None:
+                if hasIso6391Code == entry.hasIso6391Code():
+                    validEntries.append(entry)
+            elif hasWotdApiCode is not None:
+                if hasWotdApiCode == entry.hasWotdApiCode():
+                    validEntries.append(entry)
+            else:
+                validEntries.append(entry)
 
-        commandNames.sort()
-        return delimiter.join(commandNames)
+        if not utils.hasItems(validEntries):
+            raise RuntimeError(f'Unable to find a single LanguageEntry with arguments hasIso6391Code:{hasIso6391Code} and hasWotdApiCode:{hasWotdApiCode}')
 
-    def getExampleLanguageEntry(self) -> LanguageEntry:
-        return random.choice(self.__languageList)
+        return random.choice(validEntries)
 
-    def getLanguageForCommand(self, command: str) -> LanguageEntry:
+    def getLanguageForCommand(
+        self,
+        command: str,
+        hasIso6391Code: bool = None,
+        hasWotdApiCode: bool = None
+    ) -> LanguageEntry:
         if not utils.isValidStr(command):
             raise ValueError(f'command argument is malformed: \"{command}\"')
+        elif hasIso6391Code is not None and not utils.isValidBool(hasIso6391Code):
+            raise ValueError(f'hasIso6391Code argument is malformed: \"{hasIso6391Code}\"')
+        elif hasWotdApiCode is not None and not utils.isValidBool(hasWotdApiCode):
+            raise ValueError(f'hasWotdApiCode argument is malformed: \"{hasWotdApiCode}\"')
+
+        validEntries: List[LanguageEntry] = list()
 
         for entry in self.__languageList:
-            for commandName in entry.getCommandNames():
-                if commandName.lower() == command.lower():
+            if hasIso6391Code is not None and hasWotdApiCode is not None:
+                if hasIso6391Code == entry.hasIso6391Code() and hasWotdApiCode == entry.hasWotdApiCode():
+                    validEntries.append(entry)
+            elif hasIso6391Code is not None:
+                if hasIso6391Code == entry.hasIso6391Code():
+                    validEntries.append(entry)
+            elif hasWotdApiCode is not None:
+                if hasWotdApiCode == entry.hasWotdApiCode():
+                    validEntries.append(entry)
+            else:
+                validEntries.append(entry)
+
+        if not utils.hasItems(validEntries):
+            raise RuntimeError(f'Unable to find a single LanguageEntry with arguments hasIso6391Code:{hasIso6391Code} and hasWotdApiCode:{hasWotdApiCode}')
+
+        for entry in validEntries:
+            for entryCommandName in entry.getCommandNames():
+                if entryCommandName.lower() == command.lower():
                     return entry
 
         return None
 
-    def requireLanguageForCommand(self, command: str) -> LanguageEntry:
-        if not utils.isValidStr(command):
-            raise ValueError(f'command argument is malformed: \"{command}\"')
-
-        languageEntry = self.getLanguageForCommand(command)
+    def requireLanguageForCommand(
+        self,
+        command: str,
+        hasIso6391Code: bool = None,
+        hasWotdApiCode: bool = None
+    ) -> LanguageEntry:
+        languageEntry = self.getLanguageForCommand(command, hasIso6391Code, hasWotdApiCode)
 
         if languageEntry is None:
             raise RuntimeError(f'Unable to find LanguageEntry for \"{command}\"')

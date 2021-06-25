@@ -103,6 +103,8 @@ class WordOfTheDayRepository():
     def fetchWotd(self, languageEntry: LanguageEntry) -> Wotd:
         if languageEntry is None:
             raise ValueError(f'languageEntry argument is malformed: \"{languageEntry}\"')
+        elif not languageEntry.hasWotdApiCode():
+            raise ValueError(f'the given languageEntry is not supported for Word Of The Day: \"{languageEntry.getName()}\"')
 
         cacheValue = self.__cache[languageEntry]
         if cacheValue is not None:
@@ -116,13 +118,10 @@ class WordOfTheDayRepository():
     def __fetchWotd(self, languageEntry: LanguageEntry) -> Wotd:
         if languageEntry is None:
             raise ValueError(f'languageEntry argument is malformed: \"{languageEntry}\"')
+        elif not languageEntry.hasWotdApiCode():
+            raise ValueError(f'the given languageEntry is not supported for Word Of The Day: \"{languageEntry.getName()}\"')
 
-        cacheValue = self.__cache[languageEntry]
-
-        if cacheValue is not None:
-            return cacheValue
-
-        print(f'Refreshing Word Of The Day for \"{languageEntry.getApiName()}\"... ({utils.getNowTimeText()})')
+        print(f'Fetching Word Of The Day for \"{languageEntry.getName()}\"... ({utils.getNowTimeText()})')
 
         ##############################################################################
         # retrieve word of the day from https://www.transparent.com/word-of-the-day/ #
@@ -131,17 +130,17 @@ class WordOfTheDayRepository():
         rawResponse = None
         try:
             rawResponse = requests.get(
-                url = f'https://wotd.transparent.com/rss/{languageEntry.getApiName()}-widget.xml?t=0',
+                url = f'https://wotd.transparent.com/rss/{languageEntry.getWotdApiCode()}-widget.xml?t=0',
                 timeout = utils.getDefaultTimeout()
             )
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, Timeout) as e:
-            print(f'Exception occurred when attempting to fetch Word Of The Day for \"{languageEntry.getApiName()}\": {e}')
-            raise RuntimeError(f'Exception occurred when attempting to fetch Word Of The Day for \"{languageEntry.getApiName()}\": {e}')
+            print(f'Exception occurred when attempting to fetch Word Of The Day for \"{languageEntry.getName()}\" ({languageEntry.getWotdApiCode()}): {e}')
+            raise RuntimeError(f'Exception occurred when attempting to fetch Word Of The Day for \"{languageEntry.getName()}\" ({languageEntry.getWotdApiCode()}): {e}')
 
         xmlTree = xmltodict.parse(rawResponse.content)
         if not utils.hasItems(xmlTree):
-            print(f'xmlTree for \"{languageEntry.getApiName()}\" is malformed: {xmlTree}')
-            raise RuntimeError(f'xmlTree for \"{languageEntry.getApiName()}\" is malformed: {xmlTree}')
+            print(f'xmlTree for \"{languageEntry.getName()}\" is malformed: {xmlTree}')
+            raise RuntimeError(f'xmlTree for \"{languageEntry.getName()}\" is malformed: {xmlTree}')
 
         wordsTree = xmlTree['xml']['words']
         word = wordsTree['word']

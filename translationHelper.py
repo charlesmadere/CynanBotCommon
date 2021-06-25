@@ -15,7 +15,8 @@ class TranslationResponse():
 
     def __init__(
         self,
-        sourceLanguage: LanguageEntry,
+        originalLanguage: LanguageEntry,
+        translatedLanguage: LanguageEntry,
         originalText: str,
         translatedText: str
     ):
@@ -24,28 +25,36 @@ class TranslationResponse():
         elif not utils.isValidStr(translatedText):
             raise ValueError(f'translatedText argument is malformed: \"{translatedText}\"')
 
-        self.__sourceLanguage: LanguageEntry = sourceLanguage
+        self.__originalLanguage: LanguageEntry = originalLanguage
+        self.__translatedLanguage: LanguageEntry = translatedLanguage
         self.__originalText: str = originalText
         self.__translatedText: str = translatedText
+
+    def getOriginalLanguage(self) -> LanguageEntry:
+        return self.__originalLanguage
 
     def getOriginalText(self) -> str:
         return self.__originalText
 
-    def getSourceLanguage(self) -> LanguageEntry:
-        return self.__sourceLanguage
+    def getTranslatedLanguage(self) -> LanguageEntry:
+        return self.__translatedLanguage
 
     def getTranslatedText(self) -> str:
         return self.__translatedText
 
-    def hasSourceLanguage(self) -> bool:
-        return self.__sourceLanguage is not None
+    def hasOriginalLanguage(self) -> bool:
+        return self.__originalLanguage is not None
+
+    def hasTranslatedLanguage(self) -> bool:
+        return self.__translatedLanguage is not None
 
     def toStr(self) -> str:
         flagText = ''
-        if self.hasSourceLanguage() and self.__sourceLanguage.hasFlag():
-            flagText = f'{self.__sourceLanguage.getFlag()} '
+        if self.hasTranslatedLanguage() and self.__translatedLanguage.hasFlag():
+            flagText = f'{self.__translatedLanguage.getFlag()} '
 
         return f'{flagText}{self.__translatedText}'
+
 
 class TranslationHelper():
 
@@ -65,6 +74,8 @@ class TranslationHelper():
 
     def __getTranslateClient(self):
         if self.__translateClient is None:
+            print(f'Initializing new translate.Client instance... ({utils.getNowTimeText()})')
+
             if not path.exists(self.__googleServiceAccountFile):
                 raise FileNotFoundError(f'googleServiceAccount file not found: \"{self.__googleServiceAccountFile}\"')
 
@@ -72,23 +83,28 @@ class TranslationHelper():
 
         return self.__translateClient
 
-    def translate(self, text: str, targetLanguageEntry: LanguageEntry = None) -> TranslationResponse:
+    def translate(
+        self,
+        text: str,
+        targetLanguageEntry: LanguageEntry = None
+    ) -> TranslationResponse:
         if not utils.isValidStr(text):
             raise ValueError(f'text argument is malformed: \"{text}\"')
 
         text = utils.cleanStr(text)
 
-        targetLanguage = 'en'
-        if targetLanguageEntry is not None:
-            targetLanguage = targetLanguageEntry.getApiName()
+        if targetLanguageEntry is not None and not targetLanguageEntry.hasIso6391Code():
+            raise ValueError(f'the given LanguageEntry is not supported for translation: \"{targetLanguageEntry.getName()}\"')
+        else:
+            targetLanguageEntry = self.__languagesRepository.getLanguageForCommand('en')
 
         translationResult = self.__getTranslateClient().translate(
             text,
-            target_language = targetLanguage
+            target_language = targetLanguageEntry.getIso6391Code()
         )
 
         if not utils.hasItems(translationResult):
-            raise ValueError(f'error in the data response when attempting to translate \"{text}\": {translationResult}')
+            raise RuntimeError(f'error in the data response when attempting to translate \"{text}\": {translationResult}')
 
         originalText = translationResult.get('input')
         if not utils.isValidStr(originalText):
@@ -98,13 +114,14 @@ class TranslationHelper():
         if not utils.isValidStr(translatedText):
             raise RuntimeError(f'\"translatedText\" field is missing or malformed from translation result for \"{text}\": {translationResult}')
 
-        sourceLanguage = None
+        originalLanguage = None
         detectedSourceLanguage = translationResult.get('detectedSourceLanguage')
         if utils.isValidStr(detectedSourceLanguage):
-            sourceLanguage = self.__languagesRepository.getLanguageForCommand(detectedSourceLanguage)
+            originalLanguage = self.__languagesRepository.getLanguageForCommand(detectedSourceLanguage)
 
         return TranslationResponse(
-            sourceLanguage = sourceLanguage,
+            originalLanguage = originalLanguage,
+            translatedLanguage = targetLanguageEntry,
             originalText = originalText,
             translatedText = translatedText
         )
