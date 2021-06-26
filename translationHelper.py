@@ -89,11 +89,11 @@ class TranslationResponse():
                 else:
                     secondLangText = self.__translatedLanguage.getIso6391Code().upper()
 
-                prefixText = f'[{firstLangText} ➡ {secondLangText}] '
+                prefixText = f'[ {firstLangText} ➡ {secondLangText} ] '
             elif self.__originalLanguage.hasFlag():
-                prefixText = f'[{self.__originalLanguage.getFlag()}]'
+                prefixText = f'[ {self.__originalLanguage.getFlag()} ]'
             else:
-                prefixText = f'[{self.__originalLanguage.getIso6391Code()}]'
+                prefixText = f'[ {self.__originalLanguage.getIso6391Code()} ]'
 
         return f'{prefixText}{self.__translatedText}'
 
