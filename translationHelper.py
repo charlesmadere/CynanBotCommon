@@ -142,7 +142,7 @@ class TranslationHelper():
 
         return TranslationResponse(
             originalLanguage = originalLanguage,
-            translatedLanguaged = targetLanguageEntry,
+            translatedLanguage = targetLanguageEntry,
             originalText = text,
             translatedText = utils.getStrFromDict(translationJson, 'text'),
             translationApiSource = TranslationApiSource.DEEP_L
