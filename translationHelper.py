@@ -34,7 +34,11 @@ class TranslationResponse():
         translatedText: str,
         translationApiSource: TranslationApiSource
     ):
-        if not utils.isValidStr(originalText):
+        if originalLanguage is not None and not originalLanguage.hasIso6391Code():
+            raise ValueError(f'originalLanguage argument must be either None or have an ISO 639-1 code: \"{originalLanguage}\"')
+        elif translatedLanguage is not None and not translatedLanguage.hasIso6391Code():
+            raise ValueError(f'translatedLanguage argument must be either None or have an ISO 639-1 code: \"{translatedLanguage}\"')
+        elif not utils.isValidStr(originalText):
             raise ValueError(f'originalText argument is malformed: \"{originalText}\"')
         elif not utils.isValidStr(translatedText):
             raise ValueError(f'translatedText argument is malformed: \"{translatedText}\"')
@@ -69,24 +73,29 @@ class TranslationResponse():
         return self.__translatedLanguage is not None
 
     def toStr(self) -> str:
-        flagText = ''
+        prefixText = ''
 
-        if self.hasOriginalLanguage() and self.hasTranslatedLanguage():
-            firstFlagText = ''
-            if self.__originalLanguage.hasFlag():
-                firstFlagText = self.__originalLanguage.getFlag()
+        if self.hasOriginalLanguage():
+            if self.hasTranslatedLanguage():
+                firstLangText = ''
+                if self.__originalLanguage.hasFlag():
+                    firstLangText = self.__originalLanguage.getFlag()
+                else:
+                    firstLangText = self.__originalLanguage.getIso6391Code().upper()
+
+                secondLangText = ''
+                if self.__translatedLanguage.hasFlag():
+                    secondLangText = self.__translatedLanguage.getFlag()
+                else:
+                    secondLangText = self.__translatedLanguage.getIso6391Code().upper()
+
+                prefixText = f'[{firstLangText} ➡ {secondLangText}] '
+            elif self.__originalLanguage.hasFlag():
+                prefixText = f'[{self.__originalLanguage.getFlag()}]'
             else:
-                firstFlagText = self.__originalLanguage.getIso6391Code().upper()
+                prefixText = f'[{self.__originalLanguage.getIso6391Code()}]'
 
-            secondFlagText = ''
-            if self.__translatedLanguage.hasFlag():
-                secondFlagText = self.__translatedLanguage.getFlag()
-            else:
-                secondFlagText = self.__translatedLanguage.getIso6391Code().upper()
-
-            flagText = f'{firstFlagText} ➡ {secondFlagText} — '
-
-        return f'{flagText}{self.__translatedText}'
+        return f'{prefixText}{self.__translatedText}'
 
 
 class TranslationHelper():
@@ -119,8 +128,8 @@ class TranslationHelper():
         try:
             rawResponse = requests.get(url = requestUrl, timeout = utils.getDefaultTimeout())
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            print(f'Exception occurred when attempting to fetch translation for \"{text}\" from DeepL: {e}')
-            raise RuntimeError(f'Exception occurred when attempting to fetch translation for \"{text}\" from DeepL: {e}')
+            print(f'Exception occurred when attempting to fetch translation from DeepL for \"{text}\": {e}')
+            raise RuntimeError(f'Exception occurred when attempting to fetch translation from DeepL for \"{text}\": {e}')
 
         jsonResponse = None
         try:
