@@ -153,7 +153,7 @@ class TranslationHelper():
             originalLanguage = originalLanguage,
             translatedLanguage = targetLanguageEntry,
             originalText = text,
-            translatedText = utils.getStrFromDict(translationJson, 'text'),
+            translatedText = utils.getStrFromDict(translationJson, 'text', clean = True, htmlUnescape = True),
             translationApiSource = TranslationApiSource.DEEP_L
         )
 
@@ -196,7 +196,7 @@ class TranslationHelper():
             originalLanguage = originalLanguage,
             translatedLanguage = targetLanguageEntry,
             originalText = originalText,
-            translatedText = translatedText,
+            translatedText = utils.cleanStr(translatedText, clean = True, htmlUnescape = True),
             translationApiSource = TranslationApiSource.GOOGLE_TRANSLATE
         )
 
