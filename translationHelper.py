@@ -196,7 +196,7 @@ class TranslationHelper():
             originalLanguage = originalLanguage,
             translatedLanguage = targetLanguageEntry,
             originalText = originalText,
-            translatedText = utils.cleanStr(translatedText, clean = True, htmlUnescape = True),
+            translatedText = utils.cleanStr(translatedText, htmlUnescape = True),
             translationApiSource = TranslationApiSource.GOOGLE_TRANSLATE
         )
 
