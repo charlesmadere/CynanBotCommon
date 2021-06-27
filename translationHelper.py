@@ -1,3 +1,4 @@
+import json
 import random
 from enum import Enum, auto
 from json.decoder import JSONDecodeError
@@ -93,7 +94,7 @@ class TranslationResponse():
             elif self.__originalLanguage.hasFlag():
                 prefixText = f'[ {self.__originalLanguage.getFlag()} ]'
             else:
-                prefixText = f'[ {self.__originalLanguage.getIso6391Code()} ]'
+                prefixText = f'[ {self.__originalLanguage.getIso6391Code().upper()} ]'
 
         return f'{prefixText}{self.__translatedText}'
 
@@ -121,6 +122,8 @@ class TranslationHelper():
     def __deepLTranslate(self, text: str, targetLanguageEntry: LanguageEntry) -> TranslationResponse:
         print(f'Fetching translation from DeepL... ({utils.getNowTimeText()})')
 
+        # Retrieve translation from DeepL API: https://www.deepl.com/en/docs-api/
+
         requestUrl = 'https://api-free.deepl.com/v2/translate?auth_key={}&text={}&target_lang={}'.format(
             self.__deepLAuthKey, text, targetLanguageEntry.getIso6391Code())
 
@@ -140,7 +143,7 @@ class TranslationHelper():
 
         translationsJson = jsonResponse.get('translations')
         if not utils.hasItems(translationsJson):
-            raise RuntimeError(f'DeepL\'s JSON response for \"{text}\" has no \"translations\" data: {jsonResponse}')
+            raise RuntimeError(f'DeepL\'s JSON response for \"{text}\" has missing or empty \"translations\" field: {jsonResponse}')
 
         translationJson = translationsJson[0]
 
@@ -161,7 +164,9 @@ class TranslationHelper():
         if self.__googleTranslateClient is None:
             print(f'Initializing new Google translate.Client instance... ({utils.getNowTimeText()})')
 
-            if not path.exists(self.__googleServiceAccountFile):
+            if not self.__hasGoogleApiCredentials():
+                raise RuntimeError(f'Unable to initialize a new Google translate.Client instance because the Google API credentials are missing')
+            elif not path.exists(self.__googleServiceAccountFile):
                 raise FileNotFoundError(f'googleServiceAccount file not found: \"{self.__googleServiceAccountFile}\"')
 
             self.__googleTranslateClient = translate.Client.from_service_account_json(self.__googleServiceAccountFile)
@@ -200,6 +205,15 @@ class TranslationHelper():
             translationApiSource = TranslationApiSource.GOOGLE_TRANSLATE
         )
 
+    def __hasGoogleApiCredentials(self) -> bool:
+        if not path.exists(self.__googleServiceAccountFile):
+            return False
+
+        with open(self.__googleServiceAccountFile, 'r') as file:
+            jsonContents = json.load(file)
+
+        return utils.hasItems(jsonContents)
+
     def translate(
         self,
         text: str,
@@ -213,10 +227,19 @@ class TranslationHelper():
         if targetLanguageEntry is not None and not targetLanguageEntry.hasIso6391Code():
             raise ValueError(f'the given LanguageEntry is not supported for translation: \"{targetLanguageEntry.getName()}\"')
         elif targetLanguageEntry is None:
-            targetLanguageEntry = self.__languagesRepository.requireLanguageForCommand(
-                command = 'en',
-                hasIso6391Code = True
-            )
+            targetLanguageEntry = self.__languagesRepository.requireLanguageForCommand('en', hasIso6391Code = True)
+
+        if self.__googleTranslateClient is None and not self.__hasGoogleApiCredentials():
+            # This isn't an optimal situation, but it means that we're currently running in a
+            # situation where we have no Google API credentials, but we do have DeepL credentials.
+            # So here we'll just always use DeepL for translation, rather than evenly splitting
+            # the workload between both services.
+            return self.__deepLTranslate(text, targetLanguageEntry)
+
+        # In order to help keep us from running beyond the free usage tiers for the Google
+        # Translate and DeepL translation services, let's randomly choose which translation service
+        # to use. At the time of this writing, both services have a 500,000 character monthly limit.
+        # So theoretically, this gives us a 1,000,000 character translation capability.
 
         translationApiSource = random.choice(list(TranslationApiSource))
 
