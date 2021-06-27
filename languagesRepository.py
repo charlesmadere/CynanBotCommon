@@ -113,6 +113,13 @@ class LanguagesRepository():
         ))
 
         languages.append(LanguageEntry(
+            commandNames = [ 'el', 'greek' ],
+            flag = '🇬🇷',
+            iso6391Code = 'el',
+            name = 'Greek'
+        ))
+
+        languages.append(LanguageEntry(
             commandNames = [ 'it', 'italian', 'italiano', 'italy' ],
             flag = '🇮🇹',
             iso6391Code = 'it',
@@ -134,6 +141,12 @@ class LanguagesRepository():
             iso6391Code = 'ko',
             name = 'Korean',
             wotdApiCode = 'korean'
+        ))
+
+        languages.append(LanguageEntry(
+            commandNames = [ 'la', 'latin' ],
+            iso6391Code = 'la',
+            name = 'Latin'
         ))
 
         languages.append(LanguageEntry(
@@ -182,6 +195,13 @@ class LanguagesRepository():
             iso6391Code = 'sv',
             name = 'Swedish',
             wotdApiCode = 'swedish',
+        ))
+
+        languages.append(LanguageEntry(
+            commandNames = [ 'th', 'thai' ],
+            flag = '🇹🇭',
+            iso6391Code = 'th',
+            name = 'Thai'
         ))
 
         languages.append(LanguageEntry(
