@@ -230,6 +230,14 @@ class LanguagesRepository():
         hasIso6391Code: bool = None,
         hasWotdApiCode: bool = None
     ) -> LanguageEntry:
+        validEntries = self.__getLanguageEntries(hasIso6391Code, hasWotdApiCode)
+        return random.choice(validEntries)
+
+    def __getLanguageEntries(
+        self,
+        hasIso6391Code: bool = None,
+        hasWotdApiCode: bool = None
+    ) -> List[LanguageEntry]:
         if hasIso6391Code is not None and not utils.isValidBool(hasIso6391Code):
             raise ValueError(f'hasIso6391Code argument is malformed: \"{hasIso6391Code}\"')
         elif hasWotdApiCode is not None and not utils.isValidBool(hasWotdApiCode):
@@ -253,7 +261,7 @@ class LanguagesRepository():
         if not utils.hasItems(validEntries):
             raise RuntimeError(f'Unable to find a single LanguageEntry with arguments hasIso6391Code:{hasIso6391Code} and hasWotdApiCode:{hasWotdApiCode}')
 
-        return random.choice(validEntries)
+        return validEntries
 
     def getLanguageForCommand(
         self,
@@ -263,28 +271,8 @@ class LanguagesRepository():
     ) -> LanguageEntry:
         if not utils.isValidStr(command):
             raise ValueError(f'command argument is malformed: \"{command}\"')
-        elif hasIso6391Code is not None and not utils.isValidBool(hasIso6391Code):
-            raise ValueError(f'hasIso6391Code argument is malformed: \"{hasIso6391Code}\"')
-        elif hasWotdApiCode is not None and not utils.isValidBool(hasWotdApiCode):
-            raise ValueError(f'hasWotdApiCode argument is malformed: \"{hasWotdApiCode}\"')
 
-        validEntries: List[LanguageEntry] = list()
-
-        for entry in self.__languageList:
-            if hasIso6391Code is not None and hasWotdApiCode is not None:
-                if hasIso6391Code == entry.hasIso6391Code() and hasWotdApiCode == entry.hasWotdApiCode():
-                    validEntries.append(entry)
-            elif hasIso6391Code is not None:
-                if hasIso6391Code == entry.hasIso6391Code():
-                    validEntries.append(entry)
-            elif hasWotdApiCode is not None:
-                if hasWotdApiCode == entry.hasWotdApiCode():
-                    validEntries.append(entry)
-            else:
-                validEntries.append(entry)
-
-        if not utils.hasItems(validEntries):
-            raise RuntimeError(f'Unable to find a single LanguageEntry with arguments hasIso6391Code:{hasIso6391Code} and hasWotdApiCode:{hasWotdApiCode}')
+        validEntries = self.__getLanguageEntries(hasIso6391Code, hasWotdApiCode)
 
         for entry in validEntries:
             for entryCommandName in entry.getCommandNames():
