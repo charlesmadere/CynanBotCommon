@@ -38,7 +38,7 @@ class LanguageEntry():
         if self.hasIso6391Code():
             return self.__iso6391Code
         else:
-            raise RuntimeError(f'this LanguageEntry ({self.getName()} has no ISO 639-1 code!')
+            raise RuntimeError(f'this LanguageEntry ({self.getName()}) has no ISO 639-1 code!')
 
     def getName(self) -> str:
         return self.__name
@@ -50,7 +50,7 @@ class LanguageEntry():
         if self.hasWotdApiCode():
             return self.__wotdApiCode
         else:
-            raise RuntimeError(f'this LanguageEntry ({self.getName()} has no Word Of The Day API code!')
+            raise RuntimeError(f'this LanguageEntry ({self.getName()}) has no Word Of The Day API code!')
 
     def hasFlag(self) -> bool:
         return utils.isValidStr(self.__flag)
