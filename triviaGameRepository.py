@@ -6,11 +6,17 @@ from typing import Dict, Pattern
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.triviaRepository import (AbsTriviaQuestion,
-                                                 TriviaRepository, TriviaType)
+                                                 MultipleChoiceTriviaQuestion,
+                                                 QuestionAnswerTriviaQuestion,
+                                                 TriviaRepository, TriviaType,
+                                                 TrueFalseTriviaQuestion)
 except:
     import utils
-    from triviaRepository import (AbsTriviaQuestion, TriviaRepository,
-                                  TriviaType)
+    from triviaRepository import (AbsTriviaQuestion,
+                                  MultipleChoiceTriviaQuestion,
+                                  QuestionAnswerTriviaQuestion,
+                                  TriviaRepository, TriviaType,
+                                  TrueFalseTriviaQuestion)
 
 
 class State():
@@ -45,10 +51,6 @@ class State():
         isAnswered = self.__isAnswered
         return isAnswered is None or isAnswered
 
-    def refreshAnswerTime(self):
-        self.__isAnswered = False
-        self.__answerTime = datetime.utcnow()
-
     def setAnswered(self):
         self.__isAnswered = None
         self.__answerTime = None
@@ -61,16 +63,19 @@ class State():
 
         self.__triviaQuestion = triviaQuestion
 
-    def setUserIdThatRedeemed(self, userIdThatRedeemed: str):
+    def startNewTriviaGame(
+        self,
+        userIdThatRedeemed: str,
+        userNameThatRedeemed: str
+    ):
         if not utils.isValidStr(userIdThatRedeemed):
             raise ValueError(f'userIdThatRedeemed argument is malformed: \"{userIdThatRedeemed}\"')
-
-        self.__userIdThatRedeemed = userIdThatRedeemed
-
-    def setUserNameThatRedeemed(self, userNameThatRedeemed: str):
-        if not utils.isValidStr(userNameThatRedeemed):
+        elif not utils.isValidStr(userNameThatRedeemed):
             raise ValueError(f'userNameThatRedeemed argument is malformed: \"{userNameThatRedeemed}\"')
 
+        self.__isAnswered = False
+        self.__answerTime = datetime.utcnow()
+        self.__userIdThatRedeemed = userIdThatRedeemed
         self.__userNameThatRedeemed = userNameThatRedeemed
 
 
@@ -134,37 +139,70 @@ class TriviaGameRepository():
 
         state.setAnswered()
 
-        if self.__checkAnswerStrings(answer, triviaQuestion):
+        if self.__checkAnswer(answer, triviaQuestion):
             return TriviaGameCheckResult.CORRECT_ANSWER
         else:
             return TriviaGameCheckResult.INCORRECT_ANSWER
 
-    def __checkAnswerStrings(self, answer: str, triviaQuestion: AbsTriviaQuestion) -> bool:
+    def __checkAnswer(self, answer: str, triviaQuestion: AbsTriviaQuestion) -> bool:
         if triviaQuestion is None:
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
 
-        correctAnswer = triviaQuestion.getCorrectAnswer()
-
-        if utils.isValidStr(answer) and correctAnswer.lower() == answer.lower():
-            return True
-
-        answer = self.__applyAnswerCleanup(answer)
-        correctAnswer = self.__applyAnswerCleanup(correctAnswer)
-
-        if answer == correctAnswer:
-            return True
-        elif triviaQuestion.getTriviaType() is not TriviaType.MULTIPLE_CHOICE or not self.__isLetterAnswer(answer):
+        if not utils.isValidStr(answer):
             return False
 
-        responses = triviaQuestion.getResponses()
+        if triviaQuestion.getTriviaType() is TriviaType.MULTIPLE_CHOICE:
+            return self.__checkAnswerMultipleChoice(answer, triviaQuestion)
+        elif triviaQuestion.getTriviaType() is TriviaType.QUESTION_ANSWER:
+            return self.__checkAnswerQuestionAnswer(answer, triviaQuestion)
+        elif triviaQuestion.getTriviaType() is TriviaType.TRUE_FALSE:
+            return self.__checkAnswerTrueFalse(answer, triviaQuestion)
+        else:
+            raise RuntimeError(f'Unsupported TriviaType: \"{triviaQuestion.getTriviaType()}\"')
 
-        if not utils.hasItems(responses):
-            raise RuntimeError(f'Encountered a {TriviaType.MULTIPLE_CHOICE} trivia question that has no responses!')
+    def __checkAnswerMultipleChoice(self, answer: str, triviaQuestion: MultipleChoiceTriviaQuestion) -> bool:
+        if triviaQuestion is None:
+            raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
 
-        # This converts the answer 'A' into 0, 'B' into 1, 'C' into 2, and so on...
+        answer = self.__applyAnswerCleanup(answer)
+
+        if not utils.isValidStr(answer) or len(answer) != 1:
+            return False
+        elif self.__multipleChoiceAnswerRegEx.fullmatch(answer) is not None:
+            return False
+
+        # this converts the answer 'A' into 0, 'B' into 1, 'C' into 2, and so on...
         index = ord(answer.upper()) % 65
 
-        return index >= 0 and index < len(responses) and responses[index] == triviaQuestion.getCorrectAnswer()
+        return index == triviaQuestion.getCorrectAnswerOrdinal()
+
+    def __checkAnswerQuestionAnswer(self, answer: str, triviaQuestion: QuestionAnswerTriviaQuestion) -> bool:
+        if triviaQuestion is None:
+            raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
+
+        cleanedAnswer = self.__applyAnswerCleanup(answer)
+        cleanedCorrectAnswer = self.__applyAnswerCleanup(triviaQuestion.getCorrectAnswer())
+
+        # This if statement prevents a potentially really weird edge case of the correct answer
+        # being something that is dropped completely from the string in the applyAnswerCleanup()
+        # method. So here, we have to fall back to just checking the raw answer strings, as we
+        # have nothing else to go on.
+        if not utils.isValidStr(cleanedCorrectAnswer):
+            return answer.lower() == triviaQuestion.getCorrectAnswer().lower()
+
+        return cleanedAnswer == cleanedCorrectAnswer
+
+    def __checkAnswerTrueFalse(self, answer: str, triviaQuestion: TrueFalseTriviaQuestion) -> bool:
+        if triviaQuestion is None:
+            raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
+
+        answer = self.__applyAnswerCleanup(answer)
+
+        if not utils.isValidStr(answer):
+            return False
+
+        answerBool = utils.strToBool(answer)
+        return answerBool == triviaQuestion.getCorrectAnswerBool()
 
     def fetchTrivia(self, twitchChannel: str) -> AbsTriviaQuestion:
         if not utils.isValidStr(twitchChannel):
@@ -202,15 +240,9 @@ class TriviaGameRepository():
 
         state = self.__states.get(twitchChannel.lower())
         if state is None:
-            return False
+            return True
 
         return state.isAnswered()
-
-    def __isLetterAnswer(self, answer: str) -> bool:
-        if not utils.isValidStr(answer) or len(answer) != 1:
-            return False
-
-        return self.__multipleChoiceAnswerRegEx.fullmatch(answer) is not None
 
     def isWithinAnswerWindow(self, seconds: int, twitchChannel: str) -> bool:
         if not utils.isValidNum(seconds):
@@ -238,7 +270,7 @@ class TriviaGameRepository():
 
         state.setAnswered()
 
-    def setUserThatRedeemed(
+    def startNewTriviaGame(
         self,
         twitchChannel: str,
         userId: str,
@@ -253,8 +285,11 @@ class TriviaGameRepository():
 
         state = self.__states.get(twitchChannel.lower())
         if state is None:
-            return
+            raise RuntimeError(f'there is no trivia game State available for Twitch channel \"{twitchChannel}\"')
+        elif state.getTriviaQuestion() is None:
+            raise RuntimeError(f'there is no trivia question available for Twitch channel \"{twitchChannel}\"')
 
-        state.refreshAnswerTime()
-        state.setUserIdThatRedeemed(userId)
-        state.setUserNameThatRedeemed(userName)
+        state.startNewTriviaGame(
+            userIdThatRedeemed = userId,
+            userNameThatRedeemed = userName
+        )

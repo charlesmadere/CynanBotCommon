@@ -125,6 +125,17 @@ class MultipleChoiceTriviaQuestion(AbsTriviaQuestion):
     def getCorrectAnswer(self) -> str:
         return self.__correctAnswer
 
+    def getCorrectAnswerOrdinal(self) -> int:
+        index = 0
+
+        for response in self.__multipleChoiceResponses:
+            if response == self.__correctAnswer:
+                return index
+            else:
+                index = index + 1
+
+        raise RuntimeError(f'Couldn\'t find correct answer ordinal for \"{self.__correctAnswer}\"!')
+
     def getPrompt(self, delimiter: str = ' ') -> str:
         if delimiter is None:
             raise ValueError(f'delimiter argument is malformed: \"{delimiter}\"')
@@ -196,6 +207,9 @@ class TrueFalseTriviaQuestion(AbsTriviaQuestion):
 
     def getCorrectAnswer(self) -> str:
         return str(self.__correctAnswer).lower()
+
+    def getCorrectAnswerBool(self) -> bool:
+        return self.__correctAnswer
 
     def getPrompt(self, delimiter: str = None) -> str:
         return f'True or false! {self.getQuestion()}'
