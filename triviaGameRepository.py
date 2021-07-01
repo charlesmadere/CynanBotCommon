@@ -168,7 +168,7 @@ class TriviaGameRepository():
 
         if not utils.isValidStr(answer) or len(answer) != 1:
             return False
-        elif self.__multipleChoiceAnswerRegEx.fullmatch(answer) is not None:
+        elif self.__multipleChoiceAnswerRegEx.fullmatch(answer) is None:
             return False
 
         # this converts the answer 'A' into 0, 'B' into 1, 'C' into 2, and so on...
