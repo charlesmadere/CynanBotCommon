@@ -23,7 +23,6 @@ class Wotd():
         definition: str,
         englishExample: str,
         foreignExample: str,
-        languageName: str,
         transliteration: str,
         word: str
     ):
@@ -31,8 +30,6 @@ class Wotd():
             raise ValueError(f'languageEntry argument is malformed: \"{languageEntry}\"')
         elif not utils.isValidStr(definition):
             raise ValueError(f'definition argument is malformed: \"{definition}\"')
-        elif not utils.isValidStr(languageName):
-            raise ValueError(f'languageName argument is malformed: \"{languageName}\"')
         elif not utils.isValidStr(word):
             raise ValueError(f'word argument is malformed: \"{word}\"')
 
@@ -40,7 +37,6 @@ class Wotd():
         self.__definition = definition
         self.__englishExample = englishExample
         self.__foreignExample = foreignExample
-        self.__languageName = languageName
         self.__transliteration = transliteration
         self.__word = word
 
@@ -57,7 +53,7 @@ class Wotd():
         return self.__languageEntry
 
     def getLanguageName(self) -> str:
-        return self.__languageName
+        return self.__languageEntry.getName()
 
     def getTransliteration(self) -> str:
         return self.__transliteration
@@ -143,19 +139,17 @@ class WordOfTheDayRepository():
             raise RuntimeError(f'xmlTree for \"{languageEntry.getName()}\" is malformed: {xmlTree}')
 
         wordsTree = xmlTree['xml']['words']
-        word = wordsTree['word']
-        definition = wordsTree['translation']
-        englishExample = wordsTree.get('enphrase')
-        foreignExample = wordsTree.get('fnphrase')
-        languageName = wordsTree['langname']
-        transliteration = wordsTree.get('wotd:transliteratedWord')
+        word = utils.getStrFromDict(wordsTree, 'word', clean = True)
+        definition = utils.getStrFromDict(wordsTree, 'translation', clean = True)
+        englishExample = utils.getStrFromDict(wordsTree, 'enphrase', fallback = '', clean = True)
+        foreignExample = utils.getStrFromDict(wordsTree, 'fnphrase', fallback = '', clean = True)
+        transliteration = utils.getStrFromDict(wordsTree, 'wotd:transliteratedWord', fallback = '', clean = True)
 
         return Wotd(
             languageEntry = languageEntry,
             word = word,
             definition = definition,
             englishExample = englishExample,
-            languageName = languageName,
             foreignExample = foreignExample,
             transliteration = transliteration
         )
