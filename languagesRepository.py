@@ -218,12 +218,13 @@ class LanguagesRepository():
         if delimiter is None:
             raise ValueError(f'delimiter argument is malformed: \"{delimiter}\"')
 
-        apiNames = list()
-        for entry in self.__languageList:
-            apiNames.append(entry.getWotdApiCode())
+        wotdApiCodes = list()
+        validEntries = self.__getLanguageEntries(hasWotdApiCode = True)
+        for entry in validEntries:
+            wotdApiCodes.append(entry.getWotdApiCode())
 
-        apiNames.sort()
-        return delimiter.join(apiNames)
+        wotdApiCodes.sort()
+        return delimiter.join(wotdApiCodes)
 
     def getExampleLanguageEntry(
         self,
