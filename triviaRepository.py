@@ -16,6 +16,30 @@ except:
     import utils
 
 
+class TriviaDifficulty(Enum):
+
+    EASY = auto()
+    HARD = auto()
+    MEDIUM = auto()
+    UNKNOWN = auto()
+
+    @classmethod
+    def fromStr(cls, text: str):
+        if not utils.isValidStr(text):
+            return TriviaDifficulty.UNKNOWN
+
+        text = text.lower()
+
+        if text == 'easy':
+            return TriviaDifficulty.EASY
+        elif text == 'hard':
+            return TriviaDifficulty.HARD
+        elif text == 'medium':
+            return TriviaDifficulty.MEDIUM
+        else:
+            return TriviaDifficulty.UNKNOWN
+
+
 class TriviaSource(Enum):
 
     J_SERVICE = auto()
@@ -60,15 +84,19 @@ class AbsTriviaQuestion(ABC):
         self,
         category: str,
         question: str,
+        triviaDifficulty: TriviaDifficulty,
         triviaType: TriviaType
     ):
         if not utils.isValidStr(question):
             raise ValueError(f'question argument is malformed: \"{question}\"')
+        elif triviaDifficulty is None:
+            raise ValueError(f'triviaDifficulty argument is malformed: \"{triviaDifficulty}\"')
         elif triviaType is None:
             raise ValueError(f'triviaType argument is malformed: \"{triviaType}\"')
 
         self.__category: str = category
         self.__question: str = question
+        self.__triviaDifficulty: TriviaDifficulty = triviaDifficulty
         self.__triviaType: TriviaType = triviaType
 
     def getAnswerReveal(self) -> str:
@@ -92,6 +120,9 @@ class AbsTriviaQuestion(ABC):
     def getResponses(self) -> List[str]:
         pass
 
+    def getTriviaDifficulty(self) -> TriviaDifficulty:
+        return self.__triviaDifficulty
+
     def getTriviaType(self) -> TriviaType:
         return self.__triviaType
 
@@ -106,11 +137,13 @@ class MultipleChoiceTriviaQuestion(AbsTriviaQuestion):
         category: str,
         correctAnswer: str,
         question: str,
+        triviaDifficulty: TriviaDifficulty,
         multipleChoiceResponses: List[str]
     ):
         super().__init__(
             category = category,
             question = question,
+            triviaDifficulty = triviaDifficulty,
             triviaType = TriviaType.MULTIPLE_CHOICE
         )
 
@@ -159,11 +192,13 @@ class QuestionAnswerTriviaQuestion(AbsTriviaQuestion):
         self,
         category: str,
         correctAnswer: str,
-        question: str
+        question: str,
+        triviaDifficulty: TriviaDifficulty,
     ):
         super().__init__(
             category = category,
             question = question,
+            triviaDifficulty = triviaDifficulty,
             triviaType = TriviaType.QUESTION_ANSWER
         )
 
@@ -192,11 +227,13 @@ class TrueFalseTriviaQuestion(AbsTriviaQuestion):
         self,
         correctAnswer: bool,
         category: str,
-        question: str
+        question: str,
+        triviaDifficulty: TriviaDifficulty
     ):
         super().__init__(
             category = category,
             question = question,
+            triviaDifficulty = triviaDifficulty,
             triviaType = TriviaType.TRUE_FALSE
         )
 
@@ -263,7 +300,8 @@ class TriviaRepository():
         return QuestionAnswerTriviaQuestion(
             category = category,
             correctAnswer = correctAnswer,
-            question = question
+            question = question,
+            triviaDifficulty = TriviaDifficulty.UNKNOWN
         )
 
     def __fetchTriviaQuestionFromOpenTriviaDatabase(self, triviaType: TriviaType = None) -> AbsTriviaQuestion:
@@ -300,6 +338,7 @@ class TriviaRepository():
             raise ValueError(f'Rejecting trivia due to null/empty \"results\" array: {jsonResponse}')
 
         resultJson = jsonResponse['results'][0]
+        triviaDifficulty = TriviaDifficulty.fromStr(resultJson['difficulty'])
         triviaType = TriviaType.fromStr(resultJson['type'])
         category = utils.getStrFromDict(resultJson, 'category', fallback = '', clean = True, htmlUnescape = True)
         question = utils.getStrFromDict(resultJson, 'question', clean = True, htmlUnescape = True)
@@ -323,6 +362,7 @@ class TriviaRepository():
                 category = category,
                 correctAnswer = correctAnswer,
                 question = question,
+                triviaDifficulty = triviaDifficulty,
                 multipleChoiceResponses = multipleChoiceResponses
             )
         elif triviaType is TriviaType.TRUE_FALSE:
@@ -331,10 +371,11 @@ class TriviaRepository():
             return TrueFalseTriviaQuestion(
                 correctAnswer = correctAnswer,
                 category = category,
-                question = question
+                question = question,
+                triviaDifficulty = triviaDifficulty
             )
         else:
-            raise ValueError(f'triviaType value is unknown: \"{triviaType}\"')
+            raise ValueError(f'triviaType ({triviaType}) is unknown: {jsonResponse}')
 
     def __fetchTriviaQuestionFromWillFryTriviaApi(self, triviaType: TriviaType = None) -> AbsTriviaQuestion:
         print(f'Fetching trivia question from Will Fry Trivia API... ({utils.getNowTimeText()})')
@@ -384,10 +425,11 @@ class TriviaRepository():
                 category = category,
                 correctAnswer = correctAnswer,
                 question = question,
+                triviaDifficulty = TriviaDifficulty.UNKNOWN,
                 multipleChoiceResponses = multipleChoiceResponses
             )
         else:
-            raise ValueError(f'triviaType value is unknown: \"{triviaType}\"')
+            raise ValueError(f'triviaType ({triviaType}) is unknown: {jsonResponse}')
 
     def fetchTrivia(
         self,
