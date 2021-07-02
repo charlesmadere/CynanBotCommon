@@ -266,7 +266,7 @@ class TriviaRepository():
 
         self.__cacheTime = datetime.utcnow() - cacheTimeDelta
         self.__cacheTimeDelta = cacheTimeDelta
-        self.__triviaResponse = None
+        self.__triviaResponse: AbsTriviaQuestion = None
 
     def __fetchTriviaQuestionFromJService(self, triviaType: TriviaType = None) -> AbsTriviaQuestion:
         print(f'Fetching trivia question from jService... ({utils.getNowTimeText()})')
