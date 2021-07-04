@@ -131,7 +131,7 @@ class AnalogueStoreStock():
         if products is None:
             raise ValueError(f'products argument is malformed: \"{products}\"')
 
-        self.__products = products
+        self.__products: List[AnalogueStoreEntry] = products
 
     def getProducts(self) -> List[AnalogueStoreEntry]:
         return self.__products
@@ -187,10 +187,10 @@ class AnalogueStoreRepository():
         elif cacheTimeDelta is None:
             raise ValueError(f'cacheTimeDelta argument is malformed: \"{cacheTimeDelta}\"')
 
-        self.__storeUrl = storeUrl
+        self.__storeUrl: str = storeUrl
         self.__cacheTime = datetime.utcnow() - cacheTimeDelta
-        self.__cacheTimeDelta = cacheTimeDelta
-        self.__storeStock = None
+        self.__cacheTimeDelta: timedelta = cacheTimeDelta
+        self.__storeStock: AnalogueStoreStock = None
 
     def fetchStoreStock(self) -> AnalogueStoreStock:
         if self.__cacheTime + self.__cacheTimeDelta < datetime.utcnow() or self.__storeStock is None:
