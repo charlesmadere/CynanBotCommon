@@ -79,7 +79,7 @@ class LanguagesRepository():
         ))
 
         languages.append(LanguageEntry(
-            commandNames = [ 'en', 'english', '英語' ],
+            commandNames = [ 'en', 'eng', 'english', '英語' ],
             flag = '🇬🇧',
             iso6391Code = 'en',
             name = 'English'
@@ -98,7 +98,7 @@ class LanguagesRepository():
         ))
 
         languages.append(LanguageEntry(
-            commandNames = [ 'es', 'español', 'spanish' ],
+            commandNames = [ 'es', 'español', 'sp', 'spanish' ],
             iso6391Code = 'es',
             name = 'Spanish',
             wotdApiCode = 'es'
@@ -128,7 +128,7 @@ class LanguagesRepository():
         ))
 
         languages.append(LanguageEntry(
-            commandNames = [ 'ja', 'jp', 'japan', 'japanese', '日本語', 'にほんご' ],
+            commandNames = [ 'ja', 'japan', 'japanese', 'jp', '日本語', 'にほんご' ],
             flag = '🇯🇵',
             iso6391Code = 'ja',
             name = 'Japanese',
