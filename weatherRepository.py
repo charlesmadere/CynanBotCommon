@@ -357,7 +357,7 @@ class WeatherRepository():
         if location is None:
             raise ValueError(f'location argument is malformed: \"{location}\"')
 
-        print(f'Refreshing weather for \"{location.getLocationId()}\"... ({utils.getNowTimeText()})')
+        print(f'Refreshing weather for \"{location.getName()}\" ({location.getLocationId()})... ({utils.getNowTimeText()})')
 
         # Retrieve weather report from https://openweathermap.org/api/one-call-api
         # Doing this requires an API key, which you can get here: https://openweathermap.org/api
