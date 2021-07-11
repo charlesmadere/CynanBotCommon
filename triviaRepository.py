@@ -155,8 +155,15 @@ class MultipleChoiceTriviaQuestion(AbsTriviaQuestion):
         self.__correctAnswer: str = correctAnswer
         self.__multipleChoiceResponses: List[str] = multipleChoiceResponses
 
+    def getAnswerReveal(self) -> str:
+        return f'🥁 And the answer is: [{self.getCorrectAnswerChar()}] {self.getCorrectAnswer()}'
+
     def getCorrectAnswer(self) -> str:
         return self.__correctAnswer
+
+    def getCorrectAnswerChar(self) -> str:
+        answerOrdinal = self.getCorrectAnswerOrdinal()
+        return chr(ord('A') + answerOrdinal)
 
     def getCorrectAnswerOrdinal(self) -> int:
         index = 0
@@ -173,7 +180,7 @@ class MultipleChoiceTriviaQuestion(AbsTriviaQuestion):
         if delimiter is None:
             raise ValueError(f'delimiter argument is malformed: \"{delimiter}\"')
 
-        responsesList = list()
+        responsesList: List[str] = list()
         entryChar = 'A'
         for response in self.__multipleChoiceResponses:
             responsesList.append(f'[{entryChar}] {response}')
@@ -259,14 +266,62 @@ class TriviaRepository():
 
     def __init__(
         self,
+        maxMultipleChoiceResponses: int = 5,
         cacheTimeDelta: timedelta = timedelta(minutes = 2, seconds = 30)
     ):
-        if cacheTimeDelta is None:
-            raise ValueError(f'cacheTimeDelta argument is malformed: \"{cacheTimeDelta}\"')
+        if not utils.isValidNum(maxMultipleChoiceResponses):
+            raise ValueError(f'maxMultipleChoiceResponses argument is malformed: \"{maxMultipleChoiceResponses}\"')
+        elif maxMultipleChoiceResponses < 3 or maxMultipleChoiceResponses > 6:
+            raise ValueError(f'maxMultipleChoiceResponses argument is out of bounds: \"{maxMultipleChoiceResponses}\"')
 
-        self.__cacheTime = datetime.utcnow() - cacheTimeDelta
-        self.__cacheTimeDelta = cacheTimeDelta
+        self.__maxMultipleChoiceResponses: int = maxMultipleChoiceResponses
+
+        if cacheTimeDelta is None:
+            self.__cacheTime = None
+        else:    
+            self.__cacheTime = datetime.utcnow() - cacheTimeDelta
+
+        self.__cacheTimeDelta: timedelta = cacheTimeDelta
         self.__triviaResponse: AbsTriviaQuestion = None
+
+    def __buildMultipleChoiceResponsesList(
+        self,
+        correctAnswer: str,
+        multipleChoiceResponsesJson: List[str]
+    ) -> List[str]:
+        if not utils.isValidStr(correctAnswer):
+            raise ValueError(f'correctAnswer argument is malformed: \"{correctAnswer}\"')
+        elif not utils.hasItems(multipleChoiceResponsesJson):
+            raise ValueError(f'multipleChoiceResponsesJson argument is malformed: \"{multipleChoiceResponsesJson}\"')
+
+        multipleChoiceResponses: List[str] = list()
+        multipleChoiceResponses.append(correctAnswer)
+
+        # Annoyingly, I've encountered a few situations where we can have a question with more
+        # than one of the same multiple choice answers. The below logic takes some steps to make
+        # sure this doesn't happen, while also ensuring that we don't have too many multiple
+        # choice responses.
+
+        for incorrectAnswer in multipleChoiceResponsesJson:
+            incorrectAnswer = utils.cleanStr(incorrectAnswer, htmlUnescape = True)
+            add = True
+
+            for response in multipleChoiceResponses:
+                if incorrectAnswer.lower() == response.lower():
+                    add = False
+                    break
+
+            if add:
+                multipleChoiceResponses.append(incorrectAnswer)
+
+                if len(multipleChoiceResponses) >= self.__maxMultipleChoiceResponses:
+                    break
+
+        if len(multipleChoiceResponses) < 3:
+            raise ValueError(f'This trivia question doesn\'t have enough multiple choice responses: \"{multipleChoiceResponses}\"')
+
+        random.shuffle(multipleChoiceResponses)
+        return multipleChoiceResponses
 
     def __fetchTriviaQuestionFromJService(self, triviaType: TriviaType = None) -> AbsTriviaQuestion:
         print(f'Fetching trivia question from jService... ({utils.getNowTimeText()})')
@@ -351,12 +406,10 @@ class TriviaRepository():
                 htmlUnescape = True
             )
 
-            multipleChoiceResponses = list()
-            for answer in resultJson['incorrect_answers']:
-                multipleChoiceResponses.append(utils.cleanStr(answer, htmlUnescape = True))
-
-            multipleChoiceResponses.append(correctAnswer)
-            random.shuffle(multipleChoiceResponses)
+            multipleChoiceResponses = self.__buildMultipleChoiceResponsesList(
+                correctAnswer = correctAnswer,
+                multipleChoiceResponsesJson = resultJson['incorrect_answers']
+            )
 
             return MultipleChoiceTriviaQuestion(
                 category = category,
@@ -375,7 +428,7 @@ class TriviaRepository():
                 triviaDifficulty = triviaDifficulty
             )
         else:
-            raise ValueError(f'triviaType ({triviaType}) is unknown: {jsonResponse}')
+            raise ValueError(f'triviaType \"{triviaType}\" is unknown for Open Trivia Database: {jsonResponse}')
 
     def __fetchTriviaQuestionFromWillFryTriviaApi(self, triviaType: TriviaType = None) -> AbsTriviaQuestion:
         print(f'Fetching trivia question from Will Fry Trivia API... ({utils.getNowTimeText()})')
@@ -408,18 +461,17 @@ class TriviaRepository():
         question = utils.getStrFromDict(resultJson, 'question', clean = True)
 
         if triviaType is TriviaType.MULTIPLE_CHOICE:
-            correctAnswer = utils.getStrFromDict(resultJson, 'correctAnswer', clean = True)
+            correctAnswer = utils.getStrFromDict(
+                d = resultJson,
+                key = 'correctAnswer',
+                clean = True,
+                htmlUnescape = True
+            )
 
-            multipleChoiceResponses = list()
-            for answer in resultJson['incorrectAnswers']:
-                multipleChoiceResponses.append(utils.cleanStr(answer))
-
-            random.shuffle(multipleChoiceResponses)
-            if len(multipleChoiceResponses) > 4:
-                multipleChoiceResponses = multipleChoiceResponses[0:4]
-
-            multipleChoiceResponses.append(correctAnswer)
-            random.shuffle(multipleChoiceResponses)
+            multipleChoiceResponses = self.__buildMultipleChoiceResponsesList(
+                correctAnswer = correctAnswer,
+                multipleChoiceResponsesJson = resultJson['incorrectAnswers']
+            )
 
             return MultipleChoiceTriviaQuestion(
                 category = category,
@@ -429,14 +481,14 @@ class TriviaRepository():
                 multipleChoiceResponses = multipleChoiceResponses
             )
         else:
-            raise ValueError(f'triviaType ({triviaType}) is unknown: {jsonResponse}')
+            raise ValueError(f'triviaType \"{triviaType}\" is unknown for Will Fry Trivia API: {jsonResponse}')
 
     def fetchTrivia(
         self,
         triviaSource: TriviaSource = None,
         triviaType: TriviaType = None
     ) -> AbsTriviaQuestion:
-        if self.__cacheTimeDelta is None or self.__cacheTime + self.__cacheTimeDelta < datetime.utcnow() or self.__triviaResponse is None:
+        if self.__cacheTimeDelta is None or self.__cacheTime is None or self.__cacheTime + self.__cacheTimeDelta < datetime.utcnow() or self.__triviaResponse is None:
             self.__triviaResponse = self.__fetchTrivia(triviaSource, triviaType)
             self.__cacheTime = datetime.utcnow()
 
