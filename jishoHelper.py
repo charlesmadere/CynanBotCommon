@@ -56,7 +56,7 @@ class JishoResult():
 
         furigana = ''
         if self.hasFurigana():
-            furigana = f'({self.__furigana}) '
+            furigana = f' ({self.__furigana})'
 
         definitionsList = list()
         entryChar = 'A'
@@ -65,7 +65,7 @@ class JishoResult():
             entryChar = chr(ord(entryChar) + 1)
 
         definitions = definitionDelimiter.join(definitionsList)
-        return f'{furigana}{self.__word} — {definitions}'
+        return f'{self.__word}{furigana} — {definitions}'
 
 
 class JishoHelper():
@@ -122,14 +122,14 @@ class JishoHelper():
         word = utils.getStrFromDict(dataJson['japanese'][0], 'word')
         furigana = utils.getStrFromDict(dataJson['japanese'][0], 'reading')
 
-        definitions = list()
+        definitions: List[str] = list()
         for definition in dataJson['senses'][0]['english_definitions']:
             definitions.append(definition)
 
             if len(definitions) >= self.__definitionsMaxSize:
                 break
 
-        partsOfSpeech = list()
+        partsOfSpeech: List[str] = list()
         for partOfSpeech in dataJson['senses'][0]['parts_of_speech']:
             partsOfSpeech.append(partOfSpeech)
 
