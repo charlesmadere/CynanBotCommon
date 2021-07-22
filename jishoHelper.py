@@ -83,7 +83,7 @@ class JishoHelper():
             raise ValueError(f'query argument is malformed: \"{query}\"')
 
         query = query.strip()
-        print(f'Looking up \"{query}\"... ({utils.getNowTimeText()})')
+        print(f'Looking up \"{query}\" at Jisho... ({utils.getNowTimeText()})')
 
         rawResponse = None
         try:
