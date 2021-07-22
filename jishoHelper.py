@@ -73,7 +73,7 @@ class JishoHelper():
     def __init__(self, definitionsMaxSize: int = 3):
         if not utils.isValidNum(definitionsMaxSize):
             raise ValueError(f'definitionsMaxSize argument is malformed: \"{definitionsMaxSize}\"')
-        elif definitionsMaxSize < 1:
+        elif definitionsMaxSize < 1 or definitionsMaxSize > 5:
             raise ValueError(f'definitionsMaxSize argument is out of bounds: \"{definitionsMaxSize}\"')
 
         self.__definitionsMaxSize = definitionsMaxSize
