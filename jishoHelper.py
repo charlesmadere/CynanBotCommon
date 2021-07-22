@@ -58,7 +58,7 @@ class JishoResult():
         if self.hasFurigana():
             furigana = f' ({self.__furigana})'
 
-        definitionsList = list()
+        definitionsList: List[str] = list()
         entryChar = 'A'
         for definition in self.__definitions:
             definitionsList.append(f'[{entryChar}] {definition}')
