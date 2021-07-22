@@ -24,8 +24,6 @@ class JishoVariant():
     ):
         if not utils.hasItems(definitions):
             raise ValueError(f'definitions argument is malformed: \"{definitions}\"')
-        elif not utils.isValidStr(word):
-            raise ValueError(f'word argument is malformed: \"{word}\"')
 
         self.__definitions: List[str] = definitions
         self.__partsOfSpeech: List[str] = partsOfSpeech
@@ -50,20 +48,30 @@ class JishoVariant():
     def hasPartsOfSpeech(self) -> bool:
         return utils.hasItems(self.__partsOfSpeech)
 
-    def toStr(self, definitionDelimiter: str = ' ') -> str:
+    def hasWord(self) -> str:
+        return self.__word
+
+    def toStr(self, definitionDelimiter: str = ', ') -> str:
         if definitionDelimiter is None:
             raise ValueError(f'definitionDelimiter argument is malformed: \"{definitionDelimiter}\"')
 
+        word = ''
+        if self.hasWord():
+            word = self.__word
+
         furigana = ''
         if self.hasFurigana():
-            furigana = f' ({self.__furigana})'
+            if utils.isValidStr(word):
+                furigana = f' ({self.__furigana})'
+            else:
+                furigana = self.__furigana
 
         definitionsList: List[str] = list()
         for definition in self.__definitions:
             definitionsList.append(definition)
 
         definitions = definitionDelimiter.join(definitionsList)
-        return f'{self.__word}{furigana} — {definitions}'
+        return f'{word}{furigana} — {definitions}'
 
 
 class JishoResult():
@@ -87,7 +95,7 @@ class JishoResult():
     def getVariants(self) -> List[JishoVariant]:
         return self.__variants
 
-    def toStrs(self, definitionDelimiter: str = ' ') -> List[str]:
+    def toStrs(self, definitionDelimiter: str = ', ') -> List[str]:
         if definitionDelimiter is None:
             raise ValueError(f'definitionDelimiter argument is malformed: \"{definitionDelimiter}\"')
 
@@ -154,19 +162,22 @@ class JishoHelper():
             elif not utils.hasItems(variantJson['senses']):
                 raise RuntimeError(f'Jisho\'s response for \"{query}\" has malformed or empty \"senses\": {jsonResponse}')
 
-            word = utils.getStrFromDict(variantJson['japanese'][0], 'word')
-            furigana = utils.getStrFromDict(variantJson['japanese'][0], 'reading')
+            word = utils.cleanStr(variantJson['japanese'][0].get('word', ''))
+            furigana = utils.cleanStr(variantJson['japanese'][0].get('reading', ''))
+
+            if not utils.isValidStr(word) and not utils.isValidStr(furigana):
+                continue
 
             definitions: List[str] = list()
             for definition in variantJson['senses'][0]['english_definitions']:
-                definitions.append(definition)
+                definitions.append(utils.cleanStr(definition))
 
                 if len(definitions) >= self.__definitionsMaxSize:
                     break
 
             partsOfSpeech: List[str] = list()
             for partOfSpeech in variantJson['senses'][0]['parts_of_speech']:
-                partsOfSpeech.append(partOfSpeech)
+                partsOfSpeech.append(utils.cleanStr(partOfSpeech))
 
                 if len(partsOfSpeech) >= self.__definitionsMaxSize:
                     break
