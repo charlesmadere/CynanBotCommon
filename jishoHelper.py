@@ -76,7 +76,7 @@ class JishoHelper():
         elif definitionsMaxSize < 1 or definitionsMaxSize > 5:
             raise ValueError(f'definitionsMaxSize argument is out of bounds: \"{definitionsMaxSize}\"')
 
-        self.__definitionsMaxSize = definitionsMaxSize
+        self.__definitionsMaxSize: int = definitionsMaxSize
 
     def search(self, query: str) -> JishoResult:
         if not utils.isValidStr(query):
