@@ -13,7 +13,7 @@ except:
     import utils
 
 
-class JishoResult():
+class JishoVariant():
 
     def __init__(
         self,
@@ -27,10 +27,10 @@ class JishoResult():
         elif not utils.isValidStr(word):
             raise ValueError(f'word argument is malformed: \"{word}\"')
 
-        self.__definitions = definitions
-        self.__partsOfSpeech = partsOfSpeech
-        self.__furigana = furigana
-        self.__word = word
+        self.__definitions: List[str] = definitions
+        self.__partsOfSpeech: List[str] = partsOfSpeech
+        self.__furigana: str = furigana
+        self.__word: str = word
 
     def getDefinitions(self) -> List[str]:
         return self.__definitions
@@ -59,24 +59,60 @@ class JishoResult():
             furigana = f' ({self.__furigana})'
 
         definitionsList: List[str] = list()
-        entryChar = 'A'
         for definition in self.__definitions:
-            definitionsList.append(f'[{entryChar}] {definition}')
-            entryChar = chr(ord(entryChar) + 1)
+            definitionsList.append(definition)
 
         definitions = definitionDelimiter.join(definitionsList)
         return f'{self.__word}{furigana} — {definitions}'
 
 
+class JishoResult():
+
+    def __init__(
+        self,
+        variants: List[JishoVariant],
+        initialQuery: str
+    ):
+        if not utils.hasItems(variants):
+            raise ValueError(f'variants argument is malformed: \"{variants}\"')
+        elif not utils.isValidStr(initialQuery):
+            raise ValueError(f'initialQuery argument is malformed: \"{initialQuery}\"')
+
+        self.__variants = variants
+        self.__initialQuery = initialQuery
+
+    def getInitialQuery(self) -> str:
+        return self.__initialQuery
+
+    def getVariants(self) -> List[JishoVariant]:
+        return self.__variants
+
+    def toStrs(self, definitionDelimiter: str = ' ') -> List[str]:
+        if definitionDelimiter is None:
+            raise ValueError(f'definitionDelimiter argument is malformed: \"{definitionDelimiter}\"')
+
+        strings: List[str] = list()
+
+        for variant in self.__variants:
+            strings.append(variant.toStr(definitionDelimiter))
+
+        return strings
+
+
 class JishoHelper():
 
-    def __init__(self, definitionsMaxSize: int = 3):
+    def __init__(self, definitionsMaxSize: int = 3, variantsMaxSize: int = 3):
         if not utils.isValidNum(definitionsMaxSize):
             raise ValueError(f'definitionsMaxSize argument is malformed: \"{definitionsMaxSize}\"')
         elif definitionsMaxSize < 1 or definitionsMaxSize > 5:
             raise ValueError(f'definitionsMaxSize argument is out of bounds: \"{definitionsMaxSize}\"')
+        elif not utils.isValidNum(variantsMaxSize):
+            raise ValueError(f'variantsMaxSize argument is malformed: \"{variantsMaxSize}\"')
+        elif variantsMaxSize < 1 or variantsMaxSize > 3:
+            raise ValueError(f'variantsMaxSize argument is out of bounds: \"{variantsMaxSize}\"')
 
         self.__definitionsMaxSize: int = definitionsMaxSize
+        self.__variantsMaxSize: int = variantsMaxSize
 
     def search(self, query: str) -> JishoResult:
         if not utils.isValidStr(query):
@@ -110,35 +146,41 @@ class JishoHelper():
         elif not utils.hasItems(jsonResponse['data']):
             raise RuntimeError(f'Jisho\'s response for \"{query}\" has malformed or empty \"data\": {jsonResponse}')
 
-        # The API can give us multiple results given a single search query... but for the sake
-        # of simplicity, we're just grabbing one result and going with that.
-        dataJson = jsonResponse['data'][0]
+        variants: List[JishoVariant] = list()
+        for variantJson in jsonResponse['data']:
+            if not utils.hasItems(variantJson['japanese']):
+                raise RuntimeError(f'Jisho\'s response for \"{query}\" has malformed or empty \"japanese\": {jsonResponse}')
+            elif not utils.hasItems(variantJson['senses']):
+                raise RuntimeError(f'Jisho\'s response for \"{query}\" has malformed or empty \"senses\": {jsonResponse}')
 
-        if not utils.hasItems(dataJson['japanese']):
-            raise RuntimeError(f'Jisho\'s response for \"{query}\" has malformed or empty \"japanese\": {jsonResponse}')
-        elif not utils.hasItems(dataJson['senses']):
-            raise RuntimeError(f'Jisho\'s response for \"{query}\" has malformed or empty \"senses\": {jsonResponse}')
+            word = utils.getStrFromDict(variantJson['japanese'][0], 'word')
+            furigana = utils.getStrFromDict(variantJson['japanese'][0], 'reading')
 
-        word = utils.getStrFromDict(dataJson['japanese'][0], 'word')
-        furigana = utils.getStrFromDict(dataJson['japanese'][0], 'reading')
+            definitions: List[str] = list()
+            for definition in variantJson['senses'][0]['english_definitions']:
+                definitions.append(definition)
 
-        definitions: List[str] = list()
-        for definition in dataJson['senses'][0]['english_definitions']:
-            definitions.append(definition)
+                if len(definitions) >= self.__definitionsMaxSize:
+                    break
 
-            if len(definitions) >= self.__definitionsMaxSize:
-                break
+            partsOfSpeech: List[str] = list()
+            for partOfSpeech in variantJson['senses'][0]['parts_of_speech']:
+                partsOfSpeech.append(partOfSpeech)
 
-        partsOfSpeech: List[str] = list()
-        for partOfSpeech in dataJson['senses'][0]['parts_of_speech']:
-            partsOfSpeech.append(partOfSpeech)
+                if len(partsOfSpeech) >= self.__definitionsMaxSize:
+                    break
 
-            if len(partsOfSpeech) >= self.__definitionsMaxSize:
+            variants.append(JishoVariant(
+                definitions = definitions,
+                partsOfSpeech = partsOfSpeech,
+                furigana = furigana,
+                word = word
+            ))
+
+            if len(variants) >= self.__variantsMaxSize:
                 break
 
         return JishoResult(
-            definitions = definitions,
-            partsOfSpeech = partsOfSpeech,
-            furigana = furigana,
-            word = word
+            variants = variants,
+            initialQuery = query
         )
