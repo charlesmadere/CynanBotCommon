@@ -100,7 +100,7 @@ class AbsTriviaQuestion(ABC):
         self.__triviaType: TriviaType = triviaType
 
     def getAnswerReveal(self) -> str:
-        return f'🥁 And the answer is: {self.getCorrectAnswer()}'
+        return self.getCorrectAnswer()
 
     def getCategory(self) -> str:
         return self.__category
@@ -156,7 +156,7 @@ class MultipleChoiceTriviaQuestion(AbsTriviaQuestion):
         self.__multipleChoiceResponses: List[str] = multipleChoiceResponses
 
     def getAnswerReveal(self) -> str:
-        return f'🥁 And the answer is: [{self.getCorrectAnswerChar()}] {self.getCorrectAnswer()}'
+        return f'[{self.getCorrectAnswerChar()}] {self.getCorrectAnswer()}'
 
     def getCorrectAnswer(self) -> str:
         return self.__correctAnswer
