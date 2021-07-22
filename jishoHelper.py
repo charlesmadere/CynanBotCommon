@@ -86,8 +86,8 @@ class JishoResult():
         elif not utils.isValidStr(initialQuery):
             raise ValueError(f'initialQuery argument is malformed: \"{initialQuery}\"')
 
-        self.__variants = variants
-        self.__initialQuery = initialQuery
+        self.__variants: List[JishoVariant] = variants
+        self.__initialQuery: str = initialQuery
 
     def getInitialQuery(self) -> str:
         return self.__initialQuery
