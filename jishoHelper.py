@@ -92,6 +92,7 @@ class JishoResult():
             raise ValueError(f'definitionDelimiter argument is malformed: \"{definitionDelimiter}\"')
 
         strings: List[str] = list()
+        strings.append(f'Jisho result(s) for \"{self.__initialQuery}\":')
 
         for variant in self.__variants:
             strings.append(variant.toStr(definitionDelimiter))
