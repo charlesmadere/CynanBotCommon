@@ -1,10 +1,11 @@
 import html
 import math
 import random
+import re
 import urllib
 from datetime import datetime
 from numbers import Number
-from typing import List
+from typing import List, Pattern
 
 
 def cleanStr(s: str, replacement: str = ' ', htmlUnescape: bool = False) -> str:
@@ -218,15 +219,11 @@ def removePreceedingAt(s: str) -> str:
     else:
         return s[1:len(s)]
 
+trueRegEx: Pattern = re.compile(r"t(rue)?|y(es)?", re.IGNORECASE)
+falseRegEx: Pattern = re.compile(r"f(alse)?|n(o)?", re.IGNORECASE)
+
 def strToBool(s: str) -> bool:
     if not isValidStr(s):
         raise ValueError(f's argument is malformed: \"{s}\"')
 
-    s = s.lower()
-
-    if s == 'yes':
-        return True
-    elif s == 'no':
-        return False
-    else:
-        return s != 'false'
+    return falseRegEx.match(s) is None
