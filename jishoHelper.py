@@ -95,7 +95,7 @@ class JishoResult():
     def getVariants(self) -> List[JishoVariant]:
         return self.__variants
 
-    def toStrs(self, definitionDelimiter: str = ', ') -> List[str]:
+    def toStrList(self, definitionDelimiter: str = ', ') -> List[str]:
         if definitionDelimiter is None:
             raise ValueError(f'definitionDelimiter argument is malformed: \"{definitionDelimiter}\"')
 
