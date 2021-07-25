@@ -99,8 +99,8 @@ class TriviaGameRepository():
 
         self.__triviaRepository: TriviaRepository = triviaRepository
         self.__states: Dict[str, State] = dict()
-        self.__fullWordAnswerRegEx: Pattern = re.compile("\w+|\d+")
-        self.__multipleChoiceAnswerRegEx: Pattern = re.compile("[a-zA-Z]")
+        self.__fullWordAnswerRegEx: Pattern = re.compile(r"\w+|\d+", re.IGNORECASE)
+        self.__multipleChoiceAnswerRegEx: Pattern = re.compile(r"[a-z]", re.IGNORECASE)
 
     def __applyAnswerCleanup(self, text: str) -> str:
         if not utils.isValidStr(text):
