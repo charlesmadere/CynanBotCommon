@@ -89,7 +89,7 @@ class TamaleGuyStoreStock():
         if not self.hasProducts():
             return '🍃 Tamale Guy store is empty'
 
-        productStrings = list()
+        productStrings: List[str] = list()
         for product in self.__products:
             productStrings.append(product.toStr())
 
@@ -118,7 +118,7 @@ class TamaleGuyRepository():
         return self.__storeStock
 
     def __getProductsList(self, dataJson: List) -> List[TamaleGuyStoreEntry]:
-        products = list()
+        products: List[str] = list()
 
         if not utils.hasItems(dataJson):
             return products

@@ -3,6 +3,7 @@ from datetime import timedelta
 import requests
 import xmltodict
 from requests import ConnectionError, HTTPError, Timeout
+from requests.exceptions import ReadTimeout, TooManyRedirects
 from urllib3.exceptions import MaxRetryError, NewConnectionError
 
 try:
@@ -33,12 +34,12 @@ class Wotd():
         elif not utils.isValidStr(word):
             raise ValueError(f'word argument is malformed: \"{word}\"')
 
-        self.__languageEntry = languageEntry
-        self.__definition = definition
-        self.__englishExample = englishExample
-        self.__foreignExample = foreignExample
-        self.__transliteration = transliteration
-        self.__word = word
+        self.__languageEntry: LanguageEntry = languageEntry
+        self.__definition: str = definition
+        self.__englishExample: str = englishExample
+        self.__foreignExample: str = foreignExample
+        self.__transliteration: str = transliteration
+        self.__word: str = word
 
     def getDefinition(self) -> str:
         return self.__definition
@@ -94,7 +95,7 @@ class WordOfTheDayRepository():
         if cacheTimeDelta is None:
             raise ValueError(f'cacheTimeDelta argument is malformed: \"{cacheTimeDelta}\"')
 
-        self.__cache = TimedDict(timeDelta = cacheTimeDelta)
+        self.__cache: TimedDict = TimedDict(timeDelta = cacheTimeDelta)
 
     def fetchWotd(self, languageEntry: LanguageEntry) -> Wotd:
         if languageEntry is None:
@@ -129,7 +130,7 @@ class WordOfTheDayRepository():
                 url = f'https://wotd.transparent.com/rss/{languageEntry.getWotdApiCode()}-widget.xml?t=0',
                 timeout = utils.getDefaultTimeout()
             )
-        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, Timeout) as e:
+        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
             print(f'Exception occurred when attempting to fetch Word Of The Day for \"{languageEntry.getName()}\" ({languageEntry.getWotdApiCode()}): {e}')
             raise RuntimeError(f'Exception occurred when attempting to fetch Word Of The Day for \"{languageEntry.getName()}\" ({languageEntry.getWotdApiCode()}): {e}')
 

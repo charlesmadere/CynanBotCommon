@@ -150,7 +150,7 @@ class AnalogueStoreStock():
         if not self.hasProducts():
             return '🍃 Analogue store is empty'
 
-        productStrings = list()
+        productStrings: List[str] = list()
         for product in self.__products:
             if inStockProductsOnly:
                 if product.inStock():
@@ -222,7 +222,7 @@ class AnalogueStoreRepository():
             print(f'Analogue store\'s productTrees list is malformed: \"{productTrees}\"')
             raise ValueError(f'Analogue store\'s productTrees list is malformed: \"{productTrees}\"')
 
-        products = list()
+        products: List[AnalogueStoreEntry] = list()
 
         for productTree in productTrees:
             productTrees = productTree.find_class('store_title__3eCzb')

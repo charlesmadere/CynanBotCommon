@@ -70,7 +70,7 @@ def getBoolFromDict(d: dict, key: str, fallback: bool = None) -> bool:
     return value
 
 def getCleanedSplits(s: str) -> List[str]:
-    splits = list()
+    splits: List[str] = list()
 
     if not isValidStr(s):
         return splits

@@ -68,7 +68,7 @@ class LanguagesRepository():
         self.__languageList: List[LanguageEntry] = self.__createLanguageList()
 
     def __createLanguageList(self) -> List[LanguageEntry]:
-        languages = list()
+        languages: List[LanguageEntry] = list()
 
         languages.append(LanguageEntry(
             commandNames = [ 'de', 'deutsche', 'german', 'germany' ],
@@ -218,7 +218,7 @@ class LanguagesRepository():
         if delimiter is None:
             raise ValueError(f'delimiter argument is malformed: \"{delimiter}\"')
 
-        wotdApiCodes = list()
+        wotdApiCodes: List[str] = list()
         validEntries = self.__getLanguageEntries(hasWotdApiCode = True)
         for entry in validEntries:
             wotdApiCodes.append(entry.getWotdApiCode())

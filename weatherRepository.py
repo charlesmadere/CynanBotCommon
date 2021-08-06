@@ -2,7 +2,7 @@ import locale
 from datetime import timedelta
 from enum import Enum, auto
 from json.decoder import JSONDecodeError
-from typing import List
+from typing import Dict, List
 
 import requests
 from requests import ConnectionError, HTTPError, Timeout
@@ -263,11 +263,11 @@ class WeatherRepository():
 
         raise RuntimeError(f'Unable to find viable tomorrow data in JSON response: \"{jsonResponse}\"')
 
-    def __createConditionIconsDict(self):
+    def __createConditionIconsDict(self) -> Dict[str, str]:
         # This dictionary is built from the Weather Condition Codes listed here:
         # https://openweathermap.org/weather-conditions#Weather-Condition-Codes-2
 
-        icons = dict()
+        icons: Dict[str, str] = dict()
         icons['200'] = '⛈️'
         icons['201'] = icons['200']
         icons['202'] = icons['200']
@@ -385,12 +385,12 @@ class WeatherRepository():
         temperature = currentJson['temp']
         uvIndex = UvIndex.fromFloat(utils.getFloatFromDict(currentJson, 'uvi'))
 
-        conditions = list()
+        conditions: List[str] = list()
         if 'weather' in currentJson and len(currentJson['weather']) >= 1:
             for conditionJson in currentJson['weather']:
                 conditions.append(self.__prettifyCondition(conditionJson))
 
-        alerts = list()
+        alerts: List[str] = list()
         if 'alerts' in jsonResponse and len(jsonResponse['alerts']) >= 1:
             for alertJson in jsonResponse['alerts']:
                 event = alertJson.get('event')
@@ -406,7 +406,7 @@ class WeatherRepository():
         tomorrowsHighTemperature = tomorrowsJson['temp']['max']
         tomorrowsLowTemperature = tomorrowsJson['temp']['min']
 
-        tomorrowsConditions = list()
+        tomorrowsConditions: List[str] = list()
         if 'weather' in tomorrowsJson and len(tomorrowsJson['weather']) >= 1:
             for conditionJson in tomorrowsJson['weather']:
                 tomorrowsConditions.append(conditionJson['description'])

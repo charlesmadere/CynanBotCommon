@@ -5,6 +5,7 @@ from typing import Dict
 
 import requests
 from requests import ConnectionError, HTTPError, Timeout
+from requests.exceptions import ReadTimeout, TooManyRedirects
 from urllib3.exceptions import MaxRetryError, NewConnectionError
 
 try:
@@ -95,7 +96,7 @@ class TwitchTokensRepository():
                 },
                 timeout = utils.getDefaultTimeout()
             )
-        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, Timeout) as e:
+        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
             print(f'Exception occurred when attempting to request new Twitch tokens: {e}')
             raise RuntimeError(f'Exception occurred when attempting to request new Twitch tokens: {e}')
 
@@ -162,7 +163,7 @@ class TwitchTokensRepository():
                 },
                 timeout = utils.getDefaultTimeout()
             )
-        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, Timeout) as e:
+        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
             print(f'Exception occurred when attempting to validate Twitch access token: {e}')
             raise RuntimeError(f'Exception occurred when attempting to validate Twitch access token: {e}')
 

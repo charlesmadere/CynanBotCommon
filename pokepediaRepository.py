@@ -6,6 +6,7 @@ from typing import Dict, List
 
 import requests
 from requests import ConnectionError, HTTPError, Timeout
+from requests.exceptions import ReadTimeout, TooManyRedirects
 from urllib3.exceptions import MaxRetryError, NewConnectionError
 
 try:
@@ -168,6 +169,8 @@ class PokepediaDamageClass(Enum):
     def fromStr(cls, text: str):
         if not utils.isValidStr(text):
             raise ValueError(f'text argument is malformed: \"{text}\"')
+
+        text = text.lower()
 
         if text == 'physical':
             return PokepediaDamageClass.PHYSICAL
@@ -452,7 +455,7 @@ class PokepediaMove():
         if delimiter is None:
             raise ValueError(f'delimiter argument is malformed: \"{delimiter}\"')
 
-        genMoveStrings = list()
+        genMoveStrings: List[str] = list()
 
         for gen in PokepediaGeneration:
             if gen in self.__generationMoves:
@@ -463,7 +466,7 @@ class PokepediaMove():
         return f'{self.getName()} — {genMoveString}'
 
     def toStrList(self) -> List[str]:
-        strings = list()
+        strings: List[str] = list()
         strings.append(f'{self.getName()} — {self.getDescription()}')
 
         for gen in PokepediaGeneration:
@@ -502,7 +505,7 @@ class PokepediaTypeChart(Enum):
 
         noEffect.sort(key = lambda elementType: elementType.value)
 
-        elementsToFullyRemove = list()
+        elementsToFullyRemove: List[PokepediaElementType] = list()
         for elementType in resistances:
             if elementType in weaknesses:
                 elementsToFullyRemove.append(elementType)
@@ -517,15 +520,15 @@ class PokepediaTypeChart(Enum):
         resistances.sort(key = lambda elementType: elementType.value)
         weaknesses.sort(key = lambda elementType: elementType.value)
 
-        dictionary = dict()
+        dictionary: Dict[PokepediaDamageMultiplier, List[PokepediaElementType]] = dict()
 
         if utils.hasItems(noEffect):
             dictionary[PokepediaDamageMultiplier.ZERO] = noEffect
 
         if utils.hasItems(resistances):
             counter = Counter(resistances)
-            regularResistances = list()
-            doubleResistances = list()
+            regularResistances: List[PokepediaElementType] = list()
+            doubleResistances: List[PokepediaElementType] = list()
 
             for elementType in PokepediaElementType:
                 if elementType in counter:
@@ -544,8 +547,8 @@ class PokepediaTypeChart(Enum):
 
         if utils.hasItems(weaknesses):
             counter = Counter(weaknesses)
-            regularWeaknesses = list()
-            doubleWeaknesses = list()
+            regularWeaknesses: List[PokepediaElementType] = list()
+            doubleWeaknesses: List[PokepediaElementType] = list()
 
             for elementType in PokepediaElementType:
                 if elementType in counter:
@@ -580,9 +583,9 @@ class PokepediaTypeChart(Enum):
         if not utils.hasItems(types):
             raise ValueError(f'types argument is malformed: \"{types}\"')
 
-        noEffect = list()
-        resistances = list()
-        weaknesses = list()
+        noEffect: List[PokepediaElementType] = list()
+        resistances: List[PokepediaElementType] = list()
+        weaknesses: List[PokepediaElementType] = list()
 
         for elementType in types:
             if elementType is PokepediaElementType.BUG:
@@ -699,9 +702,9 @@ class PokepediaTypeChart(Enum):
         if not utils.hasItems(types):
             raise ValueError(f'types argument is malformed: \"{types}\"')
 
-        noEffect = list()
-        resistances = list()
-        weaknesses = list()
+        noEffect: List[PokepediaElementType] = list()
+        resistances: List[PokepediaElementType] = list()
+        weaknesses: List[PokepediaElementType] = list()
 
         for elementType in types:
             if elementType is PokepediaElementType.BUG:
@@ -844,9 +847,9 @@ class PokepediaTypeChart(Enum):
         if not utils.hasItems(types):
             raise ValueError(f'types argument is malformed: \"{types}\"')
 
-        noEffect = list()
-        resistances = list()
-        weaknesses = list()
+        noEffect: List[PokepediaElementType] = list()
+        resistances: List[PokepediaElementType] = list()
+        weaknesses: List[PokepediaElementType] = list()
 
         for elementType in types:
             if elementType is PokepediaElementType.BUG:
@@ -1048,7 +1051,7 @@ class PokepediaPokemon():
         if damageMultiplier not in weaknessesAndResistances or not utils.hasItems(weaknessesAndResistances[damageMultiplier]):
             return None
 
-        elementTypesStrings = list()
+        elementTypesStrings: List[str] = list()
         for elementType in weaknessesAndResistances[damageMultiplier]:
             elementTypesStrings.append(elementType.getEmojiOrStr().lower())
 
@@ -1086,14 +1089,14 @@ class PokepediaPokemon():
         if delimiter is None:
             raise ValueError(f'delimiter argument is malformed: \"{delimiter}\"')
 
-        strings = list()
+        strings: List[str] = list()
         strings.append(f'{self.__name} (#{self.getPokedexIdStr()}) — introduced in {self.__initialGeneration.toStr()}, weight is {self.getWeightStr()} and height is {self.getHeightStr()}.')
 
         for gen in PokepediaGeneration:
             if gen in self.__generationElementTypes:
                 genElementTypes = self.__generationElementTypes[gen]
 
-                genElementTypesStrings = list()
+                genElementTypesStrings: List[str] = list()
                 for genElementType in genElementTypes:
                     genElementTypesStrings.append(genElementType.toStr().lower())
 
@@ -1141,7 +1144,7 @@ class PokepediaRepository():
             raise ValueError(f'\"types\" field in JSON response is null or empty: {jsonResponse}')
 
         # begin with current generation types
-        currentTypesList = list()
+        currentTypesList: List[PokepediaElementType] = list()
         for currentTypeJson in currentTypesJson:
             currentTypesList.append(PokepediaElementType.fromStr(currentTypeJson['type']['name']))
 
@@ -1149,7 +1152,7 @@ class PokepediaRepository():
         if pastTypesJson is None:
             raise ValueError(f'\"past_types\" field in JSON response is null: {jsonResponse}')
 
-        elementTypeGenerationDictionary = dict()
+        elementTypeGenerationDictionary: Dict[PokepediaGeneration, List[PokepediaElementType]] = dict()
 
         # iterate backwards and insert into dictionary once a generation is found.
         # then 'un-patch' for previous generations.
@@ -1158,7 +1161,7 @@ class PokepediaRepository():
                 generation = PokepediaGeneration.fromStr(pastTypeJson['generation']['name'])
 
                 if generation == pokepediaGeneration:
-                    currentTypesList = list()
+                    currentTypesList: List[PokepediaElementType] = list()
 
                     typesJson = pastTypeJson.get('types')
                     if not utils.hasItems(typesJson):
@@ -1175,7 +1178,7 @@ class PokepediaRepository():
                 del elementTypeGenerationDictionary[pokepediaGeneration]
 
         # remove duplicates
-        currentTypesList = None
+        currentTypesList: List[PokepediaElementType] = None
         for pokepediaGeneration in PokepediaGeneration:
             if pokepediaGeneration in elementTypeGenerationDictionary:
                 if currentTypesList is None:
@@ -1231,7 +1234,7 @@ class PokepediaRepository():
         if pastValuesJson is None:
             raise ValueError(f'\"past_values\" field in JSON response is null: {jsonResponse}')
 
-        moveGenerationDictionary = dict()
+        moveGenerationDictionary: Dict[PokepediaGeneration, PokepediaMoveGeneration] = dict()
 
         # iterate backwards and insert into dictionary once a generation is found.
         # then 'un-patch' for previous generations.
@@ -1243,7 +1246,7 @@ class PokepediaRepository():
                     if generation.isEarlyGeneration() and damageClass is not PokepediaDamageClass.STATUS:
                         damageClass = PokepediaDamageClass.getTypeBasedDamageClass(elementType)
 
-                    move = PokepediaMoveGeneration(
+                    moveGenerationDictionary[generation] = PokepediaMoveGeneration(
                         accuracy = accuracy,
                         power = power,
                         pp = pp,
@@ -1251,8 +1254,6 @@ class PokepediaRepository():
                         elementType = elementType,
                         generation = generation
                     )
-
-                    moveGenerationDictionary[generation] = move
 
                     if utils.isValidNum(pastValueJson.get('accuracy')):
                         accuracy = utils.getIntFromDict(pastValueJson, 'accuracy')
@@ -1346,7 +1347,7 @@ class PokepediaRepository():
 
         name = utils.cleanStr(name)
         name = name.replace(' ', '-')
-        print(f'Searching for Pokemon move \"{name}\"...')
+        print(f'Searching PokeAPI for move \"{name}\"...')
 
         rawResponse = None
         try:
@@ -1354,7 +1355,7 @@ class PokepediaRepository():
                 url = f'https://pokeapi.co/api/v2/move/{name}/',
                 timeout = utils.getDefaultTimeout()
             )
-        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, Timeout) as e:
+        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
             print(f'Exception occurred when attempting to fetch Pokemon move \"{name}\": {e}')
             raise RuntimeError(f'Exception occurred when attempting to fetch Pokemon move \"{name}\": {e}')
 
@@ -1370,7 +1371,7 @@ class PokepediaRepository():
             moveId = utils.getIntFromDict(jsonResponse, 'id'),
             description = self.__getEnDescription(jsonResponse),
             name = self.__getEnName(jsonResponse),
-            rawName = jsonResponse['name']
+            rawName = utils.getStrFromDict(jsonResponse, 'name')
         )
 
     def searchPokemon(self, name: str) -> PokepediaPokemon:
@@ -1379,7 +1380,7 @@ class PokepediaRepository():
 
         name = utils.cleanStr(name)
         name = name.replace(' ', '-')
-        print(f'Searching for Pokemon \"{name}\"...')
+        print(f'Searching PokeAPI for Pokemon \"{name}\"...')
 
         rawResponse = None
         try:
@@ -1387,7 +1388,7 @@ class PokepediaRepository():
                 url = f'https://pokeapi.co/api/v2/pokemon/{name}/',
                 timeout = utils.getDefaultTimeout()
             )
-        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, Timeout) as e:
+        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
             print(f'Exception occurred when attempting to fetch Pokemon \"{name}\": {e}')
             raise RuntimeError(f'Exception occurred when attempting to fetch Pokemon \"{name}\": {e}')
 
@@ -1410,5 +1411,5 @@ class PokepediaRepository():
             height = utils.getIntFromDict(jsonResponse, 'height'),
             pokedexId = pokedexId,
             weight = utils.getIntFromDict(jsonResponse, 'weight'),
-            name = jsonResponse['name'].title()
+            name = utils.getStrFromDict(jsonResponse, 'name').title()
         )

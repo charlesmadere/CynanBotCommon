@@ -18,24 +18,24 @@ class StarWarsQuotesRepository:
         if not utils.isValidStr(quotesFile):
             raise ValueError(f'quotesFile argument is malformed: \"{quotesFile}\"')
 
-        self.__quotesFile = quotesFile
+        self.__quotesFile: str = quotesFile
 
     def fetchRandomQuote(self, trilogy: str = None) -> str:
         jsonContents = self.__getQuotes(trilogy)
-        randomIndex = random.randint(0, len(jsonContents) - 1)
-        return jsonContents[randomIndex]
+        return random.choice(jsonContents)
 
-    def __getQuotes(self, trilogy: str = None) -> List:
+    def __getQuotes(self, trilogy: str = None) -> List[str]:
+        trilogy = utils.cleanStr(trilogy)
         jsonContents = self.__readJson()
 
-        quotes = jsonContents.get("quotes")
+        quotes = jsonContents.get('quotes')
         if not utils.hasItems(quotes):
             raise ValueError(f'JSON contents of quotes file \"{self.__quotesFile}\" is missing \"quotes\" key')
 
-        if trilogy not in quotes.keys():
-            result = [item for sublist in quotes.values() for item in sublist]
-        else:
+        if utils.isValidStr(trilogy) and trilogy in quotes.keys():
             result = quotes[trilogy]
+        else:
+            result = [ item for sublist in quotes.values() for item in sublist ]
 
         return result
 
