@@ -1200,7 +1200,7 @@ class PokepediaRepository():
 
         for flavorTextEntry in flavorTextEntries:
             if flavorTextEntry['language']['name'] == 'en':
-                return utils.cleanStr(flavorTextEntry['flavor_text'])
+                return utils.getStrFromDict(flavorTextEntry, 'flavor_text', clean = True)
 
         raise RuntimeError(f'can\'t find \"en\" language name in \"flavor_text_entries\" field: {jsonResponse}')
 
@@ -1214,7 +1214,7 @@ class PokepediaRepository():
 
         for name in names:
             if name['language']['name'] == 'en':
-                return utils.cleanStr(name['name'].title())
+                return utils.getStrFromDict(name, 'name', clean = True).title()
 
         raise RuntimeError(f'can\'t find \"en\" language name in \"names\" field: {jsonResponse}')
 
