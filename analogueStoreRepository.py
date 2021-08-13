@@ -218,7 +218,7 @@ class AnalogueStoreRepository():
             print(f'Analogue store\'s htmlTree is malformed: \"{htmlTree}\"')
             raise ValueError(f'Analogue store\'s htmlTree is malformed: \"{htmlTree}\"')
 
-        productTrees = htmlTree.find_class('store_product-header__1rLY-')
+        productTrees = htmlTree.find_class('product-info')
         if not utils.hasItems(productTrees):
             print(f'Analogue store\'s productTrees list is malformed: \"{productTrees}\"')
             raise ValueError(f'Analogue store\'s productTrees list is malformed: \"{productTrees}\"')
@@ -226,7 +226,7 @@ class AnalogueStoreRepository():
         products: List[AnalogueStoreEntry] = list()
 
         for productTree in productTrees:
-            productTrees = productTree.find_class('store_title__3eCzb')
+            productTrees = productTree.find_class('product-title')
             if productTrees is None or len(productTrees) != 1:
                 continue
 
@@ -253,7 +253,7 @@ class AnalogueStoreRepository():
             productType = AnalogueProductType.fromStr(name)
 
             inStock = True
-            outOfStockElement = productTree.find_class('button_Disabled__2CEbR')
+            outOfStockElement = productTree.find_class('product-button button--disabled')
             if utils.hasItems(outOfStockElement):
                 inStock = False
 
