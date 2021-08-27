@@ -167,6 +167,9 @@ class MultipleChoiceTriviaQuestion(AbsTriviaQuestion):
         if delimiter is None:
             raise ValueError(f'delimiter argument is malformed: \"{delimiter}\"')
 
+        return delimiter.join(self.getCorrectAnswers())
+
+    def getCorrectAnswers(self) -> List[str]:
         answerStrings: List[str] = list()
         index = 0
 
@@ -174,10 +177,7 @@ class MultipleChoiceTriviaQuestion(AbsTriviaQuestion):
             answerStrings.append(f'[{correctAnswerChar}] {self.__correctAnswers[index]}')
             index = index + 1
 
-        return delimiter.join(answerStrings)
-
-    def getCorrectAnswers(self) -> List[str]:
-        return self.__correctAnswers
+        return answerStrings
 
     def getCorrectAnswerChars(self) -> List[str]:
         answerOrdinals = self.getCorrectAnswerOrdinals()
@@ -197,15 +197,14 @@ class MultipleChoiceTriviaQuestion(AbsTriviaQuestion):
     def getCorrectAnswerOrdinals(self) -> List[int]:
         ordinals: List[int] = list()
 
-        for response in self.__multipleChoiceResponses:
-            index = 0
-
+        index = 0
+        for multipleChoiceResponse in self.__multipleChoiceResponses:
             for correctAnswer in self.__correctAnswers:
-                if response == correctAnswer:
+                if multipleChoiceResponse == correctAnswer:
                     ordinals.append(index)
                     break
-                else:
-                    index = index + 1
+
+            index = index + 1
 
         if not utils.hasItems(ordinals):
             raise RuntimeError(f'Couldn\'t find any correct answer ordinals within \"{self.__correctAnswers}\"!')
