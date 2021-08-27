@@ -5,18 +5,18 @@ from typing import Dict, Pattern
 
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.triviaRepository import (AbsTriviaQuestion,
-                                                 MultipleChoiceTriviaQuestion,
-                                                 QuestionAnswerTriviaQuestion,
-                                                 TriviaRepository, TriviaType,
-                                                 TrueFalseTriviaQuestion)
+    from CynanBotCommon.triviaModels import (AbsTriviaQuestion,
+                                             MultipleChoiceTriviaQuestion,
+                                             QuestionAnswerTriviaQuestion,
+                                             TriviaType,
+                                             TrueFalseTriviaQuestion)
+    from CynanBotCommon.triviaRepository import TriviaRepository
 except:
     import utils
-    from triviaRepository import (AbsTriviaQuestion,
-                                  MultipleChoiceTriviaQuestion,
-                                  QuestionAnswerTriviaQuestion,
-                                  TriviaRepository, TriviaType,
-                                  TrueFalseTriviaQuestion)
+    from triviaModels import (AbsTriviaQuestion, MultipleChoiceTriviaQuestion,
+                              QuestionAnswerTriviaQuestion, TriviaType,
+                              TrueFalseTriviaQuestion)
+    from triviaRepository import TriviaRepository
 
 
 class State():
@@ -174,23 +174,28 @@ class TriviaGameRepository():
         # this converts the answer 'A' into 0, 'B' into 1, 'C' into 2, and so on...
         index = ord(answer.upper()) % 65
 
-        return index == triviaQuestion.getCorrectAnswerOrdinal()
+        return index in triviaQuestion.getCorrectAnswerOrdinals()
 
     def __checkAnswerQuestionAnswer(self, answer: str, triviaQuestion: QuestionAnswerTriviaQuestion) -> bool:
         if triviaQuestion is None:
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
 
         cleanedAnswer = self.__applyAnswerCleanup(answer)
-        cleanedCorrectAnswer = self.__applyAnswerCleanup(triviaQuestion.getCorrectAnswer())
+        correctAnswers = triviaQuestion.getCorrectAnswers()
 
-        # This if statement prevents a potentially really weird edge case of the correct answer
-        # being something that is dropped completely from the string in the applyAnswerCleanup()
-        # method. So here, we have to fall back to just checking the raw answer strings, as we
-        # have nothing else to go on.
-        if not utils.isValidStr(cleanedCorrectAnswer):
-            return answer.lower() == triviaQuestion.getCorrectAnswer().lower()
+        for correctAnswer in correctAnswers:
+            cleanedCorrectAnswer = self.__applyAnswerCleanup(correctAnswer)
 
-        return cleanedAnswer == cleanedCorrectAnswer
+            # This if statement prevents a potentially really weird edge case of the correctanswer
+            # being something that is dropped completely from the string in the applyAnswerCleanup()
+            # method. So here, we have to fall back to just checking the raw answer strings, as we
+            # have nothing else to go on.
+            if utils.isValidStr(cleanedCorrectAnswer) and cleanedAnswer == cleanedCorrectAnswer:
+                return True
+            elif answer.lower() == correctAnswer.lower():
+                return True
+
+        return False
 
     def __checkAnswerTrueFalse(self, answer: str, triviaQuestion: TrueFalseTriviaQuestion) -> bool:
         if triviaQuestion is None:
@@ -202,7 +207,7 @@ class TriviaGameRepository():
             return False
 
         answerBool = utils.strToBool(answer)
-        return answerBool == triviaQuestion.getCorrectAnswerBool()
+        return answerBool in triviaQuestion.getCorrectAnswerBools()
 
     def fetchTrivia(self, twitchChannel: str) -> AbsTriviaQuestion:
         if not utils.isValidStr(twitchChannel):

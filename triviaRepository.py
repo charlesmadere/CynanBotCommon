@@ -12,268 +12,38 @@ from urllib3.exceptions import MaxRetryError, NewConnectionError
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.localTriviaRepository import LocalTriviaRepository
+    from CynanBotCommon.triviaModels import (AbsTriviaQuestion,
+                                             MultipleChoiceTriviaQuestion,
+                                             QuestionAnswerTriviaQuestion,
+                                             TriviaDifficulty, TriviaSource,
+                                             TriviaType,
+                                             TrueFalseTriviaQuestion)
 except:
     import utils
-
-
-class TriviaDifficulty(Enum):
-
-    EASY = auto()
-    HARD = auto()
-    MEDIUM = auto()
-    UNKNOWN = auto()
-
-    @classmethod
-    def fromStr(cls, text: str):
-        if not utils.isValidStr(text):
-            return TriviaDifficulty.UNKNOWN
-
-        text = text.lower()
-
-        if text == 'easy':
-            return TriviaDifficulty.EASY
-        elif text == 'hard':
-            return TriviaDifficulty.HARD
-        elif text == 'medium':
-            return TriviaDifficulty.MEDIUM
-        else:
-            return TriviaDifficulty.UNKNOWN
-
-
-class TriviaSource(Enum):
-
-    J_SERVICE = auto()
-    OPEN_TRIVIA_DATABASE = auto()
-    WILL_FRY_TRIVIA_API = auto()
-
-    def isEnabled(self) -> bool:
-        if self is TriviaSource.J_SERVICE:
-            return False
-        elif self is TriviaSource.OPEN_TRIVIA_DATABASE:
-            return True
-        elif self is TriviaSource.WILL_FRY_TRIVIA_API:
-            return True
-        else:
-            raise RuntimeError(f'unknown TriviaSource: \"{self}\"')
-
-
-class TriviaType(Enum):
-
-    MULTIPLE_CHOICE = auto()
-    QUESTION_ANSWER = auto()
-    TRUE_FALSE = auto()
-
-    @classmethod
-    def fromStr(cls, text: str):
-        if not utils.isValidStr(text):
-            raise ValueError(f'text argument is malformed: \"{text}\"')
-
-        text = text.lower()
-
-        if text == 'boolean':
-            return TriviaType.TRUE_FALSE
-        elif text == 'multiple' or text == 'multiple choice':
-            return TriviaType.MULTIPLE_CHOICE
-        else:
-            raise ValueError(f'unknown TriviaType: \"{text}\"')
-
-
-class AbsTriviaQuestion(ABC):
-
-    def __init__(
-        self,
-        category: str,
-        question: str,
-        triviaDifficulty: TriviaDifficulty,
-        triviaType: TriviaType
-    ):
-        if not utils.isValidStr(question):
-            raise ValueError(f'question argument is malformed: \"{question}\"')
-        elif triviaDifficulty is None:
-            raise ValueError(f'triviaDifficulty argument is malformed: \"{triviaDifficulty}\"')
-        elif triviaType is None:
-            raise ValueError(f'triviaType argument is malformed: \"{triviaType}\"')
-
-        self.__category: str = category
-        self.__question: str = question
-        self.__triviaDifficulty: TriviaDifficulty = triviaDifficulty
-        self.__triviaType: TriviaType = triviaType
-
-    def getAnswerReveal(self) -> str:
-        return self.getCorrectAnswer()
-
-    def getCategory(self) -> str:
-        return self.__category
-
-    @abstractmethod
-    def getCorrectAnswer(self) -> str:
-        pass
-
-    @abstractmethod
-    def getPrompt(self, delimiter: str = ', ') -> str:
-        pass
-
-    def getQuestion(self) -> str:
-        return self.__question
-
-    @abstractmethod
-    def getResponses(self) -> List[str]:
-        pass
-
-    def getTriviaDifficulty(self) -> TriviaDifficulty:
-        return self.__triviaDifficulty
-
-    def getTriviaType(self) -> TriviaType:
-        return self.__triviaType
-
-    def hasCategory(self) -> bool:
-        return utils.isValidStr(self.__category)
-
-
-class MultipleChoiceTriviaQuestion(AbsTriviaQuestion):
-
-    def __init__(
-        self,
-        category: str,
-        correctAnswer: str,
-        question: str,
-        triviaDifficulty: TriviaDifficulty,
-        multipleChoiceResponses: List[str]
-    ):
-        super().__init__(
-            category = category,
-            question = question,
-            triviaDifficulty = triviaDifficulty,
-            triviaType = TriviaType.MULTIPLE_CHOICE
-        )
-
-        if not utils.isValidStr(correctAnswer):
-            raise ValueError(f'correctAnswer argument is malformed: \"{correctAnswer}\"')
-        elif not utils.hasItems(multipleChoiceResponses):
-            raise ValueError(f'multipleChoiceResponses argument is malformed: \"{multipleChoiceResponses}\"')
-
-        self.__correctAnswer: str = correctAnswer
-        self.__multipleChoiceResponses: List[str] = multipleChoiceResponses
-
-    def getAnswerReveal(self) -> str:
-        return f'[{self.getCorrectAnswerChar()}] {self.getCorrectAnswer()}'
-
-    def getCorrectAnswer(self) -> str:
-        return self.__correctAnswer
-
-    def getCorrectAnswerChar(self) -> str:
-        answerOrdinal = self.getCorrectAnswerOrdinal()
-        return chr(ord('A') + answerOrdinal)
-
-    def getCorrectAnswerOrdinal(self) -> int:
-        index = 0
-
-        for response in self.__multipleChoiceResponses:
-            if response == self.__correctAnswer:
-                return index
-            else:
-                index = index + 1
-
-        raise RuntimeError(f'Couldn\'t find correct answer ordinal for \"{self.__correctAnswer}\"!')
-
-    def getPrompt(self, delimiter: str = ' ') -> str:
-        if delimiter is None:
-            raise ValueError(f'delimiter argument is malformed: \"{delimiter}\"')
-
-        responsesList: List[str] = list()
-        entryChar = 'A'
-        for response in self.__multipleChoiceResponses:
-            responsesList.append(f'[{entryChar}] {response}')
-            entryChar = chr(ord(entryChar) + 1)
-
-        responses = delimiter.join(responsesList)
-        return f'{self.getQuestion()} {responses}'
-
-    def getResponses(self) -> List[str]:
-        return self.__multipleChoiceResponses
-
-
-class QuestionAnswerTriviaQuestion(AbsTriviaQuestion):
-
-    def __init__(
-        self,
-        category: str,
-        correctAnswer: str,
-        question: str,
-        triviaDifficulty: TriviaDifficulty,
-    ):
-        super().__init__(
-            category = category,
-            question = question,
-            triviaDifficulty = triviaDifficulty,
-            triviaType = TriviaType.QUESTION_ANSWER
-        )
-
-        if not utils.isValidStr(correctAnswer):
-            raise ValueError(f'correctAnswer argument is malformed: \"{correctAnswer}\"')
-
-        self.__correctAnswer: str = correctAnswer
-
-    def getCorrectAnswer(self) -> str:
-        return self.__correctAnswer
-
-    def getPrompt(self, delimiter: str = None) -> str:
-        categoryText = ''
-        if self.hasCategory():
-            categoryText = f' (category is \"{self.getCategory()}\")'
-
-        return f'Jeopardy format{categoryText} — {self.getQuestion()}'
-
-    def getResponses(self) -> List[str]:
-        return list()
-
-
-class TrueFalseTriviaQuestion(AbsTriviaQuestion):
-
-    def __init__(
-        self,
-        correctAnswer: bool,
-        category: str,
-        question: str,
-        triviaDifficulty: TriviaDifficulty
-    ):
-        super().__init__(
-            category = category,
-            question = question,
-            triviaDifficulty = triviaDifficulty,
-            triviaType = TriviaType.TRUE_FALSE
-        )
-
-        if not utils.isValidBool(correctAnswer):
-            raise ValueError(f'correctAnswer argument is malformed: \"{correctAnswer}\"')
-
-        self.__correctAnswer: bool = correctAnswer
-
-    def getCorrectAnswer(self) -> str:
-        return str(self.__correctAnswer).lower()
-
-    def getCorrectAnswerBool(self) -> bool:
-        return self.__correctAnswer
-
-    def getPrompt(self, delimiter: str = None) -> str:
-        return f'True or false! {self.getQuestion()}'
-
-    def getResponses(self) -> List[str]:
-        return [ str(True).lower(), str(False).lower() ]
+    from localTriviaRepository import LocalTriviaRepository
+    from triviaModels import (AbsTriviaQuestion, MultipleChoiceTriviaQuestion,
+                              QuestionAnswerTriviaQuestion, TriviaDifficulty,
+                              TriviaSource, TriviaType,
+                              TrueFalseTriviaQuestion)
 
 
 class TriviaRepository():
 
     def __init__(
         self,
+        localTriviaRepository: LocalTriviaRepository,
         maxMultipleChoiceResponses: int = 5,
         cacheTimeDelta: timedelta = timedelta(minutes = 2, seconds = 30)
     ):
-        if not utils.isValidNum(maxMultipleChoiceResponses):
+        if localTriviaRepository is None:
+            raise ValueError(f'localTriviaRepository argument is malformed: \"{localTriviaRepository}\"')
+        elif not utils.isValidNum(maxMultipleChoiceResponses):
             raise ValueError(f'maxMultipleChoiceResponses argument is malformed: \"{maxMultipleChoiceResponses}\"')
         elif maxMultipleChoiceResponses < 3 or maxMultipleChoiceResponses > 6:
             raise ValueError(f'maxMultipleChoiceResponses argument is out of bounds: \"{maxMultipleChoiceResponses}\"')
 
+        self.__localTriviaRepository: LocalTriviaRepository = localTriviaRepository
         self.__maxMultipleChoiceResponses: int = maxMultipleChoiceResponses
 
         if cacheTimeDelta is None:
@@ -349,15 +119,23 @@ class TriviaRepository():
 
         resultJson = jsonResponse[0]
         category = utils.getStrFromDict(resultJson['category'], 'title', fallback = '', clean = True)
-        correctAnswer = utils.getStrFromDict(resultJson, 'answer', clean = True)
         question = utils.getStrFromDict(resultJson, 'question', clean = True)
 
+        correctAnswer = utils.getStrFromDict(resultJson, 'answer', clean = True)
+        correctAnswers: List[str] = list()
+        correctAnswers.append(correctAnswer)
+
         return QuestionAnswerTriviaQuestion(
+            correctAnswers = correctAnswers,
             category = category,
-            correctAnswer = correctAnswer,
             question = question,
-            triviaDifficulty = TriviaDifficulty.UNKNOWN
+            triviaDifficulty = TriviaDifficulty.UNKNOWN,
+            triviaSource = TriviaSource.J_SERVICE
         )
+
+    def __fetchTriviaQuestionFromLocalTriviaRepository(self, triviaType: TriviaType = None) -> AbsTriviaQuestion:
+        print(f'Fetching trivia question from LocalTriviaRepository... ({utils.getNowTimeText()})')
+        # TODO
 
     def __fetchTriviaQuestionFromOpenTriviaDatabase(self, triviaType: TriviaType = None) -> AbsTriviaQuestion:
         print(f'Fetching trivia question from Open Trivia Database... ({utils.getNowTimeText()})')
@@ -405,6 +183,8 @@ class TriviaRepository():
                 clean = True,
                 htmlUnescape = True
             )
+            correctAnswers: List[str] = list()
+            correctAnswers.append(correctAnswer)
 
             multipleChoiceResponses = self.__buildMultipleChoiceResponsesList(
                 correctAnswer = correctAnswer,
@@ -412,20 +192,24 @@ class TriviaRepository():
             )
 
             return MultipleChoiceTriviaQuestion(
+                correctAnswers = correctAnswers,
+                multipleChoiceResponses = multipleChoiceResponses,
                 category = category,
-                correctAnswer = correctAnswer,
                 question = question,
                 triviaDifficulty = triviaDifficulty,
-                multipleChoiceResponses = multipleChoiceResponses
+                triviaSource = TriviaSource.OPEN_TRIVIA_DATABASE
             )
         elif triviaType is TriviaType.TRUE_FALSE:
             correctAnswer = utils.getBoolFromDict(resultJson, 'correct_answer')
+            correctAnswers: List[bool] = list()
+            correctAnswers.append(correctAnswer)
 
             return TrueFalseTriviaQuestion(
-                correctAnswer = correctAnswer,
+                correctAnswers = correctAnswers,
                 category = category,
                 question = question,
-                triviaDifficulty = triviaDifficulty
+                triviaDifficulty = triviaDifficulty,
+                triviaSource = TriviaSource.OPEN_TRIVIA_DATABASE
             )
         else:
             raise ValueError(f'triviaType \"{triviaType}\" is unknown for Open Trivia Database: {jsonResponse}')
@@ -467,6 +251,8 @@ class TriviaRepository():
                 clean = True,
                 htmlUnescape = True
             )
+            correctAnswers: List[str] = list()
+            correctAnswers.append(correctAnswer)
 
             multipleChoiceResponses = self.__buildMultipleChoiceResponsesList(
                 correctAnswer = correctAnswer,
@@ -474,11 +260,12 @@ class TriviaRepository():
             )
 
             return MultipleChoiceTriviaQuestion(
+                correctAnswers = correctAnswers,
+                multipleChoiceResponses = multipleChoiceResponses,
                 category = category,
-                correctAnswer = correctAnswer,
                 question = question,
                 triviaDifficulty = TriviaDifficulty.UNKNOWN,
-                multipleChoiceResponses = multipleChoiceResponses
+                triviaSource = TriviaSource.WILL_FRY_TRIVIA_API
             )
         else:
             raise ValueError(f'triviaType \"{triviaType}\" is unknown for Will Fry Trivia API: {jsonResponse}')
@@ -504,7 +291,9 @@ class TriviaRepository():
 
         if triviaSource is TriviaSource.J_SERVICE:
             return self.__fetchTriviaQuestionFromJService(triviaType)
-        if triviaSource is TriviaSource.OPEN_TRIVIA_DATABASE:
+        elif triviaSource is TriviaSource.LOCAL_TRIVIA_REPOSITORY:
+            return self.__fetchTriviaQuestionFromLocalTriviaRepository(triviaType)
+        elif triviaSource is TriviaSource.OPEN_TRIVIA_DATABASE:
             return self.__fetchTriviaQuestionFromOpenTriviaDatabase(triviaType)
         elif triviaSource is TriviaSource.WILL_FRY_TRIVIA_API:
             return self.__fetchTriviaQuestionFromWillFryTriviaApi(triviaType)

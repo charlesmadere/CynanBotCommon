@@ -8,6 +8,26 @@ from numbers import Number
 from typing import List, Pattern
 
 
+def areValidBools(l: List[bool]) -> bool:
+    if not hasItems(l):
+        return False
+
+    for b in l:
+        if not isValidBool(b):
+            return False
+
+    return True
+
+def areValidStrs(l: List[str]) -> bool:
+    if not hasItems(l):
+        return False
+
+    for s in l:
+        if not isValidStr(s):
+            return False
+
+    return True
+
 def cleanStr(s: str, replacement: str = ' ', htmlUnescape: bool = False) -> str:
     if replacement is None:
         raise ValueError(f'replacement argument is malformed: \"{replacement}\"')
