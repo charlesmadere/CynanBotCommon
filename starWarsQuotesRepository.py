@@ -1,5 +1,6 @@
 import json
 import random
+import re
 from os import path
 from typing import Dict, List
 
@@ -19,6 +20,7 @@ class StarWarsQuotesRepository:
             raise ValueError(f'quotesFile argument is malformed: \"{quotesFile}\"')
 
         self.__quotesFile: str = quotesFile
+        self.__quoteInputRegEx = re.compile('\$\((.*)\)')
 
     def fetchRandomQuote(self, trilogy: str = None) -> str:
         jsonContents = self.__getQuotes(trilogy)
@@ -39,6 +41,17 @@ class StarWarsQuotesRepository:
 
         return result
 
+    def __processQuote(self, quote: str, input: str = None) -> str:
+        if not utils.isValidStr(input):
+            return quote
+
+        result = self.__quoteInputRegEx.match(quote)
+        if not result:
+            return quote
+
+        default = result.group(1)
+        return quote.replace(result.group(0), input or default)
+
     def __readJson(self) -> Dict:
         if not path.exists(self.__quotesFile):
             raise FileNotFoundError(f'quotes file not found: \"{self.__quotesFile}\"')
@@ -53,7 +66,7 @@ class StarWarsQuotesRepository:
 
         return jsonContents
 
-    def searchQuote(self, query: str) -> str:
+    def searchQuote(self, query: str, input: str = None) -> str:
         if not utils.isValidStr(query):
             raise ValueError(f'query argument is malformed: \"{query}\"')
 
@@ -62,6 +75,6 @@ class StarWarsQuotesRepository:
 
         for quote in jsonContents:
             if quote.lower().find(query.lower()) >= 0:
-                return quote
+                return self.__processQuote(quote, input = input)
 
         return None
