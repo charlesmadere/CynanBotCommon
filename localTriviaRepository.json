@@ -1,3 +1,18 @@
 [
-
+    {
+        "correctAnswers": [ true ],
+        "question": "Is InternetBound Imyt's simp?",
+        "type": "boolean"
+    },
+    {
+        "correctAnswers": [ true ],
+        "question": "Should Imyt get a free sippy blast?",
+        "type": "boolean"
+    },
+    {
+        "correctAnswers": [ "Eddie", "gaR", "Imyt", "InternetBound", "smCharles", "stashiocat" ],
+        "question": "Who amongst the following people is a bully?",
+        "responses": [ "Eddie", "gaR", "Imyt", "InternetBound", "smCharles", "stashiocat" ],
+        "type": "multiple"
+    }
 ]

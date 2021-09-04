@@ -36,10 +36,7 @@ class LocalTriviaRepository():
         category = utils.getStrFromDict(questionJson, 'category', fallback = '', clean = True)
         question = utils.getStrFromDict(questionJson, 'question', clean = True)
 
-        triviaDifficulty: TriviaDifficulty = TriviaDifficulty.UNKNOWN
-        if 'difficulty' in questionJson:
-            triviaDifficulty = TriviaDifficulty.fromStr(questionJson['difficulty'])
-
+        triviaDifficulty = TriviaDifficulty.fromStr(questionJson.get('difficulty'))
         triviaType = TriviaType.fromStr(utils.getStrFromDict(questionJson, 'type'))
 
         if triviaType is TriviaType.MULTIPLE_CHOICE:
