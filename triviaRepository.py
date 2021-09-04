@@ -272,22 +272,44 @@ class TriviaRepository():
 
     def fetchTrivia(
         self,
+        isLocalTriviaRepositoryEnabled: bool = False,
         triviaSource: TriviaSource = None,
         triviaType: TriviaType = None
     ) -> AbsTriviaQuestion:
+        if not utils.isValidBool(isLocalTriviaRepositoryEnabled):
+            raise ValueError(f'isLocalTriviaRepositoryEnabled argument is malformed: \"{isLocalTriviaRepositoryEnabled}\"')
+
         if self.__cacheTimeDelta is None or self.__cacheTime is None or self.__cacheTime + self.__cacheTimeDelta < datetime.utcnow() or self.__triviaResponse is None:
-            self.__triviaResponse = self.__fetchTrivia(triviaSource, triviaType)
+            self.__triviaResponse = self.__fetchTrivia(
+                isLocalTriviaRepositoryEnabled = isLocalTriviaRepositoryEnabled,
+                triviaSource = triviaSource,
+                triviaType = triviaType
+            )
             self.__cacheTime = datetime.utcnow()
 
         return self.__triviaResponse
 
     def __fetchTrivia(
         self,
+        isLocalTriviaRepositoryEnabled: bool = False,
         triviaSource: TriviaSource = None,
         triviaType: TriviaType = None
     ) -> AbsTriviaQuestion:
-        while triviaSource is None or not triviaSource.isEnabled():
-            triviaSource = random.choice(list(TriviaSource))
+        if not utils.isValidBool(isLocalTriviaRepositoryEnabled):
+            raise ValueError(f'isLocalTriviaRepositoryEnabled argument is malformed: \"{isLocalTriviaRepositoryEnabled}\"')
+
+        triviaSources: List[TriviaSource] = list(TriviaSource)
+        illegalTriviaSources: List[TriviaSource] = list()
+
+        for ts in triviaSources:
+            if not ts.isEnabled() or not isLocalTriviaRepositoryEnabled and ts is TriviaSource.LOCAL_TRIVIA_REPOSITORY:
+                illegalTriviaSources.append(ts)
+
+        if utils.hasItems(illegalTriviaSources):
+            for its in illegalTriviaSources:
+                triviaSources.remove(its)
+
+        triviaSource = random.choice(triviaSources)
 
         if triviaSource is TriviaSource.J_SERVICE:
             return self.__fetchTriviaQuestionFromJService(triviaType)

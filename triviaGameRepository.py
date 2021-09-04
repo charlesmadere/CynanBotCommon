@@ -209,9 +209,15 @@ class TriviaGameRepository():
         answerBool = utils.strToBool(answer)
         return answerBool in triviaQuestion.getCorrectAnswerBools()
 
-    def fetchTrivia(self, twitchChannel: str) -> AbsTriviaQuestion:
+    def fetchTrivia(
+        self,
+        twitchChannel: str,
+        isLocalTriviaRepositoryEnabled: bool = False
+    ) -> AbsTriviaQuestion:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+        elif not utils.isValidBool(isLocalTriviaRepositoryEnabled):
+            raise ValueError(f'isLocalTriviaRepositoryEnabled argument is malformed: \"{isLocalTriviaRepositoryEnabled}\"')
 
         state = self.__states.get(twitchChannel.lower())
         if state is None:
@@ -220,7 +226,10 @@ class TriviaGameRepository():
         else:
             state.setAnswered()
 
-        triviaQuestion = self.__triviaRepository.fetchTrivia()
+        triviaQuestion = self.__triviaRepository.fetchTrivia(
+            isLocalTriviaRepositoryEnabled = isLocalTriviaRepositoryEnabled
+        )
+
         state.setTriviaQuestion(triviaQuestion)
 
         return triviaQuestion

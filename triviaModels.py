@@ -43,7 +43,7 @@ class TriviaSource(Enum):
         if self is TriviaSource.J_SERVICE:
             return False
         elif self is TriviaSource.LOCAL_TRIVIA_REPOSITORY:
-            return False
+            return True
         elif self is TriviaSource.OPEN_TRIVIA_DATABASE:
             return True
         elif self is TriviaSource.WILL_FRY_TRIVIA_API:
