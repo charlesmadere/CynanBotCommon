@@ -1,9 +1,11 @@
+import json
 import random
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from enum import Enum, auto
 from json.decoder import JSONDecodeError
-from typing import List
+from os import path
+from typing import Dict, List
 
 import requests
 from requests import ConnectionError, HTTPError, Timeout
@@ -337,3 +339,17 @@ class TriviaRepository():
             return self.__fetchTriviaQuestionFromWillFryTriviaApi(triviaType)
         else:
             raise ValueError(f'unknown TriviaSource: \"{triviaSource}\"')
+
+    def __readTriviaRepositorySettingsJson(self) -> Dict:
+        if not path.exists(self.__triviaRepositorySettingsFile):
+            raise FileNotFoundError(f'Trivia Repository settings file not found: \"{self.__triviaRepositorySettingsFile}\"')
+
+        with open(self.__triviaRepositorySettingsFile, 'r') as file:
+            jsonContents = json.load(file)
+
+        if jsonContents is None:
+            raise IOError(f'Error reading from Trivia Repository settings file: \"{self.__triviaRepositorySettingsFile}\"')
+        elif len(jsonContents) == 0:
+            raise ValueError(f'JSON contents of Trivia Repository settings file \"{self.__triviaRepositorySettingsFile}\" is empty')
+
+        return jsonContents
