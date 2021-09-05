@@ -139,7 +139,7 @@ class TriviaRepository():
 
     def __fetchTriviaQuestionFromLocalTriviaRepository(self, triviaType: TriviaType = None) -> AbsTriviaQuestion:
         print(f'Fetching trivia question from LocalTriviaRepository... ({utils.getNowTimeText()})')
-        # TODO
+        return self.__localTriviaRepository.fetchRandomQuestion()
 
     def __fetchTriviaQuestionFromOpenTriviaDatabase(self, triviaType: TriviaType = None) -> AbsTriviaQuestion:
         print(f'Fetching trivia question from Open Trivia Database... ({utils.getNowTimeText()})')
