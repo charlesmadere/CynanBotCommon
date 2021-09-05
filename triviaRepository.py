@@ -327,7 +327,11 @@ class TriviaRepository():
         elif len(triviaSources) != len(triviaWeights):
             raise RuntimeError(f'len of triviaSources ({len(triviaSources)}) can\'t be different than len of triviaWeights ({len(triviaWeights)})')
 
-        triviaSource = random.choices(triviaSources, triviaWeights)
+        randomChoices = random.choices(triviaSources, triviaWeights)
+        if not utils.hasItems(triviaSources):
+            raise RuntimeError(f'Trivia sources returned by random.choices() is malformed: \"{randomChoices}\"')
+
+        triviaSource = randomChoices[0]
 
         if triviaSource is TriviaSource.J_SERVICE:
             return self.__fetchTriviaQuestionFromJService(triviaType)
