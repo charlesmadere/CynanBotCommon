@@ -44,7 +44,7 @@ class TriviaRepository():
         elif maxMultipleChoiceResponses < 3 or maxMultipleChoiceResponses > 6:
             raise ValueError(f'maxMultipleChoiceResponses argument is out of bounds: \"{maxMultipleChoiceResponses}\"')
         elif not utils.isValidStr(triviaRepositorySettingsFile):
-            raise ValueError(f'twitchRepositorySettingsFile argument is malformed: \"{triviaRepositorySettingsFile}\"')
+            raise ValueError(f'triviaRepositorySettingsFile argument is malformed: \"{triviaRepositorySettingsFile}\"')
 
         self.__localTriviaRepository: LocalTriviaRepository = localTriviaRepository
         self.__maxMultipleChoiceResponses: int = maxMultipleChoiceResponses
