@@ -39,6 +39,18 @@ class TriviaSource(Enum):
     OPEN_TRIVIA_DATABASE = auto()
     WILL_FRY_TRIVIA_API = auto()
 
+    def getOdds(self) -> int:
+        if self is TriviaSource.J_SERVICE:
+            return 50
+        elif self is TriviaSource.LOCAL_TRIVIA_REPOSITORY:
+            return 1
+        elif self is TriviaSource.OPEN_TRIVIA_DATABASE:
+            return 200
+        elif self is TriviaSource.WILL_FRY_TRIVIA_API:
+            return 200
+        else:
+            raise RuntimeError(f'unknown TriviaSource: \"{self}\"')
+
     def isEnabled(self) -> bool:
         if self is TriviaSource.J_SERVICE:
             return False

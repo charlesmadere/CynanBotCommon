@@ -298,16 +298,23 @@ class TriviaRepository():
         if not utils.isValidBool(isLocalTriviaRepositoryEnabled):
             raise ValueError(f'isLocalTriviaRepositoryEnabled argument is malformed: \"{isLocalTriviaRepositoryEnabled}\"')
 
-        triviaSources: List[TriviaSource] = list(TriviaSource)
-        illegalTriviaSources: List[TriviaSource] = list()
+        triviaSources: List[TriviaSource] = list()
 
-        for ts in triviaSources:
-            if not ts.isEnabled() or not isLocalTriviaRepositoryEnabled and ts is TriviaSource.LOCAL_TRIVIA_REPOSITORY:
-                illegalTriviaSources.append(ts)
+        for triviaSource in TriviaSource:
+            append: bool = False
 
-        if utils.hasItems(illegalTriviaSources):
-            for its in illegalTriviaSources:
-                triviaSources.remove(its)
+            if triviaSource.isEnabled():
+                if triviaSource is TriviaSource.LOCAL_TRIVIA_REPOSITORY:
+                    append = isLocalTriviaRepositoryEnabled
+                else:
+                    append = True
+
+            if append:
+                for _ in range(triviaSource.getOdds()):
+                    triviaSources.append(triviaSource)
+
+        if not utils.hasItems(triviaSources):
+            raise RuntimeError(f'triviaSources is empty: \"{triviaSources}\"')
 
         triviaSource = random.choice(triviaSources)
 
