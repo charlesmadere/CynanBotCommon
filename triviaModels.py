@@ -41,7 +41,7 @@ class TriviaSource(Enum):
 
     def getOdds(self) -> int:
         if self is TriviaSource.J_SERVICE:
-            return 50
+            return 25
         elif self is TriviaSource.LOCAL_TRIVIA_REPOSITORY:
             return 1
         elif self is TriviaSource.OPEN_TRIVIA_DATABASE:

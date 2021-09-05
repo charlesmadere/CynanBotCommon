@@ -303,6 +303,7 @@ class TriviaRepository():
             raise ValueError(f'isLocalTriviaRepositoryEnabled argument is malformed: \"{isLocalTriviaRepositoryEnabled}\"')
 
         triviaSources: List[TriviaSource] = list()
+        triviaWeights: List[int] = list()
 
         for triviaSource in TriviaSource:
             append: bool = False
@@ -314,13 +315,17 @@ class TriviaRepository():
                     append = True
 
             if append:
-                for _ in range(triviaSource.getOdds()):
-                    triviaSources.append(triviaSource)
+                triviaSources.append(triviaSource)
+                triviaWeights.append(triviaSource.getOdds())
 
         if not utils.hasItems(triviaSources):
             raise RuntimeError(f'triviaSources is empty: \"{triviaSources}\"')
+        elif not utils.hasItems(triviaWeights):
+            raise RuntimeError(f'triviaWeights is empty: \"{triviaWeights}\"')
+        elif len(triviaSources) != len(triviaWeights):
+            raise RuntimeError(f'len of triviaSources ({len(triviaSources)}) can\'t be different than len of triviaWeights ({len(triviaWeights)})')
 
-        triviaSource = random.choice(triviaSources)
+        triviaSource = random.choices(triviaSources, triviaWeights)
 
         if triviaSource is TriviaSource.J_SERVICE:
             return self.__fetchTriviaQuestionFromJService(triviaType)
