@@ -34,6 +34,7 @@ class TriviaRepository():
         self,
         localTriviaRepository: LocalTriviaRepository,
         maxMultipleChoiceResponses: int = 5,
+        triviaRepositorySettingsFile: str = 'CynanBotCommon/triviaRepositorySettings.json',
         cacheTimeDelta: timedelta = timedelta(minutes = 2, seconds = 30)
     ):
         if localTriviaRepository is None:
@@ -42,9 +43,12 @@ class TriviaRepository():
             raise ValueError(f'maxMultipleChoiceResponses argument is malformed: \"{maxMultipleChoiceResponses}\"')
         elif maxMultipleChoiceResponses < 3 or maxMultipleChoiceResponses > 6:
             raise ValueError(f'maxMultipleChoiceResponses argument is out of bounds: \"{maxMultipleChoiceResponses}\"')
+        elif not utils.isValidStr(triviaRepositorySettingsFile):
+            raise ValueError(f'twitchRepositorySettingsFile argument is malformed: \"{triviaRepositorySettingsFile}\"')
 
         self.__localTriviaRepository: LocalTriviaRepository = localTriviaRepository
         self.__maxMultipleChoiceResponses: int = maxMultipleChoiceResponses
+        self.__triviaRepositorySettingsFile: str = triviaRepositorySettingsFile
 
         if cacheTimeDelta is None:
             self.__cacheTime = None
