@@ -35,22 +35,16 @@ class TriviaRepository():
     def __init__(
         self,
         localTriviaRepository: LocalTriviaRepository,
-        maxMultipleChoiceResponses: int = 5,
-        triviaRepositorySettingsFile: str = 'CynanBotCommon/triviaRepositorySettings.json',
+        triviaRepositoryFile: str = 'CynanBotCommon/triviaRepository.json',
         cacheTimeDelta: timedelta = timedelta(minutes = 2, seconds = 30)
     ):
         if localTriviaRepository is None:
             raise ValueError(f'localTriviaRepository argument is malformed: \"{localTriviaRepository}\"')
-        elif not utils.isValidNum(maxMultipleChoiceResponses):
-            raise ValueError(f'maxMultipleChoiceResponses argument is malformed: \"{maxMultipleChoiceResponses}\"')
-        elif maxMultipleChoiceResponses < 3 or maxMultipleChoiceResponses > 6:
-            raise ValueError(f'maxMultipleChoiceResponses argument is out of bounds: \"{maxMultipleChoiceResponses}\"')
-        elif not utils.isValidStr(triviaRepositorySettingsFile):
-            raise ValueError(f'triviaRepositorySettingsFile argument is malformed: \"{triviaRepositorySettingsFile}\"')
+        elif not utils.isValidStr(triviaRepositoryFile):
+            raise ValueError(f'triviaRepositoryFile argument is malformed: \"{triviaRepositoryFile}\"')
 
         self.__localTriviaRepository: LocalTriviaRepository = localTriviaRepository
-        self.__maxMultipleChoiceResponses: int = maxMultipleChoiceResponses
-        self.__triviaRepositorySettingsFile: str = triviaRepositorySettingsFile
+        self.__triviaRepositoryFile: str = triviaRepositoryFile
 
         if cacheTimeDelta is None:
             self.__cacheTime = None
@@ -70,6 +64,7 @@ class TriviaRepository():
         elif not utils.hasItems(multipleChoiceResponsesJson):
             raise ValueError(f'multipleChoiceResponsesJson argument is malformed: \"{multipleChoiceResponsesJson}\"')
 
+        maxMultipleChoiceResponses = self.__getMaxMultipleChoiceResponses()
         multipleChoiceResponses: List[str] = list()
         multipleChoiceResponses.append(correctAnswer)
 
@@ -90,7 +85,7 @@ class TriviaRepository():
             if add:
                 multipleChoiceResponses.append(incorrectAnswer)
 
-                if len(multipleChoiceResponses) >= self.__maxMultipleChoiceResponses:
+                if len(multipleChoiceResponses) >= maxMultipleChoiceResponses:
                     break
 
         if len(multipleChoiceResponses) < 3:
@@ -106,25 +101,9 @@ class TriviaRepository():
         triviaSources: List[TriviaSource] = list()
         triviaWeights: List[int] = list()
 
-        for triviaSource in TriviaSource:
-            append: bool = False
-
-            if triviaSource.isEnabled():
-                if triviaSource is TriviaSource.LOCAL_TRIVIA_REPOSITORY:
-                    append = isLocalTriviaRepositoryEnabled
-                else:
-                    append = True
-
-            if append:
-                triviaSources.append(triviaSource)
-                triviaWeights.append(triviaSource.getOdds())
-
-        if not utils.hasItems(triviaSources):
-            raise RuntimeError(f'triviaSources is empty: \"{triviaSources}\"')
-        elif not utils.hasItems(triviaWeights):
-            raise RuntimeError(f'triviaWeights is empty: \"{triviaWeights}\"')
-        elif len(triviaSources) != len(triviaWeights):
-            raise RuntimeError(f'len of triviaSources ({len(triviaSources)}) can\'t be different than len of triviaWeights ({len(triviaWeights)})')
+        for triviaSource, weight in self.__getAvailableTriviaSourcesAndWeights(isLocalTriviaRepositoryEnabled):
+            triviaSources.append(triviaSource)
+            triviaWeights.append(weight)
 
         randomChoices = random.choices(triviaSources, triviaWeights)
         if not utils.hasItems(triviaSources):
@@ -351,16 +330,53 @@ class TriviaRepository():
         else:
             raise ValueError(f'unknown TriviaSource: \"{triviaSource}\"')
 
-    def __readTriviaRepositorySettingsJson(self) -> Dict:
-        if not path.exists(self.__triviaRepositorySettingsFile):
-            raise FileNotFoundError(f'Trivia Repository settings file not found: \"{self.__triviaRepositorySettingsFile}\"')
+    def __getAvailableTriviaSourcesAndWeights(self, isLocalTriviaRepositoryEnabled: bool = False) -> Dict[TriviaSource, int]:
+        if not utils.isValidBool(isLocalTriviaRepositoryEnabled):
+            raise ValueError(f'isLocalTriviaRepositoryEnabled argument is malformed: \"{isLocalTriviaRepositoryEnabled}\"')
 
-        with open(self.__triviaRepositorySettingsFile, 'r') as file:
+        jsonContents = self.__readTriviaRepositoryJson()
+        triviaSources: Dict[TriviaSource, int] = dict()
+
+        for key, triviaSourceJson in jsonContents['trivia_sources']:
+            triviaSource = TriviaSource.fromStr(key)
+
+            if triviaSource is TriviaSource.LOCAL_TRIVIA_REPOSITORY and not isLocalTriviaRepositoryEnabled:
+                continue
+
+            isEnabled = utils.getBoolFromDict(triviaSourceJson, 'is_enabled')
+            if not isEnabled:
+                continue
+
+            weight = utils.getIntFromDict(triviaSourceJson, 'weight')
+            if weight < 1:
+                raise ValueError(f'triviaSource \"{triviaSource}\" has an invalid weight: \"{weight}\"')
+
+            triviaSources[triviaSource] = weight
+
+        if not utils.hasItems(triviaSources):
+            raise RuntimeError(f'triviaSources is empty: \"{triviaSources}\"')
+
+        return triviaSources
+
+    def __getMaxMultipleChoiceResponses(self) -> int:
+        jsonContents = self.__readTriviaRepositoryJson()
+        maxMultipleChoiceResponses = utils.getIntFromDict(jsonContents, 'max_multiple_choice_responses')
+
+        if maxMultipleChoiceResponses < 2:
+            raise ValueError(f'maxMultipleChoiceResponses is too small: \"{maxMultipleChoiceResponses}\"')
+
+        return maxMultipleChoiceResponses
+
+    def __readTriviaRepositoryJson(self) -> Dict:
+        if not path.exists(self.__triviaRepositoryFile):
+            raise FileNotFoundError(f'Trivia Repository file not found: \"{self.__triviaRepositoryFile}\"')
+
+        with open(self.__triviaRepositoryFile, 'r') as file:
             jsonContents = json.load(file)
 
         if jsonContents is None:
-            raise IOError(f'Error reading from Trivia Repository settings file: \"{self.__triviaRepositorySettingsFile}\"')
+            raise IOError(f'Error reading from Trivia Repository file: \"{self.__triviaRepositoryFile}\"')
         elif len(jsonContents) == 0:
-            raise ValueError(f'JSON contents of Trivia Repository settings file \"{self.__triviaRepositorySettingsFile}\" is empty')
+            raise ValueError(f'JSON contents of Trivia Repository file \"{self.__triviaRepositoryFile}\" is empty')
 
         return jsonContents

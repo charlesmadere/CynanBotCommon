@@ -39,29 +39,23 @@ class TriviaSource(Enum):
     OPEN_TRIVIA_DATABASE = auto()
     WILL_FRY_TRIVIA_API = auto()
 
-    def getOdds(self) -> int:
-        if self is TriviaSource.J_SERVICE:
-            return 25
-        elif self is TriviaSource.LOCAL_TRIVIA_REPOSITORY:
-            return 1
-        elif self is TriviaSource.OPEN_TRIVIA_DATABASE:
-            return 200
-        elif self is TriviaSource.WILL_FRY_TRIVIA_API:
-            return 200
-        else:
-            raise RuntimeError(f'unknown TriviaSource: \"{self}\"')
+    @classmethod
+    def fromStr(cls, text: str):
+        if not utils.isValidStr(text):
+            raise ValueError(f'text argument is malformed: \"{text}\"')
 
-    def isEnabled(self) -> bool:
-        if self is TriviaSource.J_SERVICE:
-            return False
-        elif self is TriviaSource.LOCAL_TRIVIA_REPOSITORY:
-            return True
-        elif self is TriviaSource.OPEN_TRIVIA_DATABASE:
-            return True
-        elif self is TriviaSource.WILL_FRY_TRIVIA_API:
-            return True
+        text = text.lower()
+
+        if text == 'j_service':
+            return TriviaSource.J_SERVICE
+        elif text == 'local_trivia':
+            return TriviaSource.LOCAL_TRIVIA_REPOSITORY
+        elif text == 'open_trivia':
+            return TriviaSource.OPEN_TRIVIA_DATABASE
+        elif text == 'will_fry_trivia':
+            return TriviaSource.WILL_FRY_TRIVIA_API
         else:
-            raise RuntimeError(f'unknown TriviaSource: \"{self}\"')
+            raise ValueError(f'unknown TriviaSource: \"{text}\"')
 
 
 class TriviaType(Enum):

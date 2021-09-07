@@ -1,0 +1,21 @@
+{
+    "max_multiple_choice_responses": 5,
+    "trivia_sources": {
+        "j_service": {
+            "is_enabled": false,
+            "weight": 25
+        },
+        "local_trivia": {
+            "is_enabled": true,
+            "weight": 1
+        },
+        "open_trivia": {
+            "is_enabled": true,
+            "weight": 200
+        },
+        "will_fry_trivia": {
+            "is_enabled": true,
+            "weight": 200
+        }
+    }
+}
