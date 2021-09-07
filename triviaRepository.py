@@ -99,6 +99,39 @@ class TriviaRepository():
         random.shuffle(multipleChoiceResponses)
         return multipleChoiceResponses
 
+    def __chooseRandomTriviaSource(self, isLocalTriviaRepositoryEnabled: bool = False) -> TriviaSource:
+        if not utils.isValidBool(isLocalTriviaRepositoryEnabled):
+            raise ValueError(f'isLocalTriviaRepositoryEnabled argument is malformed: \"{isLocalTriviaRepositoryEnabled}\"')
+
+        triviaSources: List[TriviaSource] = list()
+        triviaWeights: List[int] = list()
+
+        for triviaSource in TriviaSource:
+            append: bool = False
+
+            if triviaSource.isEnabled():
+                if triviaSource is TriviaSource.LOCAL_TRIVIA_REPOSITORY:
+                    append = isLocalTriviaRepositoryEnabled
+                else:
+                    append = True
+
+            if append:
+                triviaSources.append(triviaSource)
+                triviaWeights.append(triviaSource.getOdds())
+
+        if not utils.hasItems(triviaSources):
+            raise RuntimeError(f'triviaSources is empty: \"{triviaSources}\"')
+        elif not utils.hasItems(triviaWeights):
+            raise RuntimeError(f'triviaWeights is empty: \"{triviaWeights}\"')
+        elif len(triviaSources) != len(triviaWeights):
+            raise RuntimeError(f'len of triviaSources ({len(triviaSources)}) can\'t be different than len of triviaWeights ({len(triviaWeights)})')
+
+        randomChoices = random.choices(triviaSources, triviaWeights)
+        if not utils.hasItems(triviaSources):
+            raise RuntimeError(f'Trivia sources returned by random.choices() is malformed: \"{randomChoices}\"')
+
+        return randomChoices[0]
+
     def __fetchTriviaQuestionFromJService(self, triviaType: TriviaType = None) -> AbsTriviaQuestion:
         print(f'Fetching trivia question from jService... ({utils.getNowTimeText()})')
 
@@ -304,34 +337,8 @@ class TriviaRepository():
         if not utils.isValidBool(isLocalTriviaRepositoryEnabled):
             raise ValueError(f'isLocalTriviaRepositoryEnabled argument is malformed: \"{isLocalTriviaRepositoryEnabled}\"')
 
-        triviaSources: List[TriviaSource] = list()
-        triviaWeights: List[int] = list()
-
-        for triviaSource in TriviaSource:
-            append: bool = False
-
-            if triviaSource.isEnabled():
-                if triviaSource is TriviaSource.LOCAL_TRIVIA_REPOSITORY:
-                    append = isLocalTriviaRepositoryEnabled
-                else:
-                    append = True
-
-            if append:
-                triviaSources.append(triviaSource)
-                triviaWeights.append(triviaSource.getOdds())
-
-        if not utils.hasItems(triviaSources):
-            raise RuntimeError(f'triviaSources is empty: \"{triviaSources}\"')
-        elif not utils.hasItems(triviaWeights):
-            raise RuntimeError(f'triviaWeights is empty: \"{triviaWeights}\"')
-        elif len(triviaSources) != len(triviaWeights):
-            raise RuntimeError(f'len of triviaSources ({len(triviaSources)}) can\'t be different than len of triviaWeights ({len(triviaWeights)})')
-
-        randomChoices = random.choices(triviaSources, triviaWeights)
-        if not utils.hasItems(triviaSources):
-            raise RuntimeError(f'Trivia sources returned by random.choices() is malformed: \"{randomChoices}\"')
-
-        triviaSource = randomChoices[0]
+        if triviaSource is None:
+            triviaSource = self.__chooseRandomTriviaSource()
 
         if triviaSource is TriviaSource.J_SERVICE:
             return self.__fetchTriviaQuestionFromJService(triviaType)
