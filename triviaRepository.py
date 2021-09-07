@@ -98,12 +98,13 @@ class TriviaRepository():
         if not utils.isValidBool(isLocalTriviaRepositoryEnabled):
             raise ValueError(f'isLocalTriviaRepositoryEnabled argument is malformed: \"{isLocalTriviaRepositoryEnabled}\"')
 
+        triviaSourcesAndWeights = self.__getAvailableTriviaSourcesAndWeights(isLocalTriviaRepositoryEnabled)
         triviaSources: List[TriviaSource] = list()
         triviaWeights: List[int] = list()
 
-        for triviaSource, weight in self.__getAvailableTriviaSourcesAndWeights(isLocalTriviaRepositoryEnabled):
+        for triviaSource in triviaSourcesAndWeights:
             triviaSources.append(triviaSource)
-            triviaWeights.append(weight)
+            triviaWeights.append(triviaSourcesAndWeights[triviaSource])
 
         randomChoices = random.choices(triviaSources, triviaWeights)
         if not utils.hasItems(triviaSources):
