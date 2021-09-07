@@ -335,13 +335,16 @@ class TriviaRepository():
             raise ValueError(f'isLocalTriviaRepositoryEnabled argument is malformed: \"{isLocalTriviaRepositoryEnabled}\"')
 
         jsonContents = self.__readTriviaRepositoryJson()
+        triviaSourcesJson: Dict = jsonContents['trivia_sources']
         triviaSources: Dict[TriviaSource, int] = dict()
 
-        for key, triviaSourceJson in jsonContents['trivia_sources']:
+        for key in triviaSourcesJson:
             triviaSource = TriviaSource.fromStr(key)
 
             if triviaSource is TriviaSource.LOCAL_TRIVIA_REPOSITORY and not isLocalTriviaRepositoryEnabled:
                 continue
+
+            triviaSourceJson: Dict = triviaSourcesJson[key]
 
             isEnabled = utils.getBoolFromDict(triviaSourceJson, 'is_enabled')
             if not isEnabled:
