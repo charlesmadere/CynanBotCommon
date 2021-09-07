@@ -24,7 +24,8 @@ class StarWarsQuotesRepository:
 
     def fetchRandomQuote(self, trilogy: str = None) -> str:
         jsonContents = self.__getQuotes(trilogy)
-        return random.choice(jsonContents)
+        quote = random.choice(jsonContents)
+        return self.__processQuote(quote)
 
     def __getQuotes(self, trilogy: str = None) -> List[str]:
         trilogy = utils.cleanStr(trilogy)
@@ -42,15 +43,15 @@ class StarWarsQuotesRepository:
         return result
 
     def __processQuote(self, quote: str, input: str = None) -> str:
-        if not utils.isValidStr(input):
-            return quote
-
-        result = self.__quoteInputRegEx.match(quote)
+        result = self.__quoteInputRegEx.search(quote)
         if not result:
             return quote
 
-        default = result.group(1)
-        return quote.replace(result.group(0), input or default)
+        value = result.group(1)
+        if utils.isValidStr(input):
+            value = input
+
+        return quote.replace(result.group(0), value)
 
     def __readJson(self) -> Dict:
         if not path.exists(self.__quotesFile):
