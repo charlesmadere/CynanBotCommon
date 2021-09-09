@@ -101,6 +101,12 @@
         "name": "New York City",
         "timeZone": "America/New_York"
     },
+    "5327684": {
+        "lat": 37.87159,
+        "lon": -122.272751,
+        "name": "Berkeley",
+        "timeZone": "America/Los_Angeles"
+    },
     "5368361": {
         "lat": 34.052231,
         "lon": -118.243683,
