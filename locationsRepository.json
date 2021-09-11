@@ -113,6 +113,12 @@
         "name": "Los Angeles",
         "timeZone": "America/Los_Angeles"
     },
+    "5378538": {
+        "lat": 37.804371,
+        "lon": -122.270798,
+        "name": "Oakland",
+        "timeZone": "America/Los_Angeles"
+    },
     "5379513": {
         "lat": 33.787788,
         "lon": -117.853111,
