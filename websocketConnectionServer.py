@@ -1,5 +1,4 @@
 import asyncio
-from enum import Enum, auto
 from queue import SimpleQueue
 
 import websockets
@@ -10,32 +9,18 @@ except:
     import utils
 
 
-class SoundEvent(Enum):
-
-    BASS = auto()
-    DRUM = auto()
-    WHISTLE = auto()
-
-    def toStr(self) -> str:
-        if self is SoundEvent.BASS:
-            return 'bass'
-        elif self is SoundEvent.DRUM:
-            return 'drum'
-        elif self is SoundEvent.WHISTLE:
-            return 'whistle'
-        else:
-            raise ValueError(f'unknown SoundEvent: \"{self}\"')
-
-
-class SoundEventsHelper():
+class WebsocketConnectionServer():
 
     def __init__(
         self,
+        isDebugLoggingEnabled: bool = True,
         port: int = 8765,
         sleepTimeSeconds: int = 5,
         host: str = '127.0.0.1'
     ):
-        if not utils.isValidNum(port):
+        if not utils.isValidBool(isDebugLoggingEnabled):
+            raise ValueError(f'isDebugLoggingEnabled argument is malformed: \"{isDebugLoggingEnabled}\"')
+        elif not utils.isValidNum(port):
             raise ValueError(f'port argument is malformed: \"{port}\"')
         elif not utils.isValidNum(sleepTimeSeconds):
             raise ValueError(f'sleepTimeSeconds argument is malformed: \"{sleepTimeSeconds}\"')
@@ -44,22 +29,23 @@ class SoundEventsHelper():
         elif not utils.isValidStr(host):
             raise ValueError(f'host argument is malformed: \"{host}\"')
 
+        self.__isDebugLoggingEnabled: bool = isDebugLoggingEnabled
         self.__port: int = port
         self.__sleepTimeSeconds: int = sleepTimeSeconds
         self.__host: str = host
 
         self.__isWebsocketServerStarted: bool = False
-        self.__soundEventQueue: SimpleQueue[SoundEvent] = SimpleQueue()
+        self.__eventQueue: SimpleQueue[str] = SimpleQueue()
 
-    async def sendEvent(self, event: SoundEvent):
-        if event is None:
+    async def sendEvent(self, event: str):
+        if not utils.isValidStr(event):
             raise ValueError(f'event argument is malformed: \"{event}\"')
 
         if not self.__isWebsocketServerStarted:
-            print(f'The websocket server has not yet been started, but attempted to send SoundEvent: \"{event}\" ({utils.getNowTimeText(includeSeconds = True)})')
+            print(f'The websocket server has not yet been started, but attempted to send event: \"{event}\" ({utils.getNowTimeText(includeSeconds = True)})')
             return
 
-        self.__soundEventQueue.put(event)
+        self.__eventQueue.put(event)
 
     def startWebsocketServer(self, eventLoop):
         if eventLoop is None:
@@ -86,12 +72,14 @@ class SoundEventsHelper():
 
         while True:
             try:
-                while not self.__soundEventQueue.empty():
-                    soundEvent = self.__soundEventQueue.get()
-                    await websocket.send(soundEvent.toStr())
-                    print(f'Sent msgs')
+                while not self.__eventQueue.empty():
+                    event = self.__eventQueue.get()
+                    await websocket.send(event)
+
+                    if self.__isDebugLoggingEnabled:
+                        print(f'Sent event over websocket connection to {path}: \"{event}\"')
             except websockets.ConnectionClosed as e:
-                print(f'Websocket connection closed: {e}')
+                print(f'Websocket connection to {path} closed: {e}')
                 break
 
             await asyncio.sleep(self.__sleepTimeSeconds)
