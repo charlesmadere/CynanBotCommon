@@ -56,7 +56,7 @@ class SoundEventsHelper():
             raise ValueError(f'event argument is malformed: \"{event}\"')
 
         if not self.__isWebsocketServerStarted:
-            print(f'The websocket server has not yet been started, but attempted to send SoundEvent: \"{event}\"')
+            print(f'The websocket server has not yet been started, but attempted to send SoundEvent: \"{event}\" ({utils.getNowTimeText(includeSeconds = True)})')
             return
 
         self.__soundEventQueue.put(event)
@@ -66,8 +66,10 @@ class SoundEventsHelper():
             raise ValueError(f'eventLoop argument is malformed: \"{eventLoop}\"')
 
         if self.__isWebsocketServerStarted:
+            print(f'Not starting websocket server, as it has already been started ({utils.getNowTimeText(includeSeconds = True)})')
             return
 
+        print(f'Starting websocket server... ({utils.getNowTimeText(includeSeconds = True)})')
         self.__isWebsocketServerStarted = True
         eventLoop.create_task(self.__startWebsocketServer())
 
