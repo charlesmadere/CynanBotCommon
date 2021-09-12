@@ -147,18 +147,20 @@ class ChatBandManager():
         elif not utils.isValidStr(author):
             raise ValueError(f'author argument is malformed: \"{author}\"')
 
-        jsonContents = self.__readAllJson()
+        twitchChannelsJson = self.__readAllJson()
 
-        for key in jsonContents:
+        for key in twitchChannelsJson:
             if key.lower() == twitchChannel.lower():
-                subJsonContents = jsonContents[key]
+                twitchChannelJson = twitchChannelsJson[key]
 
-                for subKey in subJsonContents:
+                for subKey in twitchChannelJson:
                     if subKey.lower() == author:
+                        chatBandMemberJson = twitchChannelJson[subKey]
+
                         return ChatBandMember(
-                            instrument = ChatBandInstrument.fromStr(subJsonContents['instrument']),
+                            instrument = ChatBandInstrument.fromStr(utils.getStrFromDict(chatBandMemberJson, 'instrument')),
                             author = subKey,
-                            keyPhrase = utils.getStrFromDict(subJsonContents, 'keyPhrase')
+                            keyPhrase = utils.getStrFromDict(chatBandMemberJson, 'keyPhrase')
                         )
 
                 return None
