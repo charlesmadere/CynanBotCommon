@@ -34,32 +34,32 @@ class WebsocketConnectionServer():
         self.__sleepTimeSeconds: int = sleepTimeSeconds
         self.__host: str = host
 
-        self.__isWebsocketServerStarted: bool = False
+        self.__isStarted: bool = False
         self.__eventQueue: SimpleQueue[str] = SimpleQueue()
 
     async def sendEvent(self, event: str):
         if not utils.isValidStr(event):
             raise ValueError(f'event argument is malformed: \"{event}\"')
 
-        if not self.__isWebsocketServerStarted:
+        if not self.__isStarted:
             print(f'The websocket server has not yet been started, but attempted to send event: \"{event}\" ({utils.getNowTimeText(includeSeconds = True)})')
             return
 
         self.__eventQueue.put(event)
 
-    def startWebsocketServer(self, eventLoop):
+    def start(self, eventLoop):
         if eventLoop is None:
             raise ValueError(f'eventLoop argument is malformed: \"{eventLoop}\"')
 
-        if self.__isWebsocketServerStarted:
+        if self.__isStarted:
             print(f'Not starting websocket server, as it has already been started ({utils.getNowTimeText(includeSeconds = True)})')
             return
 
-        print(f'Starting websocket server... ({utils.getNowTimeText(includeSeconds = True)})')
-        self.__isWebsocketServerStarted = True
-        eventLoop.create_task(self.__startWebsocketServer())
+        print(f'Starting websocket connection server... ({utils.getNowTimeText(includeSeconds = True)})')
+        self.__isStarted = True
+        eventLoop.create_task(self.__start())
 
-    async def __startWebsocketServer(self):
+    async def __start(self):
         async with websockets.serve(
             self.__websocketConnectionReceived,
             host = self.__host,
