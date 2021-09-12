@@ -157,7 +157,7 @@ class ChatBandManager():
                     if subKey.lower() == author:
                         return ChatBandMember(
                             instrument = ChatBandInstrument.fromStr(subJsonContents['instrument']),
-                            author = utils.getStrFromDict(subJsonContents, 'author'),
+                            author = subKey,
                             keyPhrase = utils.getStrFromDict(subJsonContents, 'keyPhrase')
                         )
 
