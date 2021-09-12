@@ -1,14 +1,17 @@
 import json
+from datetime import datetime, timedelta
 from enum import Enum, auto
 from os import path
 from typing import Dict
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.timedDict import TimedDict
     from CynanBotCommon.websocketConnectionServer import \
         WebsocketConnectionServer
 except:
     import utils
+    from timedDict import TimedDict
     from websocketConnectionServer import WebsocketConnectionServer
 
 
@@ -92,15 +95,19 @@ class ChatBandManager():
     def __init__(
         self,
         websocketConnectionServer: WebsocketConnectionServer,
-        chatBandFile: str = 'CynanBotCommon/chatBandManager.json'
+        chatBandFile: str = 'CynanBotCommon/chatBandManager.json',
+        cooldownDelay: timedelta = timedelta(minutes = 5)
     ):
         if websocketConnectionServer is None:
             raise ValueError(f'websocketConnectionServer argument is malformed: \"{websocketConnectionServer}\"')
         elif not utils.isValidStr(chatBandFile):
             raise ValueError(f'chatBandFile argument is malformed: \"{chatBandFile}\"')
+        elif cooldownDelay is None:
+            raise ValueError(f'cooldownDelay argument is malformed: \"{cooldownDelay}\"')
 
         self.__websocketConnectionServer: WebsocketConnectionServer = websocketConnectionServer
         self.__chatBandFile: str = chatBandFile
+        self.__lastChatBandMessageTimes: TimedDict = TimedDict(cooldownDelay)
 
     async def playInstrumentForMessage(self, twitchChannel: str, author: str, message: str) -> bool:
         if not utils.isValidStr(twitchChannel):
@@ -109,6 +116,9 @@ class ChatBandManager():
             raise ValueError(f'author argument is malformed: \"{author}\"')
         elif not utils.isValidStr(message):
             raise ValueError(f'message argument is malformed: \"{message}\"')
+
+        if not self.__lastChatBandMessageTimes.isReadyAndUpdate(f'{twitchChannel.lower()}:{author.lower()}'):
+            return False
 
         chatBandMember = self.__readJson(twitchChannel, author)
         if chatBandMember is None or message != chatBandMember.getKeyPhrase():
