@@ -8,3 +8,8 @@ message.appendChild(content);
 messages.appendChild(message);
 };
 document.body.appendChild(messages);
+
+audioObj = new Audio("guitar.mp3");
+audioObj.addEventListener("canplaythrough", event => {
+    audioObj.play();
+})
