@@ -138,6 +138,24 @@ class FuntoonRepository():
             data = userThatRedeemed
         )
 
+    def pkmnGiveShiny(self, userThatRedeemed: str, twitchChannel: str) -> bool:
+        if not utils.isValidStr(userThatRedeemed):
+            raise ValueError(f'userThatRedeemed argument is malformed: \"{userThatRedeemed}\"')
+        elif not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+
+        funtoonToken = self.getFuntoonToken(twitchChannel)
+
+        if not utils.isValidStr(funtoonToken):
+            return False
+
+        return self.__hitFuntoon(
+            event = 'giveFreeShiny',
+            funtoonToken = funtoonToken,
+            twitchChannel = twitchChannel,
+            data = userThatRedeemed
+        )
+
     def __readJson(self, twitchChannel: str) -> Dict:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
