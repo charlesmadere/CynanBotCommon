@@ -1,4 +1,5 @@
 import asyncio
+from asyncio import AbstractEventLoop
 from queue import SimpleQueue
 
 import websockets
@@ -47,7 +48,7 @@ class WebsocketConnectionServer():
 
         self.__eventQueue.put(event)
 
-    def start(self, eventLoop):
+    def start(self, eventLoop: AbstractEventLoop):
         if eventLoop is None:
             raise ValueError(f'eventLoop argument is malformed: \"{eventLoop}\"')
 
