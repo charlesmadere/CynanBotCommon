@@ -162,6 +162,7 @@ class ChatBandManager():
         elif not utils.isValidStr(author):
             raise ValueError(f'author argument is malformed: \"{author}\"')
 
+        author = author.lower()
         twitchChannelsJson = self.__readAllJson()
 
         for key in twitchChannelsJson:
