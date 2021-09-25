@@ -86,8 +86,14 @@ class ChatBandMember():
     def getKeyPhrase(self) -> str:
         return self.__keyPhrase
 
-    def toEvent(self) -> str:
-        return self.__instrument.toStr()
+    def toEventData(self) -> str:
+        eventData = {
+            'author': self.__author,
+            'keyPhrase': self.__keyPhrase,
+            'instrument': self.__instrument.toStr()
+        }
+
+        return json.dumps(eventData)
 
 
 class ChatBandManager():
@@ -96,18 +102,22 @@ class ChatBandManager():
         self,
         websocketConnectionServer: WebsocketConnectionServer,
         chatBandFile: str = 'CynanBotCommon/chatBandManager.json',
-        cooldownDelay: timedelta = timedelta(minutes = 5)
+        eventType: str = 'chatBand',
+        cooldown: timedelta = timedelta(minutes = 5)
     ):
         if websocketConnectionServer is None:
             raise ValueError(f'websocketConnectionServer argument is malformed: \"{websocketConnectionServer}\"')
         elif not utils.isValidStr(chatBandFile):
             raise ValueError(f'chatBandFile argument is malformed: \"{chatBandFile}\"')
-        elif cooldownDelay is None:
-            raise ValueError(f'cooldownDelay argument is malformed: \"{cooldownDelay}\"')
+        elif not utils.isValidStr(eventType):
+            raise ValueError(f'eventType argument is malformed: \"{eventType}\"')
+        elif cooldown is None:
+            raise ValueError(f'cooldown argument is malformed: \"{cooldown}\"')
 
         self.__websocketConnectionServer: WebsocketConnectionServer = websocketConnectionServer
         self.__chatBandFile: str = chatBandFile
-        self.__lastChatBandMessageTimes: TimedDict = TimedDict(cooldownDelay)
+        self.__eventType: str = eventType
+        self.__lastChatBandMessageTimes: TimedDict = TimedDict(cooldown)
 
     async def playInstrumentForMessage(self, twitchChannel: str, author: str, message: str) -> bool:
         if not utils.isValidStr(twitchChannel):
@@ -124,7 +134,12 @@ class ChatBandManager():
         if chatBandMember is None or message != chatBandMember.getKeyPhrase():
             return False
 
-        await self.__websocketConnectionServer.sendEvent(chatBandMember.toEvent())
+        await self.__websocketConnectionServer.sendEvent(
+            twitchChannel = twitchChannel,
+            eventType = self.__eventType,
+            eventData = chatBandMember.toEventData()
+        )
+
         return True
 
     def __readAllJson(self) -> Dict:

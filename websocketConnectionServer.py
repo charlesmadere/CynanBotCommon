@@ -1,6 +1,8 @@
 import asyncio
+import json
 from asyncio import AbstractEventLoop
 from queue import SimpleQueue
+from typing import Dict
 
 import websockets
 
@@ -38,15 +40,35 @@ class WebsocketConnectionServer():
         self.__isStarted: bool = False
         self.__eventQueue: SimpleQueue[str] = SimpleQueue()
 
-    async def sendEvent(self, event: str):
-        if not utils.isValidStr(event):
-            raise ValueError(f'event argument is malformed: \"{event}\"')
+    async def sendEvent(
+        self,
+        twitchChannel: str,
+        eventType: str,
+        eventData: Dict
+    ):
+        if not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+        elif not utils.isValidStr(eventType):
+            raise ValueError(f'eventType argument for twitchChannel \"{twitchChannel}\" is malformed: \"{eventType}\"')
+        elif eventData is None:
+            raise ValueError(f'eventData argument for eventType \"{eventType}\" and twitchChannel \"{twitchChannel}\" is malformed: \"{eventData}\"')
+
+        event = {
+            'twitchChannel': twitchChannel,
+            'eventType': eventType,
+            'eventData': eventData
+        }
+
+        eventStr = json.dumps(event)
 
         if not self.__isStarted:
-            print(f'The websocket server has not yet been started, but attempted to send event: \"{event}\" ({utils.getNowTimeText(includeSeconds = True)})')
+            print(f'The websocket server has not yet been started, but attempted to add event to queue ({utils.getNowTimeText(includeSeconds = True)}): {eventStr}')
             return
 
-        self.__eventQueue.put(event)
+        if self.__isDebugLoggingEnabled:
+            print(f'Adding event to queue (current size is {len(self.__eventQueue)}, new size will be {len(self.__eventQueue) + 1}) ({utils.getNowTimeText(includeSeconds = True)}): {eventStr}')
+
+        self.__eventQueue.put(eventStr)
 
     def start(self, eventLoop: AbstractEventLoop):
         if eventLoop is None:
