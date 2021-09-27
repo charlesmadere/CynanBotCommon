@@ -221,7 +221,7 @@ class LanguagesRepository():
         wotdApiCodes: List[str] = list()
         validEntries = self.__getLanguageEntries(hasWotdApiCode = True)
         for entry in validEntries:
-            wotdApiCodes.append(entry.getWotdApiCode())
+            wotdApiCodes.append(entry.getPrimaryCommandName())
 
         wotdApiCodes.sort()
         return delimiter.join(wotdApiCodes)
