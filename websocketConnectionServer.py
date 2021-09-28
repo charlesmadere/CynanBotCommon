@@ -66,7 +66,7 @@ class WebsocketConnectionServer():
             return
 
         if self.__isDebugLoggingEnabled:
-            print(f'Adding event to queue (current size is {len(self.__eventQueue)}, new size will be {len(self.__eventQueue) + 1}) ({utils.getNowTimeText(includeSeconds = True)}): {eventStr}')
+            print(f'Adding event to queue (current size is {self.__eventQueue.qsize()}, new size will be {self.__eventQueue.qsize() + 1}) ({utils.getNowTimeText(includeSeconds = True)}): {eventStr}')
 
         self.__eventQueue.put(eventStr)
 
