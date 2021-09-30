@@ -86,14 +86,12 @@ class ChatBandMember():
     def getKeyPhrase(self) -> str:
         return self.__keyPhrase
 
-    def toEventData(self) -> str:
-        eventData = {
+    def toEventData(self) -> Dict:
+        return {
             'author': self.__author,
             'keyPhrase': self.__keyPhrase,
             'instrument': self.__instrument.toStr()
         }
-
-        return json.dumps(eventData)
 
 
 class ChatBandManager():
