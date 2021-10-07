@@ -75,7 +75,7 @@ class StarWarsQuotesRepository:
         jsonContents = self.__getQuotes()
 
         for quote in jsonContents:
-            if quote.lower().find(query.lower()) >= 0:
+            if self.__processQuote(quote).lower().find(query.lower()) >= 0:
                 return self.__processQuote(quote, input = input)
 
         return None
