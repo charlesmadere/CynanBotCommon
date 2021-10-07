@@ -14,6 +14,18 @@ except:
     import utils
 
 
+class TwitchAccessTokenMissingException(Exception):
+
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
+class TwitchRefreshTokenMissingException(Exception):
+
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
 class TwitchTokensRepository():
 
     def __init__(
@@ -108,9 +120,9 @@ class TwitchTokensRepository():
             raise RuntimeError(f'Exception occurred when attempting to decode new Twitch tokens response into JSON: {e}')
 
         if 'access_token' not in jsonResponse or len(jsonResponse['access_token']) == 0:
-            raise ValueError(f'Received malformed \"access_token\" Twitch token: {jsonResponse}')
+            raise TwitchAccessTokenMissingException(f'Received malformed \"access_token\" Twitch token: {jsonResponse}')
         elif 'refresh_token' not in jsonResponse or len(jsonResponse['refresh_token']) == 0:
-            raise ValueError(f'Received malformed \"refresh_token\" Twitch token: {jsonResponse}')
+            raise TwitchRefreshTokenMissingException(f'Received malformed \"refresh_token\" Twitch token: {jsonResponse}')
 
         jsonContents = self.__readAllJson()
         jsonContents[twitchHandle] = {
