@@ -83,26 +83,28 @@ class WebsocketConnectionServer():
         eventLoop.create_task(self.__start())
 
     async def __start(self):
-        async with websockets.serve(
-            self.__websocketConnectionReceived,
-            host = self.__host,
-            port = self.__port
-        ):
-            await asyncio.Future()
+        while True:
+            try:
+                async with websockets.serve(
+                    self.__websocketConnectionReceived,
+                    host = self.__host,
+                    port = self.__port
+                ):
+                    await asyncio.Future()
+            except Exception as e:
+                print(f'WebsocketConnectionServer encountered websocket exception: {e}')
+
+            asyncio.sleep(self.__sleepTimeSeconds)
 
     async def __websocketConnectionReceived(self, websocket, path):
         print(f'Established websocket connection to: {path}')
 
         while True:
-            try:
-                while not self.__eventQueue.empty():
-                    event = self.__eventQueue.get()
-                    await websocket.send(event)
+            while not self.__eventQueue.empty():
+                event = self.__eventQueue.get()
+                await websocket.send(event)
 
-                    if self.__isDebugLoggingEnabled:
-                        print(f'Sent event over websocket connection to {path}: \"{event}\"')
-            except websockets.ConnectionClosed as e:
-                print(f'Websocket connection to {path} closed: {e}')
-                break
+                if self.__isDebugLoggingEnabled:
+                    print(f'WebsocketConnectionServer sent event to {path}: \"{event}\"')
 
             await asyncio.sleep(self.__sleepTimeSeconds)
