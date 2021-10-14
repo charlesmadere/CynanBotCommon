@@ -125,9 +125,6 @@ class ChatBandManager():
         elif not utils.isValidStr(message):
             raise ValueError(f'message argument is malformed: \"{message}\"')
 
-        if not self.__lastChatBandMessageTimes.isReadyAndUpdate(f'{twitchChannel.lower()}:{author.lower()}'):
-            return False
-
         chatBandMember = self.__findChatBandMember(
             twitchChannel = twitchChannel,
             author = author,
@@ -135,6 +132,8 @@ class ChatBandManager():
         )
 
         if chatBandMember is None:
+            return False
+        elif not self.__lastChatBandMessageTimes.isReadyAndUpdate(f'{twitchChannel.lower()}:{author.lower()}'):
             return False
 
         await self.__websocketConnectionServer.sendEvent(
