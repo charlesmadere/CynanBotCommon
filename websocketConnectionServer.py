@@ -97,7 +97,8 @@ class WebsocketConnectionServer():
             asyncio.sleep(self.__sleepTimeSeconds)
 
     async def __websocketConnectionReceived(self, websocket, path):
-        print(f'Established websocket connection to: {path}')
+        if self.__isDebugLoggingEnabled:
+            print(f'Established websocket connection to: \"{path}\"')
 
         while True:
             while not self.__eventQueue.empty():
@@ -105,6 +106,6 @@ class WebsocketConnectionServer():
                 await websocket.send(event)
 
                 if self.__isDebugLoggingEnabled:
-                    print(f'WebsocketConnectionServer sent event to {path}: \"{event}\"')
+                    print(f'WebsocketConnectionServer sent event to \"{path}\": \"{event}\"')
 
             await asyncio.sleep(self.__sleepTimeSeconds)
