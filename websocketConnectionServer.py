@@ -19,7 +19,7 @@ class WebsocketConnectionServer():
         isDebugLoggingEnabled: bool = True,
         port: int = 8765,
         sleepTimeSeconds: int = 5,
-        host: str = '127.0.0.1'
+        host: str = '0.0.0.0'
     ):
         if not utils.isValidBool(isDebugLoggingEnabled):
             raise ValueError(f'isDebugLoggingEnabled argument is malformed: \"{isDebugLoggingEnabled}\"')
