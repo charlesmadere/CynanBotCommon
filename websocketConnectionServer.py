@@ -1,6 +1,7 @@
 import asyncio
 import json
 from asyncio import AbstractEventLoop
+from datetime import datetime, timedelta
 from queue import SimpleQueue
 from typing import Dict
 
@@ -12,6 +13,28 @@ except:
     import utils
 
 
+class WebsocketEvent():
+
+    def __init__(
+        self,
+        eventData: Dict
+    ):
+        if not utils.hasItems(eventData):
+            raise ValueError(f'eventData argument is malformed: \"{eventData}\"')
+
+        self.__eventTime = datetime.utcnow()
+        self.__eventData: Dict = eventData
+
+    def getEventData(self) -> Dict:
+        return self.__eventData
+
+    def getEventDataAsJson(self) -> str:
+        return json.dumps(self.__eventData)
+
+    def getEventTime(self):
+        return self.__eventTime
+
+
 class WebsocketConnectionServer():
 
     def __init__(
@@ -19,7 +42,8 @@ class WebsocketConnectionServer():
         isDebugLoggingEnabled: bool = True,
         port: int = 8765,
         sleepTimeSeconds: int = 5,
-        host: str = '0.0.0.0'
+        host: str = '0.0.0.0',
+        timeToLive: timedelta = timedelta(minutes = 1)
     ):
         if not utils.isValidBool(isDebugLoggingEnabled):
             raise ValueError(f'isDebugLoggingEnabled argument is malformed: \"{isDebugLoggingEnabled}\"')
@@ -31,14 +55,17 @@ class WebsocketConnectionServer():
             raise ValueError(f'sleepTimeSeconds argument is too aggressive: \"{sleepTimeSeconds}\"')
         elif not utils.isValidStr(host):
             raise ValueError(f'host argument is malformed: \"{host}\"')
+        elif timeToLive is None:
+            raise ValueError(f'timeToLive argument is malformed: \"{timeToLive}\"')
 
         self.__isDebugLoggingEnabled: bool = isDebugLoggingEnabled
         self.__port: int = port
         self.__sleepTimeSeconds: int = sleepTimeSeconds
         self.__host: str = host
+        self.__timeToLive: timedelta = timeToLive
 
         self.__isStarted: bool = False
-        self.__eventQueue: SimpleQueue[str] = SimpleQueue()
+        self.__eventQueue: SimpleQueue[WebsocketEvent] = SimpleQueue()
 
     async def sendEvent(
         self,
@@ -50,7 +77,7 @@ class WebsocketConnectionServer():
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
         elif not utils.isValidStr(eventType):
             raise ValueError(f'eventType argument for twitchChannel \"{twitchChannel}\" is malformed: \"{eventType}\"')
-        elif eventData is None:
+        elif not utils.hasItems(eventData):
             raise ValueError(f'eventData argument for eventType \"{eventType}\" and twitchChannel \"{twitchChannel}\" is malformed: \"{eventData}\"')
 
         event = {
@@ -59,16 +86,14 @@ class WebsocketConnectionServer():
             'eventData': eventData
         }
 
-        eventStr = json.dumps(event)
-
         if not self.__isStarted:
-            print(f'The websocket server has not yet been started, but attempted to add event to queue ({utils.getNowTimeText(includeSeconds = True)}): {eventStr}')
+            print(f'The websocket server has not yet been started, but attempted to add event to queue ({utils.getNowTimeText(includeSeconds = True)}):\n{event}')
             return
 
         if self.__isDebugLoggingEnabled:
-            print(f'Adding event to queue (current size is {self.__eventQueue.qsize()}, new size will be {self.__eventQueue.qsize() + 1}) ({utils.getNowTimeText(includeSeconds = True)}): {eventStr}')
+            print(f'Adding event to queue (current size is {self.__eventQueue.qsize()}, new size will be {self.__eventQueue.qsize() + 1}) ({utils.getNowTimeText(includeSeconds = True)}):\n{event}')
 
-        self.__eventQueue.put(eventStr)
+        self.__eventQueue.put(WebsocketEvent(eventData = event))
 
     def start(self, eventLoop: AbstractEventLoop):
         if eventLoop is None:
@@ -98,14 +123,18 @@ class WebsocketConnectionServer():
 
     async def __websocketConnectionReceived(self, websocket, path):
         if self.__isDebugLoggingEnabled:
-            print(f'Established websocket connection to: \"{path}\"')
+            print(f'Established websocket connection to: \"{path}\" (current queue size is {self.__eventQueue.qsize()})')
 
         while True:
             while not self.__eventQueue.empty():
                 event = self.__eventQueue.get()
-                await websocket.send(event)
 
-                if self.__isDebugLoggingEnabled:
-                    print(f'WebsocketConnectionServer sent event to \"{path}\": \"{event}\"')
+                if event.getEventTime() + self.__timeToLive >= datetime.utcnow():
+                    await websocket.send(event.getEventDataAsJson())
+
+                    if self.__isDebugLoggingEnabled:
+                        print(f'WebsocketConnectionServer sent event to \"{path}\": \"{event.getEventData()}\"')
+                elif self.__isDebugLoggingEnabled:
+                    print(f'WebsocketConnectionServer discarded an event meant for \"{path}\": \"{event.getEventData()}\"')
 
             await asyncio.sleep(self.__sleepTimeSeconds)
