@@ -116,6 +116,8 @@ class ChatBandManager():
         self.__chatBandFile: str = chatBandFile
         self.__eventType: str = eventType
         self.__lastChatBandMessageTimes: TimedDict = TimedDict(cooldown)
+        self.__chatBandMemberCache: TimedDict = TimedDict(cooldown)
+        self.__stubChatBandMember: ChatBandMember = ChatBandMember(ChatBandInstrument.BASS, "author", "keyPhrase")
 
     async def playInstrumentForMessage(self, twitchChannel: str, author: str, message: str) -> bool:
         if not utils.isValidStr(twitchChannel):
@@ -133,7 +135,9 @@ class ChatBandManager():
 
         if chatBandMember is None:
             return False
-        elif not self.__lastChatBandMessageTimes.isReadyAndUpdate(f'{twitchChannel.lower()}:{author.lower()}'):
+        elif chatBandMember is self.__stubChatBandMember:
+            return False
+        elif not self.__lastChatBandMessageTimes.isReadyAndUpdate(self.__getCooldownKey(twitchChannel, author)):
             return False
 
         await self.__websocketConnectionServer.sendEvent(
@@ -157,25 +161,40 @@ class ChatBandManager():
         elif not utils.isValidStr(message):
             raise ValueError(f'message argument is malformed: \"{message}\"')
 
-        jsonContents = self.__readJson(twitchChannel)
-        if not utils.hasItems(jsonContents):
+        chatBandMember: ChatBandMember = self.__chatBandMemberCache[self.__getCooldownKey(twitchChannel, author)]
+
+        if chatBandMember is None:
+            jsonContents = self.__readJson(twitchChannel)
+
+            if utils.hasItems(jsonContents):
+                for key in jsonContents:
+                    if key.lower() == author.lower():
+                        chatBandMemberJson = jsonContents[key]
+
+                        chatBandMember = ChatBandMember(
+                            instrument = ChatBandInstrument.fromStr(utils.getStrFromDict(chatBandMemberJson, 'instrument')),
+                            author = key,
+                            keyPhrase = utils.getStrFromDict(chatBandMemberJson, 'keyPhrase')
+                        )
+
+                        self.__chatBandMemberCache[self.__getCooldownKey(twitchChannel, author)] = chatBandMember
+                        break
+
+        if chatBandMember is None:
+            self.__chatBandMemberCache[self.__getCooldownKey(twitchChannel, author)] = self.__stubChatBandMember
+
+        if chatBandMember is not None and chatBandMember is not self.__stubChatBandMember and chatBandMember.getKeyPhrase() == message:
+            return chatBandMember
+        else:
             return None
 
-        for key in jsonContents:
-            if key.lower() == author.lower():
-                chatBandMemberJson = jsonContents[key]
-                keyPhrase = utils.getStrFromDict(chatBandMemberJson, 'keyPhrase')
+    def __getCooldownKey(self, twitchChannel: str, author: str) -> str:
+        if not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+        elif not utils.isValidStr(author):
+            raise ValueError(f'author argument is malformed: \"{author}\"')
 
-                if keyPhrase == message:
-                    return ChatBandMember(
-                        instrument = ChatBandInstrument.fromStr(utils.getStrFromDict(chatBandMemberJson, 'instrument')),
-                        author = key,
-                        keyPhrase = keyPhrase
-                    )
-                else:
-                    return None
-
-        return None
+        return f'{twitchChannel.lower()}:{author.lower()}'
 
     def __readAllJson(self) -> Dict:
         if not path.exists(self.__chatBandFile):
