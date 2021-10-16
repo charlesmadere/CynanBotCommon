@@ -101,7 +101,8 @@ class ChatBandManager():
         websocketConnectionServer: WebsocketConnectionServer,
         chatBandFile: str = 'CynanBotCommon/chatBandManager.json',
         eventType: str = 'chatBand',
-        cooldown: timedelta = timedelta(minutes = 5)
+        eventCooldown: timedelta = timedelta(minutes = 5),
+        memberCacheTimeToLive: timedelta = timedelta(minutes = 15)
     ):
         if websocketConnectionServer is None:
             raise ValueError(f'websocketConnectionServer argument is malformed: \"{websocketConnectionServer}\"')
@@ -109,14 +110,16 @@ class ChatBandManager():
             raise ValueError(f'chatBandFile argument is malformed: \"{chatBandFile}\"')
         elif not utils.isValidStr(eventType):
             raise ValueError(f'eventType argument is malformed: \"{eventType}\"')
-        elif cooldown is None:
-            raise ValueError(f'cooldown argument is malformed: \"{cooldown}\"')
+        elif eventCooldown is None:
+            raise ValueError(f'eventCooldown argument is malformed: \"{eventCooldown}\"')
+        elif memberCacheTimeToLive is None:
+            raise ValueError(f'memberCacheTimeToLive argument is malformed: \"{memberCacheTimeToLive}\"')
 
         self.__websocketConnectionServer: WebsocketConnectionServer = websocketConnectionServer
         self.__chatBandFile: str = chatBandFile
         self.__eventType: str = eventType
-        self.__lastChatBandMessageTimes: TimedDict = TimedDict(cooldown)
-        self.__chatBandMemberCache: TimedDict = TimedDict(cooldown)
+        self.__lastChatBandMessageTimes: TimedDict = TimedDict(eventCooldown)
+        self.__chatBandMemberCache: TimedDict = TimedDict(memberCacheTimeToLive)
         self.__stubChatBandMember: ChatBandMember = ChatBandMember(ChatBandInstrument.BASS, "author", "keyPhrase")
 
     async def playInstrumentForMessage(self, twitchChannel: str, author: str, message: str) -> bool:
