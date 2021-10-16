@@ -120,7 +120,7 @@ class ChatBandManager():
         self.__eventType: str = eventType
         self.__lastChatBandMessageTimes: TimedDict = TimedDict(eventCooldown)
         self.__chatBandMemberCache: TimedDict = TimedDict(memberCacheTimeToLive)
-        self.__stubChatBandMember: ChatBandMember = ChatBandMember(ChatBandInstrument.BASS, "author", "keyPhrase")
+        self.__stubChatBandMember: ChatBandMember = ChatBandMember(ChatBandInstrument.BASS, "stub", "stub")
 
     async def playInstrumentForMessage(self, twitchChannel: str, author: str, message: str) -> bool:
         if not utils.isValidStr(twitchChannel):
