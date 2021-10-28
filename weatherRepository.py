@@ -6,6 +6,7 @@ from typing import Dict, List
 
 import requests
 from requests import ConnectionError, HTTPError, Timeout
+from requests.exceptions import ReadTimeout, TooManyRedirects
 from urllib3.exceptions import MaxRetryError, NewConnectionError
 
 try:
@@ -322,7 +323,7 @@ class WeatherRepository():
         rawResponse = None
         try:
             rawResponse = requests.get(url = requestUrl, timeout = utils.getDefaultTimeout())
-        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, Timeout) as e:
+        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
             print(f'Exception occurred when attempting to fetch air quality index from Open Weather for \"{location.getLocationId()}\": {e}')
             raise RuntimeError(f'Exception occurred when attempting to fetch air quality index from Open Weather for \"{location.getLocationId()}\": {e}')
 
@@ -368,16 +369,16 @@ class WeatherRepository():
         rawResponse = None
         try:
             rawResponse = requests.get(url = requestUrl, timeout = utils.getDefaultTimeout())
-        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, Timeout) as e:
+        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
             print(f'Exception occurred when attempting to fetch weather conditions from Open Weather for \"{location.getLocationId()}\": {e}')
             raise RuntimeError(f'Exception occurred when attempting to fetch weather conditions from Open Weather for \"{location.getLocationId()}\": {e}')
- 
+
         jsonResponse = None
         try:
             jsonResponse = rawResponse.json()
         except JSONDecodeError as e:
-            print(f'Exception occurred when attempting to decode Open Weather\'s response into JSON for \"{location.getLocationId()}\": {e}')
-            raise RuntimeError(f'Exception occurred when attempting to decode Open Weather\'s response into JSON for \"{location.getLocationId()}\": {e}')
+            print(f'Exception occurred when attempting to decode Open Weather\'s weather response into JSON for \"{location.getLocationId()}\": {e}')
+            raise RuntimeError(f'Exception occurred when attempting to decode Open Weather\'s weather response into JSON for \"{location.getLocationId()}\": {e}')
 
         currentJson = jsonResponse['current']
         humidity = currentJson['humidity']
