@@ -20,6 +20,7 @@ class ChatBandInstrument(Enum):
     BASS = auto()
     DRUMS = auto()
     GUITAR = auto()
+    MAGIC = auto()
     PIANO = auto()
     SYNTH = auto()
     TRUMPET = auto()
@@ -39,6 +40,8 @@ class ChatBandInstrument(Enum):
             return ChatBandInstrument.DRUMS
         elif text == 'guitar':
             return ChatBandInstrument.GUITAR
+        elif text == 'magic':
+            return ChatBandInstrument.MAGIC
         elif text == 'piano':
             return ChatBandInstrument.PIANO
         elif text == 'synth':
@@ -59,6 +62,8 @@ class ChatBandInstrument(Enum):
             return 'drums'
         elif self is ChatBandInstrument.GUITAR:
             return 'guitar'
+        elif self is ChatBandInstrument.MAGIC:
+            return 'magic'
         elif self is ChatBandInstrument.PIANO:
             return 'piano'
         elif self is ChatBandInstrument.SYNTH:
