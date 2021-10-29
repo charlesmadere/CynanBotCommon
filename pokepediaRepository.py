@@ -1160,7 +1160,7 @@ class PokepediaRepository():
             for pastTypeJson in pastTypesJson:
                 generation = PokepediaGeneration.fromStr(pastTypeJson['generation']['name'])
 
-                if generation == pokepediaGeneration:
+                if generation is pokepediaGeneration:
                     currentTypesList: List[PokepediaElementType] = list()
 
                     typesJson = pastTypeJson.get('types')
@@ -1223,12 +1223,12 @@ class PokepediaRepository():
             raise ValueError(f'jsonResponse argument is malformed: \"{jsonResponse}\"')
 
         # begin with current generation stats
-        accuracy = jsonResponse['accuracy']
-        power = jsonResponse['power']
+        accuracy: int = jsonResponse['accuracy']
+        power: int = jsonResponse['power']
         pp = utils.getIntFromDict(jsonResponse, 'pp')
         damageClass = PokepediaDamageClass.fromStr(jsonResponse['damage_class']['name'])
         elementType = PokepediaElementType.fromStr(jsonResponse['type']['name'])
-        move = None
+        move: PokepediaMoveGeneration = None
 
         pastValuesJson = jsonResponse.get('past_values')
         if pastValuesJson is None:
@@ -1242,7 +1242,7 @@ class PokepediaRepository():
             for pastValueJson in pastValuesJson:
                 generation = PokepediaGeneration.fromStr(pastValueJson['version_group']['name'])
 
-                if generation == pokepediaGeneration:
+                if generation is pokepediaGeneration:
                     if generation.isEarlyGeneration() and damageClass is not PokepediaDamageClass.STATUS:
                         damageClass = PokepediaDamageClass.getTypeBasedDamageClass(elementType)
 
@@ -1324,7 +1324,7 @@ class PokepediaRepository():
 
         # This loop goes through the dictionary of generational moves we've now built up and stored
         # within moveGenerationDictionary and removes any generations that are exact duplicates,
-        # UNLESS there exists a generation between the between the duplicate(s) that is different.
+        # UNLESS there exists a generation between the duplicate(s) that is different.
         move = None
         for pokepediaGeneration in PokepediaGeneration:
             if pokepediaGeneration not in moveGenerationDictionary:
