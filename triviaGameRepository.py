@@ -11,12 +11,14 @@ try:
                                              TriviaType,
                                              TrueFalseTriviaQuestion)
     from CynanBotCommon.triviaRepository import TriviaRepository
+    from CynanBotCommon.triviaScoreRepository import TriviaScoreRepository
 except:
     import utils
     from triviaModels import (AbsTriviaQuestion, MultipleChoiceTriviaQuestion,
                               QuestionAnswerTriviaQuestion, TriviaType,
                               TrueFalseTriviaQuestion)
     from triviaRepository import TriviaRepository
+    from triviaScoreRepository import TriviaScoreRepository
 
 
 class State():
@@ -92,12 +94,16 @@ class TriviaGameRepository():
 
     def __init__(
         self,
-        triviaRepository: TriviaRepository
+        triviaRepository: TriviaRepository,
+        triviaScoreRepository: TriviaScoreRepository
     ):
         if triviaRepository is None:
             raise ValueError(f'triviaRepository argument is malformed: \"{triviaRepository}\"')
+        elif triviaScoreRepository is None:
+            raise ValueError(f'triviaScoreRepository argument is malformed: \"{triviaScoreRepository}\"')
 
         self.__triviaRepository: TriviaRepository = triviaRepository
+        self.__triviaScoreRepository: TriviaScoreRepository = triviaScoreRepository
         self.__states: Dict[str, State] = dict()
         self.__fullWordAnswerRegEx: Pattern = re.compile(r"\w+|\d+", re.IGNORECASE)
         self.__multipleChoiceAnswerRegEx: Pattern = re.compile(r"[a-z]", re.IGNORECASE)
@@ -140,8 +146,10 @@ class TriviaGameRepository():
         state.setAnswered()
 
         if self.__checkAnswer(answer, triviaQuestion):
+            self.__triviaScoreRepository.incrementTotalWins(twitchChannel, userId)
             return TriviaGameCheckResult.CORRECT_ANSWER
         else:
+            self.__triviaScoreRepository.incrementTotalLosses(twitchChannel, userId)
             return TriviaGameCheckResult.INCORRECT_ANSWER
 
     def __checkAnswer(self, answer: str, triviaQuestion: AbsTriviaQuestion) -> bool:
