@@ -1,5 +1,6 @@
 import json
 import os
+from enum import Enum, auto
 from typing import Dict
 
 import requests
@@ -10,6 +11,14 @@ try:
     import CynanBotCommon.utils as utils
 except:
     import utils
+
+
+class FuntoonPkmnCatchType(Enum):
+
+    GREAT = auto()
+    NORMAL = auto()
+    SHINY_ONLY = auto()
+    ULTRA = auto()
 
 
 class FuntoonRepository():
@@ -102,19 +111,39 @@ class FuntoonRepository():
             }
         )
 
-    def pkmnCatch(self, userThatRedeemed: str, twitchChannel: str) -> bool:
+    def pkmnCatch(
+        self,
+        userThatRedeemed: str,
+        twitchChannel: str,
+        funtoonPkmnCatchType: FuntoonPkmnCatchType = FuntoonPkmnCatchType.NORMAL
+    ) -> bool:
         if not utils.isValidStr(userThatRedeemed):
             raise ValueError(f'userThatRedeemed argument is malformed: \"{userThatRedeemed}\"')
         elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+        elif funtoonPkmnCatchType is None:
+            raise ValueError(f'funtoonPkmnCatchType argument is malformed: \"{funtoonPkmnCatchType}\"')
 
         funtoonToken = self.getFuntoonToken(twitchChannel)
 
         if not utils.isValidStr(funtoonToken):
             return False
 
+        eventStr: str = None
+        if funtoonPkmnCatchType is FuntoonPkmnCatchType.NORMAL:
+            eventStr = 'catch'
+        elif funtoonPkmnCatchType is FuntoonPkmnCatchType.GREAT:
+            eventStr = 'catch_great'
+        elif funtoonPkmnCatchType is FuntoonPkmnCatchType.ULTRA:
+            eventStr = 'catch_ultra'
+        elif funtoonPkmnCatchType is FuntoonPkmnCatchType.SHINY_ONLY:
+            eventStr = 'catch_shiny'
+
+        if not utils.isValidStr(eventStr):
+            raise ValueError(f'unknown FuntoonPkmnCatchType: \"{funtoonPkmnCatchType}\"')
+
         return self.__hitFuntoon(
-            event = 'catch',
+            event = eventStr,
             funtoonToken = funtoonToken,
             twitchChannel = twitchChannel,
             data = userThatRedeemed
