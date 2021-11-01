@@ -1,3 +1,5 @@
+import locale
+
 try:
     import CynanBotCommon.backingDatabase as BackingDatabase
     import CynanBotCommon.utils as utils
@@ -36,14 +38,23 @@ class TriviaScoreResult():
     def getStreak(self) -> int:
         return self.__streak
 
+    def getStreakStr(self) -> str:
+        return locale.format_string("%d", self.__streak, grouping = True)
+
     def getTotal(self) -> int:
         return self.__totalLosses + self.__totalWins
 
     def getTotalLosses(self) -> int:
         return self.__totalLosses
 
+    def getTotalLossesStr(self) -> str:
+        return locale.format_string("%d", self.__totalLosses, grouping = True)
+
     def getTotalWins(self) -> int:
         return self.__totalWins
+
+    def getTotalWinsStr(self) -> str:
+        return locale.format_string("%d", self.__totalWins, grouping = True)
 
     def getTwitchChannel(self) -> str:
         return self.__twitchChannel
