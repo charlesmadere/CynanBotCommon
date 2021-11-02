@@ -44,6 +44,9 @@ class TriviaScoreResult():
     def getTotal(self) -> int:
         return self.__totalLosses + self.__totalWins
 
+    def getTotalStr(self) -> str:
+        return locale.format_string("%d", self.getTotal(), grouping = True)
+
     def getTotalLosses(self) -> int:
         return self.__totalLosses
 
