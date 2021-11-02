@@ -86,6 +86,7 @@ class AbsTriviaQuestion(ABC):
     def __init__(
         self,
         category: str,
+        _id: str,
         question: str,
         triviaDifficulty: TriviaDifficulty,
         triviaSource: TriviaSource,
@@ -101,6 +102,7 @@ class AbsTriviaQuestion(ABC):
             raise ValueError(f'triviaType argument is malformed: \"{triviaType}\"')
 
         self.__category: str = category
+        self.__id: str = _id
         self.__question: str = question
         self.__triviaDifficulty: TriviaDifficulty = triviaDifficulty
         self.__triviaSource: TriviaSource = triviaSource
@@ -119,6 +121,9 @@ class AbsTriviaQuestion(ABC):
     @abstractmethod
     def getCorrectAnswers(self) -> List[str]:
         pass
+
+    def getId(self) -> str:
+        return self.__id
 
     @abstractmethod
     def getPrompt(self, delimiter: str = ', ') -> str:
@@ -143,6 +148,9 @@ class AbsTriviaQuestion(ABC):
     def hasCategory(self) -> bool:
         return utils.isValidStr(self.__category)
 
+    def hasId(self) -> bool:
+        return utils.isValidStr(self.__id)
+
 
 class MultipleChoiceTriviaQuestion(AbsTriviaQuestion):
 
@@ -151,12 +159,14 @@ class MultipleChoiceTriviaQuestion(AbsTriviaQuestion):
         correctAnswers: List[str],
         multipleChoiceResponses: List[str],
         category: str,
+        _id: str,
         question: str,
         triviaDifficulty: TriviaDifficulty,
         triviaSource: TriviaSource
     ):
         super().__init__(
             category = category,
+            _id = _id,
             question = question,
             triviaDifficulty = triviaDifficulty,
             triviaSource = triviaSource,
@@ -245,12 +255,14 @@ class QuestionAnswerTriviaQuestion(AbsTriviaQuestion):
         self,
         correctAnswers: List[str],
         category: str,
+        _id: str,
         question: str,
         triviaDifficulty: TriviaDifficulty,
         triviaSource: TriviaSource
     ):
         super().__init__(
             category = category,
+            _id = _id,
             question = question,
             triviaDifficulty = triviaDifficulty,
             triviaSource = triviaSource,
@@ -287,12 +299,14 @@ class TrueFalseTriviaQuestion(AbsTriviaQuestion):
         self,
         correctAnswers: List[bool],
         category: str,
+        _id: str,
         question: str,
         triviaDifficulty: TriviaDifficulty,
         triviaSource: TriviaSource
     ):
         super().__init__(
             category = category,
+            _id = _id,
             question = question,
             triviaDifficulty = triviaDifficulty,
             triviaSource = triviaSource,

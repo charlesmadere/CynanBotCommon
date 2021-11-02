@@ -37,6 +37,7 @@ class LocalTriviaRepository():
         question = utils.getStrFromDict(questionJson, 'question', clean = True)
 
         triviaDifficulty = TriviaDifficulty.fromStr(questionJson.get('difficulty'))
+        triviaId = utils.getStrFromDict(questionJson, 'id')
         triviaType = TriviaType.fromStr(utils.getStrFromDict(questionJson, 'type'))
 
         if triviaType is TriviaType.MULTIPLE_CHOICE:
@@ -48,6 +49,7 @@ class LocalTriviaRepository():
                 correctAnswers = correctAnswers,
                 multipleChoiceResponses = multipleChoiceResponses,
                 category = category,
+                _id = triviaId,
                 question = question,
                 triviaDifficulty = triviaDifficulty,
                 triviaSource = TriviaSource.LOCAL_TRIVIA_REPOSITORY
@@ -58,6 +60,7 @@ class LocalTriviaRepository():
             return QuestionAnswerTriviaQuestion(
                 correctAnswers = correctAnswers,
                 category = category,
+                _id = triviaId,
                 question = question,
                 triviaDifficulty = triviaDifficulty,
                 triviaSource = TriviaSource.LOCAL_TRIVIA_REPOSITORY
@@ -68,6 +71,7 @@ class LocalTriviaRepository():
             return TrueFalseTriviaQuestion(
                 correctAnswers = correctAnswers,
                 category = category,
+                _id = triviaId,
                 question = question,
                 triviaDifficulty = triviaDifficulty,
                 triviaSource = TriviaSource.LOCAL_TRIVIA_REPOSITORY

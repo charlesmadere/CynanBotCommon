@@ -137,6 +137,7 @@ class TriviaRepository():
         resultJson = jsonResponse[0]
         category = utils.getStrFromDict(resultJson['category'], 'title', fallback = '', clean = True)
         question = utils.getStrFromDict(resultJson, 'question', clean = True)
+        triviaId = utils.getStrFromDict(resultJson, 'id')
 
         correctAnswer = utils.getStrFromDict(resultJson, 'answer', clean = True)
         correctAnswers: List[str] = list()
@@ -145,6 +146,7 @@ class TriviaRepository():
         return QuestionAnswerTriviaQuestion(
             correctAnswers = correctAnswers,
             category = category,
+            _id = triviaId,
             question = question,
             triviaDifficulty = TriviaDifficulty.UNKNOWN,
             triviaSource = TriviaSource.J_SERVICE
@@ -212,6 +214,7 @@ class TriviaRepository():
                 correctAnswers = correctAnswers,
                 multipleChoiceResponses = multipleChoiceResponses,
                 category = category,
+                _id = None,
                 question = question,
                 triviaDifficulty = triviaDifficulty,
                 triviaSource = TriviaSource.OPEN_TRIVIA_DATABASE
@@ -260,6 +263,7 @@ class TriviaRepository():
         triviaType = TriviaType.fromStr(resultJson['type'])
         category = utils.getStrFromDict(resultJson, 'category', fallback = '', clean = True)
         question = utils.getStrFromDict(resultJson, 'question', clean = True)
+        triviaId = utils.getStrFromDict(resultJson, 'id')
 
         if triviaType is TriviaType.MULTIPLE_CHOICE:
             correctAnswer = utils.getStrFromDict(
@@ -280,6 +284,7 @@ class TriviaRepository():
                 correctAnswers = correctAnswers,
                 multipleChoiceResponses = multipleChoiceResponses,
                 category = category,
+                _id = triviaId,
                 question = question,
                 triviaDifficulty = TriviaDifficulty.UNKNOWN,
                 triviaSource = TriviaSource.WILL_FRY_TRIVIA_API
