@@ -19,6 +19,16 @@ class FuntoonPkmnCatchType(Enum):
     NORMAL = auto()
     ULTRA = auto()
 
+    def toStr(self) -> str:
+        if self is FuntoonPkmnCatchType.GREAT:
+            return 'great'
+        elif self is FuntoonPkmnCatchType.NORMAL:
+            return 'normal'
+        elif self is FuntoonPkmnCatchType.ULTRA:
+            return 'ultra'
+        else:
+            raise ValueError(f'unknown FuntoonPkmnCatchType: \"{self}\"')
+
 
 class FuntoonRepository():
 
@@ -114,7 +124,7 @@ class FuntoonRepository():
         self,
         userThatRedeemed: str,
         twitchChannel: str,
-        funtoonPkmnCatchType: FuntoonPkmnCatchType = FuntoonPkmnCatchType.NORMAL
+        funtoonPkmnCatchType: FuntoonPkmnCatchType
     ) -> bool:
         if not utils.isValidStr(userThatRedeemed):
             raise ValueError(f'userThatRedeemed argument is malformed: \"{userThatRedeemed}\"')
@@ -128,22 +138,14 @@ class FuntoonRepository():
         if not utils.isValidStr(funtoonToken):
             return False
 
-        eventStr: str = None
-        if funtoonPkmnCatchType is FuntoonPkmnCatchType.NORMAL:
-            eventStr = 'catch'
-        elif funtoonPkmnCatchType is FuntoonPkmnCatchType.GREAT:
-            eventStr = 'catch_great'
-        elif funtoonPkmnCatchType is FuntoonPkmnCatchType.ULTRA:
-            eventStr = 'catch_ultra'
-
-        if not utils.isValidStr(eventStr):
-            raise ValueError(f'unknown FuntoonPkmnCatchType: \"{funtoonPkmnCatchType}\"')
-
         return self.__hitFuntoon(
-            event = eventStr,
+            event = 'catch',
             funtoonToken = funtoonToken,
             twitchChannel = twitchChannel,
-            data = userThatRedeemed
+            data = {
+                'who': userThatRedeemed,
+                'catchType': funtoonPkmnCatchType.toStr()
+            }
         )
 
     def pkmnGiveEvolve(self, userThatRedeemed: str, twitchChannel: str) -> bool:
