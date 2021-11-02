@@ -1,18 +1,40 @@
 [
     {
         "correctAnswers": [ true ],
-        "question": "Is InternetBound Imyt's simp?",
+        "id": "n4f3qsqpzzqh",
+        "question": "InternetBound is Imyt's simp.",
         "type": "boolean"
     },
     {
         "correctAnswers": [ true ],
-        "question": "Should Imyt get a free sippy blast?",
+        "id": "ljlq4yo7sowj",
+        "question": "Imyt should get a free sippy blast.",
         "type": "boolean"
     },
     {
         "correctAnswers": [ "Eddie", "gaR", "Imyt", "InternetBound", "smCharles", "stashiocat" ],
+        "id": "innb6nrtudrx",
         "question": "Who amongst the following people is a bully?",
         "responses": [ "Eddie", "gaR", "Imyt", "InternetBound", "smCharles", "stashiocat" ],
         "type": "multiple"
+    },
+    {
+        "correctAnswers": [ true ],
+        "id": "ftdpl5ja3kst",
+        "question": "A fork the best utensil for sushi.",
+        "type": "boolean"
+    },
+    {
+        "correctAnswers": [ "with ketchup and a coke" ],
+        "id": "xazoikjjveqe",
+        "question": "What is the proper way to eat a steak?",
+        "responses": [ "with mayo", "well done", "fully cooked", "with ketchup and a coke", "steak is for the birds" ],
+        "type": "multiple"
+    },
+    {
+        "correctAnswers": [ true ],
+        "id": "j0qwz2ji91tl",
+        "question": "Imyt was once a hot tub streamer.",
+        "type": "boolean"
     }
 ]
