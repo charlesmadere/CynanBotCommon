@@ -71,10 +71,12 @@ class TriviaType(Enum):
 
         text = text.lower()
 
-        if text == 'boolean':
+        if text == 'boolean' or text == 'true false':
             return TriviaType.TRUE_FALSE
         elif text == 'multiple' or text == 'multiple choice':
             return TriviaType.MULTIPLE_CHOICE
+        elif text == 'question answer':
+            return TriviaType.QUESTION_ANSWER
         else:
             raise ValueError(f'unknown TriviaType: \"{text}\"')
 
