@@ -184,8 +184,8 @@ class TriviaRepository():
             print(f'Rejecting trivia due to bad \"response_code\" value: {jsonResponse}')
             raise ValueError(f'Rejecting trivia due to bad \"response_code\" value: {jsonResponse}')
         elif not utils.hasItems(jsonResponse.get('results')):
-            print(f'Rejecting trivia due to null/empty \"results\" array: {jsonResponse}')
-            raise ValueError(f'Rejecting trivia due to null/empty \"results\" array: {jsonResponse}')
+            print(f'Rejecting trivia due to missing/null/empty \"results\" array: {jsonResponse}')
+            raise ValueError(f'Rejecting trivia due to missing/null/empty \"results\" array: {jsonResponse}')
 
         resultJson = jsonResponse['results'][0]
         triviaDifficulty = TriviaDifficulty.fromStr(resultJson['difficulty'])
