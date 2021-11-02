@@ -36,5 +36,33 @@
         "id": "j0qwz2ji91tl",
         "question": "Imyt was once a hot tub streamer.",
         "type": "boolean"
+    },
+    {
+        "correctAnswers": [ "Stashio" ],
+        "id": "fphmdhkp0z1s",
+        "question": "What is the name of stashiocat's pet cat?",
+        "responses": [ "Mandoo", "Stashio", "Garfield", "Mozart", "Sassy", "Pepita" ],
+        "type": "multiple"
+    },
+    {
+        "correctAnswers": [ "Mandoo" ],
+        "id": "qsvup6nmb2or",
+        "question": "What is the name of Eddie's pet dog?",
+        "responses": [ "Mandoo", "Stashio", "Air Bud", "Beethoven", "Chance", "Comet" ],
+        "type": "multiple"
+    },
+    {
+        "correctAnswers": [ "falling into vileplumes" ],
+        "id": "a7l7hasy6qht",
+        "question": "What is Nevdi most known for?",
+        "responses": [ "falling into vileplumes", "perfect draygon fights", "good super rng", "bad phantoon patterns", "world's first PRKD 41" ],
+        "type": "multiple"
+    },
+    {
+        "correctAnswers": [ "izzy" ],
+        "id": "cbgkj9utd2wp",
+        "question": "Who is known for cooking hotdogs better than just about everyone?",
+        "responses": [ "izzy", "Imyt", "Gordon Ramsay", "Guy Fieri", "Emeril Lagasse" ],
+        "type": "multiple"
     }
 ]
