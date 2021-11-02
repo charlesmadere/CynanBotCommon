@@ -41,9 +41,9 @@ class TwitchTokensRepository():
         elif not utils.isValidStr(twitchTokensFile):
             raise ValueError(f'twitchTokensFile argument is malformed: \"{twitchTokensFile}\"')
 
-        self.__oauth2TokenUrl = oauth2TokenUrl
-        self.__oauth2ValidateUrl = oauth2ValidateUrl
-        self.__twitchTokensFile = twitchTokensFile
+        self.__oauth2TokenUrl: str = oauth2TokenUrl
+        self.__oauth2ValidateUrl: str = oauth2ValidateUrl
+        self.__twitchTokensFile: str = twitchTokensFile
 
     def getAccessToken(self, twitchHandle: str) -> str:
         jsonContents = self.__readJson(twitchHandle)
