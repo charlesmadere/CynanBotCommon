@@ -17,7 +17,6 @@ class FuntoonPkmnCatchType(Enum):
 
     GREAT = auto()
     NORMAL = auto()
-    SHINY_ONLY = auto()
     ULTRA = auto()
 
 
@@ -136,8 +135,6 @@ class FuntoonRepository():
             eventStr = 'catch_great'
         elif funtoonPkmnCatchType is FuntoonPkmnCatchType.ULTRA:
             eventStr = 'catch_ultra'
-        elif funtoonPkmnCatchType is FuntoonPkmnCatchType.SHINY_ONLY:
-            eventStr = 'catch_shiny'
 
         if not utils.isValidStr(eventStr):
             raise ValueError(f'unknown FuntoonPkmnCatchType: \"{funtoonPkmnCatchType}\"')
