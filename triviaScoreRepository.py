@@ -112,38 +112,38 @@ class TriviaScoreRepository():
 
         row = cursor.fetchone()
 
-        if row is None:
-            cursor.close()
-
-            cursor.execute(
-                '''
-                    INSERT INTO triviaScores (streak, totalLosses, totalWins, twitchChannel, userId)
-                    VALUES (?, ?, ?, ?, ?)
-                ''',
-                ( 0, 0, 0, twitchChannel, userId )
+        if row is not None:
+            result = TriviaScoreResult(
+                streak = row[0],
+                totalLosses = row[1],
+                totalWins = row[2],
+                twitchChannel = row[3],
+                userId = row[4]
             )
 
-            connection.commit()
             cursor.close()
-
-            return TriviaScoreResult(
-                streak = 0,
-                totalLosses = 0,
-                totalWins = 0,
-                twitchChannel = twitchChannel,
-                userId = userId
-            )
-
-        result = TriviaScoreResult(
-            streak = row[0],
-            totalLosses = row[1],
-            totalWins = row[2],
-            twitchChannel = row[3],
-            userId = row[4]
-        )
+            return result
 
         cursor.close()
-        return result
+
+        cursor.execute(
+            '''
+                INSERT INTO triviaScores (streak, totalLosses, totalWins, twitchChannel, userId)
+                VALUES (?, ?, ?, ?, ?)
+            ''',
+            ( 0, 0, 0, twitchChannel, userId )
+        )
+
+        connection.commit()
+        cursor.close()
+
+        return TriviaScoreResult(
+            streak = 0,
+            totalLosses = 0,
+            totalWins = 0,
+            twitchChannel = twitchChannel,
+            userId = userId
+        )
 
     def incrementTotalLosses(
         self,
