@@ -81,10 +81,10 @@ class AnalogueStoreEntry():
         elif not utils.isValidStr(name):
             raise ValueError(f'name argument is malformed: \"{name}\"')
 
-        self.__productType = productType
-        self.__inStock = inStock
-        self.__name = name
-        self.__price = price
+        self.__productType: AnalogueProductType = productType
+        self.__inStock: bool = inStock
+        self.__name: str = name
+        self.__price: str = price
 
     def getName(self) -> str:
         return self.__name

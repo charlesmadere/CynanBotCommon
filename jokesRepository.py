@@ -17,7 +17,7 @@ class JokeResponse():
         if not utils.isValidStr(text):
             raise ValueError(f'text argument is malformed: \"{text}\"')
 
-        self.__text = text
+        self.__text: str = text
 
     def getText(self):
         return self.__text

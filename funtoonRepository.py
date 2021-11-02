@@ -27,7 +27,7 @@ class FuntoonPkmnCatchType(Enum):
         elif self is FuntoonPkmnCatchType.ULTRA:
             return 'ultra'
         else:
-            raise ValueError(f'unknown FuntoonPkmnCatchType: \"{self}\"')
+            raise RuntimeError(f'unknown FuntoonPkmnCatchType: \"{self}\"')
 
 
 class FuntoonRepository():
