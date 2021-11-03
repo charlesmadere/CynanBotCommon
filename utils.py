@@ -2,10 +2,10 @@ import html
 import math
 import random
 import re
-import urllib
 from datetime import datetime
 from numbers import Number
 from typing import List, Pattern
+from urllib.parse import urlparse
 
 
 def areValidBools(l: List[bool]) -> bool:
@@ -226,7 +226,7 @@ def isValidUrl(s: str) -> bool:
     if not isValidStr(s):
         return False
 
-    parsed = urllib.parse.urlparse(s)
+    parsed = urlparse(s)
     url = parsed.geturl()
 
     return isValidStr(url)

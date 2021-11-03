@@ -1,6 +1,6 @@
-import urllib
 from json.decoder import JSONDecodeError
 from typing import List
+from urllib.parse import quote
 
 import requests
 from requests import ConnectionError, HTTPError, Timeout
@@ -130,7 +130,7 @@ class JishoHelper():
 
         rawResponse = None
         try:
-            encodedQuery = urllib.parse.quote(query)
+            encodedQuery = quote(query)
             rawResponse = requests.get(
                 url = f'https://jisho.org/api/v1/search/words?keyword={encodedQuery}',
                 timeout = utils.getDefaultTimeout()

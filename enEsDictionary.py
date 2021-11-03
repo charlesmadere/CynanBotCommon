@@ -1,7 +1,7 @@
 import locale
-import urllib
 from json.decoder import JSONDecodeError
 from typing import List
+from urllib.parse import quote
 
 import requests
 from requests import ConnectionError, HTTPError, Timeout
@@ -60,7 +60,7 @@ class EnEsDictionary():
         query = query.strip()
         print(f'Looking up \"{query}\"... ({utils.getNowTimeText()})')
 
-        encodedQuery = urllib.parse.quote(query)
+        encodedQuery = quote(query)
         requestUrl = 'https://www.dictionaryapi.com/api/v3/references/spanish/json/{}?key={}'.format(
             encodedQuery, self.__merriamWebsterApiKey)
 
