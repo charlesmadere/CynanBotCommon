@@ -21,7 +21,7 @@
     {
         "correctAnswers": [ true ],
         "id": "ftdpl5ja3kst",
-        "question": "A fork the best utensil for sushi.",
+        "question": "A fork is the best utensil for sushi.",
         "type": "boolean"
     },
     {
