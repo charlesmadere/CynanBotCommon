@@ -227,8 +227,10 @@ def isValidUrl(s: str) -> bool:
         return False
 
     parsed = urlparse(s)
-    url = parsed.geturl()
+    if not isValidStr(parsed.scheme) or not isValidStr(parsed.netloc):
+        return False
 
+    url = parsed.geturl()
     return isValidStr(url)
 
 def removePreceedingAt(s: str) -> str:
