@@ -1,4 +1,5 @@
-from typing import List
+from datetime import tzinfo
+from typing import Dict, List
 
 import pytz
 
@@ -14,31 +15,30 @@ except:
 class TimeZoneRepository():
 
     def __init__(self):
-        self.__timeZones = dict()
+        self.__timeZones: Dict[str, tzinfo] = dict()
 
-    def getTimeZone(self, timeZone: str):
+    def getTimeZone(self, timeZone: str) -> tzinfo:
         if not utils.isValidStr(timeZone):
-            return None
-        elif timeZone in self.__timeZones:
+            raise ValueError(f'timeZone argument is malformed: \"{timeZone}\"')
+
+        if timeZone in self.__timeZones:
             return self.__timeZones[timeZone]
 
-        newTimeZone = pytz.timezone(timeZone)
+        newTimeZone: tzinfo = pytz.timezone(timeZone)
         self.__timeZones[timeZone] = newTimeZone
         return newTimeZone
 
-    def getTimeZones(self, timeZones: List[str]):
-        if not utils.hasItems(timeZones):
-            return None
+    def getTimeZones(self, timeZoneStrs: List[str]) -> List[tzinfo]:
+        if not utils.hasItems(timeZoneStrs):
+            raise ValueError(f'timeZoneStrs argument is malformed: \"{timeZoneStrs}\"')
 
-        newTimeZones = list()
+        timeZones: List[tzinfo] = list()
 
-        for timeZone in timeZones:
-            newTimeZone = self.getTimeZone(timeZone)
+        for timeZoneStr in timeZoneStrs:
+            if not utils.isValidStr(timeZoneStr):
+                raise ValueError(f'malformed timeZoneStr \"{timeZoneStr}\" within given timeZoneStrs: \"{timeZoneStrs}\"')
 
-            if newTimeZone is not None:
-                newTimeZones.append(newTimeZone)
+            newTimeZone = self.getTimeZone(timeZoneStr)
+            timeZones.append(newTimeZone)
 
-        if utils.hasItems(newTimeZones):
-            return newTimeZones
-        else:
-            return None
+        return timeZones
