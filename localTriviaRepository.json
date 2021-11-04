@@ -83,5 +83,17 @@
         "id": "fixlbcgnpk2c",
         "question": "The bidet is the optimal human-interface device.",
         "type": "boolean"
+    },
+    {
+        "correctAnswers": [ true ],
+        "id": "fengbrjccaof",
+        "question": "In an average year, Imyt goes on at least 1 vacation each month.",
+        "type": "boolean"
+    },
+    {
+        "correctAnswers": [ true ],
+        "id": "qwibvlyrljey",
+        "question": "With an expensive meal, nothing beats an ice-cold Coca-Cola.",
+        "type": "boolean"
     }
 ]
