@@ -5,6 +5,7 @@ from urllib.parse import quote
 
 import requests
 from requests import ConnectionError, HTTPError, Timeout
+from requests.exceptions import ReadTimeout, TooManyRedirects
 from urllib3.exceptions import MaxRetryError, NewConnectionError
 
 try:
@@ -67,7 +68,7 @@ class EnEsDictionary():
         rawResponse = None
         try:
             rawResponse = requests.get(url = requestUrl, timeout = utils.getDefaultTimeout())
-        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, Timeout) as e:
+        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
             print(f'Exception occurred when attempting to search Merriam Webster for \"{query}\": {e}')
             raise RuntimeError(f'Exception occurred when attempting to search Merriam Webster for \"{query}\": {e}')
 

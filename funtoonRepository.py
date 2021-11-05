@@ -5,6 +5,7 @@ from typing import Dict
 
 import requests
 from requests import ConnectionError, HTTPError, Timeout
+from requests.exceptions import ReadTimeout, TooManyRedirects
 from urllib3.exceptions import MaxRetryError, NewConnectionError
 
 try:
@@ -88,7 +89,7 @@ class FuntoonRepository():
                 },
                 timeout = utils.getDefaultTimeout()
             )
-        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, Timeout) as e:
+        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
             print(f'Exception occurred when attempting to post Funtoon \"{event}\" event for \"{twitchChannel}\": {e}')
 
         if rawResponse is not None and rawResponse.status_code == 200:

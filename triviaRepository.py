@@ -182,7 +182,10 @@ class TriviaRepository():
             print(f'Exception occurred when attempting to decode Open Trivia Database\'s response into JSON: {e}')
             raise RuntimeError(f'Exception occurred when attempting to decode Open Trivia Database\'s response into JSON: {e}')
 
-        if utils.getIntFromDict(jsonResponse, 'response_code', -1) != 0:
+        if not utils.hasItems(jsonResponse):
+            print(f'Rejecting Open Trivia Database\'s API data due to null/empty contents: {jsonResponse}')
+            raise ValueError(f'Rejecting Open Trivia Database\'s API data due to null/empty contents: {jsonResponse}')
+        elif utils.getIntFromDict(jsonResponse, 'response_code', -1) != 0:
             print(f'Rejecting trivia due to bad \"response_code\" value: {jsonResponse}')
             raise ValueError(f'Rejecting trivia due to bad \"response_code\" value: {jsonResponse}')
         elif not utils.hasItems(jsonResponse.get('results')):

@@ -1,12 +1,10 @@
-import locale
-from collections import Counter
 from datetime import datetime, timedelta
-from enum import Enum, auto
 from json.decoder import JSONDecodeError
-from typing import Dict, List
+from typing import List
 
 import requests
 from requests import ConnectionError, HTTPError, Timeout
+from requests.exceptions import ReadTimeout, TooManyRedirects
 from urllib3.exceptions import MaxRetryError, NewConnectionError
 
 try:
@@ -144,7 +142,7 @@ class TamaleGuyRepository():
                 url = 'https://cdn4.editmysite.com/app/store/api/v13/editor/users/133185089/sites/894723485170061581/store-locations/11ead036057c3aa5b510ac1f6bbba828/products?page=1&per_page=200&include=images,categories&fulfillments[]=pickup',
                 timeout = utils.getDefaultTimeout()
             )
-        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, Timeout) as e:
+        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
             print(f'Exception occurred when attempting to fetch Tamale Guy store stock: {e}')
             raise RuntimeError(f'Exception occurred when attempting to fetch Tamale Guy store stock: {e}')
 
