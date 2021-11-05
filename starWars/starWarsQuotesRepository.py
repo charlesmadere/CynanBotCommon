@@ -14,7 +14,7 @@ class StarWarsQuotesRepository:
 
     def __init__(
         self,
-        quotesFile: str = 'CynanBotCommon/starWarsQuotesRepository.json'
+        quotesFile: str = 'CynanBotCommon/starWars/starWarsQuotesRepository.json'
     ):
         if not utils.isValidStr(quotesFile):
             raise ValueError(f'quotesFile argument is malformed: \"{quotesFile}\"')
