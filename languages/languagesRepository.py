@@ -3,63 +3,11 @@ from typing import List
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.languages.languageEntry import LanguageEntry
 except:
     import utils
 
-
-class LanguageEntry():
-
-    def __init__(
-        self,
-        commandNames: List[str],
-        name: str,
-        flag: str = None,
-        iso6391Code: str = None,
-        wotdApiCode: str = None
-    ):
-        if not utils.hasItems(commandNames):
-            raise ValueError(f'commandNames argument is malformed: \"{commandNames}\"')
-        elif not utils.isValidStr(name):
-            raise ValueError(f'name argument is malformed: \"{name}\"')
-
-        self.__commandNames: List[str] = commandNames
-        self.__name: str = name
-        self.__flag: str = flag
-        self.__iso6391Code: str = iso6391Code
-        self.__wotdApiCode: str = wotdApiCode
-
-    def getCommandNames(self) -> List[str]:
-        return self.__commandNames
-
-    def getFlag(self) -> str:
-        return self.__flag
-
-    def getIso6391Code(self) -> str:
-        if self.hasIso6391Code():
-            return self.__iso6391Code
-        else:
-            raise RuntimeError(f'this LanguageEntry ({self.getName()}) has no ISO 639-1 code!')
-
-    def getName(self) -> str:
-        return self.__name
-
-    def getPrimaryCommandName(self) -> str:
-        return self.__commandNames[0]
-
-    def getWotdApiCode(self) -> str:
-        if self.hasWotdApiCode():
-            return self.__wotdApiCode
-        else:
-            raise RuntimeError(f'this LanguageEntry ({self.getName()}) has no Word Of The Day API code!')
-
-    def hasFlag(self) -> bool:
-        return utils.isValidStr(self.__flag)
-
-    def hasIso6391Code(self) -> bool:
-        return utils.isValidStr(self.__iso6391Code)
-
-    def hasWotdApiCode(self) -> bool:
-        return utils.isValidStr(self.__wotdApiCode)
+    from languages.languageEntry import LanguageEntry
 
 
 class LanguagesRepository():
@@ -68,9 +16,9 @@ class LanguagesRepository():
         self.__languageList: List[LanguageEntry] = self.__createLanguageList()
 
     def __createLanguageList(self) -> List[LanguageEntry]:
-        languages: List[LanguageEntry] = list()
+        languagesList: List[LanguageEntry] = list()
 
-        languages.append(LanguageEntry(
+        languagesList.append(LanguageEntry(
             commandNames = [ 'de', 'deutsche', 'german', 'germany' ],
             flag = '🇩🇪',
             iso6391Code = 'de',
@@ -78,33 +26,33 @@ class LanguagesRepository():
             wotdApiCode = 'de'
         ))
 
-        languages.append(LanguageEntry(
+        languagesList.append(LanguageEntry(
             commandNames = [ 'en', 'eng', 'english', '英語' ],
             flag = '🇬🇧',
             iso6391Code = 'en',
             name = 'English'
         ))
 
-        languages.append(LanguageEntry(
+        languagesList.append(LanguageEntry(
             commandNames = [ 'en-es' ],
             name = 'English for Spanish speakers',
             wotdApiCode = 'en-es'
         ))
 
-        languages.append(LanguageEntry(
+        languagesList.append(LanguageEntry(
             commandNames = [ 'en-pt' ],
             name = 'English for Portuguese speakers',
             wotdApiCode = 'en-pt'
         ))
 
-        languages.append(LanguageEntry(
+        languagesList.append(LanguageEntry(
             commandNames = [ 'es', 'español', 'sp', 'spanish' ],
             iso6391Code = 'es',
             name = 'Spanish',
             wotdApiCode = 'es'
         ))
 
-        languages.append(LanguageEntry(
+        languagesList.append(LanguageEntry(
             commandNames = [ 'fr', 'français', 'france', 'french' ],
             flag = '🇫🇷',
             iso6391Code = 'fr',
@@ -112,14 +60,14 @@ class LanguagesRepository():
             wotdApiCode = 'fr'
         ))
 
-        languages.append(LanguageEntry(
+        languagesList.append(LanguageEntry(
             commandNames = [ 'el', 'greek' ],
             flag = '🇬🇷',
             iso6391Code = 'el',
             name = 'Greek'
         ))
 
-        languages.append(LanguageEntry(
+        languagesList.append(LanguageEntry(
             commandNames = [ 'it', 'italian', 'italiano', 'italy' ],
             flag = '🇮🇹',
             iso6391Code = 'it',
@@ -127,7 +75,7 @@ class LanguagesRepository():
             wotdApiCode = 'it'
         ))
 
-        languages.append(LanguageEntry(
+        languagesList.append(LanguageEntry(
             commandNames = [ 'ja', 'japan', 'japanese', 'jp', '日本語', 'にほんご' ],
             flag = '🇯🇵',
             iso6391Code = 'ja',
@@ -135,7 +83,7 @@ class LanguagesRepository():
             wotdApiCode = 'ja'
         ))
 
-        languages.append(LanguageEntry(
+        languagesList.append(LanguageEntry(
             commandNames = [ 'ko', 'korea', 'korean', '한국어' ],
             flag = '🇰🇷',
             iso6391Code = 'ko',
@@ -143,13 +91,13 @@ class LanguagesRepository():
             wotdApiCode = 'korean'
         ))
 
-        languages.append(LanguageEntry(
+        languagesList.append(LanguageEntry(
             commandNames = [ 'la', 'latin' ],
             iso6391Code = 'la',
             name = 'Latin'
         ))
 
-        languages.append(LanguageEntry(
+        languagesList.append(LanguageEntry(
             commandNames = [ 'nl', 'dutch', 'nederlands', 'netherlands', 'vlaams' ],
             flag = '🇳🇱',
             iso6391Code = 'nl',
@@ -157,7 +105,7 @@ class LanguagesRepository():
             wotdApiCode = 'nl'
         ))
 
-        languages.append(LanguageEntry(
+        languagesList.append(LanguageEntry(
             commandNames = [ 'no', 'norsk', 'norway', 'norwegian' ],
             flag = '🇳🇴',
             iso6391Code = 'no',
@@ -165,7 +113,7 @@ class LanguagesRepository():
             wotdApiCode = 'norwegian'
         ))
 
-        languages.append(LanguageEntry(
+        languagesList.append(LanguageEntry(
             commandNames = [ 'po', 'poland', 'polish' ],
             flag = '🇵🇱',
             iso6391Code = 'pl',
@@ -173,7 +121,7 @@ class LanguagesRepository():
             wotdApiCode = 'polish',
         ))
 
-        languages.append(LanguageEntry(
+        languagesList.append(LanguageEntry(
             commandNames = [ 'pt', 'portuguese', 'português' ],
             flag = '🇧🇷',
             iso6391Code = 'pt',
@@ -181,7 +129,7 @@ class LanguagesRepository():
             wotdApiCode = 'pt'
         ))
 
-        languages.append(LanguageEntry(
+        languagesList.append(LanguageEntry(
             commandNames = [ 'ru', 'russia', 'russian', 'русский' ],
             flag = '🇷🇺',
             iso6391Code = 'ru',
@@ -189,7 +137,7 @@ class LanguagesRepository():
             wotdApiCode = 'ru'
         ))
 
-        languages.append(LanguageEntry(
+        languagesList.append(LanguageEntry(
             commandNames = [ 'se', 'sv', 'svenska', 'sw', 'sweden', 'swedish' ],
             flag = '🇸🇪',
             iso6391Code = 'sv',
@@ -197,14 +145,14 @@ class LanguagesRepository():
             wotdApiCode = 'swedish',
         ))
 
-        languages.append(LanguageEntry(
+        languagesList.append(LanguageEntry(
             commandNames = [ 'th', 'thai' ],
             flag = '🇹🇭',
             iso6391Code = 'th',
             name = 'Thai'
         ))
 
-        languages.append(LanguageEntry(
+        languagesList.append(LanguageEntry(
             commandNames = [ 'zh', 'chinese', 'china', '中文' ],
             flag = '🇨🇳',
             iso6391Code = 'zh',
@@ -212,7 +160,7 @@ class LanguagesRepository():
             wotdApiCode = 'zh'
         ))
 
-        return languages
+        return languagesList
 
     def getAllWotdApiCodes(self, delimiter: str = ', ') -> str:
         if delimiter is None:

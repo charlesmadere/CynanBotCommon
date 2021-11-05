@@ -8,11 +8,11 @@ from urllib3.exceptions import MaxRetryError, NewConnectionError
 
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.languagesRepository import LanguageEntry
+    from CynanBotCommon.languages.languageEntry import LanguageEntry
     from CynanBotCommon.timedDict import TimedDict
 except:
     import utils
-    from languagesRepository import LanguageEntry
+    from languages.languageEntry import LanguageEntry
     from timedDict import TimedDict
 
 
