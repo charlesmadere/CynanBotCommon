@@ -1,6 +1,5 @@
 import json
 import random
-from enum import Enum, auto
 from json.decoder import JSONDecodeError
 from os import path
 
@@ -14,16 +13,14 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.language.languageEntry import LanguageEntry
     from CynanBotCommon.language.languagesRepository import LanguagesRepository
+    from CynanBotCommon.language.translationApiSource import \
+        TranslationApiSource
 except:
     import utils
+
     from language.languageEntry import LanguageEntry
     from language.languagesRepository import LanguagesRepository
-
-
-class TranslationApiSource(Enum):
-
-    DEEP_L = auto()
-    GOOGLE_TRANSLATE = auto()
+    from language.translationApiSource import TranslationApiSource
 
 
 class TranslationResponse():
