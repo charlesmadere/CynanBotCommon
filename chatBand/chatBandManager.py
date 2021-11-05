@@ -1,11 +1,12 @@
 import json
 from datetime import timedelta
-from enum import Enum, auto
 from os import path
 from typing import Dict
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.chatBand.chatBandInstrument import ChatBandInstrument
+    from CynanBotCommon.chatBand.chatBandMember import ChatBandMember
     from CynanBotCommon.timedDict import TimedDict
     from CynanBotCommon.websocketConnectionServer import \
         WebsocketConnectionServer
@@ -14,104 +15,8 @@ except:
     from timedDict import TimedDict
     from websocketConnectionServer import WebsocketConnectionServer
 
-
-class ChatBandInstrument(Enum):
-
-    BASS = auto()
-    DRUMS = auto()
-    GUITAR = auto()
-    MAGIC = auto()
-    PIANO = auto()
-    SYNTH = auto()
-    TRUMPET = auto()
-    VIOLIN = auto()
-    WHISTLE = auto()
-
-    @classmethod
-    def fromStr(cls, text: str):
-        if not utils.isValidStr(text):
-            raise ValueError(f'text argument is malformed: \"{text}\"')
-
-        text = text.lower()
-
-        if text == 'bass':
-            return ChatBandInstrument.BASS
-        elif text == 'drums':
-            return ChatBandInstrument.DRUMS
-        elif text == 'guitar':
-            return ChatBandInstrument.GUITAR
-        elif text == 'magic':
-            return ChatBandInstrument.MAGIC
-        elif text == 'piano':
-            return ChatBandInstrument.PIANO
-        elif text == 'synth':
-            return ChatBandInstrument.SYNTH
-        elif text == 'trumpet':
-            return ChatBandInstrument.TRUMPET
-        elif text == 'violin':
-            return ChatBandInstrument.VIOLIN
-        elif text == 'whistle':
-            return ChatBandInstrument.WHISTLE
-        else:
-            raise ValueError(f'unknown ChatBandInstrument: \"{text}\"')
-
-    def toStr(self) -> str:
-        if self is ChatBandInstrument.BASS:
-            return 'bass'
-        elif self is ChatBandInstrument.DRUMS:
-            return 'drums'
-        elif self is ChatBandInstrument.GUITAR:
-            return 'guitar'
-        elif self is ChatBandInstrument.MAGIC:
-            return 'magic'
-        elif self is ChatBandInstrument.PIANO:
-            return 'piano'
-        elif self is ChatBandInstrument.SYNTH:
-            return 'synth'
-        elif self is ChatBandInstrument.TRUMPET:
-            return 'trumpet'
-        elif self is ChatBandInstrument.VIOLIN:
-            return 'violin'
-        elif self is ChatBandInstrument.WHISTLE:
-            return 'whistle'
-        else:
-            raise ValueError(f'unknown ChatBandInstrument: \"{self}\"')
-
-
-class ChatBandMember():
-
-    def __init__(
-        self,
-        instrument: ChatBandInstrument,
-        author: str,
-        keyPhrase: str
-    ):
-        if instrument is None:
-            raise ValueError(f'instrument argument is malformed: \"{instrument}\"')
-        elif not utils.isValidStr(author):
-            raise ValueError(f'author argument is malformed: \"{author}\"')
-        elif not utils.isValidStr(keyPhrase):
-            raise ValueError(f'keyPhrase argument is malformed: \"{keyPhrase}\"')
-
-        self.__instrument: ChatBandInstrument = instrument
-        self.__author: str = author
-        self.__keyPhrase: str = keyPhrase
-
-    def getAuthor(self) -> str:
-        return self.__author
-
-    def getInstrument(self) -> ChatBandInstrument:
-        return self.__instrument
-
-    def getKeyPhrase(self) -> str:
-        return self.__keyPhrase
-
-    def toEventData(self) -> Dict:
-        return {
-            'author': self.__author,
-            'keyPhrase': self.__keyPhrase,
-            'instrument': self.__instrument.toStr()
-        }
+    from chatBand.chatBandInstrument import ChatBandInstrument
+    from chatBand.chatBandMember import ChatBandMember
 
 
 class ChatBandManager():
@@ -119,7 +24,7 @@ class ChatBandManager():
     def __init__(
         self,
         websocketConnectionServer: WebsocketConnectionServer,
-        chatBandFile: str = 'CynanBotCommon/chatBandManager.json',
+        chatBandFile: str = 'CynanBotCommon/chatBand/chatBandManager.json',
         eventType: str = 'chatBand',
         eventCooldown: timedelta = timedelta(minutes = 5),
         memberCacheTimeToLive: timedelta = timedelta(minutes = 15)
@@ -166,7 +71,7 @@ class ChatBandManager():
         await self.__websocketConnectionServer.sendEvent(
             twitchChannel = twitchChannel,
             eventType = self.__eventType,
-            eventData = chatBandMember.toEventData()
+            eventData = self.__toEventData(chatBandMember)
         )
 
         return True
@@ -246,3 +151,13 @@ class ChatBandManager():
                 return jsonContents[key]
 
         return None
+
+    def __toEventData(self, chatBandMember: ChatBandMember) -> Dict:
+        if chatBandMember is None:
+            raise ValueError(f'chatBandMember argument is malformed: \"{chatBandMember}\"')
+
+        return {
+            'author': chatBandMember.getAuthor(),
+            'keyPhrase': chatBandMember.getKeyPhrase(),
+            'instrument': chatBandMember.getInstrument().toStr()
+        }
