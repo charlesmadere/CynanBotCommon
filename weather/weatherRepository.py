@@ -1,6 +1,5 @@
 import locale
 from datetime import timedelta
-from enum import Enum, auto
 from json.decoder import JSONDecodeError
 from typing import Dict, List
 
@@ -13,80 +12,17 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.location import Location
     from CynanBotCommon.timedDict import TimedDict
+    from CynanBotCommon.weather.airQualityIndex import AirQualityIndex
+    from CynanBotCommon.weather.uvIndex import UvIndex
+    from CynanBotCommon.weather.weatherReport import WeatherReport
 except:
     import utils
     from location import Location
     from timedDict import TimedDict
 
-
-class AirQualityIndex(Enum):
-
-    FAIR = auto()
-    GOOD = auto()
-    MODERATE = auto()
-    POOR = auto()
-    VERY_POOR = auto()
-
-    @classmethod
-    def fromInt(cls, airQualityIndex: int):
-        if not utils.isValidNum(airQualityIndex):
-            raise ValueError(f'airQualityIndex argument is malformed: \"{airQualityIndex}\"')
-
-        if airQualityIndex == 1:
-            return AirQualityIndex.GOOD
-        elif airQualityIndex == 2:
-            return AirQualityIndex.FAIR
-        elif airQualityIndex == 3:
-            return AirQualityIndex.MODERATE
-        elif airQualityIndex == 4:
-            return AirQualityIndex.POOR
-        elif airQualityIndex == 5:
-            return AirQualityIndex.VERY_POOR
-        else:
-            raise ValueError(f'unknown AirQualityIndex: \"{airQualityIndex}\"')
-
-    def toStr(self) -> str:
-        if self is AirQualityIndex.FAIR:
-            return 'fair'
-        elif self is AirQualityIndex.GOOD:
-            return 'good'
-        elif self is AirQualityIndex.MODERATE:
-            return 'moderate'
-        elif self is AirQualityIndex.POOR:
-            return 'poor'
-        elif self is AirQualityIndex.VERY_POOR:
-            return 'very poor'
-        else:
-            raise RuntimeError(f'unknown AirQualityIndex: \"{self}\"')
-
-
-class UvIndex(Enum):
-
-    LOW = auto()
-    MODERATE_TO_HIGH = auto()
-    VERY_HIGH_TO_EXTREME = auto()
-
-    @classmethod
-    def fromFloat(cls, uvIndex: float):
-        if not utils.isValidNum(uvIndex):
-            raise ValueError(f'uvIndex argument is malformed: \"{uvIndex}\"')
-
-        if uvIndex <= 2:
-            return UvIndex.LOW
-        elif uvIndex <= 7:
-            return UvIndex.MODERATE_TO_HIGH
-        else:
-            return UvIndex.VERY_HIGH_TO_EXTREME
-
-    def toStr(self) -> str:
-        if self is UvIndex.LOW:
-            return 'low'
-        elif self is UvIndex.MODERATE_TO_HIGH:
-            return 'moderate to high'
-        elif self is UvIndex.VERY_HIGH_TO_EXTREME:
-            return 'very high to extreme'
-        else:
-            raise RuntimeError(f'unknown UvIndex: \"{self}\"')
+    from weather.airQualityIndex import AirQualityIndex
+    from weather.uvIndex import UvIndex
+    from weather.weatherReport import WeatherReport
 
 
 class WeatherReport():
