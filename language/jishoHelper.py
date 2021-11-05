@@ -9,101 +9,13 @@ from urllib3.exceptions import MaxRetryError, NewConnectionError
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.language.jishoResult import JishoResult
+    from CynanBotCommon.language.jishoVariant import JishoVariant
 except:
     import utils
 
-
-class JishoVariant():
-
-    def __init__(
-        self,
-        definitions: List[str],
-        partsOfSpeech: List[str],
-        furigana: str,
-        word: str
-    ):
-        if not utils.hasItems(definitions):
-            raise ValueError(f'definitions argument is malformed: \"{definitions}\"')
-
-        self.__definitions: List[str] = definitions
-        self.__partsOfSpeech: List[str] = partsOfSpeech
-        self.__furigana: str = furigana
-        self.__word: str = word
-
-    def getDefinitions(self) -> List[str]:
-        return self.__definitions
-
-    def getFurigana(self) -> str:
-        return self.__furigana
-
-    def getPartsOfSpeech(self) -> List[str]:
-        return self.__partsOfSpeech
-
-    def getWord(self) -> str:
-        return self.__word
-
-    def hasFurigana(self) -> bool:
-        return utils.isValidStr(self.__furigana)
-
-    def hasPartsOfSpeech(self) -> bool:
-        return utils.hasItems(self.__partsOfSpeech)
-
-    def hasWord(self) -> str:
-        return self.__word
-
-    def toStr(self, definitionDelimiter: str = ', ') -> str:
-        if definitionDelimiter is None:
-            raise ValueError(f'definitionDelimiter argument is malformed: \"{definitionDelimiter}\"')
-
-        word = ''
-        if self.hasWord():
-            word = self.__word
-
-        furigana = ''
-        if self.hasFurigana():
-            if utils.isValidStr(word):
-                furigana = f' ({self.__furigana})'
-            else:
-                furigana = self.__furigana
-
-        definitionsList: List[str] = list()
-        for definition in self.__definitions:
-            definitionsList.append(definition)
-
-        definitions = definitionDelimiter.join(definitionsList)
-        return f'{word}{furigana} — {definitions}'
-
-
-class JishoResult():
-
-    def __init__(
-        self,
-        variants: List[JishoVariant],
-        initialQuery: str
-    ):
-        if not utils.hasItems(variants):
-            raise ValueError(f'variants argument is malformed: \"{variants}\"')
-        elif not utils.isValidStr(initialQuery):
-            raise ValueError(f'initialQuery argument is malformed: \"{initialQuery}\"')
-
-        self.__variants: List[JishoVariant] = variants
-        self.__initialQuery: str = initialQuery
-
-    def getInitialQuery(self) -> str:
-        return self.__initialQuery
-
-    def getVariants(self) -> List[JishoVariant]:
-        return self.__variants
-
-    def toStrList(self, definitionDelimiter: str = ', ') -> List[str]:
-        if definitionDelimiter is None:
-            raise ValueError(f'definitionDelimiter argument is malformed: \"{definitionDelimiter}\"')
-
-        strings: List[str] = list()
-        for variant in self.__variants:
-            strings.append(variant.toStr(definitionDelimiter))
-
-        return strings
+    from language.jishoResult import JishoResult
+    from language.jishoVariant import JishoVariant
 
 
 class JishoHelper():
@@ -115,7 +27,7 @@ class JishoHelper():
             raise ValueError(f'definitionsMaxSize argument is out of bounds: \"{definitionsMaxSize}\"')
         elif not utils.isValidNum(variantsMaxSize):
             raise ValueError(f'variantsMaxSize argument is malformed: \"{variantsMaxSize}\"')
-        elif variantsMaxSize < 1 or variantsMaxSize > 3:
+        elif variantsMaxSize < 1 or variantsMaxSize > 5:
             raise ValueError(f'variantsMaxSize argument is out of bounds: \"{variantsMaxSize}\"')
 
         self.__definitionsMaxSize: int = definitionsMaxSize
