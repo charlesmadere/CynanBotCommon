@@ -1,11 +1,11 @@
 import locale
 
 try:
-    import CynanBotCommon.backingDatabase as BackingDatabase
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.backingDatabase import BackingDatabase
 except:
-    import backingDatabase as BackingDatabase
     import utils
+    from backingDatabase import BackingDatabase
 
 
 class TriviaScoreResult():
