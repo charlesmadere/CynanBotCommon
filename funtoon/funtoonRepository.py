@@ -1,6 +1,5 @@
 import json
 import os
-from enum import Enum, auto
 from typing import Dict
 
 import requests
@@ -10,25 +9,12 @@ from urllib3.exceptions import MaxRetryError, NewConnectionError
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.funtoon.funtoonPkmnCatchType import \
+        FuntoonPkmnCatchType
 except:
     import utils
 
-
-class FuntoonPkmnCatchType(Enum):
-
-    GREAT = auto()
-    NORMAL = auto()
-    ULTRA = auto()
-
-    def toStr(self) -> str:
-        if self is FuntoonPkmnCatchType.GREAT:
-            return 'great'
-        elif self is FuntoonPkmnCatchType.NORMAL:
-            return 'normal'
-        elif self is FuntoonPkmnCatchType.ULTRA:
-            return 'ultra'
-        else:
-            raise RuntimeError(f'unknown FuntoonPkmnCatchType: \"{self}\"')
+    from funtoon.funtoonPkmnCatchType import FuntoonPkmnCatchType
 
 
 class FuntoonRepository():
@@ -36,7 +22,7 @@ class FuntoonRepository():
     def __init__(
         self,
         funtoonApiUrl: str = 'https://funtoon.party/api',
-        funtoonRepositoryFile: str = 'CynanBotCommon/funtoonRepository.json'
+        funtoonRepositoryFile: str = 'CynanBotCommon/funtoon/funtoonRepository.json'
     ):
         if not utils.isValidUrl(funtoonApiUrl):
             raise ValueError(f'funtoonApiUrl argument is malformed: \"{funtoonApiUrl}\"')
