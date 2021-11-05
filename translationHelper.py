@@ -12,13 +12,12 @@ from urllib3.exceptions import MaxRetryError, NewConnectionError
 
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.languages.languageEntry import LanguageEntry
-    from CynanBotCommon.languages.languagesRepository import \
-        LanguagesRepository
+    from CynanBotCommon.language.languageEntry import LanguageEntry
+    from CynanBotCommon.language.languagesRepository import LanguagesRepository
 except:
     import utils
-    from languages.languageEntry import LanguageEntry
-    from languages.languagesRepository import LanguagesRepository
+    from language.languageEntry import LanguageEntry
+    from language.languagesRepository import LanguagesRepository
 
 
 class TranslationApiSource(Enum):

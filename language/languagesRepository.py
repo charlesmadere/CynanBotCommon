@@ -3,11 +3,11 @@ from typing import List
 
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.languages.languageEntry import LanguageEntry
+    from CynanBotCommon.language.languageEntry import LanguageEntry
 except:
     import utils
 
-    from languages.languageEntry import LanguageEntry
+    from language.languageEntry import LanguageEntry
 
 
 class LanguagesRepository():
