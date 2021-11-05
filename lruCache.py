@@ -1,10 +1,19 @@
 from typing import Dict
 
+try:
+    import CynanBotCommon.utils as utils
+except:
+    import utils
+
+# This class was taken from online:
+# https://gist.github.com/jerryan999/6677a2619e8175e54ed05d3c6e1621cf
+#
+# I then slightly tweaked it for simplifcation... fingers crossed it works
 
 class LinkedNode():
 
     def __init__(self, key: str):
-        if key is None:
+        if not utils.isValidStr(key):
             raise ValueError(f'key argument is malformed: \"{key}\"')
 
         self.key: str = key
@@ -12,17 +21,19 @@ class LinkedNode():
         self.prev: LinkedNode = None
 
 
-class LRUCache():
+class LruCache():
 
     def __init__(self, capacity: int):
-        if capacity < 0:
-            raise ValueError(f'capacity argument is out of bounds: {capacity}')
+        if not utils.isValidNum(capacity):
+            raise ValueError(f'capacity argument is malformed: \"{capacity}\"')
+        elif capacity < 8:
+            raise ValueError(f'capacity argument is too small: {capacity}')
 
-        self.capacity = capacity
-        self.lookup: Dict[str, LinkedNode] = dict()
-        self.dummy = LinkedNode("dummy")
-        self.head = self.dummy.next
-        self.tail = self.dummy.next
+        self.__capacity: int = capacity
+        self.__lookup: Dict[str, LinkedNode] = dict()
+        self.__stub: LinkedNode = LinkedNode("stub")
+        self.head: LinkedNode = self.__stub.next
+        self.tail: LinkedNode = self.__stub.next
 
     def __append_new_node(self, new_node: LinkedNode):
         """  add the new node to the tail end
@@ -35,10 +46,10 @@ class LRUCache():
             self.tail = self.tail.next
 
     def contains(self, key: str) -> bool:
-        if key is None or key not in self.lookup:
+        if key is None or key not in self.__lookup:
             return False
 
-        node = self.lookup[key]
+        node = self.__lookup[key]
 
         if node is not self.tail:
             self.__unlink_cur_node(node)
@@ -50,27 +61,30 @@ class LRUCache():
         if key is None:
             raise ValueError(f'key argument is malformed: \"{key}\"')
 
-        if key in self.lookup:
+        if key in self.__lookup:
             self.contains(key)
             return
 
-        if len(self.lookup) == self.capacity:
+        if len(self.__lookup) == self.__capacity:
             # remove head node and corresponding key
-            self.lookup.pop(self.head.key)
+            self.__lookup.pop(self.head.key)
             self.__remove_head_node()
 
         # add new node and hash key
-        new_node = LinkedNode(key = key)
-        self.lookup[key] = new_node
-        self.__append_new_node(new_node)
+        newNode: LinkedNode = LinkedNode(key)
+        self.__lookup[key] = newNode
+        self.__append_new_node(newNode)
 
     def __remove_head_node(self):
         if not self.head:
             return
+
         prev = self.head
         self.head = self.head.next
+
         if self.head:
             self.head.prev = None
+
         del prev
 
     def __unlink_cur_node(self, node: LinkedNode):
@@ -78,8 +92,10 @@ class LRUCache():
         """
         if self.head is node:
             self.head = node.next
+
             if node.next:
                 node.next.prev = None
+
             return
 
         # removing the node from somewhere in the middle; update pointers
