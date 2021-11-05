@@ -10,14 +10,14 @@ from urllib3.exceptions import MaxRetryError, NewConnectionError
 
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.location import Location
+    from CynanBotCommon.location.location import Location
     from CynanBotCommon.timedDict import TimedDict
     from CynanBotCommon.weather.airQualityIndex import AirQualityIndex
     from CynanBotCommon.weather.uvIndex import UvIndex
     from CynanBotCommon.weather.weatherReport import WeatherReport
 except:
     import utils
-    from location import Location
+    from location.location import Location
     from timedDict import TimedDict
 
     from weather.airQualityIndex import AirQualityIndex

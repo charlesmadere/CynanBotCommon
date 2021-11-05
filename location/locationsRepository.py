@@ -4,12 +4,13 @@ from typing import Dict
 
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.location import Location
+    from CynanBotCommon.location.location import Location
     from CynanBotCommon.timeZoneRepository import TimeZoneRepository
 except:
     import utils
-    from location import Location
     from timeZoneRepository import TimeZoneRepository
+
+    from location.location import Location
 
 
 class LocationsRepository():
@@ -17,7 +18,7 @@ class LocationsRepository():
     def __init__(
         self,
         timeZoneRepository: TimeZoneRepository,
-        locationsFile: str = 'CynanBotCommon/locationsRepository.json'
+        locationsFile: str = 'CynanBotCommon/locations/locationsRepository.json'
     ):
         if timeZoneRepository is None:
             raise ValueError(f'timeZoneRepository argument is malformed: \"{timeZoneRepository}\"')
