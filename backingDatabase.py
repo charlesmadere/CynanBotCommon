@@ -1,4 +1,5 @@
 import sqlite3
+from sqlite3 import Connection
 
 try:
     import CynanBotCommon.utils as utils
@@ -12,7 +13,7 @@ class BackingDatabase():
         if not utils.isValidStr(databaseFile):
             raise ValueError(f'databaseFile argument is malformed: \"{databaseFile}\"')
 
-        self.__connection = sqlite3.connect(databaseFile)
+        self.__connection: Connection = sqlite3.connect(databaseFile)
 
-    def getConnection(self):
+    def getConnection(self) -> Connection:
         return self.__connection
