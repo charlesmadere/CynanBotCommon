@@ -46,7 +46,7 @@ class LruCache():
             self.tail = self.tail.next
 
     def contains(self, key: str) -> bool:
-        if key is None or key not in self.__lookup:
+        if not utils.isValidStr(key) or key not in self.__lookup:
             return False
 
         node = self.__lookup[key]
@@ -58,7 +58,7 @@ class LruCache():
         return True
 
     def put(self, key: str):
-        if key is None:
+        if not utils.isValidStr(key):
             raise ValueError(f'key argument is malformed: \"{key}\"')
 
         if key in self.__lookup:
