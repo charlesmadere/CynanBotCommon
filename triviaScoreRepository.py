@@ -170,7 +170,7 @@ class TriviaScoreRepository():
             streak = newStreak,
             totalLosses = newTotalLosses,
             totalWins = result.getTotalWins(),
-            twitchChanel = result.getTwitchChannel(),
+            twitchChannel = result.getTwitchChannel(),
             userId = result.getUserId()
         )
 
@@ -211,7 +211,7 @@ class TriviaScoreRepository():
             streak = newStreak,
             totalLosses = result.getTotalLosses(),
             totalWins = newTotalWins,
-            twitchChanel = result.getTwitchChannel(),
+            twitchChannel = result.getTwitchChannel(),
             userId = result.getUserId()
         )
 
