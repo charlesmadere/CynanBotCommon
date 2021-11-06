@@ -230,6 +230,7 @@ class TriviaRepository():
             return TrueFalseTriviaQuestion(
                 correctAnswers = correctAnswers,
                 category = category,
+                _id = None,
                 question = question,
                 triviaDifficulty = triviaDifficulty,
                 triviaSource = TriviaSource.OPEN_TRIVIA_DATABASE
