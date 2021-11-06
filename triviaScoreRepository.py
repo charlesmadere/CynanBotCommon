@@ -124,8 +124,6 @@ class TriviaScoreRepository():
             cursor.close()
             return result
 
-        cursor.close()
-
         cursor.execute(
             '''
                 INSERT INTO triviaScores (streak, totalLosses, totalWins, twitchChannel, userId)
