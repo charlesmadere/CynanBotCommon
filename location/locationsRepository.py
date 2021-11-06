@@ -18,7 +18,7 @@ class LocationsRepository():
     def __init__(
         self,
         timeZoneRepository: TimeZoneRepository,
-        locationsFile: str = 'CynanBotCommon/locations/locationsRepository.json'
+        locationsFile: str = 'CynanBotCommon/location/locationsRepository.json'
     ):
         if timeZoneRepository is None:
             raise ValueError(f'timeZoneRepository argument is malformed: \"{timeZoneRepository}\"')
