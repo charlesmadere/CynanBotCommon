@@ -120,9 +120,9 @@ class TriviaScoreRepository():
         self.__updateTriviaScore(
             newStreak = newResult.getStreak(),
             newTotalLosses = newResult.getTotalLosses(),
-            newTotalWins = result.getTotalWins(),
-            twitchChannel = result.getTwitchChannel(),
-            userId = result.getUserId()
+            newTotalWins = newResult.getTotalWins(),
+            twitchChannel = newResult.getTwitchChannel(),
+            userId = newResult.getUserId()
         )
 
         return newResult
@@ -161,9 +161,9 @@ class TriviaScoreRepository():
         self.__updateTriviaScore(
             newStreak = newResult.getStreak(),
             newTotalLosses = newResult.getTotalLosses(),
-            newTotalWins = result.getTotalWins(),
-            twitchChannel = result.getTwitchChannel(),
-            userId = result.getUserId()
+            newTotalWins = newResult.getTotalWins(),
+            twitchChannel = newResult.getTwitchChannel(),
+            userId = newResult.getUserId()
         )
 
         return newResult
