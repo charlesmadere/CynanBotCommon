@@ -5,25 +5,33 @@ from typing import Dict, List
 
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.triviaModels import (AbsTriviaQuestion,
-                                             MultipleChoiceTriviaQuestion,
-                                             QuestionAnswerTriviaQuestion,
-                                             TriviaDifficulty, TriviaSource,
-                                             TriviaType,
-                                             TrueFalseTriviaQuestion)
+    from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
+    from CynanBotCommon.trivia.multipleChoiceTriviaQuestion import \
+        MultipleChoiceTriviaQuestion
+    from CynanBotCommon.trivia.questionAnswerTriviaQuestion import \
+        QuestionAnswerTriviaQuestion
+    from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
+    from CynanBotCommon.trivia.triviaSource import TriviaSource
+    from CynanBotCommon.trivia.triviaType import TriviaType
+    from CynanBotCommon.trivia.trueFalseTriviaQuestion import \
+        TrueFalseTriviaQuestion
 except:
     import utils
-    from triviaModels import (AbsTriviaQuestion, MultipleChoiceTriviaQuestion,
-                              QuestionAnswerTriviaQuestion, TriviaDifficulty,
-                              TriviaSource, TriviaType,
-                              TrueFalseTriviaQuestion)
+
+    from trivia.absTriviaQuestion import AbsTriviaQuestion
+    from trivia.questionAnswerTriviaQuestion import \
+        QuestionAnswerTriviaQuestion
+    from trivia.triviaDifficulty import TriviaDifficulty
+    from trivia.triviaSource import TriviaSource
+    from trivia.triviaType import TriviaType
+    from trivia.trueFalseTriviaQuestion import TrueFalseTriviaQuestion
 
 
 class LocalTriviaRepository():
 
     def __init__(
         self,
-        localTriviaFile: str = 'CynanBotCommon/localTriviaRepository.json'
+        localTriviaFile: str = 'CynanBotCommon/trivia/localTriviaRepository.json'
     ):
         if not utils.isValidStr(localTriviaFile):
             raise ValueError(f'localTriviaFile argument is malformed: \"{localTriviaFile}\"')
