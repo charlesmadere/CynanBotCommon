@@ -304,8 +304,7 @@ class TriviaRepository():
     def fetchTrivia(
         self,
         isLocalTriviaRepositoryEnabled: bool = False,
-        triviaSource: TriviaSource = None,
-        triviaType: TriviaType = None
+        triviaSource: TriviaSource = None
     ) -> AbsTriviaQuestion:
         if not utils.isValidBool(isLocalTriviaRepositoryEnabled):
             raise ValueError(f'isLocalTriviaRepositoryEnabled argument is malformed: \"{isLocalTriviaRepositoryEnabled}\"')
@@ -313,8 +312,7 @@ class TriviaRepository():
         if self.__cacheTimeDelta is None or self.__cacheTime is None or self.__cacheTime + self.__cacheTimeDelta < datetime.utcnow() or self.__triviaResponse is None:
             self.__triviaResponse = self.__fetchTrivia(
                 isLocalTriviaRepositoryEnabled = isLocalTriviaRepositoryEnabled,
-                triviaSource = triviaSource,
-                triviaType = triviaType
+                triviaSource = triviaSource
             )
             self.__cacheTime = datetime.utcnow()
 
