@@ -60,7 +60,7 @@ class FuntoonRepository():
         elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
-        url: str = f'{self.__funtoonApiUrl}/events/custom',
+        url: str = f'{self.__funtoonApiUrl}/events/custom'
 
         rawResponse = None
         try:
