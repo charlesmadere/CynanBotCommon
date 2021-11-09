@@ -111,28 +111,32 @@ class FuntoonRepository():
         self,
         userThatRedeemed: str,
         twitchChannel: str,
-        funtoonPkmnCatchType: FuntoonPkmnCatchType
+        funtoonPkmnCatchType: FuntoonPkmnCatchType = None
     ) -> bool:
         if not utils.isValidStr(userThatRedeemed):
             raise ValueError(f'userThatRedeemed argument is malformed: \"{userThatRedeemed}\"')
         elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
-        elif funtoonPkmnCatchType is None:
-            raise ValueError(f'funtoonPkmnCatchType argument is malformed: \"{funtoonPkmnCatchType}\"')
 
         funtoonToken = self.getFuntoonToken(twitchChannel)
 
         if not utils.isValidStr(funtoonToken):
             return False
 
-        return self.__hitFuntoon(
-            event = 'catch',
-            funtoonToken = funtoonToken,
-            twitchChannel = twitchChannel,
+        data = None
+        if funtoonPkmnCatchType is None:
+            data = userThatRedeemed
+        else:
             data = {
                 'who': userThatRedeemed,
                 'catchType': funtoonPkmnCatchType.toStr()
             }
+
+        return self.__hitFuntoon(
+            event = 'catch',
+            funtoonToken = funtoonToken,
+            twitchChannel = twitchChannel,
+            data = data
         )
 
     def pkmnGiveEvolve(self, userThatRedeemed: str, twitchChannel: str) -> bool:
