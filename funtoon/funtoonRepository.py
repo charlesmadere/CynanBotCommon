@@ -60,10 +60,12 @@ class FuntoonRepository():
         elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
+        url: str = f'{self.__funtoonApiUrl}/events/custom',
+
         rawResponse = None
         try:
             rawResponse = requests.post(
-                url = f'{self.__funtoonApiUrl}/events/custom',
+                url = url,
                 headers = {
                     'Authorization': funtoonToken,
                     'Content-Type': 'application/json'
@@ -81,7 +83,7 @@ class FuntoonRepository():
         if rawResponse is not None and rawResponse.status_code == 200:
             return True
         else:
-            print(f'Received error when hitting Funtoon API \"{rawResponse.url}\" for \"{twitchChannel}\" for \"{event}\" event with token \"{funtoonToken}\"\nrawResponse: \"{rawResponse}\"')
+            print(f'Received error when hitting Funtoon API \"{url}\" for \"{twitchChannel}\" for \"{event}\" event with token \"{funtoonToken}\"\nrawResponse: \"{rawResponse}\"')
             return False
 
     def pkmnBattle(self, userThatRedeemed: str, userToBattle: str, twitchChannel: str) -> bool:
