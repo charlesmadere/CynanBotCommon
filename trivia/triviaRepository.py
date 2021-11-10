@@ -103,7 +103,10 @@ class TriviaRepository():
         random.shuffle(multipleChoiceResponses)
         return multipleChoiceResponses
 
-    def __chooseRandomTriviaSource(self, isLocalTriviaRepositoryEnabled: bool = False) -> TriviaSource:
+    def __chooseRandomTriviaSource(
+        self,
+        isLocalTriviaRepositoryEnabled: bool = False
+    ) -> TriviaSource:
         if not utils.isValidBool(isLocalTriviaRepositoryEnabled):
             raise ValueError(f'isLocalTriviaRepositoryEnabled argument is malformed: \"{isLocalTriviaRepositoryEnabled}\"')
 
@@ -327,7 +330,9 @@ class TriviaRepository():
             raise ValueError(f'isLocalTriviaRepositoryEnabled argument is malformed: \"{isLocalTriviaRepositoryEnabled}\"')
 
         if triviaSource is None:
-            triviaSource = self.__chooseRandomTriviaSource()
+            triviaSource = self.__chooseRandomTriviaSource(
+                isLocalTriviaRepositoryEnabled = isLocalTriviaRepositoryEnabled
+            )
 
         if triviaSource is TriviaSource.J_SERVICE:
             return self.__fetchTriviaQuestionFromJService()
@@ -340,7 +345,10 @@ class TriviaRepository():
         else:
             raise ValueError(f'unknown TriviaSource: \"{triviaSource}\"')
 
-    def __getAvailableTriviaSourcesAndWeights(self, isLocalTriviaRepositoryEnabled: bool = False) -> Dict[TriviaSource, int]:
+    def __getAvailableTriviaSourcesAndWeights(
+        self,
+        isLocalTriviaRepositoryEnabled: bool = False
+    ) -> Dict[TriviaSource, int]:
         if not utils.isValidBool(isLocalTriviaRepositoryEnabled):
             raise ValueError(f'isLocalTriviaRepositoryEnabled argument is malformed: \"{isLocalTriviaRepositoryEnabled}\"')
 
