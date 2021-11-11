@@ -33,6 +33,12 @@ class TriviaScoreResult():
         self.__twitchChannel: str = twitchChannel
         self.__userId: str = userId
 
+    def getAbsStreak(self) -> int:
+        return abs(self.__streak)
+
+    def getAbsStreakStr(self) -> str:
+        return locale.format_string("%d", self.getAbsStreak(), grouping = True)
+
     def getStreak(self) -> int:
         return self.__streak
 
