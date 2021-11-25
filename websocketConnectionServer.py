@@ -22,7 +22,7 @@ class WebsocketEvent():
         if not utils.hasItems(eventData):
             raise ValueError(f'eventData argument is malformed: \"{eventData}\"')
 
-        self.__eventTime = datetime.utcnow()
+        self.__eventTime: datetime = datetime.utcnow()
         self.__eventData: Dict = eventData
 
     def getEventData(self) -> Dict:
