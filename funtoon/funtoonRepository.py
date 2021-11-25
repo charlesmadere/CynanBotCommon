@@ -21,16 +21,20 @@ class FuntoonRepository():
 
     def __init__(
         self,
+        isDebugLoggingEnabled: bool = True,
         funtoonApiUrl: str = 'https://funtoon.party/api',
         funtoonRepositoryFile: str = 'CynanBotCommon/funtoon/funtoonRepository.json'
     ):
-        if not utils.isValidUrl(funtoonApiUrl):
+        if not utils.isValidBool(isDebugLoggingEnabled):
+            raise ValueError(f'isDebugLoggingEnabled argument is malformed: \"{isDebugLoggingEnabled}\"')
+        elif not utils.isValidUrl(funtoonApiUrl):
             raise ValueError(f'funtoonApiUrl argument is malformed: \"{funtoonApiUrl}\"')
         elif not utils.isValidStr(funtoonRepositoryFile):
             raise ValueError(f'funtoonRepositoryFile argument is malformed: \"{funtoonRepositoryFile}\"')
 
-        self.__funtoonApiUrl = funtoonApiUrl
-        self.__funtoonRepositoryFile = funtoonRepositoryFile
+        self.__isDebugLoggingEnabled : bool = isDebugLoggingEnabled
+        self.__funtoonApiUrl: str = funtoonApiUrl
+        self.__funtoonRepositoryFile: str = funtoonRepositoryFile
 
     def getFuntoonToken(self, twitchChannel: str) -> str:
         if not utils.isValidStr(twitchChannel):
@@ -62,6 +66,15 @@ class FuntoonRepository():
 
         url: str = f'{self.__funtoonApiUrl}/events/custom'
 
+        jsonPayload: Dict = {
+            'channel': twitchChannel,
+            'data': data,
+            'event': event
+        }
+
+        if self.__isDebugLoggingEnabled:
+            print(f'Hitting Funtoon API \"{url}\" for \"{twitchChannel}\" for event \"{event}\" with JSON payload:\n{jsonPayload}')
+
         rawResponse = None
         try:
             rawResponse = requests.post(
@@ -70,20 +83,19 @@ class FuntoonRepository():
                     'Authorization': funtoonToken,
                     'Content-Type': 'application/json'
                 },
-                json = {
-                    'channel': twitchChannel,
-                    'data': data,
-                    'event': event
-                },
+                json = jsonPayload,
                 timeout = utils.getDefaultTimeout()
             )
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            print(f'Exception occurred when attempting to post Funtoon \"{event}\" event for \"{twitchChannel}\": {e}')
+            print(f'Exception occurred when attempting to hit Funtoon API \"{url}\" for \"{twitchChannel}\" for event \"{event}\" with JSON payload:\n{jsonPayload}\n{e}')
 
         if rawResponse is not None and rawResponse.status_code == 200:
+            if self.__isDebugLoggingEnabled:
+                print(f'Successfully hit Funtoon API \"{url}\" for \"{twitchChannel}\" for event \"{event}\"')
+
             return True
         else:
-            print(f'Received error when hitting Funtoon API \"{url}\" for \"{twitchChannel}\" for \"{event}\" event with token \"{funtoonToken}\"\nrawResponse: \"{rawResponse}\"')
+            print(f'Error when hitting Funtoon API \"{url}\" for \"{twitchChannel}\" for evebt \"{event}\" with token \"{funtoonToken}\" with JSON payload:\n{jsonPayload}\nrawResponse: \"{rawResponse}\"')
             return False
 
     def pkmnBattle(self, userThatRedeemed: str, userToBattle: str, twitchChannel: str) -> bool:
