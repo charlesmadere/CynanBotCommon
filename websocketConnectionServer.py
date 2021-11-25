@@ -117,7 +117,7 @@ class WebsocketConnectionServer():
                 ):
                     await asyncio.Future()
             except Exception as e:
-                print(f'WebsocketConnectionServer encountered websocket exception: {e}')
+                print(f'WebsocketConnectionServer encountered exception within `__start()`: {e}')
 
             asyncio.sleep(self.__sleepTimeSeconds)
 
@@ -126,15 +126,20 @@ class WebsocketConnectionServer():
             print(f'Established websocket connection to: \"{path}\" (current queue size is {self.__eventQueue.qsize()})')
 
         while True:
-            while not self.__eventQueue.empty():
-                event = self.__eventQueue.get()
+            try:
+                while not self.__eventQueue.empty():
+                    event = self.__eventQueue.get()
 
-                if event.getEventTime() + self.__timeToLive >= datetime.utcnow():
-                    await websocket.send(event.getEventDataAsJson())
+                    if event.getEventTime() + self.__timeToLive >= datetime.utcnow():
+                        await websocket.send(event.getEventDataAsJson())
 
-                    if self.__isDebugLoggingEnabled:
-                        print(f'WebsocketConnectionServer sent event to \"{path}\": \"{event.getEventData()}\"')
-                elif self.__isDebugLoggingEnabled:
-                    print(f'WebsocketConnectionServer discarded an event meant for \"{path}\": \"{event.getEventData()}\"')
+                        if self.__isDebugLoggingEnabled:
+                            print(f'WebsocketConnectionServer sent event to \"{path}\": \"{event.getEventData()}\"')
+                    elif self.__isDebugLoggingEnabled:
+                        print(f'WebsocketConnectionServer discarded an event meant for \"{path}\": \"{event.getEventData()}\"')
+
+                await asyncio.sleep(self.__sleepTimeSeconds)
+            except Exception as e:
+                print(f'WebsocketConnectionServer encountered exception within `__websocketConnectionReceived()`: {e}')
 
             await asyncio.sleep(self.__sleepTimeSeconds)
