@@ -21,18 +21,14 @@ class FuntoonRepository():
 
     def __init__(
         self,
-        isDebugLoggingEnabled: bool = True,
         funtoonApiUrl: str = 'https://funtoon.party/api',
         funtoonRepositoryFile: str = 'CynanBotCommon/funtoon/funtoonRepository.json'
     ):
-        if not utils.isValidBool(isDebugLoggingEnabled):
-            raise ValueError(f'isDebugLoggingEnabled argument is malformed: \"{isDebugLoggingEnabled}\"')
-        elif not utils.isValidUrl(funtoonApiUrl):
+        if not utils.isValidUrl(funtoonApiUrl):
             raise ValueError(f'funtoonApiUrl argument is malformed: \"{funtoonApiUrl}\"')
         elif not utils.isValidStr(funtoonRepositoryFile):
             raise ValueError(f'funtoonRepositoryFile argument is malformed: \"{funtoonRepositoryFile}\"')
 
-        self.__isDebugLoggingEnabled : bool = isDebugLoggingEnabled
         self.__funtoonApiUrl: str = funtoonApiUrl
         self.__funtoonRepositoryFile: str = funtoonRepositoryFile
 
@@ -40,7 +36,7 @@ class FuntoonRepository():
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
-        twitchChannelJson = self.__readJson(twitchChannel)
+        twitchChannelJson = self.__readJsonForTwitchChannel(twitchChannel)
         if twitchChannelJson is None:
             return None
 
@@ -72,7 +68,7 @@ class FuntoonRepository():
             'event': event
         }
 
-        if self.__isDebugLoggingEnabled:
+        if self.__isDebugLoggingEnabled():
             print(f'Hitting Funtoon API \"{url}\" for \"{twitchChannel}\" for event \"{event}\" with JSON payload:\n{jsonPayload}')
 
         rawResponse = None
@@ -90,13 +86,17 @@ class FuntoonRepository():
             print(f'Exception occurred when attempting to hit Funtoon API \"{url}\" for \"{twitchChannel}\" for event \"{event}\" with JSON payload:\n{jsonPayload}\n{e}')
 
         if rawResponse is not None and rawResponse.status_code == 200:
-            if self.__isDebugLoggingEnabled:
+            if self.__isDebugLoggingEnabled():
                 print(f'Successfully hit Funtoon API \"{url}\" for \"{twitchChannel}\" for event \"{event}\"')
 
             return True
         else:
             print(f'Error when hitting Funtoon API \"{url}\" for \"{twitchChannel}\" for evebt \"{event}\" with token \"{funtoonToken}\" with JSON payload:\n{jsonPayload}\nrawResponse: \"{rawResponse}\"')
             return False
+
+    def __isDebugLoggingEnabled(self) -> bool:
+        jsonContents = self.__readJson()
+        return utils.getBoolFromDict(jsonContents, 'debugLoggingEnabled', False)
 
     def pkmnBattle(self, userThatRedeemed: str, userToBattle: str, twitchChannel: str) -> bool:
         if not utils.isValidStr(userThatRedeemed):
@@ -189,10 +189,7 @@ class FuntoonRepository():
             data = userThatRedeemed
         )
 
-    def __readJson(self, twitchChannel: str) -> Dict:
-        if not utils.isValidStr(twitchChannel):
-            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
-
+    def __readJson(self) -> Dict[str, object]:
         if not os.path.exists(self.__funtoonRepositoryFile):
             raise FileNotFoundError(f'Funtoon repository file not found: \"{self.__funtoonRepositoryFile}\"')
 
@@ -204,8 +201,20 @@ class FuntoonRepository():
         elif len(jsonContents) == 0:
             raise ValueError(f'JSON contents of Funtoon repository file \"{self.__funtoonRepositoryFile}\" is empty')
 
-        for key in jsonContents:
+        return jsonContents
+
+    def __readJsonForTwitchChannel(self, twitchChannel: str) -> Dict:
+        if not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+
+        jsonContents = self.__readJson()
+
+        twitchChannelsJson: Dict[str, object] = jsonContents.get('twitchChannels')
+        if not utils.hasItems(twitchChannelsJson):
+            raise ValueError(f'\"twitchChannels\" JSON contents of Funtoon repository file \"{self.__funtoonRepositoryFile}\" is missing/empty')
+
+        for key in twitchChannelsJson:
             if key.lower() == twitchChannel.lower():
-                return jsonContents[key]
+                return twitchChannelsJson[key]
 
         return None
