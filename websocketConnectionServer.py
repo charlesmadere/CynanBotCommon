@@ -137,8 +137,6 @@ class WebsocketConnectionServer():
                             print(f'WebsocketConnectionServer sent event to \"{path}\": \"{event.getEventData()}\"')
                     elif self.__isDebugLoggingEnabled:
                         print(f'WebsocketConnectionServer discarded an event meant for \"{path}\": \"{event.getEventData()}\"')
-
-                await asyncio.sleep(self.__sleepTimeSeconds)
             except Exception as e:
                 print(f'WebsocketConnectionServer encountered exception within `__websocketConnectionReceived()`: {e}')
 
