@@ -47,34 +47,9 @@ class ChatBandManager():
         self.__chatBandMemberCache: TimedDict = TimedDict(memberCacheTimeToLive)
         self.__stubChatBandMember: ChatBandMember = ChatBandMember(ChatBandInstrument.BASS, "stub", "stub")
 
-    async def playInstrumentForMessage(self, twitchChannel: str, author: str, message: str) -> bool:
-        if not utils.isValidStr(twitchChannel):
-            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
-        elif not utils.isValidStr(author):
-            raise ValueError(f'author argument is malformed: \"{author}\"')
-        elif not utils.isValidStr(message):
-            raise ValueError(f'message argument is malformed: \"{message}\"')
-
-        chatBandMember = self.__findChatBandMember(
-            twitchChannel = twitchChannel,
-            author = author,
-            message = message
-        )
-
-        if chatBandMember is None:
-            return False
-        elif chatBandMember is self.__stubChatBandMember:
-            return False
-        elif not self.__lastChatBandMessageTimes.isReadyAndUpdate(self.__getCooldownKey(twitchChannel, author)):
-            return False
-
-        await self.__websocketConnectionServer.sendEvent(
-            twitchChannel = twitchChannel,
-            eventType = self.__eventType,
-            eventData = self.__toEventData(chatBandMember)
-        )
-
-        return True
+    def clearCache(self):
+        self.__lastChatBandMessageTimes.clear()
+        self.__chatBandMemberCache.clear()
 
     def __findChatBandMember(
         self,
@@ -123,6 +98,35 @@ class ChatBandManager():
             raise ValueError(f'author argument is malformed: \"{author}\"')
 
         return f'{twitchChannel.lower()}:{author.lower()}'
+
+    async def playInstrumentForMessage(self, twitchChannel: str, author: str, message: str) -> bool:
+        if not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+        elif not utils.isValidStr(author):
+            raise ValueError(f'author argument is malformed: \"{author}\"')
+        elif not utils.isValidStr(message):
+            raise ValueError(f'message argument is malformed: \"{message}\"')
+
+        chatBandMember = self.__findChatBandMember(
+            twitchChannel = twitchChannel,
+            author = author,
+            message = message
+        )
+
+        if chatBandMember is None:
+            return False
+        elif chatBandMember is self.__stubChatBandMember:
+            return False
+        elif not self.__lastChatBandMessageTimes.isReadyAndUpdate(self.__getCooldownKey(twitchChannel, author)):
+            return False
+
+        await self.__websocketConnectionServer.sendEvent(
+            twitchChannel = twitchChannel,
+            eventType = self.__eventType,
+            eventData = self.__toEventData(chatBandMember)
+        )
+
+        return True
 
     def __readAllJson(self) -> Dict:
         if not path.exists(self.__chatBandFile):
