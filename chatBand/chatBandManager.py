@@ -47,7 +47,7 @@ class ChatBandManager():
         self.__chatBandMemberCache: TimedDict = TimedDict(memberCacheTimeToLive)
         self.__stubChatBandMember: ChatBandMember = ChatBandMember(ChatBandInstrument.BASS, "stub", "stub")
 
-    def clearCache(self):
+    def clearCaches(self):
         self.__lastChatBandMessageTimes.clear()
         self.__chatBandMemberCache.clear()
 
