@@ -7,9 +7,13 @@ class TimedDict():
         if timeDelta is None:
             raise ValueError(f'timeDelta argument is malformed: \"{timeDelta}\"')
 
-        self.__timeDelta = timeDelta
+        self.__timeDelta: timedelta = timeDelta
         self.__times = dict()
         self.__values = dict()
+
+    def clear(self):
+        self.__times.clear()
+        self.__values.clear()
 
     def __delitem__(self, key):
         self.__times.pop(key, None)
