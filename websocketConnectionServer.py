@@ -140,15 +140,19 @@ class WebsocketConnectionServer():
                     attempt = 0
 
                     if event.getEventTime() + self.__timeToLive >= datetime.utcnow():
+                        eventJson = event.getEventDataAsJson()
+
                         while attempt < self.__maxSendAttempts:
                             attempt = attempt + 1
 
                             try:
-                                await websocket.send(event.getEventDataAsJson())
+                                await websocket.send(eventJson)
                                 attempt = self.__maxSendAttempts
                             except Exception as e:
                                 if self.__isDebugLoggingEnabled:
-                                    print(f'WebsocketConnectionServer failed to send event on attempt {attempt} (out of {self.__maxSendAttempts}): {e}')
+                                    print(f'WebsocketConnectionServer failed to send event on attempt {attempt} of {self.__maxSendAttempts} ({utils.getNowTimeText(includeSeconds = True)})\n{event.getEventData()}: {e}')
+                                else:
+                                    print(f'WebsocketConnectionServer failed to send event on attempt {attempt} of {self.__maxSendAttempts} ({utils.getNowTimeText(includeSeconds = True)}): {e}')
 
                                 if attempt >= self.__maxSendAttempts:
                                     raise e
