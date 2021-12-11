@@ -40,6 +40,7 @@ class WebsocketConnectionServer():
     def __init__(
         self,
         isDebugLoggingEnabled: bool = True,
+        maxSendAttempts: int = 3,
         port: int = 8765,
         sleepTimeSeconds: int = 5,
         host: str = '0.0.0.0',
@@ -47,6 +48,10 @@ class WebsocketConnectionServer():
     ):
         if not utils.isValidBool(isDebugLoggingEnabled):
             raise ValueError(f'isDebugLoggingEnabled argument is malformed: \"{isDebugLoggingEnabled}\"')
+        elif not utils.isValidNum(maxSendAttempts):
+            raise ValueError(f'maxSendAttempts argument is malformed: \"{maxSendAttempts}\"')
+        elif maxSendAttempts < 1 or maxSendAttempts > 5:
+            raise ValueError(f'maxSendAttempts argument is out of bounds: \"{maxSendAttempts}\"')
         elif not utils.isValidNum(port):
             raise ValueError(f'port argument is malformed: \"{port}\"')
         elif port <= 0:
@@ -61,6 +66,7 @@ class WebsocketConnectionServer():
             raise ValueError(f'timeToLive argument is malformed: \"{timeToLive}\"')
 
         self.__isDebugLoggingEnabled: bool = isDebugLoggingEnabled
+        self.__maxSendAttempts: int = maxSendAttempts
         self.__port: int = port
         self.__sleepTimeSeconds: int = sleepTimeSeconds
         self.__host: str = host
@@ -130,10 +136,19 @@ class WebsocketConnectionServer():
         while True:
             try:
                 while not self.__eventQueue.empty():
-                    event = self.__eventQueue.get()
+                    event = self.__eventQueue.get(block = True, timeout = 3)
+                    attempts = 0
 
                     if event.getEventTime() + self.__timeToLive >= datetime.utcnow():
-                        await websocket.send(event.getEventDataAsJson())
+                        while attempts < self.__maxSendAttempts:
+                            attempts = attempts + 1
+
+                            try:
+                                await websocket.send(event.getEventDataAsJson())
+                                attempts = self.__maxSendAttempts
+                            except Exception as e:
+                                if self.__isDebugLoggingEnabled:
+                                    print(f'WebsocketConnectionServer failed to send event on attempt #{attempts} (out of {self.__maxSendAttempts}): {e}')
 
                         if self.__isDebugLoggingEnabled:
                             print(f'WebsocketConnectionServer sent event to \"{path}\": \"{event.getEventData()}\"')
