@@ -150,6 +150,9 @@ class WebsocketConnectionServer():
                                 if self.__isDebugLoggingEnabled:
                                     print(f'WebsocketConnectionServer failed to send event on attempt #{attempts} (out of {self.__maxSendAttempts}): {e}')
 
+                                if attempt >= self.__maxSendAttempts:
+                                    raise e
+
                         if self.__isDebugLoggingEnabled:
                             print(f'WebsocketConnectionServer sent event to \"{path}\": \"{event.getEventData()}\"')
                     elif self.__isDebugLoggingEnabled:
