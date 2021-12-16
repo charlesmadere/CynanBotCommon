@@ -68,3 +68,17 @@ class TriviaScoreResult():
 
     def getUserId(self) -> str:
         return self.__userId
+
+    def getWinPercent(self) -> float:
+        winPercent = self.__totalWins / self.__totalLosses
+
+        if winPercent < 0:
+            return float(0)
+        elif winPercent > 1:
+            return float(1)
+        else:
+            return winPercent
+
+    def getWinPercentStr(self) -> str:
+        winPercent = self.getWinPercent()
+        return f'{winPercent:.2f}%'
