@@ -40,7 +40,6 @@ class WebsocketConnectionServer():
     def __init__(
         self,
         isDebugLoggingEnabled: bool = True,
-        maxSendAttempts: int = 3,
         port: int = 8765,
         sleepTimeSeconds: int = 5,
         host: str = '0.0.0.0',
@@ -48,10 +47,6 @@ class WebsocketConnectionServer():
     ):
         if not utils.isValidBool(isDebugLoggingEnabled):
             raise ValueError(f'isDebugLoggingEnabled argument is malformed: \"{isDebugLoggingEnabled}\"')
-        elif not utils.isValidNum(maxSendAttempts):
-            raise ValueError(f'maxSendAttempts argument is malformed: \"{maxSendAttempts}\"')
-        elif maxSendAttempts < 1 or maxSendAttempts > 5:
-            raise ValueError(f'maxSendAttempts argument is out of bounds: \"{maxSendAttempts}\"')
         elif not utils.isValidNum(port):
             raise ValueError(f'port argument is malformed: \"{port}\"')
         elif port <= 0:
@@ -66,7 +61,6 @@ class WebsocketConnectionServer():
             raise ValueError(f'timeToLive argument is malformed: \"{timeToLive}\"')
 
         self.__isDebugLoggingEnabled: bool = isDebugLoggingEnabled
-        self.__maxSendAttempts: int = maxSendAttempts
         self.__port: int = port
         self.__sleepTimeSeconds: int = sleepTimeSeconds
         self.__host: str = host
@@ -122,8 +116,8 @@ class WebsocketConnectionServer():
                     self.__websocketConnectionReceived,
                     host = self.__host,
                     port = self.__port
-                ):
-                    await asyncio.Future()
+                ) as websocket:
+                    await websocket.wait_closed()
             except Exception as e:
                 print(f'WebsocketConnectionServer encountered exception within `__start()`: {e}')
 
@@ -133,35 +127,21 @@ class WebsocketConnectionServer():
         if self.__isDebugLoggingEnabled:
             print(f'Established websocket connection to: \"{path}\" (current queue size is {self.__eventQueue.qsize()})')
 
-        while True:
-            try:
-                while not self.__eventQueue.empty():
-                    event = self.__eventQueue.get(block = True, timeout = 3)
-                    attempt = 0
+        while websocket.is_serving():
+            while not self.__eventQueue.empty():
+                event = self.__eventQueue.get(block = True, timeout = 3)
 
-                    if event.getEventTime() + self.__timeToLive >= datetime.utcnow():
-                        eventJson = event.getEventDataAsJson()
+                if event.getEventTime() + self.__timeToLive >= datetime.utcnow():
+                    eventJson = event.getEventDataAsJson()
+                    await websocket.send(eventJson)
 
-                        while attempt < self.__maxSendAttempts:
-                            attempt = attempt + 1
-
-                            try:
-                                await websocket.send(eventJson)
-                                attempt = self.__maxSendAttempts
-                            except Exception as e:
-                                if self.__isDebugLoggingEnabled:
-                                    print(f'WebsocketConnectionServer failed to send event on attempt {attempt} of {self.__maxSendAttempts} ({utils.getNowTimeText(includeSeconds = True)})\n{event.getEventData()}: {e}')
-                                else:
-                                    print(f'WebsocketConnectionServer failed to send event on attempt {attempt} of {self.__maxSendAttempts} ({utils.getNowTimeText(includeSeconds = True)}): {e}')
-
-                                if attempt >= self.__maxSendAttempts:
-                                    raise e
-
-                        if self.__isDebugLoggingEnabled:
-                            print(f'WebsocketConnectionServer sent event to \"{path}\": \"{event.getEventData()}\"')
-                    elif self.__isDebugLoggingEnabled:
-                        print(f'WebsocketConnectionServer discarded an event meant for \"{path}\": \"{event.getEventData()}\"')
-            except Exception as e:
-                print(f'WebsocketConnectionServer encountered exception within `__websocketConnectionReceived()`: {e}')
+                    if self.__isDebugLoggingEnabled:
+                        print(f'WebsocketConnectionServer sent event to \"{path}\" ({utils.getNowTimeText(includeSeconds = True)}):\n{event.getEventData()}')
+                    else:
+                        print(f'WebsocketConnectionServer sent event to \"{path}\" ({utils.getNowTimeText(includeSeconds = True)})')
+                elif self.__isDebugLoggingEnabled:
+                    print(f'WebsocketConnectionServer discarded an event meant for \"{path}\" ({utils.getNowTimeText(includeSeconds = True)})\n{event.getEventData()}')
+                else:
+                    print(f'WebsocketConnectionServer discarded an event meant for \"{path}\" ({utils.getNowTimeText(includeSeconds = True)})')
 
             await asyncio.sleep(self.__sleepTimeSeconds)
