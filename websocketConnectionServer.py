@@ -127,7 +127,7 @@ class WebsocketConnectionServer():
         if self.__isDebugLoggingEnabled:
             print(f'Established websocket connection to: \"{path}\" (current queue size is {self.__eventQueue.qsize()})')
 
-        while websocket.is_serving():
+        while websocket.open:
             while not self.__eventQueue.empty():
                 event = self.__eventQueue.get(block = True, timeout = 3)
 
