@@ -110,6 +110,9 @@ class WebsocketConnectionServer():
         eventLoop.create_task(self.__start())
 
     async def __start(self):
+        if self.__isDebugLoggingEnabled:
+            print(f'WebsocketConnectionServer has entered `__start()` ({utils.getNowTimeText(includeSeconds = True)})')
+
         while True:
             try:
                 async with websockets.serve(
@@ -117,15 +120,21 @@ class WebsocketConnectionServer():
                     host = self.__host,
                     port = self.__port
                 ) as websocket:
+                    if self.__isDebugLoggingEnabled:
+                        print(f'WebsocketConnectionServer is looping within `__start()` ({utils.getNowTimeText(includeSeconds = True)})')
+
                     await websocket.wait_closed()
             except Exception as e:
-                print(f'WebsocketConnectionServer encountered exception within `__start()`: {e}')
+                print(f'WebsocketConnectionServer encountered exception within `__start()` ({utils.getNowTimeText(includeSeconds = True)}): {e}')
+
+            if self.__isDebugLoggingEnabled:
+                print(f'WebsocketConnectionServer is sleeping within `__start()` ({utils.getNowTimeText(includeSeconds = True)})')
 
             asyncio.sleep(self.__sleepTimeSeconds)
 
     async def __websocketConnectionReceived(self, websocket, path):
         if self.__isDebugLoggingEnabled:
-            print(f'Established websocket connection to: \"{path}\" (current queue size is {self.__eventQueue.qsize()})')
+            print(f'WebsocketConnectionServer is entering `__websocketConnectionReceived()` (path: \"{path}\") (queue size: {self.__eventQueue.qsize()}) ({utils.getNowTimeText(includeSeconds = True)})')
 
         while websocket.open:
             while not self.__eventQueue.empty():
@@ -139,9 +148,13 @@ class WebsocketConnectionServer():
                         print(f'WebsocketConnectionServer sent event to \"{path}\" ({utils.getNowTimeText(includeSeconds = True)}):\n{event.getEventData()}')
                     else:
                         print(f'WebsocketConnectionServer sent event to \"{path}\" ({utils.getNowTimeText(includeSeconds = True)})')
-                elif self.__isDebugLoggingEnabled:
-                    print(f'WebsocketConnectionServer discarded an event meant for \"{path}\" ({utils.getNowTimeText(includeSeconds = True)})\n{event.getEventData()}')
                 else:
-                    print(f'WebsocketConnectionServer discarded an event meant for \"{path}\" ({utils.getNowTimeText(includeSeconds = True)})')
+                    if self.__isDebugLoggingEnabled:
+                        print(f'WebsocketConnectionServer discarded an event meant for \"{path}\" ({utils.getNowTimeText(includeSeconds = True)})\n{event.getEventData()}')
+                    else:
+                        print(f'WebsocketConnectionServer discarded an event meant for \"{path}\" ({utils.getNowTimeText(includeSeconds = True)})')
 
             await asyncio.sleep(self.__sleepTimeSeconds)
+
+        if self.__isDebugLoggingEnabled:
+            print(f'WebsocketConnectionServer is exiting `__websocketConnectionReceived()` ({utils.getNowTimeText(includeSeconds = True)})')
