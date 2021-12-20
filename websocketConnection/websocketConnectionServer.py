@@ -1,5 +1,4 @@
 import asyncio
-import json
 from asyncio import AbstractEventLoop
 from datetime import datetime, timedelta
 from queue import SimpleQueue
@@ -9,30 +8,12 @@ import websockets
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.websocketConnection.websocketEvent import \
+        WebsocketEvent
 except:
     import utils
 
-
-class WebsocketEvent():
-
-    def __init__(
-        self,
-        eventData: Dict
-    ):
-        if not utils.hasItems(eventData):
-            raise ValueError(f'eventData argument is malformed: \"{eventData}\"')
-
-        self.__eventTime: datetime = datetime.utcnow()
-        self.__eventData: Dict = eventData
-
-    def getEventData(self) -> Dict:
-        return self.__eventData
-
-    def getEventDataAsJson(self) -> str:
-        return json.dumps(self.__eventData)
-
-    def getEventTime(self):
-        return self.__eventTime
+    from websocketConnection.websocketEvent import WebsocketEvent
 
 
 class WebsocketConnectionServer():

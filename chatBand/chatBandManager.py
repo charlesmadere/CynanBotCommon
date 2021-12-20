@@ -8,12 +8,13 @@ try:
     from CynanBotCommon.chatBand.chatBandInstrument import ChatBandInstrument
     from CynanBotCommon.chatBand.chatBandMember import ChatBandMember
     from CynanBotCommon.timedDict import TimedDict
-    from CynanBotCommon.websocketConnectionServer import \
+    from CynanBotCommon.websocketConnection.websocketConnectionServer import \
         WebsocketConnectionServer
 except:
     import utils
     from timedDict import TimedDict
-    from websocketConnectionServer import WebsocketConnectionServer
+    from websocketConnection.websocketConnectionServer import \
+        WebsocketConnectionServer
 
     from chatBand.chatBandInstrument import ChatBandInstrument
     from chatBand.chatBandMember import ChatBandMember
