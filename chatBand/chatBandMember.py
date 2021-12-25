@@ -11,17 +11,21 @@ class ChatBandMember():
 
     def __init__(
         self,
+        isEnabled: bool,
         instrument: ChatBandInstrument,
         author: str,
         keyPhrase: str
     ):
-        if instrument is None:
+        if not utils.isValidBool(isEnabled):
+            raise ValueError(f'isEnabled argument is malformed: \"{isEnabled}\"')
+        elif instrument is None:
             raise ValueError(f'instrument argument is malformed: \"{instrument}\"')
         elif not utils.isValidStr(author):
             raise ValueError(f'author argument is malformed: \"{author}\"')
         elif not utils.isValidStr(keyPhrase):
             raise ValueError(f'keyPhrase argument is malformed: \"{keyPhrase}\"')
 
+        self.__isEnabled: bool = isEnabled
         self.__instrument: ChatBandInstrument = instrument
         self.__author: str = author
         self.__keyPhrase: str = keyPhrase
@@ -34,3 +38,6 @@ class ChatBandMember():
 
     def getKeyPhrase(self) -> str:
         return self.__keyPhrase
+
+    def isEnabled(self) -> bool:
+        return self.__isEnabled

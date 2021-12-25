@@ -76,6 +76,7 @@ class ChatBandManager():
                         chatBandMemberJson = jsonContents[key]
 
                         chatBandMember = ChatBandMember(
+                            isEnabled = utils.getBoolFromDict(chatBandMemberJson, 'isEnabled', fallback = True),
                             instrument = ChatBandInstrument.fromStr(utils.getStrFromDict(chatBandMemberJson, 'instrument')),
                             author = key,
                             keyPhrase = utils.getStrFromDict(chatBandMemberJson, 'keyPhrase')
@@ -87,7 +88,7 @@ class ChatBandManager():
         if chatBandMember is None:
             self.__chatBandMemberCache[self.__getCooldownKey(twitchChannel, author)] = self.__stubChatBandMember
 
-        if chatBandMember is not None and chatBandMember is not self.__stubChatBandMember and chatBandMember.getKeyPhrase() == message:
+        if chatBandMember is not None and chatBandMember is not self.__stubChatBandMember and chatBandMember.isEnabled() and chatBandMember.getKeyPhrase() == message:
             return chatBandMember
         else:
             return None
@@ -163,6 +164,6 @@ class ChatBandManager():
 
         return {
             'author': chatBandMember.getAuthor(),
-            'keyPhrase': chatBandMember.getKeyPhrase(),
-            'instrument': chatBandMember.getInstrument().toStr()
+            'instrument': chatBandMember.getInstrument().toStr(),
+            'keyPhrase': chatBandMember.getKeyPhrase()
         }
