@@ -46,7 +46,7 @@ class ChatBandManager():
         self.__eventType: str = eventType
         self.__lastChatBandMessageTimes: TimedDict = TimedDict(eventCooldown)
         self.__chatBandMemberCache: TimedDict = TimedDict(memberCacheTimeToLive)
-        self.__stubChatBandMember: ChatBandMember = ChatBandMember(ChatBandInstrument.BASS, "stub", "stub")
+        self.__stubChatBandMember: ChatBandMember = ChatBandMember(False, ChatBandInstrument.BASS, "stub", "stub")
 
     def clearCaches(self):
         self.__lastChatBandMessageTimes.clear()
