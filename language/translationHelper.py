@@ -173,6 +173,8 @@ class TranslationHelper():
         # So theoretically, this gives us a 1,000,000 character translation capability.
 
         translationApiSource = random.choice(list(TranslationApiSource))
+        while not translationApiSource.isEnabled():
+            translationApiSource = random.choice(list(TranslationApiSource))
 
         if translationApiSource is TranslationApiSource.DEEP_L:
             return self.__deepLTranslate(text, targetLanguageEntry)
