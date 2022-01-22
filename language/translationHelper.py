@@ -76,10 +76,10 @@ class TranslationHelper():
         if not utils.hasItems(translationsJson):
             raise RuntimeError(f'DeepL\'s JSON response for \"{text}\" has missing or empty \"translations\" field: {jsonResponse}')
 
-        translationJson = translationsJson[0]
+        translationJson: Dict = translationsJson[0]
 
         originalLanguage: LanguageEntry = None
-        detectedSourceLanguage = translationJson.get('detected_source_language')
+        detectedSourceLanguage: str = translationJson.get('detected_source_language')
         if utils.isValidStr(detectedSourceLanguage):
             originalLanguage = self.__languagesRepository.getLanguageForCommand(detectedSourceLanguage, hasIso6391Code = True)
 
@@ -115,16 +115,16 @@ class TranslationHelper():
         if not utils.hasItems(translationResult):
             raise RuntimeError(f'error in the data response when attempting to translate \"{text}\": {translationResult}')
 
-        originalText = translationResult.get('input')
+        originalText: str = translationResult.get('input')
         if not utils.isValidStr(originalText):
             raise RuntimeError(f'\"input\" field is missing or malformed from translation result for \"{text}\": {translationResult}')
 
-        translatedText = translationResult.get('translatedText')
+        translatedText: str = translationResult.get('translatedText')
         if not utils.isValidStr(translatedText):
             raise RuntimeError(f'\"translatedText\" field is missing or malformed from translation result for \"{text}\": {translationResult}')
 
         originalLanguage: LanguageEntry = None
-        detectedSourceLanguage = translationResult.get('detectedSourceLanguage')
+        detectedSourceLanguage: str = translationResult.get('detectedSourceLanguage')
         if utils.isValidStr(detectedSourceLanguage):
             originalLanguage = self.__languagesRepository.getLanguageForCommand(detectedSourceLanguage, hasIso6391Code = True)
 
