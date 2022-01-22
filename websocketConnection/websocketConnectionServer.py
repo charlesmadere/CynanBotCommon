@@ -1,4 +1,5 @@
 import asyncio
+import json
 from asyncio import AbstractEventLoop
 from datetime import datetime, timedelta
 from queue import SimpleQueue
@@ -21,13 +22,18 @@ class WebsocketConnectionServer():
     def __init__(
         self,
         isDebugLoggingEnabled: bool = True,
+        eventQueueBlockTimeoutSeconds: int = 3,
         port: int = 8765,
         sleepTimeSeconds: int = 5,
         host: str = '0.0.0.0',
-        timeToLive: timedelta = timedelta(minutes = 1)
+        eventTimeToLive: timedelta = timedelta(seconds = 30)
     ):
         if not utils.isValidBool(isDebugLoggingEnabled):
             raise ValueError(f'isDebugLoggingEnabled argument is malformed: \"{isDebugLoggingEnabled}\"')
+        elif not utils.isValidNum(eventQueueBlockTimeoutSeconds):
+            raise ValueError(f'eventQueueBlockTimeoutSeconds argument is malformed: \"{eventQueueBlockTimeoutSeconds}\"')
+        elif eventQueueBlockTimeoutSeconds < 1:
+            raise ValueError(f'eventQueueBlockTimeoutSeconds is out of bounds: \"{eventQueueBlockTimeoutSeconds}\"')
         elif not utils.isValidNum(port):
             raise ValueError(f'port argument is malformed: \"{port}\"')
         elif port <= 0:
@@ -38,14 +44,15 @@ class WebsocketConnectionServer():
             raise ValueError(f'sleepTimeSeconds argument is too aggressive: \"{sleepTimeSeconds}\"')
         elif not utils.isValidStr(host):
             raise ValueError(f'host argument is malformed: \"{host}\"')
-        elif timeToLive is None:
-            raise ValueError(f'timeToLive argument is malformed: \"{timeToLive}\"')
+        elif eventTimeToLive is None:
+            raise ValueError(f'eventTimeToLive argument is malformed: \"{eventTimeToLive}\"')
 
         self.__isDebugLoggingEnabled: bool = isDebugLoggingEnabled
+        self.__eventQueueBlockTimeoutSeconds: int = eventQueueBlockTimeoutSeconds
         self.__port: int = port
         self.__sleepTimeSeconds: int = sleepTimeSeconds
         self.__host: str = host
-        self.__timeToLive: timedelta = timeToLive
+        self.__eventTimeToLive: timedelta = eventTimeToLive
 
         self.__isStarted: bool = False
         self.__eventQueue: SimpleQueue[WebsocketEvent] = SimpleQueue()
@@ -119,10 +126,13 @@ class WebsocketConnectionServer():
 
         while websocket.open:
             while not self.__eventQueue.empty():
-                event = self.__eventQueue.get(block = True, timeout = 3)
+                event = self.__eventQueue.get(
+                    block = True,
+                    timeout = self.__eventQueueBlockTimeoutSeconds
+                )
 
-                if event.getEventTime() + self.__timeToLive >= datetime.utcnow():
-                    eventJson = event.getEventDataAsJson()
+                if event.getEventTime() + self.__eventTimeToLive >= datetime.utcnow():
+                    eventJson = json.dumps(event.getEventData())
                     await websocket.send(eventJson)
 
                     if self.__isDebugLoggingEnabled:

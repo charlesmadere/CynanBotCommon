@@ -1,4 +1,3 @@
-import json
 from datetime import datetime
 from typing import Dict
 
@@ -22,9 +21,6 @@ class WebsocketEvent():
 
     def getEventData(self) -> Dict:
         return self.__eventData
-
-    def getEventDataAsJson(self) -> str:
-        return json.dumps(self.__eventData)
 
     def getEventTime(self):
         return self.__eventTime
