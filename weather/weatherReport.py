@@ -17,11 +17,11 @@ class WeatherReport():
     def __init__(
         self,
         airQualityIndex: AirQualityIndex,
-        humidity: int,
-        pressure: int,
         temperature: float,
         tomorrowsHighTemperature: float,
         tomorrowsLowTemperature: float,
+        humidity: int,
+        pressure: int,
         alerts: List[str],
         conditions: List[str],
         tomorrowsConditions: List[str],
@@ -38,19 +38,16 @@ class WeatherReport():
         elif not utils.isValidNum(tomorrowsLowTemperature):
             raise ValueError(f'tomorrowsLowTemperature argument is malformed: \"{tomorrowsLowTemperature}\"')
 
-        self.__airQualityIndex = airQualityIndex
-        self.__humidity = humidity
-        self.__pressure = pressure
-        self.__temperature = temperature
-        self.__tomorrowsHighTemperature = tomorrowsHighTemperature
-        self.__tomorrowsLowTemperature = tomorrowsLowTemperature
-        self.__alerts = alerts
-        self.__conditions = conditions
-        self.__tomorrowsConditions = tomorrowsConditions
-        self.__uvIndex = uvIndex
-
-    def __cToF(self, celsius: float) -> float:
-        return (celsius * (9 / 5)) + 32
+        self.__airQualityIndex: AirQualityIndex = airQualityIndex
+        self.__temperature: float = temperature
+        self.__tomorrowsHighTemperature: float = tomorrowsHighTemperature
+        self.__tomorrowsLowTemperature: float = tomorrowsLowTemperature
+        self.__humidity: int = humidity
+        self.__pressure: int = pressure
+        self.__alerts: List[str] = alerts
+        self.__conditions: List[str] = conditions
+        self.__tomorrowsConditions: List[str] = tomorrowsConditions
+        self.__uvIndex: UvIndex = uvIndex
 
     def getAirQualityIndex(self) -> AirQualityIndex:
         return self.__airQualityIndex
@@ -77,7 +74,7 @@ class WeatherReport():
         return locale.format_string("%d", self.getTemperature(), grouping = True)
 
     def getTemperatureImperial(self):
-        return int(round(self.__cToF(self.__temperature)))
+        return int(round(utils.cToF(self.__temperature)))
 
     def getTemperatureImperialStr(self):
         return locale.format_string("%d", self.getTemperatureImperial(), grouping = True)
@@ -92,7 +89,7 @@ class WeatherReport():
         return locale.format_string("%d", self.getTomorrowsLowTemperature(), grouping = True)
 
     def getTomorrowsLowTemperatureImperial(self) -> int:
-        return int(round(self.__cToF(self.__tomorrowsLowTemperature)))
+        return int(round(utils.cToF(self.__tomorrowsLowTemperature)))
 
     def getTomorrowsLowTemperatureImperialStr(self) -> str:
         return locale.format_string("%d", self.getTomorrowsLowTemperatureImperial(), grouping = True)
@@ -104,7 +101,7 @@ class WeatherReport():
         return locale.format_string("%d", self.getTomorrowsHighTemperature(), grouping = True)
 
     def getTomorrowsHighTemperatureImperial(self) -> int:
-        return int(round(self.__cToF(self.__tomorrowsHighTemperature)))
+        return int(round(utils.cToF(self.__tomorrowsHighTemperature)))
 
     def getTomorrowsHighTemperatureImperialStr(self) -> str:
         return locale.format_string("%d", self.getTomorrowsHighTemperatureImperial(), grouping = True)
@@ -124,6 +121,9 @@ class WeatherReport():
     def hasTomorrowsConditions(self) -> bool:
         return utils.hasItems(self.__tomorrowsConditions)
 
+    def hasUvIndex(self) -> bool:
+        return self.__uvIndex is not None
+
     def toStr(self, delimiter: str = ', ') -> str:
         if delimiter is None:
             raise ValueError(f'delimiter argument is malformed: \"{delimiter}\"')
@@ -131,13 +131,13 @@ class WeatherReport():
         temperature = f'🌡 Temperature is {self.getTemperatureStr()}°C ({self.getTemperatureImperialStr()}°F), '
         humidity = f'humidity is {self.getHumidity()}%, '
 
-        uvIndex = ''
-        if self.__uvIndex is UvIndex.MODERATE_TO_HIGH or self.__uvIndex is UvIndex.VERY_HIGH_TO_EXTREME:
-            uvIndex = f'UV Index is {self.__uvIndex.toStr()}, '
-
         airQuality = ''
         if self.hasAirQualityIndex():
             airQuality = f'air quality index is {self.__airQualityIndex.toStr()}, '
+
+        uvIndex = ''
+        if self.hasUvIndex() and self.__uvIndex.isNoteworthy():
+            uvIndex = f'UV Index is {self.__uvIndex.toStr()}, '
 
         pressure = f'and pressure is {self.getPressureStr()} hPa. '
 
@@ -158,4 +158,4 @@ class WeatherReport():
             alertsJoin = ' '.join(self.__alerts)
             alerts = f'🚨 {alertsJoin}'
 
-        return f'{temperature}{humidity}{uvIndex}{airQuality}{pressure}{conditions}{tomorrowsTemps}{tomorrowsConditions}{alerts}'
+        return f'{temperature}{humidity}{airQuality}{uvIndex}{pressure}{conditions}{tomorrowsTemps}{tomorrowsConditions}{alerts}'

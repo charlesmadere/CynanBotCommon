@@ -24,6 +24,9 @@ class UvIndex(Enum):
         else:
             return UvIndex.VERY_HIGH_TO_EXTREME
 
+    def isNoteworthy(self) -> bool:
+        return self is UvIndex.MODERATE_TO_HIGH or self is UvIndex.VERY_HIGH_TO_EXTREME
+
     def toStr(self) -> str:
         if self is UvIndex.LOW:
             return 'low'

@@ -25,172 +25,29 @@ except:
     from weather.weatherReport import WeatherReport
 
 
-class WeatherReport():
-
-    def __init__(
-        self,
-        airQualityIndex: AirQualityIndex,
-        humidity: int,
-        pressure: int,
-        temperature: float,
-        tomorrowsHighTemperature: float,
-        tomorrowsLowTemperature: float,
-        alerts: List[str],
-        conditions: List[str],
-        tomorrowsConditions: List[str],
-        uvIndex: UvIndex
-    ):
-        if not utils.isValidNum(humidity):
-            raise ValueError(f'humidity argument is malformed: \"{humidity}\"')
-        elif not utils.isValidNum(pressure):
-            raise ValueError(f'pressure argument is malformed: \"{pressure}\"')
-        elif not utils.isValidNum(temperature):
-            raise ValueError(f'temperature argument is malformed: \"{temperature}\"')
-        elif not utils.isValidNum(tomorrowsHighTemperature):
-            raise ValueError(f'tomorrowsHighTemperature argument is malformed: \"{tomorrowsHighTemperature}\"')
-        elif not utils.isValidNum(tomorrowsLowTemperature):
-            raise ValueError(f'tomorrowsLowTemperature argument is malformed: \"{tomorrowsLowTemperature}\"')
-
-        self.__airQualityIndex = airQualityIndex
-        self.__humidity = humidity
-        self.__pressure = pressure
-        self.__temperature = temperature
-        self.__tomorrowsHighTemperature = tomorrowsHighTemperature
-        self.__tomorrowsLowTemperature = tomorrowsLowTemperature
-        self.__alerts = alerts
-        self.__conditions = conditions
-        self.__tomorrowsConditions = tomorrowsConditions
-        self.__uvIndex = uvIndex
-
-    def __cToF(self, celsius: float) -> float:
-        return (celsius * (9 / 5)) + 32
-
-    def getAirQualityIndex(self) -> AirQualityIndex:
-        return self.__airQualityIndex
-
-    def getAlerts(self) -> List[str]:
-        return self.__alerts
-
-    def getConditions(self) -> List[str]:
-        return self.__conditions
-
-    def getHumidity(self) -> int:
-        return self.__humidity
-
-    def getPressure(self) -> int:
-        return self.__pressure
-
-    def getPressureStr(self) -> str:
-        return locale.format_string("%d", self.getPressure(), grouping = True)
-
-    def getTemperature(self):
-        return int(round(self.__temperature))
-
-    def getTemperatureStr(self):
-        return locale.format_string("%d", self.getTemperature(), grouping = True)
-
-    def getTemperatureImperial(self):
-        return int(round(self.__cToF(self.__temperature)))
-
-    def getTemperatureImperialStr(self):
-        return locale.format_string("%d", self.getTemperatureImperial(), grouping = True)
-
-    def getTomorrowsConditions(self) -> List[str]:
-        return self.__tomorrowsConditions
-
-    def getTomorrowsLowTemperature(self) -> int:
-        return int(round(self.__tomorrowsLowTemperature))
-
-    def getTomorrowsLowTemperatureStr(self) -> str:
-        return locale.format_string("%d", self.getTomorrowsLowTemperature(), grouping = True)
-
-    def getTomorrowsLowTemperatureImperial(self) -> int:
-        return int(round(self.__cToF(self.__tomorrowsLowTemperature)))
-
-    def getTomorrowsLowTemperatureImperialStr(self) -> str:
-        return locale.format_string("%d", self.getTomorrowsLowTemperatureImperial(), grouping = True)
-
-    def getTomorrowsHighTemperature(self) -> int:
-        return int(round(self.__tomorrowsHighTemperature))
-
-    def getTomorrowsHighTemperatureStr(self) -> str:
-        return locale.format_string("%d", self.getTomorrowsHighTemperature(), grouping = True)
-
-    def getTomorrowsHighTemperatureImperial(self) -> int:
-        return int(round(self.__cToF(self.__tomorrowsHighTemperature)))
-
-    def getTomorrowsHighTemperatureImperialStr(self) -> str:
-        return locale.format_string("%d", self.getTomorrowsHighTemperatureImperial(), grouping = True)
-
-    def getUvIndex(self) -> UvIndex:
-        return self.__uvIndex
-
-    def hasAirQualityIndex(self) -> bool:
-        return self.__airQualityIndex is not None
-
-    def hasAlerts(self) -> bool:
-        return utils.hasItems(self.__alerts)
-
-    def hasConditions(self) -> bool:
-        return utils.hasItems(self.__conditions)
-
-    def hasTomorrowsConditions(self) -> bool:
-        return utils.hasItems(self.__tomorrowsConditions)
-
-    def toStr(self, delimiter: str = ', ') -> str:
-        if delimiter is None:
-            raise ValueError(f'delimiter argument is malformed: \"{delimiter}\"')
-
-        temperature = f'🌡 Temperature is {self.getTemperatureStr()}°C ({self.getTemperatureImperialStr()}°F), '
-        humidity = f'humidity is {self.getHumidity()}%, '
-
-        uvIndex = ''
-        if self.__uvIndex is UvIndex.MODERATE_TO_HIGH or self.__uvIndex is UvIndex.VERY_HIGH_TO_EXTREME:
-            uvIndex = f'UV Index is {self.__uvIndex.toStr()}, '
-
-        airQuality = ''
-        if self.hasAirQualityIndex():
-            airQuality = f'air quality index is {self.__airQualityIndex.toStr()}, '
-
-        pressure = f'and pressure is {self.getPressureStr()} hPa. '
-
-        conditions = ''
-        if self.hasConditions():
-            conditionsJoin = delimiter.join(self.__conditions)
-            conditions = f'Current conditions: {conditionsJoin}. '
-
-        tomorrowsTemps = f'Tomorrow has a low of {self.getTomorrowsLowTemperatureStr()}°C ({self.getTomorrowsLowTemperatureImperialStr()}°F) and a high of {self.getTomorrowsHighTemperatureStr()}°C ({self.getTomorrowsHighTemperatureImperialStr()}°F). '
-
-        tomorrowsConditions = ''
-        if self.hasTomorrowsConditions():
-            tomorrowsConditionsJoin = delimiter.join(self.__tomorrowsConditions)
-            tomorrowsConditions = f'Tomorrow\'s conditions: {tomorrowsConditionsJoin}. '
-
-        alerts = ''
-        if self.hasAlerts():
-            alertsJoin = ' '.join(self.__alerts)
-            alerts = f'🚨 {alertsJoin}'
-
-        return f'{temperature}{humidity}{uvIndex}{airQuality}{pressure}{conditions}{tomorrowsTemps}{tomorrowsConditions}{alerts}'
-
-
 class WeatherRepository():
 
     def __init__(
         self,
         oneWeatherApiKey: str,
+        maxAlerts: int = 2,
         cacheTimeDelta: timedelta = timedelta(minutes = 20)
     ):
         if not utils.isValidStr(oneWeatherApiKey):
             raise ValueError(f'oneWeatherApiKey argument is malformed: \"{oneWeatherApiKey}\"')
+        elif not utils.isValidNum(maxAlerts):
+            raise ValueError(f'maxAlerts argument is malformed: \"{maxAlerts}\"')
+        elif maxAlerts < 1:
+            raise ValueError(f'maxAlerts argument is out of bounds: {maxAlerts}')
         elif cacheTimeDelta is None:
             raise ValueError(f'cacheTimeDelta argument is malformed: \"{cacheTimeDelta}\"')
 
-        self.__oneWeatherApiKey = oneWeatherApiKey
+        self.__oneWeatherApiKey: str = oneWeatherApiKey
+        self.__maxAlerts: int = maxAlerts
         self.__cache = TimedDict(timeDelta = cacheTimeDelta)
-        self.__conditionIcons = self.__createConditionIconsDict()
+        self.__conditionIcons: Dict[str, str] = self.__createConditionIconsDict()
 
-    def __chooseTomorrowFromForecast(self, jsonResponse: dict):
+    def __chooseTomorrowFromForecast(self, jsonResponse: Dict) -> Dict:
         currentSunrise = jsonResponse['current']['sunrise']
         currentSunset = jsonResponse['current']['sunset']
 
@@ -316,10 +173,10 @@ class WeatherRepository():
             print(f'Exception occurred when attempting to decode Open Weather\'s weather response into JSON for \"{location.getLocationId()}\": {e}')
             raise RuntimeError(f'Exception occurred when attempting to decode Open Weather\'s weather response into JSON for \"{location.getLocationId()}\": {e}')
 
-        currentJson = jsonResponse['current']
-        humidity = currentJson['humidity']
-        pressure = currentJson['pressure']
-        temperature = currentJson['temp']
+        currentJson: Dict = jsonResponse['current']
+        humidity = int(round(utils.getFloatFromDict(currentJson, 'humidity')))
+        pressure = int(round(utils.getFloatFromDict(currentJson, 'pressure')))
+        temperature = utils.getFloatFromDict(currentJson, 'temp')
         uvIndex = UvIndex.fromFloat(utils.getFloatFromDict(currentJson, 'uvi'))
 
         conditions: List[str] = list()
@@ -339,9 +196,12 @@ class WeatherRepository():
                     else:
                         alerts.append(f'Alert from {senderName}: {event}.')
 
+                    if len(alerts) >= self.__maxAlerts:
+                        break
+
         tomorrowsJson = self.__chooseTomorrowFromForecast(jsonResponse)
-        tomorrowsHighTemperature = tomorrowsJson['temp']['max']
-        tomorrowsLowTemperature = tomorrowsJson['temp']['min']
+        tomorrowsHighTemperature = utils.getFloatFromDict(tomorrowsJson['temp'], 'max')
+        tomorrowsLowTemperature = utils.getFloatFromDict(tomorrowsJson['temp'], 'min')
 
         tomorrowsConditions: List[str] = list()
         if 'weather' in tomorrowsJson and len(tomorrowsJson['weather']) >= 1:
@@ -350,24 +210,24 @@ class WeatherRepository():
 
         return WeatherReport(
             airQualityIndex = self.__fetchAirQualityIndex(location),
-            humidity = int(round(humidity)),
-            pressure = int(round(pressure)),
             temperature = temperature,
             tomorrowsHighTemperature = tomorrowsHighTemperature,
             tomorrowsLowTemperature = tomorrowsLowTemperature,
+            humidity = humidity,
+            pressure = pressure,
             alerts = alerts,
             conditions = conditions,
             tomorrowsConditions = tomorrowsConditions,
             uvIndex = uvIndex
         )
 
-    def __prettifyCondition(self, conditionJson: dict) -> str:
+    def __prettifyCondition(self, conditionJson: Dict) -> str:
         conditionIcon = ''
         if 'id' in conditionJson:
-            id_ = str(conditionJson['id'])
+            conditionId = utils.getStrFromDict(conditionJson, 'id')
 
-            if id_ in self.__conditionIcons:
-                icon = self.__conditionIcons[id_]
+            if conditionId in self.__conditionIcons:
+                icon = self.__conditionIcons[conditionId]
                 conditionIcon = f'{icon} '
 
         conditionDescription = conditionJson['description']

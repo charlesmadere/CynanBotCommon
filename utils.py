@@ -28,6 +28,12 @@ def areValidStrs(l: List[str]) -> bool:
 
     return True
 
+def cToF(celsius: float) -> float:
+    if not isValidNum(celsius):
+        raise ValueError(f'celsius argument is malformed: \"{celsius}\"')
+
+    return (celsius * (9 / 5)) + 32
+
 def cleanStr(s: str, replacement: str = ' ', htmlUnescape: bool = False) -> str:
     if replacement is None:
         raise ValueError(f'replacement argument is malformed: \"{replacement}\"')
@@ -174,8 +180,7 @@ def getNowTimeText(includeSeconds: bool = False) -> str:
 
 def getRandomSpaceEmoji() -> str:
     spaceEmoji = [ '🚀', '👾', '☄️', '🌌', '👨‍🚀', '👩‍🚀', '👽', '🌠' ]
-    randomIndex = random.randint(0, len(spaceEmoji) - 1)
-    return spaceEmoji[randomIndex]
+    return random.choice(spaceEmoji)
 
 def getStrFromDateTime(dt: datetime) -> str:
     if dt is None:
