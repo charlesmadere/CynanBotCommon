@@ -165,8 +165,8 @@ class TriviaRepository():
         return QuestionAnswerTriviaQuestion(
             correctAnswers = correctAnswers,
             category = category,
-            _id = triviaId,
             question = question,
+            triviaId = triviaId,
             triviaDifficulty = TriviaDifficulty.UNKNOWN,
             triviaSource = TriviaSource.J_SERVICE
         )
@@ -228,8 +228,8 @@ class TriviaRepository():
                 correctAnswers = correctAnswers,
                 multipleChoiceResponses = multipleChoiceResponses,
                 category = category,
-                _id = triviaId,
                 question = question,
+                triviaId = triviaId,
                 triviaDifficulty = triviaDifficulty,
                 triviaSource = TriviaSource.BONGO
             )
@@ -241,8 +241,8 @@ class TriviaRepository():
             triviaQuestion = TrueFalseTriviaQuestion(
                 correctAnswers = correctAnswers,
                 category = category,
-                _id = triviaId,
                 question = question,
+                triviaId = triviaId,
                 triviaDifficulty = triviaDifficulty,
                 triviaSource = TriviaSource.BONGO
             )
@@ -320,8 +320,8 @@ class TriviaRepository():
                 correctAnswers = correctAnswers,
                 multipleChoiceResponses = multipleChoiceResponses,
                 category = category,
-                _id = None,
                 question = question,
+                triviaId = None,
                 triviaDifficulty = triviaDifficulty,
                 triviaSource = TriviaSource.OPEN_TRIVIA_DATABASE
             )
@@ -333,8 +333,8 @@ class TriviaRepository():
             return TrueFalseTriviaQuestion(
                 correctAnswers = correctAnswers,
                 category = category,
-                _id = None,
                 question = question,
+                triviaId = None,
                 triviaDifficulty = triviaDifficulty,
                 triviaSource = TriviaSource.OPEN_TRIVIA_DATABASE
             )
@@ -396,8 +396,8 @@ class TriviaRepository():
                 correctAnswers = correctAnswers,
                 multipleChoiceResponses = multipleChoiceResponses,
                 category = category,
-                _id = triviaId,
                 question = question,
+                triviaId = triviaId,
                 triviaDifficulty = TriviaDifficulty.UNKNOWN,
                 triviaSource = TriviaSource.WILL_FRY_TRIVIA_API
             )

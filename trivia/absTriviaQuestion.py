@@ -19,8 +19,8 @@ class AbsTriviaQuestion(ABC):
     def __init__(
         self,
         category: str,
-        _id: str,
         question: str,
+        triviaId: str,
         triviaDifficulty: TriviaDifficulty,
         triviaSource: TriviaSource,
         triviaType: TriviaType
@@ -35,8 +35,8 @@ class AbsTriviaQuestion(ABC):
             raise ValueError(f'triviaType argument is malformed: \"{triviaType}\"')
 
         self.__category: str = category
-        self.__id: str = _id
         self.__question: str = question
+        self.__triviaId: str = triviaId
         self.__triviaDifficulty: TriviaDifficulty = triviaDifficulty
         self.__triviaSource: TriviaSource = triviaSource
         self.__triviaType: TriviaType = triviaType
@@ -55,9 +55,6 @@ class AbsTriviaQuestion(ABC):
     def getCorrectAnswers(self) -> List[str]:
         pass
 
-    def getId(self) -> str:
-        return self.__id
-
     @abstractmethod
     def getPrompt(self, delimiter: str = ', ') -> str:
         pass
@@ -72,6 +69,9 @@ class AbsTriviaQuestion(ABC):
     def getTriviaDifficulty(self) -> TriviaDifficulty:
         return self.__triviaDifficulty
 
+    def getTriviaId(self) -> str:
+        return self.__triviaId
+
     def getTriviaSource(self) -> TriviaSource:
         return self.__triviaSource
 
@@ -81,5 +81,5 @@ class AbsTriviaQuestion(ABC):
     def hasCategory(self) -> bool:
         return utils.isValidStr(self.__category)
 
-    def hasId(self) -> bool:
-        return utils.isValidStr(self.__id)
+    def hasTriviaId(self) -> bool:
+        return utils.isValidStr(self.__triviaId)

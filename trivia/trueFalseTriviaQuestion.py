@@ -21,15 +21,15 @@ class TrueFalseTriviaQuestion(AbsTriviaQuestion):
         self,
         correctAnswers: List[bool],
         category: str,
-        _id: str,
         question: str,
+        triviaId: str,
         triviaDifficulty: TriviaDifficulty,
         triviaSource: TriviaSource
     ):
         super().__init__(
             category = category,
-            _id = _id,
             question = question,
+            triviaId = triviaId,
             triviaDifficulty = triviaDifficulty,
             triviaSource = triviaSource,
             triviaType = TriviaType.TRUE_FALSE
