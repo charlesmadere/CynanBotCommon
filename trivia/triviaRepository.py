@@ -149,6 +149,11 @@ class TriviaRepository():
             raise ValueError(f'Rejecting jService data due to null/empty contents: {jsonResponse}')
 
         resultJson = jsonResponse[0]
+
+        if not utils.hasItems(resultJson):
+            print(f'Rejecting jService data due to null/empty contents: {jsonResponse}')
+            raise ValueError(f'Rejecting jService data due to null/empty contents: {jsonResponse}')
+
         category = utils.getStrFromDict(resultJson['category'], 'title', fallback = '', clean = True)
         question = utils.getStrFromDict(resultJson, 'question', clean = True)
         triviaId = utils.getStrFromDict(resultJson, 'id')
