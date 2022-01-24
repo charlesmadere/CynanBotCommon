@@ -1223,8 +1223,8 @@ class PokepediaRepository():
             raise ValueError(f'jsonResponse argument is malformed: \"{jsonResponse}\"')
 
         # begin with current generation stats
-        accuracy: int = jsonResponse['accuracy']
-        power: int = jsonResponse['power']
+        accuracy = utils.getIntFromDict(jsonResponse, 'accuracy')
+        power = utils.getIntFromDict(jsonResponse, 'power')
         pp = utils.getIntFromDict(jsonResponse, 'pp')
         damageClass = PokepediaDamageClass.fromStr(jsonResponse['damage_class']['name'])
         elementType = PokepediaElementType.fromStr(jsonResponse['type']['name'])
