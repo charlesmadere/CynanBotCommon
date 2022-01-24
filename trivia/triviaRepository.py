@@ -296,8 +296,8 @@ class TriviaRepository():
             print(f'Rejecting Open Trivia Database\'s API data due to null/empty contents: {jsonResponse}')
             raise ValueError(f'Rejecting Open Trivia Database\'s API data due to null/empty contents: {jsonResponse}')
 
-        triviaDifficulty = TriviaDifficulty.fromStr(resultJson['difficulty'])
-        triviaType = TriviaType.fromStr(resultJson['type'])
+        triviaDifficulty = TriviaDifficulty.fromStr(utils.getStrFromDict(resultJson, 'difficulty'))
+        triviaType = TriviaType.fromStr(utils.getStrFromDict(resultJson, 'type'))
         category = utils.getStrFromDict(resultJson, 'category', fallback = '', clean = True, htmlUnescape = True)
         question = utils.getStrFromDict(resultJson, 'question', clean = True, htmlUnescape = True)
 
@@ -372,7 +372,7 @@ class TriviaRepository():
             print(f'Rejecting Will Fry Trivia API\'s data due to null/empty contents: {jsonResponse}')
             raise ValueError(f'Rejecting Will Fry Trivia API\'s data due to null/empty contents: {jsonResponse}')
 
-        triviaType = TriviaType.fromStr(resultJson['type'])
+        triviaType = TriviaType.fromStr(utils.getStrFromDict(resultJson, 'type'))
         category = utils.getStrFromDict(resultJson, 'category', fallback = '', clean = True)
         question = utils.getStrFromDict(resultJson, 'question', clean = True)
         triviaId = utils.getStrFromDict(resultJson, 'id')
