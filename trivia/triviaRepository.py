@@ -135,7 +135,7 @@ class TriviaRepository():
             )
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
             print(f'Exception occurred when attempting to fetch trivia from jService: {e}')
-            raise RuntimeError(f'Exception occurred when attempting to fetch trivia from jService: {e}')
+            return None
 
         jsonResponse: List[Dict[str, object]] = None
         try:
@@ -182,7 +182,7 @@ class TriviaRepository():
             )
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
             print(f'Exception occurred when attempting to fetch trivia from Bongo: {e}')
-            raise RuntimeError(f'Exception occurred when attempting to fetch trivia from Bongo: {e}')
+            return None
 
         jsonResponse: List[Dict[str, object]] = None
         try:
@@ -262,7 +262,7 @@ class TriviaRepository():
             )
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
             print(f'Exception occurred when attempting to fetch trivia from Open Trivia Database: {e}')
-            raise RuntimeError(f'Exception occurred when attempting to fetch trivia from Open Trivia Database: {e}')
+            return None
 
         jsonResponse: Dict[str, object] = None
         try:
@@ -343,8 +343,7 @@ class TriviaRepository():
             )
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
             print(f'Exception occurred when attempting to fetch trivia from Will Fry Trivia API: {e}')
-            # This API seems flaky... Let's fallback to a known good one if there's an error.
-            return self.__fetchTriviaQuestionFromOpenTriviaDatabase()
+            return None
 
         jsonResponse: Dict[str, object] = None
         try:
