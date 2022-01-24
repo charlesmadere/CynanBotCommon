@@ -171,6 +171,91 @@ class TriviaRepository():
             triviaSource = TriviaSource.J_SERVICE
         )
 
+    def __fetchTriviaQuestionFromBongo(self) -> AbsTriviaQuestion:
+        print(f'Fetching trivia question from Bongo... ({utils.getNowTimeText()})')
+
+        rawResponse = None
+        try:
+            rawResponse = requests.get(
+                url = 'https://beta-trivia.bongo.best/?limit=1',
+                timeout = utils.getDefaultTimeout()
+            )
+        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
+            print(f'Exception occurred when attempting to fetch trivia from Bongo: {e}')
+            raise RuntimeError(f'Exception occurred when attempting to fetch trivia from Bongo: {e}')
+
+        jsonResponse: List[Dict[str, object]] = None
+        try:
+            jsonResponse = rawResponse.json()
+        except JSONDecodeError as e:
+            print(f'Exception occurred when attempting to decode Bongo\'s response into JSON: {e}')
+            raise RuntimeError(f'Exception occurred when attempting to decode Bongo\'s response into JSON: {e}')
+
+        if not utils.hasItems(jsonResponse):
+            print(f'Rejecting Bongo\'s API data due to null/empty contents: {jsonResponse}')
+            raise ValueError(f'Rejecting Bongo\'s API data due to null/empty contents: {jsonResponse}')
+
+        triviaJson: Dict[str, object] = jsonResponse[0]
+
+        if not utils.hasItems(triviaJson):
+            print(f'Rejecting Bongo\'s API data due to null/empty contents: {jsonResponse}')
+            raise ValueError(f'Rejecting Bongo\'s API data due to null/empty contents: {jsonResponse}')
+
+        triviaDifficulty: str = TriviaDifficulty.fromStr(triviaJson.get('difficulty'))
+        triviaType = TriviaType.fromStr(utils.getStrFromDict(triviaJson, 'type'))
+        category = utils.getStrFromDict(triviaJson, 'category', fallback = '', clean = True, htmlUnescape = True)
+        question = utils.getStrFromDict(triviaJson, 'question', clean = True, htmlUnescape = True)
+        triviaId = utils.getStrFromDict(triviaJson, 'id')
+
+        triviaQuestion: AbsTriviaQuestion = None
+
+        if triviaType is TriviaType.MULTIPLE_CHOICE:
+            correctAnswer = utils.getStrFromDict(
+                d = triviaJson,
+                key = 'correct_answer',
+                clean = True,
+                htmlUnescape = True
+            )
+            correctAnswers: List[str] = list()
+            correctAnswers.append(correctAnswer)
+
+            multipleChoiceResponses = self.__buildMultipleChoiceResponsesList(
+                correctAnswer = correctAnswer,
+                multipleChoiceResponsesJson = triviaJson['incorrect_answers']
+            )
+
+            triviaQuestion = MultipleChoiceTriviaQuestion(
+                correctAnswers = correctAnswers,
+                multipleChoiceResponses = multipleChoiceResponses,
+                category = category,
+                _id = triviaId,
+                question = question,
+                triviaDifficulty = triviaDifficulty,
+                triviaSource = TriviaSource.BONGO
+            )
+        elif triviaType is TriviaType.TRUE_FALSE:
+            correctAnswer = utils.getBoolFromDict(triviaJson, 'correct_answer')
+            correctAnswers: List[bool] = list()
+            correctAnswers.append(correctAnswer)
+
+            triviaQuestion = TrueFalseTriviaQuestion(
+                correctAnswers = correctAnswers,
+                category = category,
+                _id = triviaId,
+                question = question,
+                triviaDifficulty = triviaDifficulty,
+                triviaSource = TriviaSource.BONGO
+            )
+        else:
+            raise ValueError(f'triviaType \"{triviaType}\" is not supported for Bongo: {jsonResponse}')
+
+        if self.__verifyGoodTriviaQuestion(triviaQuestion):
+            return triviaQuestion
+        else:
+            print(f'Trivia question from Bongo was bad, falling back to Open Trivia Database... ({utils.getNowTimeText()}): {jsonResponse}')
+            # let's fallback to a known good trivia API if there is an issue
+            return self.__fetchTriviaQuestionFromOpenTriviaDatabase()
+
     def __fetchTriviaQuestionFromLocalTriviaRepository(self) -> AbsTriviaQuestion:
         print(f'Fetching trivia question from LocalTriviaRepository... ({utils.getNowTimeText()})')
         return self.__localTriviaRepository.fetchRandomQuestion()
@@ -349,7 +434,9 @@ class TriviaRepository():
                 isLocalTriviaRepositoryEnabled = isLocalTriviaRepositoryEnabled
             )
 
-        if triviaSource is TriviaSource.J_SERVICE:
+        if triviaSource is TriviaSource.BONGO:
+            return self.__fetchTriviaQuestionFromBongo()
+        elif triviaSource is TriviaSource.J_SERVICE:
             return self.__fetchTriviaQuestionFromJService()
         elif triviaSource is TriviaSource.LOCAL_TRIVIA_REPOSITORY:
             return self.__fetchTriviaQuestionFromLocalTriviaRepository()
@@ -416,3 +503,20 @@ class TriviaRepository():
             raise ValueError(f'JSON contents of Trivia Repository file \"{self.__triviaRepositoryFile}\" is empty')
 
         return jsonContents
+
+    def __verifyGoodTriviaQuestion(self, triviaQuestion: AbsTriviaQuestion) -> bool:
+        if triviaQuestion is None:
+            return False
+
+        strings: List[str] = list()
+        strings.append(triviaQuestion.getQuestion())
+        strings.append(triviaQuestion.getPrompt())
+
+        for response in triviaQuestion.getResponses():
+            strings.append(response)
+
+        for string in strings:
+            if utils.containsUrl(string):
+                return False
+
+        return True

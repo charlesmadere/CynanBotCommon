@@ -53,6 +53,21 @@ def cleanStr(s: str, replacement: str = ' ', htmlUnescape: bool = False) -> str:
 
     return s
 
+def containsUrl(s: str) -> bool:
+    if not isValidStr(s):
+        return False
+
+    splits = s.split()
+
+    if not hasItems(splits):
+        return False
+
+    for split in splits:
+        if isValidUrl(split):
+            return True
+
+    return False
+
 def formatTime(time) -> str:
     if time is None:
         raise ValueError(f'time argument is malformed: \"{time}\"')

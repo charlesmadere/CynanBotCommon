@@ -8,6 +8,7 @@ except:
 
 class TriviaSource(Enum):
 
+    BONGO = auto()
     J_SERVICE = auto()
     LOCAL_TRIVIA_REPOSITORY = auto()
     OPEN_TRIVIA_DATABASE = auto()
@@ -20,7 +21,9 @@ class TriviaSource(Enum):
 
         text = text.lower()
 
-        if text == 'j_service':
+        if text == 'bongo':
+            return TriviaSource.BONGO
+        elif text == 'j_service':
             return TriviaSource.J_SERVICE
         elif text == 'local_trivia':
             return TriviaSource.LOCAL_TRIVIA_REPOSITORY
