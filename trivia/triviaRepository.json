@@ -1,13 +1,18 @@
 {
     "max_multiple_choice_responses": 5,
+    "max_retry_count": 3,
     "trivia_sources": {
+        "bongo": {
+            "is_enabled": true,
+            "weight": 175
+        },
         "j_service": {
             "is_enabled": false,
             "weight": 25
         },
         "local_trivia": {
             "is_enabled": true,
-            "weight": 1
+            "weight": 10
         },
         "open_trivia": {
             "is_enabled": true,
@@ -15,7 +20,7 @@
         },
         "will_fry_trivia": {
             "is_enabled": true,
-            "weight": 200
+            "weight": 150
         }
     }
 }
