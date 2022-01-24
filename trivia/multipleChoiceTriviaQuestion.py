@@ -52,7 +52,7 @@ class MultipleChoiceTriviaQuestion(AbsTriviaQuestion):
 
     def getCorrectAnswers(self) -> List[str]:
         answerStrings: List[str] = list()
-        index = 0
+        index: int = 0
 
         for correctAnswerChar in self.getCorrectAnswerChars():
             answerStrings.append(f'[{correctAnswerChar}] {self.__correctAnswers[index]}')
@@ -77,8 +77,8 @@ class MultipleChoiceTriviaQuestion(AbsTriviaQuestion):
 
     def getCorrectAnswerOrdinals(self) -> List[int]:
         ordinals: List[int] = list()
+        index: int = 0
 
-        index = 0
         for multipleChoiceResponse in self.__multipleChoiceResponses:
             for correctAnswer in self.__correctAnswers:
                 if multipleChoiceResponse == correctAnswer:
