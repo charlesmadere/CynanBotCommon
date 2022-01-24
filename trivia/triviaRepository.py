@@ -485,7 +485,7 @@ class TriviaRepository():
 
     def __getMaxMultipleChoiceResponses(self) -> int:
         jsonContents = self.__readTriviaRepositoryJson()
-        maxMultipleChoiceResponses = utils.getIntFromDict(jsonContents, 'max_multiple_choice_responses')
+        maxMultipleChoiceResponses = utils.getIntFromDict(jsonContents, 'max_multiple_choice_responses', 5)
 
         if maxMultipleChoiceResponses < 2:
             raise ValueError(f'maxMultipleChoiceResponses is too small: \"{maxMultipleChoiceResponses}\"')
