@@ -124,53 +124,6 @@ class TriviaRepository():
 
         return randomChoices[0]
 
-    def __fetchTriviaQuestionFromJService(self) -> AbsTriviaQuestion:
-        print(f'Fetching trivia question from jService... ({utils.getNowTimeText()})')
-
-        rawResponse = None
-        try:
-            rawResponse = requests.get(
-                url = 'https://jservice.io/api/random',
-                timeout = utils.getDefaultTimeout()
-            )
-        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            print(f'Exception occurred when attempting to fetch trivia from jService: {e}')
-            return None
-
-        jsonResponse: List[Dict[str, object]] = None
-        try:
-            jsonResponse = rawResponse.json()
-        except JSONDecodeError as e:
-            print(f'Exception occurred when attempting to decode jService\'s response into JSON: {e}')
-            raise RuntimeError(f'Exception occurred when attempting to decode jService\'s response into JSON: {e}')
-
-        if not utils.hasItems(jsonResponse):
-            print(f'Rejecting jService data due to null/empty contents: {jsonResponse}')
-            raise ValueError(f'Rejecting jService data due to null/empty contents: {jsonResponse}')
-
-        resultJson: Dict[str, object] = jsonResponse[0]
-
-        if not utils.hasItems(resultJson):
-            print(f'Rejecting jService data due to null/empty contents: {jsonResponse}')
-            raise ValueError(f'Rejecting jService data due to null/empty contents: {jsonResponse}')
-
-        category = utils.getStrFromDict(resultJson['category'], 'title', fallback = '', clean = True)
-        question = utils.getStrFromDict(resultJson, 'question', clean = True)
-        triviaId = utils.getStrFromDict(resultJson, 'id')
-
-        correctAnswer = utils.getStrFromDict(resultJson, 'answer', clean = True)
-        correctAnswers: List[str] = list()
-        correctAnswers.append(correctAnswer)
-
-        return QuestionAnswerTriviaQuestion(
-            correctAnswers = correctAnswers,
-            category = category,
-            question = question,
-            triviaId = triviaId,
-            triviaDifficulty = TriviaDifficulty.UNKNOWN,
-            triviaSource = TriviaSource.J_SERVICE
-        )
-
     def __fetchTriviaQuestionFromBongo(self) -> AbsTriviaQuestion:
         print(f'Fetching trivia question from Bongo... ({utils.getNowTimeText()})')
 
@@ -246,6 +199,53 @@ class TriviaRepository():
             )
         else:
             raise ValueError(f'triviaType \"{triviaType}\" is not supported for Bongo: {jsonResponse}')
+
+    def __fetchTriviaQuestionFromJService(self) -> AbsTriviaQuestion:
+        print(f'Fetching trivia question from jService... ({utils.getNowTimeText()})')
+
+        rawResponse = None
+        try:
+            rawResponse = requests.get(
+                url = 'https://jservice.io/api/random',
+                timeout = utils.getDefaultTimeout()
+            )
+        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
+            print(f'Exception occurred when attempting to fetch trivia from jService: {e}')
+            return None
+
+        jsonResponse: List[Dict[str, object]] = None
+        try:
+            jsonResponse = rawResponse.json()
+        except JSONDecodeError as e:
+            print(f'Exception occurred when attempting to decode jService\'s response into JSON: {e}')
+            raise RuntimeError(f'Exception occurred when attempting to decode jService\'s response into JSON: {e}')
+
+        if not utils.hasItems(jsonResponse):
+            print(f'Rejecting jService data due to null/empty contents: {jsonResponse}')
+            raise ValueError(f'Rejecting jService data due to null/empty contents: {jsonResponse}')
+
+        resultJson: Dict[str, object] = jsonResponse[0]
+
+        if not utils.hasItems(resultJson):
+            print(f'Rejecting jService data due to null/empty contents: {jsonResponse}')
+            raise ValueError(f'Rejecting jService data due to null/empty contents: {jsonResponse}')
+
+        category = utils.getStrFromDict(resultJson['category'], 'title', fallback = '', clean = True)
+        question = utils.getStrFromDict(resultJson, 'question', clean = True)
+        triviaId = utils.getStrFromDict(resultJson, 'id')
+
+        correctAnswer = utils.getStrFromDict(resultJson, 'answer', clean = True)
+        correctAnswers: List[str] = list()
+        correctAnswers.append(correctAnswer)
+
+        return QuestionAnswerTriviaQuestion(
+            correctAnswers = correctAnswers,
+            category = category,
+            question = question,
+            triviaId = triviaId,
+            triviaDifficulty = TriviaDifficulty.UNKNOWN,
+            triviaSource = TriviaSource.J_SERVICE
+        )
 
     def __fetchTriviaQuestionFromLocalTriviaRepository(self) -> AbsTriviaQuestion:
         print(f'Fetching trivia question from LocalTriviaRepository... ({utils.getNowTimeText()})')
