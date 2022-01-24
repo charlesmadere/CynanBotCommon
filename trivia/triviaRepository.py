@@ -84,7 +84,7 @@ class TriviaRepository():
 
         for incorrectAnswer in multipleChoiceResponsesJson:
             incorrectAnswer = utils.cleanStr(incorrectAnswer, htmlUnescape = True)
-            add = True
+            add: bool = True
 
             for response in multipleChoiceResponses:
                 if incorrectAnswer.lower() == response.lower():
@@ -97,8 +97,8 @@ class TriviaRepository():
                 if len(multipleChoiceResponses) >= maxMultipleChoiceResponses:
                     break
 
-        if len(multipleChoiceResponses) < 3:
-            raise ValueError(f'This trivia question doesn\'t have enough multiple choice responses: \"{multipleChoiceResponses}\"')
+        if not utils.hasItems(multipleChoiceResponses):
+            raise ValueError(f'This trivia question doesn\'t have any multiple choice responses: \"{multipleChoiceResponses}\"')
 
         random.shuffle(multipleChoiceResponses)
         return multipleChoiceResponses
@@ -200,7 +200,12 @@ class TriviaRepository():
             print(f'Rejecting trivia due to missing/null/empty \"results\" array: {jsonResponse}')
             raise ValueError(f'Rejecting trivia due to missing/null/empty \"results\" array: {jsonResponse}')
 
-        resultJson = jsonResponse['results'][0]
+        resultJson: Dict[str, object] = jsonResponse['results'][0]
+
+        if not utils.hasItems(resultJson):
+            print(f'Rejecting Open Trivia Database\'s API data due to null/empty contents: {jsonResponse}')
+            raise ValueError(f'Rejecting Open Trivia Database\'s API data due to null/empty contents: {jsonResponse}')
+
         triviaDifficulty = TriviaDifficulty.fromStr(resultJson['difficulty'])
         triviaType = TriviaType.fromStr(resultJson['type'])
         category = utils.getStrFromDict(resultJson, 'category', fallback = '', clean = True, htmlUnescape = True)
@@ -244,7 +249,7 @@ class TriviaRepository():
                 triviaSource = TriviaSource.OPEN_TRIVIA_DATABASE
             )
         else:
-            raise ValueError(f'triviaType \"{triviaType}\" is unknown for Open Trivia Database: {jsonResponse}')
+            raise ValueError(f'triviaType \"{triviaType}\" is not supported for Open Trivia Database: {jsonResponse}')
 
     def __fetchTriviaQuestionFromWillFryTriviaApi(self) -> AbsTriviaQuestion:
         print(f'Fetching trivia question from Will Fry Trivia API... ({utils.getNowTimeText()})')
@@ -260,7 +265,7 @@ class TriviaRepository():
             # This API seems flaky... Let's fallback to a known good one if there's an error.
             return self.__fetchTriviaQuestionFromOpenTriviaDatabase()
 
-        jsonResponse: Dict = None
+        jsonResponse: Dict[str, object] = None
         try:
             jsonResponse = rawResponse.json()
         except JSONDecodeError as e:
@@ -271,7 +276,12 @@ class TriviaRepository():
             print(f'Rejecting Will Fry Trivia API data due to null/empty contents: {jsonResponse}')
             raise ValueError(f'Rejecting Will Fry Trivia API data due to null/empty contents: {jsonResponse}')
 
-        resultJson = jsonResponse[0]
+        resultJson: Dict[str, object] = jsonResponse[0]
+
+        if not utils.hasItems(resultJson):
+            print(f'Rejecting Will Fry Trivia API\'s data due to null/empty contents: {jsonResponse}')
+            raise ValueError(f'Rejecting Will Fry Trivia API\'s data due to null/empty contents: {jsonResponse}')
+
         triviaType = TriviaType.fromStr(resultJson['type'])
         category = utils.getStrFromDict(resultJson, 'category', fallback = '', clean = True)
         question = utils.getStrFromDict(resultJson, 'question', clean = True)
@@ -302,7 +312,7 @@ class TriviaRepository():
                 triviaSource = TriviaSource.WILL_FRY_TRIVIA_API
             )
         else:
-            raise ValueError(f'triviaType \"{triviaType}\" is unknown for Will Fry Trivia API: {jsonResponse}')
+            raise ValueError(f'triviaType \"{triviaType}\" is not supported for Will Fry Trivia API: {jsonResponse}')
 
     def fetchTrivia(
         self,
