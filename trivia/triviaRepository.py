@@ -201,7 +201,7 @@ class TriviaRepository():
             print(f'Rejecting Bongo\'s API data due to null/empty contents: {jsonResponse}')
             raise ValueError(f'Rejecting Bongo\'s API data due to null/empty contents: {jsonResponse}')
 
-        triviaDifficulty: str = TriviaDifficulty.fromStr(triviaJson.get('difficulty'))
+        triviaDifficulty = TriviaDifficulty.fromStr(triviaJson.get('difficulty'))
         triviaType = TriviaType.fromStr(utils.getStrFromDict(triviaJson, 'type'))
         category = utils.getStrFromDict(triviaJson, 'category', fallback = '', clean = True, htmlUnescape = True)
         question = utils.getStrFromDict(triviaJson, 'question', clean = True, htmlUnescape = True)
@@ -287,7 +287,7 @@ class TriviaRepository():
             print(f'Rejecting Open Trivia Database\'s API data due to null/empty contents: {jsonResponse}')
             raise ValueError(f'Rejecting Open Trivia Database\'s API data due to null/empty contents: {jsonResponse}')
 
-        triviaDifficulty = TriviaDifficulty.fromStr(utils.getStrFromDict(resultJson, 'difficulty'))
+        triviaDifficulty = TriviaDifficulty.fromStr(resultJson.get('difficulty'))
         triviaType = TriviaType.fromStr(utils.getStrFromDict(resultJson, 'type'))
         category = utils.getStrFromDict(resultJson, 'category', fallback = '', clean = True, htmlUnescape = True)
         question = utils.getStrFromDict(resultJson, 'question', clean = True, htmlUnescape = True)
