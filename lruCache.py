@@ -8,7 +8,7 @@ except:
 # This class was taken from online:
 # https://gist.github.com/jerryan999/6677a2619e8175e54ed05d3c6e1621cf
 #
-# I then slightly tweaked it for simplifcation... fingers crossed it works
+# I then slightly tweaked it for simplifcation... (fingers crossed it works)
 
 class LinkedNode():
 
@@ -26,7 +26,7 @@ class LruCache():
     def __init__(self, capacity: int):
         if not utils.isValidNum(capacity):
             raise ValueError(f'capacity argument is malformed: \"{capacity}\"')
-        elif capacity < 8:
+        elif capacity < 2:
             raise ValueError(f'capacity argument is too small: {capacity}')
 
         self.__capacity: int = capacity
@@ -35,14 +35,14 @@ class LruCache():
         self.head: LinkedNode = self.__stub.next
         self.tail: LinkedNode = self.__stub.next
 
-    def __append_new_node(self, new_node: LinkedNode):
+    def __append_new_node(self, newNode: LinkedNode):
         """  add the new node to the tail end
         """
         if not self.tail:
-            self.head = self.tail = new_node
+            self.head = self.tail = newNode
         else:
-            self.tail.next = new_node
-            new_node.prev = self.tail
+            self.tail.next = newNode
+            newNode.prev = self.tail
             self.tail = self.tail.next
 
     def contains(self, key: str) -> bool:
