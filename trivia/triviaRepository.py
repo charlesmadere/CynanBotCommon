@@ -207,8 +207,6 @@ class TriviaRepository():
         question = utils.getStrFromDict(triviaJson, 'question', clean = True, htmlUnescape = True)
         triviaId = utils.getStrFromDict(triviaJson, 'id')
 
-        triviaQuestion: AbsTriviaQuestion = None
-
         if triviaType is TriviaType.MULTIPLE_CHOICE:
             correctAnswer = utils.getStrFromDict(
                 d = triviaJson,
@@ -224,7 +222,7 @@ class TriviaRepository():
                 multipleChoiceResponsesJson = triviaJson['incorrect_answers']
             )
 
-            triviaQuestion = MultipleChoiceTriviaQuestion(
+            return MultipleChoiceTriviaQuestion(
                 correctAnswers = correctAnswers,
                 multipleChoiceResponses = multipleChoiceResponses,
                 category = category,
@@ -238,7 +236,7 @@ class TriviaRepository():
             correctAnswers: List[bool] = list()
             correctAnswers.append(correctAnswer)
 
-            triviaQuestion = TrueFalseTriviaQuestion(
+            return TrueFalseTriviaQuestion(
                 correctAnswers = correctAnswers,
                 category = category,
                 question = question,
@@ -248,13 +246,6 @@ class TriviaRepository():
             )
         else:
             raise ValueError(f'triviaType \"{triviaType}\" is not supported for Bongo: {jsonResponse}')
-
-        if self.__verifyGoodTriviaQuestion(triviaQuestion):
-            return triviaQuestion
-        else:
-            print(f'Trivia question from Bongo was bad, falling back to Open Trivia Database... ({utils.getNowTimeText()}): {jsonResponse}')
-            # let's fallback to a known good trivia API if there is an issue
-            return self.__fetchTriviaQuestionFromOpenTriviaDatabase()
 
     def __fetchTriviaQuestionFromLocalTriviaRepository(self) -> AbsTriviaQuestion:
         print(f'Fetching trivia question from LocalTriviaRepository... ({utils.getNowTimeText()})')
@@ -434,18 +425,30 @@ class TriviaRepository():
                 isLocalTriviaRepositoryEnabled = isLocalTriviaRepositoryEnabled
             )
 
-        if triviaSource is TriviaSource.BONGO:
-            return self.__fetchTriviaQuestionFromBongo()
-        elif triviaSource is TriviaSource.J_SERVICE:
-            return self.__fetchTriviaQuestionFromJService()
-        elif triviaSource is TriviaSource.LOCAL_TRIVIA_REPOSITORY:
-            return self.__fetchTriviaQuestionFromLocalTriviaRepository()
-        elif triviaSource is TriviaSource.OPEN_TRIVIA_DATABASE:
-            return self.__fetchTriviaQuestionFromOpenTriviaDatabase()
-        elif triviaSource is TriviaSource.WILL_FRY_TRIVIA_API:
-            return self.__fetchTriviaQuestionFromWillFryTriviaApi()
-        else:
-            raise ValueError(f'unknown TriviaSource: \"{triviaSource}\"')
+        triviaQuestion: AbsTriviaQuestion = None
+        retryCount: int = 0
+        maxRetryCount: int = self.__getMaxRetryCount()
+
+        while retryCount < maxRetryCount:
+            if triviaSource is TriviaSource.BONGO:
+                triviaQuestion = self.__fetchTriviaQuestionFromBongo()
+            elif triviaSource is TriviaSource.J_SERVICE:
+                triviaQuestion = self.__fetchTriviaQuestionFromJService()
+            elif triviaSource is TriviaSource.LOCAL_TRIVIA_REPOSITORY:
+                triviaQuestion = self.__fetchTriviaQuestionFromLocalTriviaRepository()
+            elif triviaSource is TriviaSource.OPEN_TRIVIA_DATABASE:
+                triviaQuestion = self.__fetchTriviaQuestionFromOpenTriviaDatabase()
+            elif triviaSource is TriviaSource.WILL_FRY_TRIVIA_API:
+                triviaQuestion = self.__fetchTriviaQuestionFromWillFryTriviaApi()
+            else:
+                raise ValueError(f'unknown TriviaSource: \"{triviaSource}\"')
+
+            if self.__verifyGoodTriviaQuestion(triviaQuestion):
+                return triviaQuestion
+            else:
+                retryCount = retryCount + 1
+
+        raise RuntimeError(f'Unable to fetch trivia after {retryCount} attempts (max attempts is {maxRetryCount} ({utils.getNowTimeText(includeSeconds = True)})')
 
     def __getAvailableTriviaSourcesAndWeights(
         self,
@@ -489,6 +492,15 @@ class TriviaRepository():
             raise ValueError(f'maxMultipleChoiceResponses is too small: \"{maxMultipleChoiceResponses}\"')
 
         return maxMultipleChoiceResponses
+
+    def __getMaxRetryCount(self) -> int:
+        jsonContents = self.__readTriviaRepositoryJson()
+        maxRetryCount = utils.getIntFromDict(jsonContents, 'max_retry_count', 3)
+
+        if maxRetryCount < 2:
+            raise ValueError(f'maxRetryCount is too small: \"{maxRetryCount}\"')
+
+        return maxRetryCount
 
     def __readTriviaRepositoryJson(self) -> Dict:
         if not path.exists(self.__triviaRepositoryFile):
