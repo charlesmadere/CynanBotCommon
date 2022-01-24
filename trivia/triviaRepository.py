@@ -137,7 +137,7 @@ class TriviaRepository():
             print(f'Exception occurred when attempting to fetch trivia from jService: {e}')
             raise RuntimeError(f'Exception occurred when attempting to fetch trivia from jService: {e}')
 
-        jsonResponse: Dict = None
+        jsonResponse: List[Dict[str, object]] = None
         try:
             jsonResponse = rawResponse.json()
         except JSONDecodeError as e:
@@ -148,7 +148,7 @@ class TriviaRepository():
             print(f'Rejecting jService data due to null/empty contents: {jsonResponse}')
             raise ValueError(f'Rejecting jService data due to null/empty contents: {jsonResponse}')
 
-        resultJson = jsonResponse[0]
+        resultJson: Dict[str, object] = jsonResponse[0]
 
         if not utils.hasItems(resultJson):
             print(f'Rejecting jService data due to null/empty contents: {jsonResponse}')
@@ -188,7 +188,7 @@ class TriviaRepository():
             print(f'Exception occurred when attempting to fetch trivia from Open Trivia Database: {e}')
             raise RuntimeError(f'Exception occurred when attempting to fetch trivia from Open Trivia Database: {e}')
 
-        jsonResponse: Dict = None
+        jsonResponse: Dict[str, object] = None
         try:
             jsonResponse = rawResponse.json()
         except JSONDecodeError as e:
