@@ -42,6 +42,8 @@ class TriviaScoreRepository():
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
         elif not utils.isValidStr(userId):
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
+        elif userId == '0':
+            raise ValueError(f'userId argument is an illegal value: \"{userId}\"')
 
         connection = self.__backingDatabase.getConnection()
         cursor = connection.cursor()
@@ -95,6 +97,8 @@ class TriviaScoreRepository():
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
         elif not utils.isValidStr(userId):
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
+        elif userId == '0':
+            raise ValueError(f'userId argument is an illegal value: \"{userId}\"')
 
         result = self.fetchTriviaScore(
             twitchChannel = twitchChannel,
@@ -136,6 +140,8 @@ class TriviaScoreRepository():
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
         elif not utils.isValidStr(userId):
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
+        elif userId == '0':
+            raise ValueError(f'userId argument is an illegal value: \"{userId}\"')
 
         result = self.fetchTriviaScore(
             twitchChannel = twitchChannel,
@@ -186,6 +192,8 @@ class TriviaScoreRepository():
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
         elif not utils.isValidStr(userId):
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
+        elif userId == '0':
+            raise ValueError(f'userId argument is an illegal value: \"{userId}\"')
 
         connection = self.__backingDatabase.getConnection()
         cursor = connection.cursor()
