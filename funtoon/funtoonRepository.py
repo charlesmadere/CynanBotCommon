@@ -203,7 +203,7 @@ class FuntoonRepository():
 
         return jsonContents
 
-    def __readJsonForTwitchChannel(self, twitchChannel: str) -> Dict:
+    def __readJsonForTwitchChannel(self, twitchChannel: str) -> Dict[str, object]:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 

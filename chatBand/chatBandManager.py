@@ -130,7 +130,7 @@ class ChatBandManager():
 
         return True
 
-    def __readAllJson(self) -> Dict:
+    def __readAllJson(self) -> Dict[str, object]:
         if not path.exists(self.__chatBandFile):
             raise FileNotFoundError(f'Chat Band file not found: \"{self.__chatBandFile}\"')
 
