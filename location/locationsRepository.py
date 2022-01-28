@@ -56,7 +56,7 @@ class LocationsRepository():
 
         raise RuntimeError(f'Unable to find location with ID \"{locationId}\" in locations file: \"{self.__locationsFile}\"')
 
-    def __readJson(self) -> Dict:
+    def __readJson(self) -> Dict[str, object]:
         if not path.exists(self.__locationsFile):
             raise FileNotFoundError(f'Locations file not found: \"{self.__locationsFile}\"')
 

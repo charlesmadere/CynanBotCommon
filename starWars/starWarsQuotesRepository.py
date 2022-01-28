@@ -53,7 +53,7 @@ class StarWarsQuotesRepository:
 
         return quote.replace(result.group(0), value)
 
-    def __readJson(self) -> Dict:
+    def __readJson(self) -> Dict[str, object]:
         if not path.exists(self.__quotesFile):
             raise FileNotFoundError(f'quotes file not found: \"{self.__quotesFile}\"')
 

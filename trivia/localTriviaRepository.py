@@ -87,11 +87,11 @@ class LocalTriviaRepository():
         else:
             raise ValueError(f'triviaType \"{triviaType}\" is unknown for Local Trivia Repository: {questionJson}')
 
-    def __fetchRandomQuestionJson(self) -> Dict:
+    def __fetchRandomQuestionJson(self) -> Dict[str, object]:
         jsonContents = self.__readJson()
         return random.choice(jsonContents)
 
-    def __readJson(self) -> List:
+    def __readJson(self) -> List[Dict[str, object]]:
         if not path.exists(self.__localTriviaFile):
             raise FileNotFoundError(f'Local Trivia file not found: \"{self.__localTriviaFile}\"')
 
