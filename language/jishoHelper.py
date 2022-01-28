@@ -1,5 +1,5 @@
 from json.decoder import JSONDecodeError
-from typing import List
+from typing import Dict, List
 from urllib.parse import quote
 
 import requests
@@ -51,7 +51,7 @@ class JishoHelper():
             print(f'Exception occurred when attempting to search Jisho for \"{query}\": {e}')
             raise RuntimeError(f'Exception occurred when attempting to search Jisho for \"{query}\": {e}')
 
-        jsonResponse = None
+        jsonResponse: Dict[str, object] = None
         try:
             jsonResponse = rawResponse.json()
         except JSONDecodeError as e:

@@ -112,7 +112,7 @@ class TwitchTokensRepository():
             print(f'Exception occurred when attempting to request new Twitch tokens: {e}')
             raise RuntimeError(f'Exception occurred when attempting to request new Twitch tokens: {e}')
 
-        jsonResponse = None
+        jsonResponse: Dict[str, object] = None
         try:
             jsonResponse = rawResponse.json()
         except JSONDecodeError as e:
@@ -179,7 +179,7 @@ class TwitchTokensRepository():
             print(f'Exception occurred when attempting to validate Twitch access token: {e}')
             raise RuntimeError(f'Exception occurred when attempting to validate Twitch access token: {e}')
 
-        jsonResponse = None
+        jsonResponse: Dict[str, object] = None
         try:
             jsonResponse = rawResponse.json()
         except JSONDecodeError as e:

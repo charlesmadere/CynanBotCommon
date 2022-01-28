@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from json.decoder import JSONDecodeError
-from typing import List
+from typing import Dict, List
 
 import requests
 from requests import ConnectionError, HTTPError, Timeout
@@ -146,7 +146,7 @@ class TamaleGuyRepository():
             print(f'Exception occurred when attempting to fetch Tamale Guy store stock: {e}')
             raise RuntimeError(f'Exception occurred when attempting to fetch Tamale Guy store stock: {e}')
 
-        jsonResponse = None
+        jsonResponse: Dict[str, object] = None
         try:
             jsonResponse = rawResponse.json()
         except JSONDecodeError as e:

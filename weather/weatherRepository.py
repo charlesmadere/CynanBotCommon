@@ -120,7 +120,7 @@ class WeatherRepository():
             print(f'Exception occurred when attempting to fetch air quality index from Open Weather for \"{location.getLocationId()}\": {e}')
             raise RuntimeError(f'Exception occurred when attempting to fetch air quality index from Open Weather for \"{location.getLocationId()}\": {e}')
 
-        jsonResponse = None
+        jsonResponse: Dict[str, object] = None
         try:
             jsonResponse = rawResponse.json()
         except JSONDecodeError as e:
@@ -166,14 +166,14 @@ class WeatherRepository():
             print(f'Exception occurred when attempting to fetch weather conditions from Open Weather for \"{location.getLocationId()}\": {e}')
             raise RuntimeError(f'Exception occurred when attempting to fetch weather conditions from Open Weather for \"{location.getLocationId()}\": {e}')
 
-        jsonResponse = None
+        jsonResponse: Dict[str, object] = None
         try:
             jsonResponse = rawResponse.json()
         except JSONDecodeError as e:
             print(f'Exception occurred when attempting to decode Open Weather\'s weather response into JSON for \"{location.getLocationId()}\": {e}')
             raise RuntimeError(f'Exception occurred when attempting to decode Open Weather\'s weather response into JSON for \"{location.getLocationId()}\": {e}')
 
-        currentJson: Dict = jsonResponse['current']
+        currentJson: Dict[str, object] = jsonResponse['current']
         humidity = int(round(utils.getFloatFromDict(currentJson, 'humidity')))
         pressure = int(round(utils.getFloatFromDict(currentJson, 'pressure')))
         temperature = utils.getFloatFromDict(currentJson, 'temp')
@@ -230,5 +230,5 @@ class WeatherRepository():
                 icon = self.__conditionIcons[conditionId]
                 conditionIcon = f'{icon} '
 
-        conditionDescription = conditionJson['description']
+        conditionDescription = utils.getStrFromDict(conditionJson, 'description')
         return f'{conditionIcon}{conditionDescription}'

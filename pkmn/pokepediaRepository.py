@@ -1359,7 +1359,7 @@ class PokepediaRepository():
             print(f'Exception occurred when attempting to fetch Pokemon move \"{name}\": {e}')
             raise RuntimeError(f'Exception occurred when attempting to fetch Pokemon move \"{name}\": {e}')
 
-        jsonResponse = None
+        jsonResponse: Dict[str, object] = None
         try:
             jsonResponse = rawResponse.json()
         except JSONDecodeError as e:
@@ -1392,7 +1392,7 @@ class PokepediaRepository():
             print(f'Exception occurred when attempting to fetch Pokemon \"{name}\": {e}')
             raise RuntimeError(f'Exception occurred when attempting to fetch Pokemon \"{name}\": {e}')
 
-        jsonResponse = None
+        jsonResponse: Dict[str, object] = None
         try:
             jsonResponse = rawResponse.json()
         except JSONDecodeError as e:

@@ -61,7 +61,7 @@ class TranslationHelper():
             print(f'Exception occurred when attempting to fetch translation from DeepL for \"{text}\": {e}')
             raise RuntimeError(f'Exception occurred when attempting to fetch translation from DeepL for \"{text}\": {e}')
 
-        jsonResponse: Dict = None
+        jsonResponse: Dict[str, object] = None
         try:
             jsonResponse = rawResponse.json()
         except JSONDecodeError as e:
