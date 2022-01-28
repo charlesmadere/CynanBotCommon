@@ -125,7 +125,7 @@ class TriviaRepository():
         return randomChoices[0]
 
     def __fetchTriviaQuestionFromBongo(self) -> AbsTriviaQuestion:
-        print(f'Fetching trivia question from Bongo... ({utils.getNowTimeText()})')
+        print(f'Fetching trivia question from Bongo... ({utils.getNowTimeText(includeSeconds = True)})')
 
         rawResponse = None
         try:
@@ -201,7 +201,7 @@ class TriviaRepository():
             raise ValueError(f'triviaType \"{triviaType}\" is not supported for Bongo: {jsonResponse}')
 
     def __fetchTriviaQuestionFromJService(self) -> AbsTriviaQuestion:
-        print(f'Fetching trivia question from jService... ({utils.getNowTimeText()})')
+        print(f'Fetching trivia question from jService... ({utils.getNowTimeText(includeSeconds = True)})')
 
         rawResponse = None
         try:
@@ -248,11 +248,11 @@ class TriviaRepository():
         )
 
     def __fetchTriviaQuestionFromLocalTriviaRepository(self) -> AbsTriviaQuestion:
-        print(f'Fetching trivia question from LocalTriviaRepository... ({utils.getNowTimeText()})')
+        print(f'Fetching trivia question from LocalTriviaRepository... ({utils.getNowTimeText(includeSeconds = True)})')
         return self.__localTriviaRepository.fetchRandomQuestion()
 
     def __fetchTriviaQuestionFromOpenTriviaDatabase(self) -> AbsTriviaQuestion:
-        print(f'Fetching trivia question from Open Trivia Database... ({utils.getNowTimeText()})')
+        print(f'Fetching trivia question from Open Trivia Database... ({utils.getNowTimeText(includeSeconds = True)})')
 
         rawResponse = None
         try:
@@ -333,7 +333,7 @@ class TriviaRepository():
             raise ValueError(f'triviaType \"{triviaType}\" is not supported for Open Trivia Database: {jsonResponse}')
 
     def __fetchTriviaQuestionFromWillFryTriviaApi(self) -> AbsTriviaQuestion:
-        print(f'Fetching trivia question from Will Fry Trivia API... ({utils.getNowTimeText()})')
+        print(f'Fetching trivia question from Will Fry Trivia API... ({utils.getNowTimeText(includeSeconds = True)})')
 
         rawResponse = None
         try:
