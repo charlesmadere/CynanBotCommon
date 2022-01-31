@@ -1,10 +1,26 @@
 from datetime import datetime
 
+try:
+    import CynanBotCommon.utils as utils
+except:
+    import utils
+
 
 class SimpleDateTime():
 
-    def __init__(self):
-        now = datetime.now()
+    def __init__(
+        self,
+        useLocalTime: bool = False
+    ):
+        if not utils.isValidBool(useLocalTime):
+            raise ValueError(f'useLocalTime argument is malformed: \"{useLocalTime}\"')
+
+        now: datetime = None
+        if useLocalTime:
+            now = datetime.now()
+        else:
+            now = datetime.utcnow()
+
         self.__year: str = now.strftime('%Y')
         self.__month: str = now.strftime('%m')
         self.__day: str = now.strftime('%d')
