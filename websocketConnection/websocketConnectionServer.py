@@ -83,7 +83,7 @@ class WebsocketConnectionServer():
         }
 
         if not self.__isStarted:
-            self.__timber.log('WebsocketConnectionServer', f'The websocket server has not yet been started, but attempted to add event to queue: {event}')
+            self.__timber.log('WebsocketConnectionServer', f'Server has not yet been started, but attempted to add event to queue: {event}')
             return
 
         if self.__isDebugLoggingEnabled:
@@ -97,16 +97,16 @@ class WebsocketConnectionServer():
             raise ValueError(f'eventLoop argument is malformed: \"{eventLoop}\"')
 
         if self.__isStarted:
-            self.__timber.log('WebsocketConnectionServer', f'Not starting websocket server, as it has already been started')
+            self.__timber.log('WebsocketConnectionServer', f'Not starting server as it has already been started')
             return
 
-        self.__timber.log('WebsocketConnectionServer', f'Starting websocket connection server...')
+        self.__timber.log('WebsocketConnectionServer', f'Starting server...')
         self.__isStarted = True
         eventLoop.create_task(self.__start())
 
     async def __start(self):
         if self.__isDebugLoggingEnabled:
-            self.__timber.log('WebsocketConnectionServer', f'WebsocketConnectionServer has entered `__start()`')
+            self.__timber.log('WebsocketConnectionServer', f'Entered `__start()` (queue size: {self.__eventQueue.qsize()})')
 
         while True:
             try:
@@ -116,20 +116,20 @@ class WebsocketConnectionServer():
                     port = self.__port
                 ) as websocket:
                     if self.__isDebugLoggingEnabled:
-                        self.__timber.log('WebsocketConnectionServer', f'WebsocketConnectionServer is looping within `__start()`')
+                        self.__timber.log('WebsocketConnectionServer', f'Looping within `__start()`')
 
                     await websocket.wait_closed()
             except Exception as e:
-                self.__timber.log('WebsocketConnectionServer', f'WebsocketConnectionServer encountered exception within `__start()`: {e}')
+                self.__timber.log('WebsocketConnectionServer', f'Encountered exception within `__start()`: {e}')
 
             if self.__isDebugLoggingEnabled:
-                self.__timber.log('WebsocketConnectionServer', f'WebsocketConnectionServer is sleeping within `__start()`')
+                self.__timber.log('WebsocketConnectionServer', f'Sleeping within `__start()`')
 
             asyncio.sleep(self.__sleepTimeSeconds)
 
     async def __websocketConnectionReceived(self, websocket, path):
         if self.__isDebugLoggingEnabled:
-            self.__timber.log('WebsocketConnectionServer', f'WebsocketConnectionServer is entering `__websocketConnectionReceived()` (path: \"{path}\") (queue size: {self.__eventQueue.qsize()})')
+            self.__timber.log('WebsocketConnectionServer', f'Entered `__websocketConnectionReceived()` (path: \"{path}\") (queue size: {self.__eventQueue.qsize()})')
 
         while websocket.open:
             while not self.__eventQueue.empty():
@@ -143,16 +143,16 @@ class WebsocketConnectionServer():
                     await websocket.send(eventJson)
 
                     if self.__isDebugLoggingEnabled:
-                        self.__timber.log('WebsocketConnectionServer', f'WebsocketConnectionServer sent event to \"{path}\": {event.getEventData()}')
+                        self.__timber.log('WebsocketConnectionServer', f'Sent event to \"{path}\": {event.getEventData()}')
                     else:
-                        self.__timber.log('WebsocketConnectionServer', f'WebsocketConnectionServer sent event to \"{path}\"')
+                        self.__timber.log('WebsocketConnectionServer', f'Sent event to \"{path}\"')
                 else:
                     if self.__isDebugLoggingEnabled:
-                        self.__timber.log('WebsocketConnectionServer', f'WebsocketConnectionServer discarded an event meant for \"{path}\" {event.getEventData()}')
+                        self.__timber.log('WebsocketConnectionServer', f'Discarded an event meant for \"{path}\": {event.getEventData()}')
                     else:
-                        self.__timber.log('WebsocketConnectionServer', f'WebsocketConnectionServer discarded an event meant for \"{path}\"')
+                        self.__timber.log('WebsocketConnectionServer', f'Discarded an event meant for \"{path}\"')
 
             await asyncio.sleep(self.__sleepTimeSeconds)
 
         if self.__isDebugLoggingEnabled:
-            self.__timber.log('WebsocketConnectionServer', f'WebsocketConnectionServer is exiting `__websocketConnectionReceived()`')
+            self.__timber.log('WebsocketConnectionServer', f'Exiting `__websocketConnectionReceived()`')
