@@ -141,7 +141,7 @@ class TamaleGuyRepository():
         return products
 
     def __refreshStoreStock(self) -> TamaleGuyStoreStock:
-        self.__timber.log('TamaleGuyRepository', f'Refreshing Tamale Guy store stock... ({utils.getNowTimeText()})')
+        self.__timber.log('TamaleGuyRepository', f'Refreshing Tamale Guy store stock...')
 
         rawResponse = None
         try:
