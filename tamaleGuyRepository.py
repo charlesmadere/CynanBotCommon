@@ -133,9 +133,9 @@ class TamaleGuyRepository():
                 enabled = utils.getBoolFromDict(productJson['inventory'], 'enabled'),
                 lowestInventory = utils.getIntFromDict(productJson['inventory'], 'lowest'),
                 totalInventory = utils.getIntFromDict(productJson['inventory'], 'total'),
-                name = utils.cleanStr(productJson['name']),
-                price = utils.cleanStr(productJson['price']['regular_high_formatted']),
-                productId = utils.cleanStr(productJson['id'])
+                name = utils.getStrFromDict(productJson, 'name', clean = True),
+                price = utils.getStrFromDict(productJson['price'], 'regular_high_formatted', clean = True),
+                productId = utils.getStrFromDict(productJson, 'id', clean = True)
             ))
 
         return products
