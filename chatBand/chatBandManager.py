@@ -7,11 +7,13 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.chatBand.chatBandInstrument import ChatBandInstrument
     from CynanBotCommon.chatBand.chatBandMember import ChatBandMember
+    from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.timedDict import TimedDict
     from CynanBotCommon.websocketConnection.websocketConnectionServer import \
         WebsocketConnectionServer
 except:
     import utils
+    from timber.timber import Timber
     from timedDict import TimedDict
     from websocketConnection.websocketConnectionServer import \
         WebsocketConnectionServer
@@ -24,13 +26,16 @@ class ChatBandManager():
 
     def __init__(
         self,
+        timber: Timber,
         websocketConnectionServer: WebsocketConnectionServer,
         chatBandFile: str = 'CynanBotCommon/chatBand/chatBandManager.json',
         eventType: str = 'chatBand',
         eventCooldown: timedelta = timedelta(minutes = 5),
         memberCacheTimeToLive: timedelta = timedelta(minutes = 15)
     ):
-        if websocketConnectionServer is None:
+        if timber is None:
+            raise ValueError(f'timber argument is malformed: \"{timber}\"')
+        elif websocketConnectionServer is None:
             raise ValueError(f'websocketConnectionServer argument is malformed: \"{websocketConnectionServer}\"')
         elif not utils.isValidStr(chatBandFile):
             raise ValueError(f'chatBandFile argument is malformed: \"{chatBandFile}\"')
@@ -41,6 +46,7 @@ class ChatBandManager():
         elif memberCacheTimeToLive is None:
             raise ValueError(f'memberCacheTimeToLive argument is malformed: \"{memberCacheTimeToLive}\"')
 
+        self.__timber: Timber = timber
         self.__websocketConnectionServer: WebsocketConnectionServer = websocketConnectionServer
         self.__chatBandFile: str = chatBandFile
         self.__eventType: str = eventType
@@ -51,6 +57,7 @@ class ChatBandManager():
     def clearCaches(self):
         self.__lastChatBandMessageTimes.clear()
         self.__chatBandMemberCache.clear()
+        self.__timber.log('ChatBandManager', 'Caches cleared')
 
     def __findChatBandMember(
         self,
