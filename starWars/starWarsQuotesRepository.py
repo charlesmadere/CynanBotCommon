@@ -10,7 +10,7 @@ except:
     import utils
 
 
-class StarWarsQuotesRepository:
+class StarWarsQuotesRepository():
 
     def __init__(
         self,
