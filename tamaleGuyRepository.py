@@ -9,8 +9,10 @@ from urllib3.exceptions import MaxRetryError, NewConnectionError
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.timber.timber import Timber
 except:
     import utils
+    from timber.timber import Timber
 
 
 class TamaleGuyStoreEntry():
@@ -99,14 +101,19 @@ class TamaleGuyRepository():
 
     def __init__(
         self,
+        timber: Timber,
         cacheTimeDelta: timedelta = timedelta(hours = 1)
     ):
-        if cacheTimeDelta is None:
+        if timber is None:
+            raise ValueError(f'timber argument is malformed: \"{timber}\"')
+        elif cacheTimeDelta is None:
             raise ValueError(f'cacheTimeDelta argument is malformed: \"{cacheTimeDelta}\"')
 
+        self.__timber: Timber = timber
+        self.__cacheTimeDelta: timedelta = cacheTimeDelta
+
         self.__cacheTime = datetime.utcnow() - cacheTimeDelta
-        self.__cacheTimeDelta = cacheTimeDelta
-        self.__storeStock = None
+        self.__storeStock: TamaleGuyStoreStock = None
 
     def fetchStoreStock(self) -> TamaleGuyStoreStock:
         if self.__cacheTime + self.__cacheTimeDelta < datetime.utcnow() or self.__storeStock is None:
@@ -134,7 +141,7 @@ class TamaleGuyRepository():
         return products
 
     def __refreshStoreStock(self) -> TamaleGuyStoreStock:
-        print(f'Refreshing Tamale Guy store stock... ({utils.getNowTimeText()})')
+        self.__timber.log('TamaleGuyRepository', f'Refreshing Tamale Guy store stock... ({utils.getNowTimeText()})')
 
         rawResponse = None
         try:
@@ -143,14 +150,14 @@ class TamaleGuyRepository():
                 timeout = utils.getDefaultTimeout()
             )
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            print(f'Exception occurred when attempting to fetch Tamale Guy store stock: {e}')
+            self.__timber.log('TamaleGuyRepository', f'Exception occurred when attempting to fetch Tamale Guy store stock: {e}')
             raise RuntimeError(f'Exception occurred when attempting to fetch Tamale Guy store stock: {e}')
 
         jsonResponse: Dict[str, object] = None
         try:
             jsonResponse = rawResponse.json()
         except JSONDecodeError as e:
-            print(f'Exception occurred when attempting to decode Tamale Guy store stock response into JSON: {e}')
+            self.__timber.log('TamaleGuyRepository', f'Exception occurred when attempting to decode Tamale Guy store stock response into JSON: {e}')
             raise RuntimeError(f'Exception occurred when attempting to decode Tamale Guy store stock response into JSON: {e}')
 
         if 'data' not in jsonResponse:

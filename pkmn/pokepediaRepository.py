@@ -11,8 +11,10 @@ from urllib3.exceptions import MaxRetryError, NewConnectionError
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.timber.timber import Timber
 except:
     import utils
+    from timber.timber import Timber
 
 
 class PokepediaElementType(Enum):
@@ -1126,8 +1128,14 @@ class PokepediaPokemon():
 
 class PokepediaRepository():
 
-    def __init__(self):
-        pass
+    def __init__(
+        self,
+        timber: Timber
+    ):
+        if timber is None:
+            raise ValueError(f'timber argument is malformed: \"{timber}\"')
+
+        self.__timber: Timber = timber
 
     def __getElementTypeGenerationDictionary(
         self,
@@ -1347,7 +1355,7 @@ class PokepediaRepository():
 
         name = utils.cleanStr(name)
         name = name.replace(' ', '-')
-        print(f'Searching PokeAPI for move \"{name}\"...')
+        self.__timber.log('PokepediaRepository', f'Searching PokeAPI for move \"{name}\"...')
 
         rawResponse = None
         try:
@@ -1356,14 +1364,14 @@ class PokepediaRepository():
                 timeout = utils.getDefaultTimeout()
             )
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            print(f'Exception occurred when attempting to fetch Pokemon move \"{name}\": {e}')
+            self.__timber.log('PokepediaRepository', f'Exception occurred when attempting to fetch Pokemon move \"{name}\": {e}')
             raise RuntimeError(f'Exception occurred when attempting to fetch Pokemon move \"{name}\": {e}')
 
         jsonResponse: Dict[str, object] = None
         try:
             jsonResponse = rawResponse.json()
         except JSONDecodeError as e:
-            print(f'Exception occurred when attempting to decode Pokemon move response into JSON for \"{name}\": {e}')
+            self.__timber.log('PokepediaRepository', f'Exception occurred when attempting to decode Pokemon move response into JSON for \"{name}\": {e}')
             raise RuntimeError(f'Exception occurred when attempting to decode Pokemon move response into JSON for \"{name}\": {e}')
 
         return PokepediaMove(
@@ -1380,7 +1388,7 @@ class PokepediaRepository():
 
         name = utils.cleanStr(name)
         name = name.replace(' ', '-')
-        print(f'Searching PokeAPI for Pokemon \"{name}\"...')
+        self.__timber.log('PokepediaRepository', f'Searching PokeAPI for Pokemon \"{name}\"...')
 
         rawResponse = None
         try:
@@ -1389,14 +1397,14 @@ class PokepediaRepository():
                 timeout = utils.getDefaultTimeout()
             )
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            print(f'Exception occurred when attempting to fetch Pokemon \"{name}\": {e}')
+            self.__timber.log('PokepediaRepository', f'Exception occurred when attempting to fetch Pokemon \"{name}\": {e}')
             raise RuntimeError(f'Exception occurred when attempting to fetch Pokemon \"{name}\": {e}')
 
         jsonResponse: Dict[str, object] = None
         try:
             jsonResponse = rawResponse.json()
         except JSONDecodeError as e:
-            print(f'Exception occurred when attempting to decode Pokemon response into JSON for \"{name}\": {e}')
+            self.__timber.log('PokepediaRepository', f'Exception occurred when attempting to decode Pokemon response into JSON for \"{name}\": {e}')
             raise RuntimeError(f'Exception occurred when attempting to decode Pokemon response into JSON for \"{name}\": {e}')
 
         pokedexId = utils.getIntFromDict(jsonResponse, 'id')

@@ -12,8 +12,10 @@ try:
     from CynanBotCommon.analogue.analogueProductType import AnalogueProductType
     from CynanBotCommon.analogue.analogueStoreEntry import AnalogueStoreEntry
     from CynanBotCommon.analogue.analogueStoreStock import AnalogueStoreStock
+    from CynanBotCommon.timber.timber import Timber
 except:
     import utils
+    from timber.timber import Timber
 
     from analogue.analogueProductType import AnalogueProductType
     from analogue.analogueStoreEntry import AnalogueStoreEntry
@@ -24,14 +26,18 @@ class AnalogueStoreRepository():
 
     def __init__(
         self,
+        timber: Timber,
         storeUrl: str = 'https://www.analogue.co/store',
         cacheTimeDelta: timedelta = timedelta(hours = 1)
     ):
-        if not utils.isValidUrl(storeUrl):
+        if timber is None:
+            raise ValueError(f'timber argument is malformed: \"{timber}\"')
+        elif not utils.isValidUrl(storeUrl):
             raise ValueError(f'storeUrl argument is malformed: \"{storeUrl}\"')
         elif cacheTimeDelta is None:
             raise ValueError(f'cacheTimeDelta argument is malformed: \"{cacheTimeDelta}\"')
 
+        self.__timber: Timber = timber
         self.__storeUrl: str = storeUrl
         self.__cacheTime = datetime.utcnow() - cacheTimeDelta
         self.__cacheTimeDelta: timedelta = cacheTimeDelta
@@ -39,7 +45,7 @@ class AnalogueStoreRepository():
 
     def fetchStoreStock(self) -> AnalogueStoreStock:
         if self.__cacheTime + self.__cacheTimeDelta < datetime.utcnow() or self.__storeStock is None:
-            self.__storeStock = self.__refreshStoreStock()
+            self.__storeStock = self.__fetchStoreStock()
             self.__cacheTime = datetime.utcnow()
 
         return self.__storeStock
@@ -47,24 +53,24 @@ class AnalogueStoreRepository():
     def getStoreUrl(self) -> str:
         return self.__storeUrl
 
-    def __refreshStoreStock(self) -> AnalogueStoreStock:
-        print(f'Refreshing Analogue store stock... ({utils.getNowTimeText()})')
+    def __fetchStoreStock(self) -> AnalogueStoreStock:
+        self.__timber.log('AnalogueStoreRepository', f'Fetching Analogue store stock...')
 
         rawResponse = None
         try:
             rawResponse = requests.get(url = self.__storeUrl, timeout = utils.getDefaultTimeout())
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            print(f'Exception occurred when attempting to fetch Analogue store stock: {e}')
+            self.__timber.log('AnalogueStoreRepository', f'Exception occurred when attempting to fetch Analogue store stock: {e}')
             raise RuntimeError(f'Exception occurred when attempting to fetch Analogue store stock: {e}')
 
         htmlTree = html.fromstring(rawResponse.content)
         if htmlTree is None:
-            print(f'Analogue store\'s htmlTree is malformed: \"{htmlTree}\"')
+            self.__timber.log('AnalogueStoreRepository', f'Analogue store\'s htmlTree is malformed: \"{htmlTree}\"')
             raise ValueError(f'Analogue store\'s htmlTree is malformed: \"{htmlTree}\"')
 
         productTrees = htmlTree.find_class('product-info')
         if not utils.hasItems(productTrees):
-            print(f'Analogue store\'s productTrees list is malformed: \"{productTrees}\"')
+            self.__timber.log('AnalogueStoreRepository', f'Analogue store\'s productTrees list is malformed: \"{productTrees}\"')
             raise ValueError(f'Analogue store\'s productTrees list is malformed: \"{productTrees}\"')
 
         products: List[AnalogueStoreEntry] = list()

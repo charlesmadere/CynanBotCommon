@@ -11,9 +11,11 @@ try:
     from CynanBotCommon.language.languageEntry import LanguageEntry
     from CynanBotCommon.language.wordOfTheDayResponse import \
         WordOfTheDayResponse
+    from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.timedDict import TimedDict
 except:
     import utils
+    from timber.timber import Timber
     from timedDict import TimedDict
 
     from language.languageEntry import LanguageEntry
@@ -24,11 +26,15 @@ class WordOfTheDayRepository():
 
     def __init__(
         self,
+        timber: Timber,
         cacheTimeDelta: timedelta = timedelta(hours = 1)
     ):
-        if cacheTimeDelta is None:
+        if timber is None:
+            raise ValueError(f'timber argument is malformed: \"{timber}\"')
+        elif cacheTimeDelta is None:
             raise ValueError(f'cacheTimeDelta argument is malformed: \"{cacheTimeDelta}\"')
 
+        self.__timber: Timber = timber
         self.__cache: TimedDict = TimedDict(timeDelta = cacheTimeDelta)
 
     def fetchWotd(self, languageEntry: LanguageEntry) -> WordOfTheDayResponse:
@@ -52,7 +58,7 @@ class WordOfTheDayRepository():
         elif not languageEntry.hasWotdApiCode():
             raise ValueError(f'the given languageEntry is not supported for Word Of The Day: \"{languageEntry.getName()}\"')
 
-        print(f'Fetching Word Of The Day for \"{languageEntry.getName()}\"... ({utils.getNowTimeText()})')
+        self.__timber.log('WordOfTheDayRepository', f'Fetching Word Of The Day for \"{languageEntry.getName()}\"...')
 
         ##############################################################################
         # retrieve word of the day from https://www.transparent.com/word-of-the-day/ #
@@ -65,12 +71,12 @@ class WordOfTheDayRepository():
                 timeout = utils.getDefaultTimeout()
             )
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            print(f'Exception occurred when attempting to fetch Word Of The Day for \"{languageEntry.getName()}\" ({languageEntry.getWotdApiCode()}): {e}')
+            self.__timber.log('WordOfTheDayRepository', f'Exception occurred when attempting to fetch Word Of The Day for \"{languageEntry.getName()}\" ({languageEntry.getWotdApiCode()}): {e}')
             raise RuntimeError(f'Exception occurred when attempting to fetch Word Of The Day for \"{languageEntry.getName()}\" ({languageEntry.getWotdApiCode()}): {e}')
 
         xmlTree = xmltodict.parse(rawResponse.content)
         if not utils.hasItems(xmlTree):
-            print(f'xmlTree for \"{languageEntry.getName()}\" is malformed: {xmlTree}')
+            self.__timber.log('WordOfTheDayRepository', f'xmlTree for \"{languageEntry.getName()}\" is malformed: {xmlTree}')
             raise RuntimeError(f'xmlTree for \"{languageEntry.getName()}\" is malformed: {xmlTree}')
 
         wordsTree = xmlTree['xml']['words']

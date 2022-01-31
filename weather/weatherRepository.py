@@ -11,6 +11,7 @@ from urllib3.exceptions import MaxRetryError, NewConnectionError
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.location.location import Location
+    from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.timedDict import TimedDict
     from CynanBotCommon.weather.airQualityIndex import AirQualityIndex
     from CynanBotCommon.weather.uvIndex import UvIndex
@@ -18,6 +19,7 @@ try:
 except:
     import utils
     from location.location import Location
+    from timber.timber import Timber
     from timedDict import TimedDict
 
     from weather.airQualityIndex import AirQualityIndex
@@ -30,11 +32,14 @@ class WeatherRepository():
     def __init__(
         self,
         oneWeatherApiKey: str,
+        timber: Timber,
         maxAlerts: int = 2,
         cacheTimeDelta: timedelta = timedelta(minutes = 20)
     ):
         if not utils.isValidStr(oneWeatherApiKey):
             raise ValueError(f'oneWeatherApiKey argument is malformed: \"{oneWeatherApiKey}\"')
+        elif timber is None:
+            raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not utils.isValidNum(maxAlerts):
             raise ValueError(f'maxAlerts argument is malformed: \"{maxAlerts}\"')
         elif maxAlerts < 1:
@@ -43,6 +48,7 @@ class WeatherRepository():
             raise ValueError(f'cacheTimeDelta argument is malformed: \"{cacheTimeDelta}\"')
 
         self.__oneWeatherApiKey: str = oneWeatherApiKey
+        self.__timber: Timber = timber
         self.__maxAlerts: int = maxAlerts
         self.__cache = TimedDict(timeDelta = cacheTimeDelta)
         self.__conditionIcons: Dict[str, str] = self.__createConditionIconsDict()
@@ -117,14 +123,14 @@ class WeatherRepository():
         try:
             rawResponse = requests.get(url = requestUrl, timeout = utils.getDefaultTimeout())
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            print(f'Exception occurred when attempting to fetch air quality index from Open Weather for \"{location.getLocationId()}\": {e}')
+            self.__timber.log('WeatherRepository', f'Exception occurred when attempting to fetch air quality index from Open Weather for \"{location.getLocationId()}\": {e}')
             raise RuntimeError(f'Exception occurred when attempting to fetch air quality index from Open Weather for \"{location.getLocationId()}\": {e}')
 
         jsonResponse: Dict[str, object] = None
         try:
             jsonResponse = rawResponse.json()
         except JSONDecodeError as e:
-            print(f'Exception occurred when attempting to decode Open Weather\'s air quality index response into JSON for \"{location.getLocationId()}\": {e}')
+            self.__timber.log('WeatherRepository', f'Exception occurred when attempting to decode Open Weather\'s air quality index response into JSON for \"{location.getLocationId()}\": {e}')
             raise RuntimeError(f'Exception occurred when attempting to decode Open Weather\'s air quality index response into JSON for \"{location.getLocationId()}\": {e}')
 
         airQualityIndex = utils.getIntFromDict(
@@ -151,7 +157,7 @@ class WeatherRepository():
         if location is None:
             raise ValueError(f'location argument is malformed: \"{location}\"')
 
-        print(f'Refreshing weather for \"{location.getName()}\" ({location.getLocationId()})... ({utils.getNowTimeText()})')
+        self.__timber.log('WeatherRepository', f'Fetching weather for \"{location.getName()}\" ({location.getLocationId()})...')
 
         # Retrieve weather report from https://openweathermap.org/api/one-call-api
         # Doing this requires an API key, which you can get here: https://openweathermap.org/api
@@ -163,14 +169,14 @@ class WeatherRepository():
         try:
             rawResponse = requests.get(url = requestUrl, timeout = utils.getDefaultTimeout())
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            print(f'Exception occurred when attempting to fetch weather conditions from Open Weather for \"{location.getLocationId()}\": {e}')
+            self.__timber.log('WeatherRepository', f'Exception occurred when attempting to fetch weather conditions from Open Weather for \"{location.getLocationId()}\": {e}')
             raise RuntimeError(f'Exception occurred when attempting to fetch weather conditions from Open Weather for \"{location.getLocationId()}\": {e}')
 
         jsonResponse: Dict[str, object] = None
         try:
             jsonResponse = rawResponse.json()
         except JSONDecodeError as e:
-            print(f'Exception occurred when attempting to decode Open Weather\'s weather response into JSON for \"{location.getLocationId()}\": {e}')
+            self.__timber.log('WeatherRepository', f'Exception occurred when attempting to decode Open Weather\'s weather response into JSON for \"{location.getLocationId()}\": {e}')
             raise RuntimeError(f'Exception occurred when attempting to decode Open Weather\'s weather response into JSON for \"{location.getLocationId()}\": {e}')
 
         currentJson: Dict[str, object] = jsonResponse['current']

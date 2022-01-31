@@ -11,8 +11,10 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.language.jishoResult import JishoResult
     from CynanBotCommon.language.jishoVariant import JishoVariant
+    from CynanBotCommon.timber.timber import Timber
 except:
     import utils
+    from timber.timber import Timber
 
     from language.jishoResult import JishoResult
     from language.jishoVariant import JishoVariant
@@ -20,8 +22,15 @@ except:
 
 class JishoHelper():
 
-    def __init__(self, definitionsMaxSize: int = 3, variantsMaxSize: int = 3):
-        if not utils.isValidNum(definitionsMaxSize):
+    def __init__(
+        self,
+        timber: Timber,
+        definitionsMaxSize: int = 3,
+        variantsMaxSize: int = 3
+    ):
+        if timber is None:
+            raise ValueError(f'timber argument is malformed: \"{timber}\"')
+        elif not utils.isValidNum(definitionsMaxSize):
             raise ValueError(f'definitionsMaxSize argument is malformed: \"{definitionsMaxSize}\"')
         elif definitionsMaxSize < 1 or definitionsMaxSize > 5:
             raise ValueError(f'definitionsMaxSize argument is out of bounds: \"{definitionsMaxSize}\"')
@@ -30,6 +39,7 @@ class JishoHelper():
         elif variantsMaxSize < 1 or variantsMaxSize > 5:
             raise ValueError(f'variantsMaxSize argument is out of bounds: \"{variantsMaxSize}\"')
 
+        self.__timber: Timber = timber
         self.__definitionsMaxSize: int = definitionsMaxSize
         self.__variantsMaxSize: int = variantsMaxSize
 
@@ -38,7 +48,7 @@ class JishoHelper():
             raise ValueError(f'query argument is malformed: \"{query}\"')
 
         query = query.strip()
-        print(f'Looking up \"{query}\" at Jisho... ({utils.getNowTimeText()})')
+        self.__timber.log('JishoHelper', f'Looking up \"{query}\" at Jisho...')
 
         rawResponse = None
         try:
@@ -48,14 +58,14 @@ class JishoHelper():
                 timeout = utils.getDefaultTimeout()
             )
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            print(f'Exception occurred when attempting to search Jisho for \"{query}\": {e}')
+            self.__timber.log('JishoHelper', f'Exception occurred when attempting to search Jisho for \"{query}\": {e}')
             raise RuntimeError(f'Exception occurred when attempting to search Jisho for \"{query}\": {e}')
 
         jsonResponse: Dict[str, object] = None
         try:
             jsonResponse = rawResponse.json()
         except JSONDecodeError as e:
-            print(f'Exception occurred when attempting to decode Jisho\'s response for \"{query}\" into JSON: {e}')
+            self.__timber.log('JishoHelper', f'Exception occurred when attempting to decode Jisho\'s response for \"{query}\" into JSON: {e}')
             raise RuntimeError(f'Exception occurred when attempting to decode Jisho\'s response for \"{query}\" into JSON: {e}')
 
         if not utils.hasItems(jsonResponse):

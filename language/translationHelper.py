@@ -17,8 +17,10 @@ try:
     from CynanBotCommon.language.translationApiSource import \
         TranslationApiSource
     from CynanBotCommon.language.translationResponse import TranslationResponse
+    from CynanBotCommon.timber.timber import Timber
 except:
     import utils
+    from timber.timber import Timber
 
     from language.languageEntry import LanguageEntry
     from language.languagesRepository import LanguagesRepository
@@ -32,22 +34,26 @@ class TranslationHelper():
         self,
         languagesRepository: LanguagesRepository,
         deepLAuthKey: str,
+        timber: Timber,
         googleServiceAccountFile: str = 'CynanBotCommon/language/googleServiceAccount.json'
     ):
         if languagesRepository is None:
             raise ValueError(f'languagesRepository argument is malformed: \"{languagesRepository}\"')
         elif not utils.isValidStr(deepLAuthKey):
             raise ValueError(f'deepLAuthKey argument is malformed: \"{deepLAuthKey}\"')
+        elif timber is None:
+            raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not utils.isValidStr(googleServiceAccountFile):
             raise ValueError(f'googleServiceAccountFile argument is malformed: \"{googleServiceAccountFile}\"')
 
         self.__languagesRepository: LanguagesRepository = languagesRepository
         self.__deepLAuthKey: str = deepLAuthKey
+        self.__timber: Timber = timber
         self.__googleServiceAccountFile: str = googleServiceAccountFile
         self.__googleTranslateClient = None
 
     def __deepLTranslate(self, text: str, targetLanguageEntry: LanguageEntry) -> TranslationResponse:
-        print(f'Fetching translation from DeepL... ({utils.getNowTimeText()})')
+        self.__timber.log('TranslationHelper', f'Fetching translation from DeepL...')
 
         # Retrieve translation from DeepL API: https://www.deepl.com/en/docs-api/
 
@@ -58,18 +64,18 @@ class TranslationHelper():
         try:
             rawResponse = requests.get(url = requestUrl, timeout = utils.getDefaultTimeout())
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            print(f'Exception occurred when attempting to fetch translation from DeepL for \"{text}\": {e}')
+            self.__timber.log('TranslationHelper', f'Exception occurred when attempting to fetch translation from DeepL for \"{text}\": {e}')
             raise RuntimeError(f'Exception occurred when attempting to fetch translation from DeepL for \"{text}\": {e}')
 
         jsonResponse: Dict[str, object] = None
         try:
             jsonResponse = rawResponse.json()
         except JSONDecodeError as e:
-            print(f'Exception occurred when attempting to decode DeepL\'s response for \"{text}\" into JSON: {e}')
+            self.__timber.log('TranslationHelper', f'Exception occurred when attempting to decode DeepL\'s response for \"{text}\" into JSON: {e}')
             raise RuntimeError(f'Exception occurred when attempting to decode DeepL\'s response for \"{text}\" into JSON: {e}')
 
         if not utils.hasItems(jsonResponse):
-            print(f'DeepL\'s JSON response is null/empty for \"{text}\": {jsonResponse}')
+            self.__timber.log('TranslationHelper', f'DeepL\'s JSON response is null/empty for \"{text}\": {jsonResponse}')
             raise ValueError(f'DeepL\'s JSON response is null/empty for \"{text}\": {jsonResponse}')
 
         translationsJson: Dict = jsonResponse.get('translations')
@@ -93,7 +99,7 @@ class TranslationHelper():
 
     def __getGoogleTranslateClient(self):
         if self.__googleTranslateClient is None:
-            print(f'Initializing new Google translate.Client instance... ({utils.getNowTimeText()})')
+            self.__timber.log('TranslationHelper', f'Initializing new Google translate.Client instance...')
 
             if not self.__hasGoogleApiCredentials():
                 raise RuntimeError(f'Unable to initialize a new Google translate.Client instance because the Google API credentials are missing')
@@ -105,7 +111,7 @@ class TranslationHelper():
         return self.__googleTranslateClient
 
     def __googleTranslate(self, text: str, targetLanguageEntry: LanguageEntry) -> TranslationResponse:
-        print(f'Fetching translation from Google Translate... ({utils.getNowTimeText()})')
+        self.__timber.log('TranslationHelper', f'Fetching translation from Google Translate...')
 
         translationResult = self.__getGoogleTranslateClient().translate(
             text,

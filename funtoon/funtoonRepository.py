@@ -11,8 +11,10 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.funtoon.funtoonPkmnCatchType import \
         FuntoonPkmnCatchType
+    from CynanBotCommon.timber.timber import Timber
 except:
     import utils
+    from timber.timber import Timber
 
     from funtoon.funtoonPkmnCatchType import FuntoonPkmnCatchType
 
@@ -21,14 +23,18 @@ class FuntoonRepository():
 
     def __init__(
         self,
+        timber: Timber,
         funtoonApiUrl: str = 'https://funtoon.party/api',
         funtoonRepositoryFile: str = 'CynanBotCommon/funtoon/funtoonRepository.json'
     ):
-        if not utils.isValidUrl(funtoonApiUrl):
+        if timber is None:
+            raise ValueError(f'timber argument is malformed: \"{timber}\"')
+        elif not utils.isValidUrl(funtoonApiUrl):
             raise ValueError(f'funtoonApiUrl argument is malformed: \"{funtoonApiUrl}\"')
         elif not utils.isValidStr(funtoonRepositoryFile):
             raise ValueError(f'funtoonRepositoryFile argument is malformed: \"{funtoonRepositoryFile}\"')
 
+        self.__timber: Timber = timber
         self.__funtoonApiUrl: str = funtoonApiUrl
         self.__funtoonRepositoryFile: str = funtoonRepositoryFile
 
@@ -69,7 +75,7 @@ class FuntoonRepository():
         }
 
         if self.__isDebugLoggingEnabled():
-            print(f'Hitting Funtoon API \"{url}\" for \"{twitchChannel}\" for event \"{event}\" with JSON payload:\n{jsonPayload}')
+            self.__timber.log('FuntoonRepository', f'Hitting Funtoon API \"{url}\" for \"{twitchChannel}\" for event \"{event}\" with JSON payload:\n{jsonPayload}')
 
         rawResponse = None
         try:
@@ -83,15 +89,15 @@ class FuntoonRepository():
                 timeout = utils.getDefaultTimeout()
             )
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            print(f'Exception occurred when attempting to hit Funtoon API \"{url}\" for \"{twitchChannel}\" for event \"{event}\" with JSON payload:\n{jsonPayload}\n{e}')
+            self.__timber.log('FuntoonRepository', f'Exception occurred when attempting to hit Funtoon API \"{url}\" for \"{twitchChannel}\" for event \"{event}\" with JSON payload: {jsonPayload}, and exception: {e}')
 
         if rawResponse is not None and rawResponse.status_code == 200:
             if self.__isDebugLoggingEnabled():
-                print(f'Successfully hit Funtoon API \"{url}\" for \"{twitchChannel}\" for event \"{event}\"')
+                self.__timber.log('FuntoonRepository', f'Successfully hit Funtoon API \"{url}\" for \"{twitchChannel}\" for event \"{event}\"')
 
             return True
         else:
-            print(f'Error when hitting Funtoon API \"{url}\" for \"{twitchChannel}\" for evebt \"{event}\" with token \"{funtoonToken}\" with JSON payload:\n{jsonPayload}\nrawResponse: \"{rawResponse}\"')
+            self.__timber.log('FuntoonRepository', f'Error when hitting Funtoon API \"{url}\" for \"{twitchChannel}\" for evebt \"{event}\" with token \"{funtoonToken}\" with JSON payload: {jsonPayload}, rawResponse: \"{rawResponse}\"')
             return False
 
     def __isDebugLoggingEnabled(self) -> bool:
