@@ -10,8 +10,10 @@ from urllib3.exceptions import MaxRetryError, NewConnectionError
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.timber.timber import Timber
 except:
     import utils
+    from timber.timber import Timber
 
 
 class TwitchAccessTokenMissingException(Exception):
@@ -30,28 +32,32 @@ class TwitchTokensRepository():
 
     def __init__(
         self,
+        timber: Timber,
         oauth2TokenUrl: str = 'https://id.twitch.tv/oauth2/token',
         oauth2ValidateUrl: str = 'https://id.twitch.tv/oauth2/validate',
         twitchTokensFile: str = 'CynanBotCommon/twitchTokensRepository.json'
     ):
-        if not utils.isValidUrl(oauth2TokenUrl):
+        if timber is None:
+            raise ValueError(f'timber argument is malformed: \"{timber}\"')
+        elif not utils.isValidUrl(oauth2TokenUrl):
             raise ValueError(f'oauth2TokenUrl argument is malformed: \"{oauth2TokenUrl}\"')
         elif not utils.isValidUrl(oauth2ValidateUrl):
             raise ValueError(f'oauth2ValidateUrl argument is malformed: \"{oauth2ValidateUrl}\"')
         elif not utils.isValidStr(twitchTokensFile):
             raise ValueError(f'twitchTokensFile argument is malformed: \"{twitchTokensFile}\"')
 
+        self.__timber: Timber = timber
         self.__oauth2TokenUrl: str = oauth2TokenUrl
         self.__oauth2ValidateUrl: str = oauth2ValidateUrl
         self.__twitchTokensFile: str = twitchTokensFile
 
     def getAccessToken(self, twitchHandle: str) -> str:
         jsonContents = self.__readJson(twitchHandle)
-        return jsonContents.get('accessToken')
+        return utils.getStrFromDict(jsonContents, 'accessToken', fallback = '')
 
     def getRefreshToken(self, twitchHandle: str) -> str:
         jsonContents = self.__readJson(twitchHandle)
-        return jsonContents.get('refreshToken')
+        return utils.getStrFromDict(jsonContents, 'refreshToken', fallback = '')
 
     def __readAllJson(self) -> Dict:
         if not os.path.exists(self.__twitchTokensFile):
@@ -94,7 +100,7 @@ class TwitchTokensRepository():
         elif not utils.isValidStr(twitchHandle):
             raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
 
-        print(f'Refreshing Twitch tokens for \"{twitchHandle}\"... ({utils.getNowTimeText(includeSeconds = True)})')
+        self.__timber.log('TwitchTokensRepository', f'Refreshing Twitch tokens for \"{twitchHandle}\"...')
 
         rawResponse = None
         try:
@@ -109,14 +115,14 @@ class TwitchTokensRepository():
                 timeout = utils.getDefaultTimeout()
             )
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            print(f'Exception occurred when attempting to request new Twitch tokens: {e}')
+            self.__timber.log('TwitchTokensRepository', f'Exception occurred when attempting to request new Twitch tokens: {e}')
             raise RuntimeError(f'Exception occurred when attempting to request new Twitch tokens: {e}')
 
         jsonResponse: Dict[str, object] = None
         try:
             jsonResponse = rawResponse.json()
         except JSONDecodeError as e:
-            print(f'Exception occurred when attempting to decode new Twitch tokens response into JSON: {e}')
+            self.__timber.log('TwitchTokensRepository', f'Exception occurred when attempting to decode new Twitch tokens response into JSON: {e}')
             raise RuntimeError(f'Exception occurred when attempting to decode new Twitch tokens response into JSON: {e}')
 
         if 'access_token' not in jsonResponse or len(jsonResponse['access_token']) == 0:
@@ -133,7 +139,7 @@ class TwitchTokensRepository():
         with open(self.__twitchTokensFile, 'w') as file:
             json.dump(jsonContents, file, indent = 4, sort_keys = True)
 
-        print(f'Saved new Twitch tokens for \"{twitchHandle}\" ({utils.getNowTimeText(includeSeconds = True)})')
+        self.__timber.log('TwitchTokensRepository', f'Saved new Twitch tokens for \"{twitchHandle}\"')
 
     def requireAccessToken(self, twitchHandle: str) -> str:
         accessToken = self.getAccessToken(twitchHandle)
@@ -164,7 +170,7 @@ class TwitchTokensRepository():
         elif not utils.isValidStr(twitchHandle):
             raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
 
-        print(f'Validating Twitch access token for \"{twitchHandle}\"... ({utils.getNowTimeText(includeSeconds = True)})')
+        self.__timber.log('TwitchTokensRepository', f'Validating Twitch access token for \"{twitchHandle}\"...')
 
         rawResponse = None
         try:
@@ -176,18 +182,18 @@ class TwitchTokensRepository():
                 timeout = utils.getDefaultTimeout()
             )
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            print(f'Exception occurred when attempting to validate Twitch access token: {e}')
+            self.__timber.log('TwitchTokensRepository', f'Exception occurred when attempting to validate Twitch access token: {e}')
             raise RuntimeError(f'Exception occurred when attempting to validate Twitch access token: {e}')
 
         jsonResponse: Dict[str, object] = None
         try:
             jsonResponse = rawResponse.json()
         except JSONDecodeError as e:
-            print(f'Exception occurred when attempting to decode Twitch\'s response into JSON: {e}')
+            self.__timber.log('TwitchTokensRepository', f'Exception occurred when attempting to decode Twitch\'s response into JSON: {e}')
             raise RuntimeError(f'Exception occurred when attempting to decode Twitch\'s response into JSON: {e}')
 
         if jsonResponse.get('client_id') is None or len(jsonResponse['client_id']) == 0:
-            print(f'Requesting new Twitch tokens for \"{twitchHandle}\"... ({utils.getNowTimeText(includeSeconds = True)})')
+            self.__timber.log('TwitchTokensRepository', f'Requesting new Twitch tokens for \"{twitchHandle}\"...')
 
             self.__refreshTokens(
                 twitchClientId = twitchClientId,
@@ -195,4 +201,4 @@ class TwitchTokensRepository():
                 twitchHandle = twitchHandle
             )
         else:
-            print(f'No need to request new Twitch tokens for \"{twitchHandle}\" ({utils.getNowTimeText(includeSeconds = True)})')
+            self.__timber.log('TwitchTokensRepository', f'No need to request new Twitch tokens for \"{twitchHandle}\"')
