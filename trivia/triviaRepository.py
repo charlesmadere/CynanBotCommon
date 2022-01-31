@@ -12,6 +12,7 @@ from urllib3.exceptions import MaxRetryError, NewConnectionError
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.localTriviaRepository import \
         LocalTriviaRepository
@@ -26,6 +27,7 @@ try:
         TrueFalseTriviaQuestion
 except:
     import utils
+    from timber.timber import Timber
 
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.localTriviaRepository import LocalTriviaRepository
@@ -44,15 +46,19 @@ class TriviaRepository():
     def __init__(
         self,
         localTriviaRepository: LocalTriviaRepository,
+        timber: Timber,
         triviaRepositoryFile: str = 'CynanBotCommon/trivia/triviaRepository.json',
         cacheTimeDelta: timedelta = timedelta(minutes = 2, seconds = 30)
     ):
         if localTriviaRepository is None:
             raise ValueError(f'localTriviaRepository argument is malformed: \"{localTriviaRepository}\"')
+        elif timber is None:
+            raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not utils.isValidStr(triviaRepositoryFile):
             raise ValueError(f'triviaRepositoryFile argument is malformed: \"{triviaRepositoryFile}\"')
 
         self.__localTriviaRepository: LocalTriviaRepository = localTriviaRepository
+        self.__timber: Timber = timber
         self.__triviaRepositoryFile: str = triviaRepositoryFile
 
         if cacheTimeDelta is None:
@@ -125,7 +131,7 @@ class TriviaRepository():
         return randomChoices[0]
 
     def __fetchTriviaQuestionFromBongo(self) -> AbsTriviaQuestion:
-        print(f'Fetching trivia question from Bongo... ({utils.getNowTimeText(includeSeconds = True)})')
+        self.__timber.log('TriviaRepository', 'Fetching trivia question from Bongo...')
 
         rawResponse = None
         try:
@@ -134,27 +140,27 @@ class TriviaRepository():
                 timeout = utils.getDefaultTimeout()
             )
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            print(f'Exception occurred when attempting to fetch trivia from Bongo: {e}')
+            self.__timber.log('TriviaRepository', f'Exception occurred when attempting to fetch trivia from Bongo: {e}')
             return None
 
         jsonResponse: List[Dict[str, object]] = None
         try:
             jsonResponse = rawResponse.json()
         except JSONDecodeError as e:
-            print(f'Exception occurred when attempting to decode Bongo\'s response into JSON: {e}')
+            self.__timber.log('TriviaRepository', f'Exception occurred when attempting to decode Bongo\'s response into JSON: {e}')
             raise RuntimeError(f'Exception occurred when attempting to decode Bongo\'s response into JSON: {e}')
 
         if not utils.hasItems(jsonResponse):
-            print(f'Rejecting Bongo\'s API data due to null/empty contents: {jsonResponse}')
+            self.__timber.log('TriviaRepository', f'Rejecting Bongo\'s API data due to null/empty contents: {jsonResponse}')
             raise ValueError(f'Rejecting Bongo\'s API data due to null/empty contents: {jsonResponse}')
 
         triviaJson: Dict[str, object] = jsonResponse[0]
 
         if not utils.hasItems(triviaJson):
-            print(f'Rejecting Bongo\'s API data due to null/empty contents: {jsonResponse}')
+            self.__timber.log('TriviaRepository', f'Rejecting Bongo\'s API data due to null/empty contents: {jsonResponse}')
             raise ValueError(f'Rejecting Bongo\'s API data due to null/empty contents: {jsonResponse}')
 
-        triviaDifficulty = TriviaDifficulty.fromStr(triviaJson.get('difficulty'))
+        triviaDifficulty = TriviaDifficulty.fromStr(utils.getStrFromDict(triviaJson, 'difficulty', fallback = ''))
         triviaType = TriviaType.fromStr(utils.getStrFromDict(triviaJson, 'type'))
         category = utils.getStrFromDict(triviaJson, 'category', fallback = '', clean = True, htmlUnescape = True)
         question = utils.getStrFromDict(triviaJson, 'question', clean = True, htmlUnescape = True)
@@ -201,7 +207,7 @@ class TriviaRepository():
             raise ValueError(f'triviaType \"{triviaType}\" is not supported for Bongo: {jsonResponse}')
 
     def __fetchTriviaQuestionFromJService(self) -> AbsTriviaQuestion:
-        print(f'Fetching trivia question from jService... ({utils.getNowTimeText(includeSeconds = True)})')
+        self.__timber.log('TriviaRepository', 'Fetching trivia question from jService...')
 
         rawResponse = None
         try:
@@ -210,24 +216,24 @@ class TriviaRepository():
                 timeout = utils.getDefaultTimeout()
             )
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            print(f'Exception occurred when attempting to fetch trivia from jService: {e}')
+            self.__timber.log('TriviaRepository', f'Exception occurred when attempting to fetch trivia from jService: {e}')
             return None
 
         jsonResponse: List[Dict[str, object]] = None
         try:
             jsonResponse = rawResponse.json()
         except JSONDecodeError as e:
-            print(f'Exception occurred when attempting to decode jService\'s response into JSON: {e}')
+            self.__timber.log('TriviaRepository', f'Exception occurred when attempting to decode jService\'s response into JSON: {e}')
             raise RuntimeError(f'Exception occurred when attempting to decode jService\'s response into JSON: {e}')
 
         if not utils.hasItems(jsonResponse):
-            print(f'Rejecting jService data due to null/empty contents: {jsonResponse}')
+            self.__timber.log('TriviaRepository', f'Rejecting jService data due to null/empty contents: {jsonResponse}')
             raise ValueError(f'Rejecting jService data due to null/empty contents: {jsonResponse}')
 
         resultJson: Dict[str, object] = jsonResponse[0]
 
         if not utils.hasItems(resultJson):
-            print(f'Rejecting jService data due to null/empty contents: {jsonResponse}')
+            self.__timber.log('TriviaRepository', f'Rejecting jService data due to null/empty contents: {jsonResponse}')
             raise ValueError(f'Rejecting jService data due to null/empty contents: {jsonResponse}')
 
         category = utils.getStrFromDict(resultJson['category'], 'title', fallback = '', clean = True)
@@ -248,11 +254,11 @@ class TriviaRepository():
         )
 
     def __fetchTriviaQuestionFromLocalTriviaRepository(self) -> AbsTriviaQuestion:
-        print(f'Fetching trivia question from LocalTriviaRepository... ({utils.getNowTimeText(includeSeconds = True)})')
+        self.__timber.log('TriviaRepository', 'Fetching trivia question from LocalTriviaRepository...')
         return self.__localTriviaRepository.fetchRandomQuestion()
 
     def __fetchTriviaQuestionFromOpenTriviaDatabase(self) -> AbsTriviaQuestion:
-        print(f'Fetching trivia question from Open Trivia Database... ({utils.getNowTimeText(includeSeconds = True)})')
+        self.__timber.log('TriviaRepository', 'Fetching trivia question from Open Trivia Database...')
 
         rawResponse = None
         try:
@@ -261,30 +267,30 @@ class TriviaRepository():
                 timeout = utils.getDefaultTimeout()
             )
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            print(f'Exception occurred when attempting to fetch trivia from Open Trivia Database: {e}')
+            self.__timber.log('TriviaRepository', f'Exception occurred when attempting to fetch trivia from Open Trivia Database: {e}')
             return None
 
         jsonResponse: Dict[str, object] = None
         try:
             jsonResponse = rawResponse.json()
         except JSONDecodeError as e:
-            print(f'Exception occurred when attempting to decode Open Trivia Database\'s response into JSON: {e}')
+            self.__timber.log('TriviaRepository', f'Exception occurred when attempting to decode Open Trivia Database\'s response into JSON: {e}')
             raise RuntimeError(f'Exception occurred when attempting to decode Open Trivia Database\'s response into JSON: {e}')
 
         if not utils.hasItems(jsonResponse):
-            print(f'Rejecting Open Trivia Database\'s API data due to null/empty contents: {jsonResponse}')
+            self.__timber.log('TriviaRepository', f'Rejecting Open Trivia Database\'s API data due to null/empty contents: {jsonResponse}')
             raise ValueError(f'Rejecting Open Trivia Database\'s API data due to null/empty contents: {jsonResponse}')
         elif utils.getIntFromDict(jsonResponse, 'response_code', -1) != 0:
-            print(f'Rejecting trivia due to bad \"response_code\" value: {jsonResponse}')
+            self.__timber.log('TriviaRepository', f'Rejecting trivia due to bad \"response_code\" value: {jsonResponse}')
             raise ValueError(f'Rejecting trivia due to bad \"response_code\" value: {jsonResponse}')
         elif not utils.hasItems(jsonResponse.get('results')):
-            print(f'Rejecting trivia due to missing/null/empty \"results\" array: {jsonResponse}')
+            self.__timber.log('TriviaRepository', f'Rejecting trivia due to missing/null/empty \"results\" array: {jsonResponse}')
             raise ValueError(f'Rejecting trivia due to missing/null/empty \"results\" array: {jsonResponse}')
 
         resultJson: Dict[str, object] = jsonResponse['results'][0]
 
         if not utils.hasItems(resultJson):
-            print(f'Rejecting Open Trivia Database\'s API data due to null/empty contents: {jsonResponse}')
+            self.__timber.log('TriviaRepository', f'Rejecting Open Trivia Database\'s API data due to null/empty contents: {jsonResponse}')
             raise ValueError(f'Rejecting Open Trivia Database\'s API data due to null/empty contents: {jsonResponse}')
 
         triviaDifficulty = TriviaDifficulty.fromStr(resultJson.get('difficulty'))
@@ -333,7 +339,7 @@ class TriviaRepository():
             raise ValueError(f'triviaType \"{triviaType}\" is not supported for Open Trivia Database: {jsonResponse}')
 
     def __fetchTriviaQuestionFromWillFryTriviaApi(self) -> AbsTriviaQuestion:
-        print(f'Fetching trivia question from Will Fry Trivia API... ({utils.getNowTimeText(includeSeconds = True)})')
+        self.__timber.log('TriviaRepository', f'Fetching trivia question from Will Fry Trivia API...')
 
         rawResponse = None
         try:
@@ -342,24 +348,24 @@ class TriviaRepository():
                 timeout = utils.getDefaultTimeout()
             )
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            print(f'Exception occurred when attempting to fetch trivia from Will Fry Trivia API: {e}')
+            self.__timber.log('TriviaRepository', f'Exception occurred when attempting to fetch trivia from Will Fry Trivia API: {e}')
             return None
 
         jsonResponse: Dict[str, object] = None
         try:
             jsonResponse = rawResponse.json()
         except JSONDecodeError as e:
-            print(f'Exception occurred when attempting to decode Will Fry Trivia API\'s response into JSON: {e}')
+            self.__timber.log('TriviaRepository', f'Exception occurred when attempting to decode Will Fry Trivia API\'s response into JSON: {e}')
             raise RuntimeError(f'Exception occurred when attempting to decode Will Fry Trivia API\'s response into JSON: {e}')
 
         if not utils.hasItems(jsonResponse):
-            print(f'Rejecting Will Fry Trivia API data due to null/empty contents: {jsonResponse}')
+            self.__timber.log('TriviaRepository', f'Rejecting Will Fry Trivia API data due to null/empty contents: {jsonResponse}')
             raise ValueError(f'Rejecting Will Fry Trivia API data due to null/empty contents: {jsonResponse}')
 
         resultJson: Dict[str, object] = jsonResponse[0]
 
         if not utils.hasItems(resultJson):
-            print(f'Rejecting Will Fry Trivia API\'s data due to null/empty contents: {jsonResponse}')
+            self.__timber.log('TriviaRepository', f'Rejecting Will Fry Trivia API\'s data due to null/empty contents: {jsonResponse}')
             raise ValueError(f'Rejecting Will Fry Trivia API\'s data due to null/empty contents: {jsonResponse}')
 
         triviaType = TriviaType.fromStr(utils.getStrFromDict(resultJson, 'type'))
