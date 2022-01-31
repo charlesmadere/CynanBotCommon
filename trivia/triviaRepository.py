@@ -433,8 +433,11 @@ class TriviaRepository():
         triviaQuestion: AbsTriviaQuestion = None
         retryCount: int = 0
         maxRetryCount: int = self.__getMaxRetryCount()
+        attemptedTriviaSources: List[TriviaSource] = list()
 
         while retryCount < maxRetryCount:
+            attemptedTriviaSources.append(triviaSource)
+
             if triviaSource is TriviaSource.BONGO:
                 triviaQuestion = self.__fetchTriviaQuestionFromBongo()
             elif triviaSource is TriviaSource.J_SERVICE:
@@ -451,9 +454,13 @@ class TriviaRepository():
             if self.__verifyGoodTriviaQuestion(triviaQuestion):
                 return triviaQuestion
             else:
+                triviaSource = self.__chooseRandomTriviaSource(
+                   isLocalTriviaRepositoryEnabled = isLocalTriviaRepositoryEnabled
+                )
+
                 retryCount = retryCount + 1
 
-        raise RuntimeError(f'Unable to fetch trivia after {retryCount} attempts (max attempts is {maxRetryCount} ({utils.getNowTimeText(includeSeconds = True)})')
+        raise RuntimeError(f'Unable to fetch trivia from {attemptedTriviaSources} after {retryCount} attempts (max attempts is {maxRetryCount})')
 
     def __getAvailableTriviaSourcesAndWeights(
         self,
