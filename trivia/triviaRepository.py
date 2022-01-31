@@ -466,7 +466,7 @@ class TriviaRepository():
             if triviaSource is TriviaSource.LOCAL_TRIVIA_REPOSITORY and not isLocalTriviaRepositoryEnabled:
                 continue
 
-            triviaSourceJson: Dict = triviaSourcesJson[key]
+            triviaSourceJson: Dict[str, object] = triviaSourcesJson[key]
 
             isEnabled = utils.getBoolFromDict(triviaSourceJson, 'is_enabled')
             if not isEnabled:
@@ -501,7 +501,7 @@ class TriviaRepository():
 
         return maxRetryCount
 
-    def __readTriviaRepositoryJson(self) -> Dict:
+    def __readTriviaRepositoryJson(self) -> Dict[str, object]:
         if not path.exists(self.__triviaRepositoryFile):
             raise FileNotFoundError(f'Trivia Repository file not found: \"{self.__triviaRepositoryFile}\"')
 
