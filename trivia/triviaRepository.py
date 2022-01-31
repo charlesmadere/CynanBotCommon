@@ -527,7 +527,9 @@ class TriviaRepository():
             strings.append(response)
 
         for string in strings:
-            if utils.containsUrl(string):
+            if not utils.isValidStr(string):
+                return False
+            elif utils.containsUrl(string):
                 return False
 
         return True
