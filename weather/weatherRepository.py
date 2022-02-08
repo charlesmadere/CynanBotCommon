@@ -123,15 +123,15 @@ class WeatherRepository():
         try:
             rawResponse = requests.get(url = requestUrl, timeout = utils.getDefaultTimeout())
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            self.__timber.log('WeatherRepository', f'Exception occurred when attempting to fetch air quality index from Open Weather for \"{location.getLocationId()}\": {e}')
-            raise RuntimeError(f'Exception occurred when attempting to fetch air quality index from Open Weather for \"{location.getLocationId()}\": {e}')
+            self.__timber.log('WeatherRepository', f'Exception occurred when attempting to fetch air quality index from Open Weather for \"{location.getLocationId()}\" ({location.getName()}): {e}')
+            raise RuntimeError(f'Exception occurred when attempting to fetch air quality index from Open Weather for \"{location.getLocationId()}\" ({location.getName()}): {e}')
 
         jsonResponse: Dict[str, object] = None
         try:
             jsonResponse = rawResponse.json()
         except JSONDecodeError as e:
-            self.__timber.log('WeatherRepository', f'Exception occurred when attempting to decode Open Weather\'s air quality index response into JSON for \"{location.getLocationId()}\": {e}')
-            raise RuntimeError(f'Exception occurred when attempting to decode Open Weather\'s air quality index response into JSON for \"{location.getLocationId()}\": {e}')
+            self.__timber.log('WeatherRepository', f'Exception occurred when attempting to decode Open Weather\'s air quality index response into JSON for \"{location.getLocationId()}\" ({location.getName()}): {e}')
+            raise RuntimeError(f'Exception occurred when attempting to decode Open Weather\'s air quality index response into JSON for \"{location.getLocationId()}\" ({location.getName()}): {e}')
 
         airQualityIndex = utils.getIntFromDict(
             d = jsonResponse['list'][0]['main'],
@@ -169,15 +169,15 @@ class WeatherRepository():
         try:
             rawResponse = requests.get(url = requestUrl, timeout = utils.getDefaultTimeout())
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            self.__timber.log('WeatherRepository', f'Exception occurred when attempting to fetch weather conditions from Open Weather for \"{location.getLocationId()}\": {e}')
-            raise RuntimeError(f'Exception occurred when attempting to fetch weather conditions from Open Weather for \"{location.getLocationId()}\": {e}')
+            self.__timber.log('WeatherRepository', f'Exception occurred when attempting to fetch weather conditions from Open Weather for \"{location.getLocationId()}\" ({location.getName()}): {e}')
+            raise RuntimeError(f'Exception occurred when attempting to fetch weather conditions from Open Weather for \"{location.getLocationId()}\" ({location.getName()}): {e}')
 
         jsonResponse: Dict[str, object] = None
         try:
             jsonResponse = rawResponse.json()
         except JSONDecodeError as e:
-            self.__timber.log('WeatherRepository', f'Exception occurred when attempting to decode Open Weather\'s weather response into JSON for \"{location.getLocationId()}\": {e}')
-            raise RuntimeError(f'Exception occurred when attempting to decode Open Weather\'s weather response into JSON for \"{location.getLocationId()}\": {e}')
+            self.__timber.log('WeatherRepository', f'Exception occurred when attempting to decode Open Weather\'s weather response into JSON for \"{location.getLocationId()}\" ({location.getName()}): {e}')
+            raise RuntimeError(f'Exception occurred when attempting to decode Open Weather\'s weather response into JSON for \"{location.getLocationId()}\" ({location.getName()}): {e}')
 
         currentJson: Dict[str, object] = jsonResponse['current']
         humidity = int(round(utils.getFloatFromDict(currentJson, 'humidity')))
