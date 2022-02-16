@@ -10,14 +10,14 @@ import requests
 # users.py files.
 
 # taken from "Client ID" at https://dev.twitch.tv/console/apps/
-TWITCH_CLIENT_ID = None
+TWITCH_CLIENT_ID: str = None
 
 # taken from "Client Secret" at https://dev.twitch.tv/console/apps/
-TWITCH_CLIENT_SECRET = None
+TWITCH_CLIENT_SECRET: str = None
 
 # This code is derived from clicking this URL and then authenticating:
 # https://id.twitch.tv/oauth2/authorize?response_type=code&client_id=CLIENT_ID_HERE&redirect_uri=http://localhost&scope=chat:read+chat:edit+channel:moderate+whispers:read+whispers:edit+channel_editor+channel:read:redemptions
-TWITCH_CODE_SECRET = None
+TWITCH_CODE_SECRET: str = None
 
 if TWITCH_CLIENT_SECRET is None or TWITCH_CLIENT_SECRET is None or TWITCH_CODE_SECRET is None:
     raise ValueError('TWITCH_CLIENT_ID, TWITCH_CLIENT_SECRET, and TWITCH_CODE_SECRET must all be set!')
