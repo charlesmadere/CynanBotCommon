@@ -165,7 +165,7 @@ class ChatBandManager():
 
         return None
 
-    def __toEventData(self, chatBandMember: ChatBandMember) -> Dict:
+    def __toEventData(self, chatBandMember: ChatBandMember) -> Dict[str, object]:
         if chatBandMember is None:
             raise ValueError(f'chatBandMember argument is malformed: \"{chatBandMember}\"')
 

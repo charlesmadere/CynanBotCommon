@@ -59,7 +59,7 @@ class TwitchTokensRepository():
         jsonContents = self.__readJson(twitchHandle)
         return utils.getStrFromDict(jsonContents, 'refreshToken', fallback = '')
 
-    def __readAllJson(self) -> Dict:
+    def __readAllJson(self) -> Dict[str, object]:
         if not os.path.exists(self.__twitchTokensFile):
             raise FileNotFoundError(f'Twitch tokens file not found: \"{self.__twitchTokensFile}\"')
 
@@ -73,7 +73,7 @@ class TwitchTokensRepository():
 
         return jsonContents
 
-    def __readJson(self, twitchHandle: str) -> Dict:
+    def __readJson(self, twitchHandle: str) -> Dict[str, object]:
         if not utils.isValidStr(twitchHandle):
             raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
 

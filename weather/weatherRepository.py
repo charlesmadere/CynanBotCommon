@@ -53,7 +53,7 @@ class WeatherRepository():
         self.__cache = TimedDict(timeDelta = cacheTimeDelta)
         self.__conditionIcons: Dict[str, str] = self.__createConditionIconsDict()
 
-    def __chooseTomorrowFromForecast(self, jsonResponse: Dict) -> Dict:
+    def __chooseTomorrowFromForecast(self, jsonResponse: Dict) -> Dict[str, object]:
         currentSunrise = jsonResponse['current']['sunrise']
         currentSunset = jsonResponse['current']['sunset']
 

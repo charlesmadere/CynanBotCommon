@@ -68,7 +68,7 @@ class FuntoonRepository():
 
         url: str = f'{self.__funtoonApiUrl}/events/custom'
 
-        jsonPayload: Dict = {
+        jsonPayload = {
             'channel': twitchChannel,
             'data': data,
             'event': event

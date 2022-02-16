@@ -17,9 +17,9 @@ class WebsocketEvent():
             raise ValueError(f'eventData argument is malformed: \"{eventData}\"')
 
         self.__eventTime: datetime = datetime.utcnow()
-        self.__eventData: Dict = eventData
+        self.__eventData: Dict[str, object] = eventData
 
-    def getEventData(self) -> Dict:
+    def getEventData(self) -> Dict[str, object]:
         return self.__eventData
 
     def getEventTime(self):
