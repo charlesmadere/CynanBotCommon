@@ -95,5 +95,11 @@
         "id": "qwibvlyrljey",
         "question": "With an expensive meal, nothing beats an ice-cold Coca-Cola.",
         "type": "boolean"
+    },
+    {
+        "correctAnswers": [ false ],
+        "id": "ff1ysHmv9UVm",
+        "question": "A single human can fight a grizzly bear with a reasonable chance of winning.",
+        "type": "boolean"
     }
 ]
