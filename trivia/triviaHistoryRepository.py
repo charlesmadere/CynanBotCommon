@@ -67,7 +67,7 @@ class TriviaHistoryRepository():
         nowDateTime = datetime.now(timezone.utc)
 
         if row is None:
-            nowDateTimeStr = utils.getStrFromDateTime(questionDateTime)
+            nowDateTimeStr = utils.getStrFromDateTime(nowDateTime)
 
             cursor.execute(
                 '''
