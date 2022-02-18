@@ -174,6 +174,7 @@ class TriviaGameRepository():
             state.setAnswered()
 
         triviaQuestion = self.__triviaRepository.fetchTrivia(
+            twitchChannel = twitchChannel,
             isLocalTriviaRepositoryEnabled = isLocalTriviaRepositoryEnabled
         )
 
