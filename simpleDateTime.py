@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 try:
     import CynanBotCommon.utils as utils
@@ -19,7 +19,7 @@ class SimpleDateTime():
         if useLocalTime:
             now = datetime.now()
         else:
-            now = datetime.utcnow()
+            now = datetime.now(timezone.utc)
 
         self.__year: str = now.strftime('%Y')
         self.__month: str = now.strftime('%m')
