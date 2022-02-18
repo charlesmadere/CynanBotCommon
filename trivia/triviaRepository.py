@@ -493,7 +493,7 @@ class TriviaRepository():
             raise ValueError(f'question argument is malformed: \"{question}\"')
 
         if utils.isValidStr(category):
-            return hashlib.sha256(f'{category}|{question}'.encode('utf-8')).hexdigest
+            return hashlib.sha256(f'{category}|{question}'.encode('utf-8')).hexdigest()
         else:
             return hashlib.sha256(question.encode('utf-8')).hexdigest()
 
