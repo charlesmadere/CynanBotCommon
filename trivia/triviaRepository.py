@@ -173,7 +173,10 @@ class TriviaRepository():
         triviaType = TriviaType.fromStr(utils.getStrFromDict(triviaJson, 'type'))
         category = utils.getStrFromDict(triviaJson, 'category', fallback = '', clean = True, htmlUnescape = True)
         question = utils.getStrFromDict(triviaJson, 'question', clean = True, htmlUnescape = True)
+
         triviaId = utils.getStrFromDict(triviaJson, 'id')
+        if not utils.isValidStr(triviaId):
+            triviaId = self.__generateTriviaId(category = category, question = question)
 
         if triviaType is TriviaType.MULTIPLE_CHOICE:
             correctAnswer = utils.getStrFromDict(
@@ -247,7 +250,10 @@ class TriviaRepository():
 
         category = utils.getStrFromDict(resultJson['category'], 'title', fallback = '', clean = True)
         question = utils.getStrFromDict(resultJson, 'question', clean = True)
+
         triviaId = utils.getStrFromDict(resultJson, 'id')
+        if not utils.isValidStr(triviaId):
+            triviaId = self.__generateTriviaId(category = category, question = question)
 
         correctAnswer = utils.getStrFromDict(resultJson, 'answer', clean = True)
         correctAnswers: List[str] = list()
@@ -306,7 +312,7 @@ class TriviaRepository():
         triviaType = TriviaType.fromStr(utils.getStrFromDict(resultJson, 'type'))
         category = utils.getStrFromDict(resultJson, 'category', fallback = '', clean = True, htmlUnescape = True)
         question = utils.getStrFromDict(resultJson, 'question', clean = True, htmlUnescape = True)
-        triviaId = self.__generateTriviaId(category, question)
+        triviaId = self.__generateTriviaId(category = category, question = question)
 
         if triviaType is TriviaType.MULTIPLE_CHOICE:
             correctAnswer = utils.getStrFromDict(
@@ -381,7 +387,10 @@ class TriviaRepository():
         triviaType = TriviaType.fromStr(utils.getStrFromDict(resultJson, 'type'))
         category = utils.getStrFromDict(resultJson, 'category', fallback = '', clean = True)
         question = utils.getStrFromDict(resultJson, 'question', clean = True)
+
         triviaId = utils.getStrFromDict(resultJson, 'id')
+        if not utils.isValidStr(triviaId):
+            triviaId = self.__generateTriviaId(category = category, question = question)
 
         if triviaType is TriviaType.MULTIPLE_CHOICE:
             correctAnswer = utils.getStrFromDict(
@@ -475,7 +484,11 @@ class TriviaRepository():
 
         raise RuntimeError(f'Unable to fetch trivia from {attemptedTriviaSources} after {retryCount} attempts (max attempts is {maxRetryCount})')
 
-    def __generateTriviaId(self, category: str, question: str) -> str:
+    def __generateTriviaId(
+        self,
+        question: str,
+        category: str = None
+    ) -> str:
         if not utils.isValidStr(question):
             raise ValueError(f'question argument is malformed: \"{question}\"')
 
