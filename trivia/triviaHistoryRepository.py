@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 try:
     import CynanBotCommon.utils as utils
@@ -18,15 +18,15 @@ class TriviaHistoryRepository():
     def __init__(
         self,
         backingDatabase: BackingDatabase,
-        minimumTimeWindow: timedelta = timedelta(weeks = 1)
+        minimumTimeDelta: timedelta = timedelta(weeks = 1)
     ):
         if backingDatabase is None:
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
-        elif minimumTimeWindow is None:
-            raise ValueError(f'minimumTimeWindow argument is malformed: \"{minimumTimeWindow}\"')
+        elif minimumTimeDelta is None:
+            raise ValueError(f'minimumTimeDelta argument is malformed: \"{minimumTimeDelta}\"')
 
         self.__backingDatabase: BackingDatabase = backingDatabase
-        self.__minimumTimeWindow: timedelta = minimumTimeWindow
+        self.__minimumTimeDelta: timedelta = minimumTimeDelta
 
         self.__initDatabaseTable()
 
@@ -53,6 +53,38 @@ class TriviaHistoryRepository():
         if question is None:
             return TriviaContentCode.IS_NONE
 
+        connection = self.__backingDatabase.getConnection()
+        cursor = connection.cursor()
+        cursor.execute(
+            '''
+                SELECT datetime FROM triviaHistory
+                WHERE triviaId = ? AND triviaSource = ? AND twitchChannel = ?
+            ''',
+            ( question.getTriviaId(), question.getTriviaSource().toStr(), twitchChannel )
+        )
 
+        row = cursor.fetchone()
+        nowDateTime = datetime.now(timezone.utc)
 
-        return TriviaContentCode.OK
+        if row is None:
+            nowDateTimeStr = utils.getStrFromDateTime(questionDateTime)
+
+            cursor.execute(
+                '''
+                    INSERT INTO triviaHistory (datetime, triviaId, triviaSource, twitchChannel)
+                    VALUES (?, ?, ?, ?)
+                ''',
+                ( nowDateTimeStr, question.getTriviaId(), question.getTriviaSource().toStr(), twitchChannel )
+            )
+
+            connection.commit()
+            cursor.close()
+            return TriviaContentCode.OK
+
+        questionDateTime = utils.getDateTimeFromStr(row[0])
+        cursor.close()
+
+        if questionDateTime + self.__minimumTimeDelta >= nowDateTime:
+            return TriviaContentCode.REPEAT
+        else:
+            return TriviaContentCode.OK
