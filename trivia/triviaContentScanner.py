@@ -28,9 +28,20 @@ class TriviaContentScanner():
             raise FileNotFoundError(f'Banned Words file not found: \"{self.__bannedWordsFile}\"')
 
         with open(self.__bannedWordsFile, 'r') as file:
-            bannedWords = [ line.strip().lower() for line in file ]
+            lines = file.readlines()
 
-        return bannedWords
+        bannedWords: List[str] = list()
+
+        if utils.hasItems(lines):
+            for line in lines:
+                if utils.isValidStr(line):
+                    line = line.strip().lower()
+                    bannedWords.append(line)
+
+        if utils.hasItems(bannedWords):
+            return bannedWords
+        else:
+            return None
 
     def verify(self, question: AbsTriviaQuestion) -> TriviaContentCode:
         if question is None:
