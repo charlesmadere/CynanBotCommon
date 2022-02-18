@@ -38,14 +38,18 @@ class TriviaHistoryRepository():
                     datetime TEXT NOT NULL,
                     triviaId TEXT NOT NULL COLLATE NOCASE,
                     triviaSource TEXT NOT NULL COLLATE NOCASE,
-                    PRIMARY KEY (triviaId, triviaSource)
+                    twitchChannel TEXT NOT NULL COLLATE NOCASE,
+                    PRIMARY KEY (triviaId, triviaSource, twitchChannel)
                 )
             '''
         )
 
         connection.commit()
 
-    def verify(self, question: AbsTriviaQuestion) -> TriviaContentCode:
+    def verify(self, question: AbsTriviaQuestion, twitchChannel: str) -> TriviaContentCode:
+        if not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+
         if question is None:
             return TriviaContentCode.IS_NONE
 

@@ -410,16 +410,18 @@ class TriviaRepository():
 
     def fetchTrivia(
         self,
-        isLocalTriviaRepositoryEnabled: bool = False,
-        triviaSource: TriviaSource = None
+        twitchChannel: str,
+        isLocalTriviaRepositoryEnabled: bool = False
     ) -> AbsTriviaQuestion:
-        if not utils.isValidBool(isLocalTriviaRepositoryEnabled):
+        if not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+        elif not utils.isValidBool(isLocalTriviaRepositoryEnabled):
             raise ValueError(f'isLocalTriviaRepositoryEnabled argument is malformed: \"{isLocalTriviaRepositoryEnabled}\"')
 
         if self.__cacheTimeDelta is None or self.__cacheTime is None or self.__cacheTime + self.__cacheTimeDelta < datetime.utcnow() or self.__triviaResponse is None:
             self.__triviaResponse = self.__fetchTrivia(
-                isLocalTriviaRepositoryEnabled = isLocalTriviaRepositoryEnabled,
-                triviaSource = triviaSource
+                twitchChannel = twitchChannel,
+                isLocalTriviaRepositoryEnabled = isLocalTriviaRepositoryEnabled
             )
             self.__cacheTime = datetime.utcnow()
 
@@ -427,16 +429,17 @@ class TriviaRepository():
 
     def __fetchTrivia(
         self,
-        isLocalTriviaRepositoryEnabled: bool = False,
-        triviaSource: TriviaSource = None
+        twitchChannel: str,
+        isLocalTriviaRepositoryEnabled: bool = False
     ) -> AbsTriviaQuestion:
-        if not utils.isValidBool(isLocalTriviaRepositoryEnabled):
+        if not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+        elif not utils.isValidBool(isLocalTriviaRepositoryEnabled):
             raise ValueError(f'isLocalTriviaRepositoryEnabled argument is malformed: \"{isLocalTriviaRepositoryEnabled}\"')
 
-        if triviaSource is None:
-            triviaSource = self.__chooseRandomTriviaSource(
-                isLocalTriviaRepositoryEnabled = isLocalTriviaRepositoryEnabled
-            )
+        triviaSource = self.__chooseRandomTriviaSource(
+            isLocalTriviaRepositoryEnabled = isLocalTriviaRepositoryEnabled
+        )
 
         triviaQuestion: AbsTriviaQuestion = None
         retryCount: int = 0
@@ -459,7 +462,7 @@ class TriviaRepository():
             else:
                 raise ValueError(f'unknown TriviaSource: \"{triviaSource}\"')
 
-            if self.__verifyGoodTriviaQuestion(triviaQuestion):
+            if self.__verifyGoodTriviaQuestion(triviaQuestion, twitchChannel):
                 return triviaQuestion
             else:
                 triviaSource = self.__chooseRandomTriviaSource(
@@ -536,8 +539,15 @@ class TriviaRepository():
 
         return jsonContents
 
-    def __verifyGoodTriviaQuestion(self, triviaQuestion: AbsTriviaQuestion) -> bool:
-        triviaContentCode = self.__triviaVerifier.verify(triviaQuestion)
+    def __verifyGoodTriviaQuestion(
+        self,
+        triviaQuestion: AbsTriviaQuestion,
+        twitchChannel: str
+    ) -> bool:
+        if not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+
+        triviaContentCode = self.__triviaVerifier.verify(triviaQuestion, twitchChannel)
 
         if triviaContentCode == TriviaContentCode.OK:
             return True

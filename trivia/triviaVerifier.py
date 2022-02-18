@@ -1,10 +1,13 @@
 try:
+    import CynanBotCommon.utils as utils
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.triviaContentCode import TriviaContentCode
     from CynanBotCommon.trivia.triviaContentScanner import TriviaContentScanner
     from CynanBotCommon.trivia.triviaHistoryRepository import \
         TriviaHistoryRepository
 except:
+    import utils
+
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.triviaContentCode import TriviaContentCode
     from trivia.triviaContentScanner import TriviaContentScanner
@@ -26,7 +29,10 @@ class TriviaVerifier():
         self.__triviaContentScanner: TriviaContentScanner = triviaContentScanner
         self.__triviaHistoryRepository: TriviaHistoryRepository = triviaHistoryRepository
 
-    def verify(self, question: AbsTriviaQuestion) -> bool:
+    def verify(self, question: AbsTriviaQuestion, twitchChannel: str) -> bool:
+        if not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+
         if question is None:
             return TriviaContentCode.IS_NONE
 
@@ -34,7 +40,7 @@ class TriviaVerifier():
         if contentScannerCode is not TriviaContentCode.OK:
             return contentScannerCode
 
-        historyRepositoryCode = self.__triviaHistoryRepository.verify(question)
+        historyRepositoryCode = self.__triviaHistoryRepository.verify(question, twitchChannel)
         if historyRepositoryCode is not TriviaContentCode.OK:
             return historyRepositoryCode
 
