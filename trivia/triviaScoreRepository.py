@@ -16,22 +16,7 @@ class TriviaScoreRepository():
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
 
         self.__backingDatabase: BackingDatabase = backingDatabase
-
-        connection = backingDatabase.getConnection()
-        connection.execute(
-            '''
-                CREATE TABLE IF NOT EXISTS triviaScores (
-                    streak INTEGER NOT NULL DEFAULT 0,
-                    totalLosses INTEGER NOT NULL DEFAULT 0,
-                    totalWins INTEGER NOT NULL DEFAULT 0,
-                    twitchChannel TEXT NOT NULL COLLATE NOCASE,
-                    userId TEXT NOT NULL COLLATE NOCASE,
-                    PRIMARY KEY (twitchChannel, userId)
-                )
-            '''
-        )
-
-        connection.commit()
+        self.__initDatabaseTable()
 
     def fetchTriviaScore(
         self,
@@ -173,6 +158,23 @@ class TriviaScoreRepository():
         )
 
         return newResult
+
+    def __initDatabaseTable(self):
+        connection = self.__backingDatabase.getConnection()
+        connection.execute(
+            '''
+                CREATE TABLE IF NOT EXISTS triviaScores (
+                    streak INTEGER NOT NULL DEFAULT 0,
+                    totalLosses INTEGER NOT NULL DEFAULT 0,
+                    totalWins INTEGER NOT NULL DEFAULT 0,
+                    twitchChannel TEXT NOT NULL COLLATE NOCASE,
+                    userId TEXT NOT NULL COLLATE NOCASE,
+                    PRIMARY KEY (twitchChannel, userId)
+                )
+            '''
+        )
+
+        connection.commit()
 
     def __updateTriviaScore(
         self,

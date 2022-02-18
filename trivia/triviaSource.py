@@ -33,3 +33,17 @@ class TriviaSource(Enum):
             return TriviaSource.WILL_FRY_TRIVIA_API
         else:
             raise ValueError(f'unknown TriviaSource: \"{text}\"')
+
+    def toStr(self) -> str:
+        if self is TriviaSource.BONGO:
+            return 'BONGO'
+        elif self is TriviaSource.J_SERVICE:
+            return 'J_SERVICE'
+        elif self is TriviaSource.LOCAL_TRIVIA_REPOSITORY:
+            return 'LOCAL_TRIVIA_REPOSITORY'
+        elif self is TriviaSource.OPEN_TRIVIA_DATABASE:
+            return 'OPEN_TRIVIA_DATABASE'
+        elif self is TriviaSource.WILL_FRY_TRIVIA_API:
+            return 'WILL_FRY_TRIVIA_API'
+        else:
+            raise ValueError(f'unknown TriviaSource: \"{self}\"')

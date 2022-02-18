@@ -20,9 +20,11 @@ try:
         MultipleChoiceTriviaQuestion
     from CynanBotCommon.trivia.questionAnswerTriviaQuestion import \
         QuestionAnswerTriviaQuestion
+    from CynanBotCommon.trivia.triviaContentCode import TriviaContentCode
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
     from CynanBotCommon.trivia.triviaSource import TriviaSource
     from CynanBotCommon.trivia.triviaType import TriviaType
+    from CynanBotCommon.trivia.triviaVerifier import TriviaVerifier
     from CynanBotCommon.trivia.trueFalseTriviaQuestion import \
         TrueFalseTriviaQuestion
 except:
@@ -35,9 +37,11 @@ except:
         MultipleChoiceTriviaQuestion
     from trivia.questionAnswerTriviaQuestion import \
         QuestionAnswerTriviaQuestion
+    from trivia.triviaContentCode import TriviaContentCode
     from trivia.triviaDifficulty import TriviaDifficulty
     from trivia.triviaSource import TriviaSource
     from trivia.triviaType import TriviaType
+    from trivia.triviaVerifier import TriviaVerifier
     from trivia.trueFalseTriviaQuestion import TrueFalseTriviaQuestion
 
 
@@ -47,6 +51,7 @@ class TriviaRepository():
         self,
         localTriviaRepository: LocalTriviaRepository,
         timber: Timber,
+        triviaVerifier: TriviaVerifier,
         triviaRepositoryFile: str = 'CynanBotCommon/trivia/triviaRepository.json',
         cacheTimeDelta: timedelta = timedelta(minutes = 2, seconds = 30)
     ):
@@ -54,11 +59,14 @@ class TriviaRepository():
             raise ValueError(f'localTriviaRepository argument is malformed: \"{localTriviaRepository}\"')
         elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
+        elif triviaVerifier is None:
+            raise ValueError(f'triviaVerifier argument is malformed: \"{triviaVerifier}\"')
         elif not utils.isValidStr(triviaRepositoryFile):
             raise ValueError(f'triviaRepositoryFile argument is malformed: \"{triviaRepositoryFile}\"')
 
         self.__localTriviaRepository: LocalTriviaRepository = localTriviaRepository
         self.__timber: Timber = timber
+        self.__triviaVerifier: TriviaVerifier = triviaVerifier
         self.__triviaRepositoryFile: str = triviaRepositoryFile
 
         if cacheTimeDelta is None:
@@ -529,20 +537,10 @@ class TriviaRepository():
         return jsonContents
 
     def __verifyGoodTriviaQuestion(self, triviaQuestion: AbsTriviaQuestion) -> bool:
-        if triviaQuestion is None:
+        triviaContentCode = self.__triviaVerifier.verify(triviaQuestion)
+
+        if triviaContentCode == TriviaContentCode.OK:
+            return True
+        else:
+            self.__timber.log('TriviaRepository', f'Rejected a trivia question due to content code: {triviaContentCode}')
             return False
-
-        strings: List[str] = list()
-        strings.append(triviaQuestion.getQuestion())
-        strings.append(triviaQuestion.getPrompt())
-
-        for response in triviaQuestion.getResponses():
-            strings.append(response)
-
-        for string in strings:
-            if not utils.isValidStr(string):
-                return False
-            elif utils.containsUrl(string):
-                return False
-
-        return True
