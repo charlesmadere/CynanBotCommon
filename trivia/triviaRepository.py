@@ -1,3 +1,4 @@
+import hashlib
 import json
 import random
 from datetime import datetime, timedelta
@@ -305,6 +306,7 @@ class TriviaRepository():
         triviaType = TriviaType.fromStr(utils.getStrFromDict(resultJson, 'type'))
         category = utils.getStrFromDict(resultJson, 'category', fallback = '', clean = True, htmlUnescape = True)
         question = utils.getStrFromDict(resultJson, 'question', clean = True, htmlUnescape = True)
+        triviaId = self.__generateTriviaId(category, question)
 
         if triviaType is TriviaType.MULTIPLE_CHOICE:
             correctAnswer = utils.getStrFromDict(
@@ -326,7 +328,7 @@ class TriviaRepository():
                 multipleChoiceResponses = multipleChoiceResponses,
                 category = category,
                 question = question,
-                triviaId = None,
+                triviaId = triviaId,
                 triviaDifficulty = triviaDifficulty,
                 triviaSource = TriviaSource.OPEN_TRIVIA_DATABASE
             )
@@ -339,7 +341,7 @@ class TriviaRepository():
                 correctAnswers = correctAnswers,
                 category = category,
                 question = question,
-                triviaId = None,
+                triviaId = triviaId,
                 triviaDifficulty = triviaDifficulty,
                 triviaSource = TriviaSource.OPEN_TRIVIA_DATABASE
             )
@@ -472,6 +474,15 @@ class TriviaRepository():
                 retryCount = retryCount + 1
 
         raise RuntimeError(f'Unable to fetch trivia from {attemptedTriviaSources} after {retryCount} attempts (max attempts is {maxRetryCount})')
+
+    def __generateTriviaId(self, category: str, question: str) -> str:
+        if not utils.isValidStr(question):
+            raise ValueError(f'question argument is malformed: \"{question}\"')
+
+        if utils.isValidStr(category):
+            return hashlib.sha256(f'{category}|{question}'.encode('utf-8')).hexdigest
+        else:
+            return hashlib.sha256(question.encode('utf-8')).hexdigest()
 
     def __getAvailableTriviaSourcesAndWeights(
         self,

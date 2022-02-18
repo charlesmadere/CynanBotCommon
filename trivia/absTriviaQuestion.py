@@ -27,6 +27,8 @@ class AbsTriviaQuestion(ABC):
     ):
         if not utils.isValidStr(question):
             raise ValueError(f'question argument is malformed: \"{question}\"')
+        elif not utils.isValidStr(triviaId):
+            raise ValueError(f'triviaId argument is malformed: \"{triviaId}\"')
         elif triviaDifficulty is None:
             raise ValueError(f'triviaDifficulty argument is malformed: \"{triviaDifficulty}\"')
         elif triviaSource is None:
@@ -80,6 +82,3 @@ class AbsTriviaQuestion(ABC):
 
     def hasCategory(self) -> bool:
         return utils.isValidStr(self.__category)
-
-    def hasTriviaId(self) -> bool:
-        return utils.isValidStr(self.__triviaId)
