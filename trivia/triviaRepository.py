@@ -120,6 +120,10 @@ class TriviaRepository():
         if not utils.hasItems(multipleChoiceResponses):
             raise ValueError(f'This trivia question doesn\'t have any multiple choice responses: \"{multipleChoiceResponses}\"')
 
+        minMultipleChoiceResponses = self.__getMinMultipleChoiceResponses()
+        if len(multipleChoiceResponses) < minMultipleChoiceResponses:
+            raise ValueError(f'This trivia question doesn\'t have enough multiple choice responses (minimum is {minMultipleChoiceResponses}): \"{multipleChoiceResponses}\"')
+
         random.shuffle(multipleChoiceResponses)
         return multipleChoiceResponses
 
@@ -535,9 +539,12 @@ class TriviaRepository():
     def __getMaxMultipleChoiceResponses(self) -> int:
         jsonContents = self.__readTriviaRepositoryJson()
         maxMultipleChoiceResponses = utils.getIntFromDict(jsonContents, 'max_multiple_choice_responses', 5)
+        minMultipleChoiceResponses = utils.getIntFromDict(jsonContents, 'min_multiple_choice_responses', 2)
 
         if maxMultipleChoiceResponses < 2:
-            raise ValueError(f'maxMultipleChoiceResponses is too small: \"{maxMultipleChoiceResponses}\"')
+            raise ValueError(f'maxMultipleChoiceResponses is too small: {maxMultipleChoiceResponses}')
+        elif maxMultipleChoiceResponses < minMultipleChoiceResponses:
+            raise ValueError(f'maxMultipleChoiceResponses ({maxMultipleChoiceResponses}) is less than minMultipleChoiceResponses ({minMultipleChoiceResponses})')
 
         return maxMultipleChoiceResponses
 
@@ -549,6 +556,18 @@ class TriviaRepository():
             raise ValueError(f'maxRetryCount is too small: \"{maxRetryCount}\"')
 
         return maxRetryCount
+
+    def __getMinMultipleChoiceResponses(self) -> int:
+        jsonContents = self.__readTriviaRepositoryJson()
+        maxMultipleChoiceResponses = utils.getIntFromDict(jsonContents, 'max_multiple_choice_responses', 5)
+        minMultipleChoiceResponses = utils.getIntFromDict(jsonContents, 'min_multiple_choice_responses', 2)
+
+        if minMultipleChoiceResponses < 2:
+            raise ValueError(f'minMultipleChoiceResponses is too small: \"{minMultipleChoiceResponses}\"')
+        elif minMultipleChoiceResponses > maxMultipleChoiceResponses:
+            raise ValueError(f'minMultipleChoiceResponses ({minMultipleChoiceResponses}) is greater than maxMultipleChoiceResponses ({maxMultipleChoiceResponses})')
+
+        return minMultipleChoiceResponses
 
     def __readTriviaRepositoryJson(self) -> Dict[str, object]:
         if not path.exists(self.__triviaRepositoryFile):
