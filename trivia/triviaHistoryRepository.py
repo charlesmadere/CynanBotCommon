@@ -65,10 +65,9 @@ class TriviaHistoryRepository():
 
         row = cursor.fetchone()
         nowDateTime = datetime.now(timezone.utc)
+        nowDateTimeStr = utils.getStrFromDateTime(nowDateTime)
 
         if row is None:
-            nowDateTimeStr = utils.getStrFromDateTime(nowDateTime)
-
             cursor.execute(
                 '''
                     INSERT INTO triviaHistory (datetime, triviaId, triviaSource, twitchChannel)
@@ -82,9 +81,21 @@ class TriviaHistoryRepository():
             return TriviaContentCode.OK
 
         questionDateTime = utils.getDateTimeFromStr(row[0])
-        cursor.close()
 
         if questionDateTime + self.__minimumTimeDelta >= nowDateTime:
+            cursor.close()
             return TriviaContentCode.REPEAT
-        else:
-            return TriviaContentCode.OK
+
+        cursor.execute(
+            '''
+                UPDATE triviaHistory
+                SET datetime = ?
+                WHERE triviaId = ? AND triviaSource = ? AND twitchChannel = ?
+            ''',
+            ( nowDateTimeStr, question.getTriviaId(), question.getTriviaSource().toStr(), twitchChannel )
+        )
+
+        connection.commit()
+        cursor.close()
+
+        return TriviaContentCode.OK
