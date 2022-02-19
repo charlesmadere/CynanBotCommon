@@ -97,9 +97,9 @@
         "type": "boolean"
     },
     {
-        "correctAnswers": [ false ],
-        "id": "ff1ysHmv9UVm",
-        "question": "A single human can fight a grizzly bear with a reasonable chance of winning.",
+        "correctAnswers": [ true ],
+        "id": "D2r2kFuMNpKh",
+        "question": "InternetBound once defeated a horse by placing a saddle on its back.",
         "type": "boolean"
     }
 ]
