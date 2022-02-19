@@ -28,3 +28,15 @@ class TriviaDifficulty(Enum):
             return TriviaDifficulty.MEDIUM
         else:
             return TriviaDifficulty.UNKNOWN
+
+    def toStr(self) -> str:
+        if self is TriviaDifficulty.EASY:
+            return 'easy'
+        elif self is TriviaDifficulty.HARD:
+            return 'hard'
+        elif self is TriviaDifficulty.MEDIUM:
+            return 'medium'
+        elif self is TriviaDifficulty.UNKNOWN:
+            return 'unknown'
+        else:
+            raise ValueError(f'unknown TriviaDifficulty: \"{self}\"')

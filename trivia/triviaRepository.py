@@ -1,4 +1,3 @@
-import hashlib
 import json
 import random
 from datetime import datetime, timedelta
@@ -23,6 +22,7 @@ try:
         QuestionAnswerTriviaQuestion
     from CynanBotCommon.trivia.triviaContentCode import TriviaContentCode
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
+    from CynanBotCommon.trivia.triviaIdGenerator import TriviaIdGenerator
     from CynanBotCommon.trivia.triviaSource import TriviaSource
     from CynanBotCommon.trivia.triviaType import TriviaType
     from CynanBotCommon.trivia.triviaVerifier import TriviaVerifier
@@ -40,6 +40,7 @@ except:
         QuestionAnswerTriviaQuestion
     from trivia.triviaContentCode import TriviaContentCode
     from trivia.triviaDifficulty import TriviaDifficulty
+    from trivia.triviaIdGenerator import TriviaIdGenerator
     from trivia.triviaSource import TriviaSource
     from trivia.triviaType import TriviaType
     from trivia.triviaVerifier import TriviaVerifier
@@ -52,6 +53,7 @@ class TriviaRepository():
         self,
         localTriviaRepository: LocalTriviaRepository,
         timber: Timber,
+        triviaIdGenerator: TriviaIdGenerator,
         triviaVerifier: TriviaVerifier,
         triviaRepositoryFile: str = 'CynanBotCommon/trivia/triviaRepository.json',
         cacheTimeDelta: timedelta = timedelta(minutes = 2, seconds = 30)
@@ -60,6 +62,8 @@ class TriviaRepository():
             raise ValueError(f'localTriviaRepository argument is malformed: \"{localTriviaRepository}\"')
         elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
+        elif triviaIdGenerator is None:
+            raise ValueError(f'triviaIdGenerator argument is malformed: \"{triviaIdGenerator}\"')
         elif triviaVerifier is None:
             raise ValueError(f'triviaVerifier argument is malformed: \"{triviaVerifier}\"')
         elif not utils.isValidStr(triviaRepositoryFile):
@@ -67,6 +71,7 @@ class TriviaRepository():
 
         self.__localTriviaRepository: LocalTriviaRepository = localTriviaRepository
         self.__timber: Timber = timber
+        self.__triviaIdGenerator: TriviaIdGenerator = triviaIdGenerator
         self.__triviaVerifier: TriviaVerifier = triviaVerifier
         self.__triviaRepositoryFile: str = triviaRepositoryFile
 
@@ -176,7 +181,11 @@ class TriviaRepository():
 
         triviaId = utils.getStrFromDict(triviaJson, 'id')
         if not utils.isValidStr(triviaId):
-            triviaId = self.__generateTriviaId(category = category, question = question)
+            triviaId = self.__triviaIdGenerator.generate(
+                category = category,
+                difficulty = triviaDifficulty.toStr(),
+                question = question
+            )
 
         if triviaType is TriviaType.MULTIPLE_CHOICE:
             correctAnswer = utils.getStrFromDict(
@@ -253,7 +262,7 @@ class TriviaRepository():
 
         triviaId = utils.getStrFromDict(resultJson, 'id')
         if not utils.isValidStr(triviaId):
-            triviaId = self.__generateTriviaId(category = category, question = question)
+            triviaId = self.__triviaIdGenerator.generate(category = category, question = question)
 
         correctAnswer = utils.getStrFromDict(resultJson, 'answer', clean = True)
         correctAnswers: List[str] = list()
@@ -312,7 +321,12 @@ class TriviaRepository():
         triviaType = TriviaType.fromStr(utils.getStrFromDict(resultJson, 'type'))
         category = utils.getStrFromDict(resultJson, 'category', fallback = '', clean = True, htmlUnescape = True)
         question = utils.getStrFromDict(resultJson, 'question', clean = True, htmlUnescape = True)
-        triviaId = self.__generateTriviaId(category = category, question = question)
+
+        triviaId = self.__triviaIdGenerator.generate(
+            category = category,
+            difficulty = triviaDifficulty.toStr(),
+            question = question
+        )
 
         if triviaType is TriviaType.MULTIPLE_CHOICE:
             correctAnswer = utils.getStrFromDict(
@@ -390,7 +404,7 @@ class TriviaRepository():
 
         triviaId = utils.getStrFromDict(resultJson, 'id')
         if not utils.isValidStr(triviaId):
-            triviaId = self.__generateTriviaId(category = category, question = question)
+            triviaId = self.__triviaIdGenerator.generate(category = category, question = question)
 
         if triviaType is TriviaType.MULTIPLE_CHOICE:
             correctAnswer = utils.getStrFromDict(
@@ -483,19 +497,6 @@ class TriviaRepository():
                 retryCount = retryCount + 1
 
         raise RuntimeError(f'Unable to fetch trivia from {attemptedTriviaSources} after {retryCount} attempts (max attempts is {maxRetryCount})')
-
-    def __generateTriviaId(
-        self,
-        question: str,
-        category: str = None
-    ) -> str:
-        if not utils.isValidStr(question):
-            raise ValueError(f'question argument is malformed: \"{question}\"')
-
-        if utils.isValidStr(category):
-            return hashlib.sha256(f'{category}|{question}'.encode('utf-8')).hexdigest()
-        else:
-            return hashlib.sha256(question.encode('utf-8')).hexdigest()
 
     def __getAvailableTriviaSourcesAndWeights(
         self,
