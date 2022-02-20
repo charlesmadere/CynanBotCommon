@@ -73,7 +73,7 @@
         "type": "multiple"
     },
     {
-        "correctAnswers": [ false ],
+        "correctAnswers": [ true, false ],
         "id": "2jhqepcgegfa",
         "question": "A single human can fight a grizzly bear with a reasonable chance of winning.",
         "type": "boolean"
