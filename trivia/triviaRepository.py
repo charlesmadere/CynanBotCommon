@@ -521,11 +521,11 @@ class TriviaRepository():
 
             triviaSourceJson: Dict[str, object] = triviaSourcesJson[key]
 
-            isEnabled = utils.getBoolFromDict(triviaSourceJson, 'is_enabled')
+            isEnabled = utils.getBoolFromDict(triviaSourceJson, 'is_enabled', False)
             if not isEnabled:
                 continue
 
-            weight = utils.getIntFromDict(triviaSourceJson, 'weight')
+            weight = utils.getIntFromDict(triviaSourceJson, 'weight', 1)
             if weight < 1:
                 raise ValueError(f'triviaSource \"{triviaSource}\" has an invalid weight: \"{weight}\"')
 
