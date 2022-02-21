@@ -16,14 +16,26 @@ class TriviaContentScanner():
 
     def __init__(
         self,
+        maxAnswerLength: int = 75,
+        maxQuestionLength: int = 300,
         bannedWordsFile: str = 'CynanBotCommon/trivia/bannedWords.txt'
     ):
-        if not utils.isValidStr(bannedWordsFile):
+        if not utils.isValidNum(maxAnswerLength):
+            raise ValueError(f'maxAnswerLength argument is malformed: \"{maxAnswerLength}\"')
+        elif maxAnswerLength <= 25:
+            raise ValueError(f'maxAnswerLength is too small: {maxAnswerLength}')
+        elif not utils.isValidNum(maxQuestionLength):
+            raise ValueError(f'maxQuestionLength argument is malformed: \"{maxQuestionLength}\"')
+        elif maxQuestionLength <= 100:
+            raise ValueError(f'maxQuestionLength is too small: {maxQuestionLength}')
+        elif not utils.isValidStr(bannedWordsFile):
             raise ValueError(f'bannedWordsFile argument is malformed: \"{bannedWordsFile}\"')
 
+        self.__maxAnswerLength: int = maxAnswerLength
+        self.__maxQuestionLength: int = maxQuestionLength
         self.__bannedWordsFile: str = bannedWordsFile
 
-    def __readBannedWords(self) -> List[str]:
+    def __readBannedWordsList(self) -> List[str]:
         if not path.exists(self.__bannedWordsFile):
             raise FileNotFoundError(f'Banned Words file not found: \"{self.__bannedWordsFile}\"')
 
@@ -47,14 +59,31 @@ class TriviaContentScanner():
         if question is None:
             return TriviaContentCode.IS_NONE
 
-        bannedWords = self.__readBannedWords()
+        lengthsContentCode = self.__verifyQuestionContentLengths(question)
+        if lengthsContentCode is not TriviaContentCode.OK:
+            return lengthsContentCode
 
+        return self.__verifyQuestionContentSanity(question)
+
+    def __verifyQuestionContentLengths(self, question: AbsTriviaQuestion) -> TriviaContentCode:
+        if len(question.getQuestion()) >= self.__maxQuestionLength:
+            return TriviaContentCode.QUESTION_TOO_LONG
+
+        for response in question.getResponses():
+            if len(response) >= self.__maxAnswerLength:
+                return TriviaContentCode.ANSWER_TOO_LONG
+
+        return TriviaContentCode.OK
+
+    def __verifyQuestionContentSanity(self, question: AbsTriviaQuestion) -> TriviaContentCode:
         strings: List[str] = list()
         strings.append(question.getQuestion().lower())
         strings.append(question.getPrompt().lower())
 
         for response in question.getResponses():
             strings.append(response.lower())
+
+        bannedWords = self.__readBannedWordsList()
 
         for string in strings:
             if not utils.isValidStr(string):
