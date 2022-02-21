@@ -271,7 +271,7 @@ class PokepediaRepository():
 
         if rawResponse.status_code != 200:
             self.__timber.log('PokepediaRepository', f'Encountered non-200 HTTP status code from PokeAPI when searching for \"{name}\" move: \"{rawResponse.status_code}\"')
-            raise RuntimeError(f'Exception occurred due to non-200 HTTP status code from PokeAPI when searching for \"{name}\" move: {rawResponse.status_code}')
+            raise RuntimeError(f'Exception occurred due to non-200 HTTP status code from PokeAPI when searching for \"{name}\" move: \"{rawResponse.status_code}\"')
 
         jsonResponse: Dict[str, object] = None
         try:
@@ -308,7 +308,7 @@ class PokepediaRepository():
 
         if rawResponse.status_code != 200:
             self.__timber.log('PokepediaRepository', f'Encountered non-200 HTTP status code from PokeAPI when searching for \"{name}\" Pokemon: \"{rawResponse.status_code}\"')
-            raise RuntimeError(f'Exception occurred due to non-200 HTTP status code from PokeAPI when searching for \"{name}\" Pokemon: {rawResponse.status_code}')
+            raise RuntimeError(f'Exception occurred due to non-200 HTTP status code from PokeAPI when searching for \"{name}\" Pokemon: \"{rawResponse.status_code}\"')
 
         jsonResponse: Dict[str, object] = None
         try:
