@@ -430,11 +430,11 @@ class TriviaRepository():
 
         answersJson: Dict[str, str] = triviaJson['answers']
         answersList: List[Tuple[str, str]] = list(answersJson.items())
-        answersList.sort(key = lambda entry: entry[0])
+        answersList.sort(key = lambda entry: entry[0].lower())
 
         correctAnswersJson: Dict[str, str] = triviaJson['correct_answers']
         correctAnswersList: List[Tuple[str, str]] = list(correctAnswersJson.items())
-        correctAnswersList.sort(key = lambda entry: entry[0])
+        correctAnswersList.sort(key = lambda entry: entry[0].lower())
 
         if not utils.hasItems(answersList) or not utils.hasItems(correctAnswersList) or len(answersList) != len(correctAnswersList):
             raise ValueError(f'Rejecting Quiz API\'s data due to malformed \"answers\" and/or \"correct_answers\" data: {jsonResponse}')
@@ -451,9 +451,10 @@ class TriviaRepository():
         if not utils.hasItems(correctAnswers):
             raise ValueError(f'Rejecting Quiz API\'s data due there being no correct answers: {jsonResponse}')
 
+        filteredAnswers = list(filter(lambda entry: utils.isValidStr(entry), answersJson.values()))
         multipleChoiceResponses = self.__buildMultipleChoiceResponsesList(
             correctAnswers = correctAnswers,
-            multipleChoiceResponsesJson = answersJson.values()
+            multipleChoiceResponsesJson = filteredAnswers
         )
 
         return MultipleChoiceTriviaQuestion(
