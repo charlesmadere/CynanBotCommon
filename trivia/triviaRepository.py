@@ -386,6 +386,9 @@ class TriviaRepository():
         try:
             rawResponse = requests.get(
                 url = f'https://quizapi.io/api/v1/questions?apiKey={self.__quizApiKey}&limit=1',
+                headers = {
+                    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:97.0) Gecko/20100101 Firefox/97.0' # LOOOOL
+                },
                 timeout = utils.getDefaultTimeout()
             )
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
