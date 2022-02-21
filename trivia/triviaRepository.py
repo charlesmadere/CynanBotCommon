@@ -20,8 +20,6 @@ try:
         MultipleChoiceTriviaQuestion
     from CynanBotCommon.trivia.questionAnswerTriviaQuestion import \
         QuestionAnswerTriviaQuestion
-    from CynanBotCommon.trivia.quizApiTriviaRepository import \
-        QuizApiTriviaRepository
     from CynanBotCommon.trivia.triviaContentCode import TriviaContentCode
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
     from CynanBotCommon.trivia.triviaIdGenerator import TriviaIdGenerator
@@ -40,7 +38,6 @@ except:
         MultipleChoiceTriviaQuestion
     from trivia.questionAnswerTriviaQuestion import \
         QuestionAnswerTriviaQuestion
-    from trivia.quizApiTriviaRepository import QuizApiTriviaRepository
     from trivia.triviaContentCode import TriviaContentCode
     from trivia.triviaDifficulty import TriviaDifficulty
     from trivia.triviaIdGenerator import TriviaIdGenerator
@@ -55,7 +52,6 @@ class TriviaRepository():
     def __init__(
         self,
         localTriviaRepository: LocalTriviaRepository,
-        quizApiTriviaRepository: QuizApiTriviaRepository,
         timber: Timber,
         triviaIdGenerator: TriviaIdGenerator,
         triviaVerifier: TriviaVerifier,
@@ -74,7 +70,6 @@ class TriviaRepository():
             raise ValueError(f'triviaRepositoryFile argument is malformed: \"{triviaRepositoryFile}\"')
 
         self.__localTriviaRepository: LocalTriviaRepository = localTriviaRepository
-        self.__quizApiTriviaRepository: QuizApiTriviaRepository = quizApiTriviaRepository
         self.__timber: Timber = timber
         self.__triviaIdGenerator: TriviaIdGenerator = triviaIdGenerator
         self.__triviaVerifier: TriviaVerifier = triviaVerifier
