@@ -452,7 +452,7 @@ class TriviaRepository():
                 twitchChannel = twitchChannel,
                 isLocalTriviaRepositoryEnabled = isLocalTriviaRepositoryEnabled
             )
-            self.__cacheTime = datetime.utcnow()
+            self.__cacheTime = datetime.now(timezone.utc)
 
         return self.__triviaResponse
 
