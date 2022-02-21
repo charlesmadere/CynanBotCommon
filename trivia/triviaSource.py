@@ -12,6 +12,7 @@ class TriviaSource(Enum):
     J_SERVICE = auto()
     LOCAL_TRIVIA_REPOSITORY = auto()
     OPEN_TRIVIA_DATABASE = auto()
+    QUIZ_API = auto()
     WILL_FRY_TRIVIA_API = auto()
 
     @classmethod
@@ -29,6 +30,8 @@ class TriviaSource(Enum):
             return TriviaSource.LOCAL_TRIVIA_REPOSITORY
         elif text == 'open_trivia':
             return TriviaSource.OPEN_TRIVIA_DATABASE
+        elif text == 'quiz_api':
+            return TriviaSource.QUIZ_API
         elif text == 'will_fry_trivia':
             return TriviaSource.WILL_FRY_TRIVIA_API
         else:
@@ -43,6 +46,8 @@ class TriviaSource(Enum):
             return 'LOCAL_TRIVIA_REPOSITORY'
         elif self is TriviaSource.OPEN_TRIVIA_DATABASE:
             return 'OPEN_TRIVIA_DATABASE'
+        elif self is TriviaSource.QUIZ_API:
+            return 'QUIZ_API'
         elif self is TriviaSource.WILL_FRY_TRIVIA_API:
             return 'WILL_FRY_TRIVIA_API'
         else:
