@@ -3,7 +3,7 @@ import random
 from datetime import datetime, timedelta, timezone
 from json.decoder import JSONDecodeError
 from os import path
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 import requests
 from requests import ConnectionError, HTTPError, Timeout
@@ -55,6 +55,7 @@ class TriviaRepository():
         timber: Timber,
         triviaIdGenerator: TriviaIdGenerator,
         triviaVerifier: TriviaVerifier,
+        quizApiKey: str = None,
         triviaRepositoryFile: str = 'CynanBotCommon/trivia/triviaRepository.json',
         cacheTimeDelta: timedelta = timedelta(minutes = 2, seconds = 30)
     ):
@@ -73,29 +74,32 @@ class TriviaRepository():
         self.__timber: Timber = timber
         self.__triviaIdGenerator: TriviaIdGenerator = triviaIdGenerator
         self.__triviaVerifier: TriviaVerifier = triviaVerifier
+        self.__quizApiKey: str = quizApiKey
         self.__triviaRepositoryFile: str = triviaRepositoryFile
 
         if cacheTimeDelta is None:
             self.__cacheTime = None
         else:    
-            self.__cacheTime = datetime.utcnow() - cacheTimeDelta
+            self.__cacheTime = datetime.now(timezone.utc) - cacheTimeDelta
 
         self.__cacheTimeDelta: timedelta = cacheTimeDelta
         self.__triviaResponse: AbsTriviaQuestion = None
 
     def __buildMultipleChoiceResponsesList(
         self,
-        correctAnswer: str,
+        correctAnswers: List[str],
         multipleChoiceResponsesJson: List[str]
     ) -> List[str]:
-        if not utils.isValidStr(correctAnswer):
-            raise ValueError(f'correctAnswer argument is malformed: \"{correctAnswer}\"')
+        if not utils.hasItems(correctAnswers):
+            raise ValueError(f'correctAnswers argument is malformed: \"{correctAnswers}\"')
         elif not utils.hasItems(multipleChoiceResponsesJson):
             raise ValueError(f'multipleChoiceResponsesJson argument is malformed: \"{multipleChoiceResponsesJson}\"')
 
         maxMultipleChoiceResponses = self.__getMaxMultipleChoiceResponses()
         multipleChoiceResponses: List[str] = list()
-        multipleChoiceResponses.append(correctAnswer)
+
+        for correctAnswer in correctAnswers:
+            multipleChoiceResponses.append(correctAnswer)
 
         # Annoyingly, I've encountered a few situations where we can have a question with more
         # than one of the same multiple choice answers. The below logic takes some steps to make
@@ -202,7 +206,7 @@ class TriviaRepository():
             correctAnswers.append(correctAnswer)
 
             multipleChoiceResponses = self.__buildMultipleChoiceResponsesList(
-                correctAnswer = correctAnswer,
+                correctAnswers = correctAnswers,
                 multipleChoiceResponsesJson = triviaJson['incorrect_answers']
             )
 
@@ -321,7 +325,7 @@ class TriviaRepository():
             self.__timber.log('TriviaRepository', f'Rejecting Open Trivia Database\'s API data due to null/empty contents: {jsonResponse}')
             raise ValueError(f'Rejecting Open Trivia Database\'s API data due to null/empty contents: {jsonResponse}')
 
-        triviaDifficulty = TriviaDifficulty.fromStr(resultJson.get('difficulty'))
+        triviaDifficulty = TriviaDifficulty.fromStr(utils.getStrFromDict(resultJson, 'difficulty', fallback = ''))
         triviaType = TriviaType.fromStr(utils.getStrFromDict(resultJson, 'type'))
         category = utils.getStrFromDict(resultJson, 'category', fallback = '', clean = True, htmlUnescape = True)
         question = utils.getStrFromDict(resultJson, 'question', clean = True, htmlUnescape = True)
@@ -343,7 +347,7 @@ class TriviaRepository():
             correctAnswers.append(correctAnswer)
 
             multipleChoiceResponses = self.__buildMultipleChoiceResponsesList(
-                correctAnswer = correctAnswer,
+                correctAnswers = correctAnswers,
                 multipleChoiceResponsesJson = resultJson['incorrect_answers']
             )
 
@@ -372,8 +376,95 @@ class TriviaRepository():
         else:
             raise ValueError(f'triviaType \"{triviaType}\" is not supported for Open Trivia Database: {jsonResponse}')
 
+    def __fetchTriviaQuestionFromQuizApi(self) -> AbsTriviaQuestion:
+        self.__timber.log('TriviaRepository', 'Fetching trivia question from Quiz API...')
+
+        if not utils.isValidStr(self.__quizApiKey):
+            raise RuntimeError(f'Can\'t fetch trivia question from Quiz API with a malformed key: \"{self.__quizApiKey}\"')
+
+        rawResponse = None
+        try:
+            rawResponse = requests.get(
+                url = f'https://quizapi.io/api/v1/questions?apiKey={self.__quizApiKey}&limit=1',
+                timeout = utils.getDefaultTimeout()
+            )
+        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
+            self.__timber.log('TriviaRepository', f'Exception occurred when attempting to fetch trivia from Quiz API: {e}')
+            return None
+
+        if rawResponse.status_code != 200:
+            self.__timber.log('TriviaRepository', f'Encountered non-200 HTTP status code from Quiz API: \"{rawResponse.status_code}\"')
+            raise RuntimeError(f'Exception occurred due to non-200 HTTP status code from Quiz API: \"{rawResponse.status_code}\"')
+
+        jsonResponse: Dict[str, object] = None
+        try:
+            jsonResponse = rawResponse.json()
+        except JSONDecodeError as e:
+            self.__timber.log('TriviaRepository', f'Exception occurred when attempting to decode Quiz API\'s response into JSON: {e}')
+            raise RuntimeError(f'Exception occurred when attempting to decode Quiz API\'s response into JSON: {e}')
+
+        if not utils.hasItems(jsonResponse):
+            self.__timber.log('TriviaRepository', f'Rejecting Quiz API data due to null/empty contents: {jsonResponse}')
+            raise ValueError(f'Rejecting Quiz API data due to null/empty contents: {jsonResponse}')
+
+        triviaJson: Dict[str, object] = jsonResponse[0]
+
+        if not utils.hasItems(triviaJson):
+            self.__timber.log('TriviaRepository', f'Rejecting Quiz API\'s data due to null/empty contents: {jsonResponse}')
+            raise ValueError(f'Rejecting Quiz API\'s data due to null/empty contents: {jsonResponse}')
+
+        triviaDifficulty = TriviaDifficulty.fromStr(utils.getStrFromDict(triviaJson, 'difficulty', fallback = ''))
+        category = utils.getStrFromDict(triviaJson, 'category', fallback = '', clean = True)
+        question = utils.getStrFromDict(triviaJson, 'question', clean = True)
+
+        triviaId = utils.getStrFromDict(triviaJson, 'id')
+        if not utils.isValidStr(triviaId):
+            triviaId = self.__triviaIdGenerator.generate(
+                category = category,
+                difficulty = triviaDifficulty.toStr(),
+                question = question
+            )
+
+        answersJson: Dict[str, str] = triviaJson['answers']
+        answersList: List[Tuple[str, str]] = list(answersJson.items())
+        answersList.sort(key = lambda entry: entry[0])
+
+        correctAnswersJson: Dict[str, str] = triviaJson['correct_answers']
+        correctAnswersList: List[Tuple[str, str]] = list(correctAnswersJson.items())
+        correctAnswersList.sort(key = lambda entry: entry[0])
+
+        if not utils.hasItems(answersList) or not utils.hasItems(correctAnswersList) or len(answersList) != len(correctAnswersList):
+            raise ValueError(f'Rejecting Quiz API\'s data due to malformed \"answers\" and/or \"correct_answers\" data: {jsonResponse}')
+
+        correctAnswers: List[str] = list()
+
+        for index, pair in enumerate(answersList):
+            if utils.isValidStr(pair[0]) and utils.isValidStr(pair[1]):
+                correctAnswerPair: Tuple[str, str] = correctAnswersList[index]
+
+                if utils.strToBool(correctAnswerPair[1]):
+                    correctAnswers.append(pair[1])
+
+        if not utils.hasItems(correctAnswers):
+            raise ValueError(f'Rejecting Quiz API\'s data due there being no correct answers: {jsonResponse}')
+
+        multipleChoiceResponses = self.__buildMultipleChoiceResponsesList(
+            correctAnswers = correctAnswers,
+            multipleChoiceResponsesJson = answersJson.values()
+        )
+
+        return MultipleChoiceTriviaQuestion(
+            correctAnswers = correctAnswers,
+            multipleChoiceResponses = multipleChoiceResponses,
+            category = category,
+            question = question,
+            triviaId = triviaId,
+            triviaDifficulty = triviaDifficulty,
+            triviaSource = TriviaSource.QUIZ_API
+        )
+
     def __fetchTriviaQuestionFromWillFryTriviaApi(self) -> AbsTriviaQuestion:
-        self.__timber.log('TriviaRepository', f'Fetching trivia question from Will Fry Trivia API...')
+        self.__timber.log('TriviaRepository', 'Fetching trivia question from Will Fry Trivia API...')
 
         rawResponse = None
         try:
@@ -421,7 +512,7 @@ class TriviaRepository():
             correctAnswers.append(correctAnswer)
 
             multipleChoiceResponses = self.__buildMultipleChoiceResponsesList(
-                correctAnswer = correctAnswer,
+                correctAnswers = correctAnswers,
                 multipleChoiceResponsesJson = resultJson['incorrectAnswers']
             )
 
@@ -447,12 +538,14 @@ class TriviaRepository():
         elif not utils.isValidBool(isLocalTriviaRepositoryEnabled):
             raise ValueError(f'isLocalTriviaRepositoryEnabled argument is malformed: \"{isLocalTriviaRepositoryEnabled}\"')
 
-        if self.__cacheTimeDelta is None or self.__cacheTime is None or self.__cacheTime + self.__cacheTimeDelta < datetime.utcnow() or self.__triviaResponse is None:
+        now = datetime.now(timezone.utc)
+
+        if self.__cacheTimeDelta is None or self.__cacheTime is None or self.__cacheTime + self.__cacheTimeDelta < now or self.__triviaResponse is None:
             self.__triviaResponse = self.__fetchTrivia(
                 twitchChannel = twitchChannel,
                 isLocalTriviaRepositoryEnabled = isLocalTriviaRepositoryEnabled
             )
-            self.__cacheTime = datetime.now(timezone.utc)
+            self.__cacheTime = now
 
         return self.__triviaResponse
 
@@ -486,6 +579,8 @@ class TriviaRepository():
                 triviaQuestion = self.__fetchTriviaQuestionFromLocalTriviaRepository()
             elif triviaSource is TriviaSource.OPEN_TRIVIA_DATABASE:
                 triviaQuestion = self.__fetchTriviaQuestionFromOpenTriviaDatabase()
+            elif triviaSource is TriviaSource.QUIZ_API:
+                triviaQuestion = self.__fetchTriviaQuestionFromQuizApi()
             elif triviaSource is TriviaSource.WILL_FRY_TRIVIA_API:
                 triviaQuestion = self.__fetchTriviaQuestionFromWillFryTriviaApi()
             else:
@@ -517,6 +612,8 @@ class TriviaRepository():
             triviaSource = TriviaSource.fromStr(key)
 
             if triviaSource is TriviaSource.LOCAL_TRIVIA_REPOSITORY and not isLocalTriviaRepositoryEnabled:
+                continue
+            elif triviaSource is TriviaSource.QUIZ_API and not utils.isValidStr(self.__quizApiKey):
                 continue
 
             triviaSourceJson: Dict[str, object] = triviaSourcesJson[key]
