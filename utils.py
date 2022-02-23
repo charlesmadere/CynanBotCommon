@@ -184,15 +184,6 @@ def getIntFromDict(d: dict, key: str, fallback: int = None) -> int:
 
     return value
 
-def getNowTimeText(includeSeconds: bool = False) -> str:
-    if not isValidBool(includeSeconds):
-        raise ValueError(f'includeSeconds argument is malformed: \"{includeSeconds}\"')
-
-    return formatTimeShort(
-        time = datetime.now(),
-        includeSeconds = includeSeconds
-    )
-
 def getRandomSpaceEmoji() -> str:
     spaceEmoji = [ '🚀', '👾', '☄️', '🌌', '👨‍🚀', '👩‍🚀', '👽', '🌠' ]
     return random.choice(spaceEmoji)
