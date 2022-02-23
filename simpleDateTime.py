@@ -1,25 +1,16 @@
 from datetime import datetime, timezone
 
-try:
-    import CynanBotCommon.utils as utils
-except:
-    import utils
-
 
 class SimpleDateTime():
 
     def __init__(
         self,
-        useLocalTime: bool = False
+        timeZone: timezone = timezone.utc
     ):
-        if not utils.isValidBool(useLocalTime):
-            raise ValueError(f'useLocalTime argument is malformed: \"{useLocalTime}\"')
+        if timeZone is None:
+            raise ValueError(f'timeZone argument is malformed: \"{timeZone}\"')
 
-        now: datetime = None
-        if useLocalTime:
-            now = datetime.now()
-        else:
-            now = datetime.now(timezone.utc)
+        now: datetime = datetime.now(timeZone)
 
         self.__year: str = now.strftime('%Y')
         self.__month: str = now.strftime('%m')
