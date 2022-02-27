@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List
 
 import requests
@@ -39,14 +39,14 @@ class AnalogueStoreRepository():
 
         self.__timber: Timber = timber
         self.__storeUrl: str = storeUrl
-        self.__cacheTime = datetime.utcnow() - cacheTimeDelta
+        self.__cacheTime = datetime.now(timezone.utc) - cacheTimeDelta
         self.__cacheTimeDelta: timedelta = cacheTimeDelta
         self.__storeStock: AnalogueStoreStock = None
 
     def fetchStoreStock(self) -> AnalogueStoreStock:
-        if self.__cacheTime + self.__cacheTimeDelta < datetime.utcnow() or self.__storeStock is None:
+        if self.__cacheTime + self.__cacheTimeDelta < datetime.now(timezone.utc) or self.__storeStock is None:
             self.__storeStock = self.__fetchStoreStock()
-            self.__cacheTime = datetime.utcnow()
+            self.__cacheTime = datetime.now(timezone.utc)
 
         return self.__storeStock
 

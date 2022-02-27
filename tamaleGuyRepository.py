@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from json.decoder import JSONDecodeError
 from typing import Dict, List
 
@@ -112,13 +112,13 @@ class TamaleGuyRepository():
         self.__timber: Timber = timber
         self.__cacheTimeDelta: timedelta = cacheTimeDelta
 
-        self.__cacheTime = datetime.utcnow() - cacheTimeDelta
+        self.__cacheTime = datetime.now(timezone.utc) - cacheTimeDelta
         self.__storeStock: TamaleGuyStoreStock = None
 
     def fetchStoreStock(self) -> TamaleGuyStoreStock:
-        if self.__cacheTime + self.__cacheTimeDelta < datetime.utcnow() or self.__storeStock is None:
+        if self.__cacheTime + self.__cacheTimeDelta < datetime.now(timezone.utc) or self.__storeStock is None:
             self.__storeStock = self.__refreshStoreStock()
-            self.__cacheTime = datetime.utcnow()
+            self.__cacheTime = datetime.now(timezone.utc)
 
         return self.__storeStock
 

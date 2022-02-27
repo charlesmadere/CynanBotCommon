@@ -1,5 +1,5 @@
 import re
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, Pattern
 
 try:
@@ -220,7 +220,7 @@ class TriviaGameRepository():
         if answerTime is None:
             return False
 
-        return answerTime + timedelta(seconds = seconds) > datetime.utcnow()
+        return answerTime + timedelta(seconds = seconds) > datetime.now(timezone.utc)
 
     def setAnswered(self, twitchChannel: str):
         if not utils.isValidStr(twitchChannel):

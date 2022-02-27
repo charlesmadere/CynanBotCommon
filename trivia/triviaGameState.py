@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 try:
     import CynanBotCommon.utils as utils
@@ -64,6 +64,6 @@ class TriviaGameState():
             raise ValueError(f'userNameThatRedeemed argument is malformed: \"{userNameThatRedeemed}\"')
 
         self.__isAnswered = False
-        self.__answerTime = datetime.utcnow()
+        self.__answerTime = datetime.now(timezone.utc)
         self.__userIdThatRedeemed = userIdThatRedeemed
         self.__userNameThatRedeemed = userNameThatRedeemed

@@ -1,7 +1,7 @@
 import asyncio
 import json
 from asyncio import AbstractEventLoop
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from queue import SimpleQueue
 from typing import Dict
 
@@ -138,7 +138,7 @@ class WebsocketConnectionServer():
                     timeout = self.__eventQueueBlockTimeoutSeconds
                 )
 
-                if event.getEventTime() + self.__eventTimeToLive >= datetime.utcnow():
+                if event.getEventTime() + self.__eventTimeToLive >= datetime.now(timezone.utc):
                     eventJson = json.dumps(event.getEventData())
                     await websocket.send(eventJson)
 
