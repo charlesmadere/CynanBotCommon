@@ -244,6 +244,9 @@ def isValidUrl(s: str) -> bool:
     url = parsed.geturl()
     return isValidStr(url)
 
+def randomBool() -> bool:
+    return bool(random.getrandbits(1))
+
 def removePreceedingAt(s: str) -> str:
     if not isValidStr(s):
         return s
