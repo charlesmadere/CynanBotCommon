@@ -46,11 +46,9 @@ class MultipleChoiceTriviaQuestion(AbsTriviaQuestion):
 
     def getCorrectAnswers(self) -> List[str]:
         answerStrings: List[str] = list()
-        index: int = 0
 
-        for correctAnswerChar in self.getCorrectAnswerChars():
+        for index, correctAnswerChar in enumerate(self.getCorrectAnswerChars()):
             answerStrings.append(f'[{correctAnswerChar}] {self.__correctAnswers[index]}')
-            index = index + 1
 
         return answerStrings
 
