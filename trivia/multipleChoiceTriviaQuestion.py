@@ -44,12 +44,6 @@ class MultipleChoiceTriviaQuestion(AbsTriviaQuestion):
         self.__correctAnswers: List[str] = correctAnswers
         self.__multipleChoiceResponses: List[str] = multipleChoiceResponses
 
-    def getAnswerReveal(self, delimiter: str = ' ') -> str:
-        if delimiter is None:
-            raise ValueError(f'delimiter argument is malformed: \"{delimiter}\"')
-
-        return delimiter.join(self.getCorrectAnswers())
-
     def getCorrectAnswers(self) -> List[str]:
         answerStrings: List[str] = list()
         index: int = 0
