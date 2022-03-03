@@ -43,13 +43,6 @@ class AbsTriviaQuestion(ABC):
         self.__triviaSource: TriviaSource = triviaSource
         self.__triviaType: TriviaType = triviaType
 
-    def getAnswerReveal(self, delimiter: str = ', ') -> str:
-        if delimiter is None:
-            raise ValueError(f'delimiter argument is malformed: \"{delimiter}\"')
-
-        correctAnswers = self.getCorrectAnswers()
-        return delimiter.join(correctAnswers)
-
     def getCategory(self) -> str:
         return self.__category
 
