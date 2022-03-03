@@ -77,15 +77,12 @@ class MultipleChoiceTriviaQuestion(AbsTriviaQuestion):
 
     def getCorrectAnswerOrdinals(self) -> List[int]:
         ordinals: List[int] = list()
-        index: int = 0
 
-        for multipleChoiceResponse in self.__multipleChoiceResponses:
+        for index, multipleChoiceResponse in enumerate(self.__multipleChoiceResponses):
             for correctAnswer in self.__correctAnswers:
                 if multipleChoiceResponse == correctAnswer:
                     ordinals.append(index)
                     break
-
-            index = index + 1
 
         if not utils.hasItems(ordinals):
             raise RuntimeError(f'Couldn\'t find any correct answer ordinals within \"{self.__correctAnswers}\"!')
