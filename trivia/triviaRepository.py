@@ -449,7 +449,7 @@ class TriviaRepository():
                     correctAnswers.append(pair[1])
 
         if not utils.hasItems(correctAnswers):
-            raise ValueError(f'Rejecting Quiz API\'s data due there being no correct answers: {jsonResponse}')
+            raise ValueError(f'Rejecting Quiz API\'s data due to there being no correct answers: {jsonResponse}')
 
         filteredAnswers = list(filter(lambda entry: utils.isValidStr(entry), answersJson.values()))
         multipleChoiceResponses = self.__buildMultipleChoiceResponsesList(
