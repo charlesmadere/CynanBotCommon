@@ -440,9 +440,11 @@ class TriviaRepository():
             raise ValueError(f'Rejecting Quiz API\'s data due to malformed \"answers\" and/or \"correct_answers\" data: {jsonResponse}')
 
         correctAnswers: List[str] = list()
+        filteredAnswers: List[str] = list()
 
         for index, pair in enumerate(answersList):
             if utils.isValidStr(pair[0]) and utils.isValidStr(pair[1]):
+                filteredAnswers.append(pair[1])
                 correctAnswerPair: Tuple[str, str] = correctAnswersList[index]
 
                 if utils.strToBool(correctAnswerPair[1]):
@@ -451,7 +453,6 @@ class TriviaRepository():
         if not utils.hasItems(correctAnswers):
             raise ValueError(f'Rejecting Quiz API\'s data due to there being no correct answers: {jsonResponse}')
 
-        filteredAnswers = list(filter(lambda entry: utils.isValidStr(entry), answersJson.values()))
         multipleChoiceResponses = self.__buildMultipleChoiceResponsesList(
             correctAnswers = correctAnswers,
             multipleChoiceResponsesJson = filteredAnswers
