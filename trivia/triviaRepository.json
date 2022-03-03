@@ -1,6 +1,6 @@
 {
     "max_multiple_choice_responses": 5,
-    "max_retry_count": 3,
+    "max_retry_count": 5,
     "min_multiple_choice_responses": 2,
     "trivia_sources": {
         "bongo": {
@@ -21,7 +21,7 @@
         },
         "quiz_api": {
             "is_enabled": true,
-            "weight": 100
+            "weight": 90
         },
         "will_fry_trivia": {
             "is_enabled": true,
