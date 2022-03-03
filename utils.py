@@ -184,6 +184,12 @@ def getIntFromDict(d: dict, key: str, fallback: int = None) -> int:
 
     return value
 
+def getIntMaxSafeSize() -> int:
+    return 2147483647
+
+def getIntMinSafeSize() -> int:
+    return -2147483648
+
 def getRandomSpaceEmoji() -> str:
     spaceEmoji = [ '🚀', '👾', '☄️', '🌌', '👨‍🚀', '👩‍🚀', '👽', '🌠' ]
     return random.choice(spaceEmoji)
