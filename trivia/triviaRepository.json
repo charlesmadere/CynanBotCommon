@@ -21,7 +21,7 @@
         },
         "quiz_api": {
             "is_enabled": true,
-            "weight": 90
+            "weight": 75
         },
         "will_fry_trivia": {
             "is_enabled": true,
