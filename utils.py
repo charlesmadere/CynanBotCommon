@@ -185,10 +185,22 @@ def getIntFromDict(d: dict, key: str, fallback: int = None) -> int:
     return value
 
 def getIntMaxSafeSize() -> int:
+    # Taken from Java's Integer.MAX_VALUE constant.
     return 2147483647
 
 def getIntMinSafeSize() -> int:
+    # Taken from Java's Integer.MIN_VALUE constant.
     return -2147483648
+
+def getLongMaxSafeSize() -> int:
+    # Taken from Java's Long.MAX_VALUE constant. This seems to also be exactly identical to
+    # SQLite's maximum INTEGER size (8 bytes, signed).
+    return 9223372036854775807
+
+def getLongMinSafeSize() -> int:
+    # Taken from Java's Long.MIN_VALUE constant. This seems to also be exactly identical to
+    # SQLite's minimum INTEGER size (8 bytes, signed).
+    return -9223372036854775808
 
 def getRandomSpaceEmoji() -> str:
     spaceEmoji: List[str] = [ '🚀', '👾', '☄️', '🌌', '👨‍🚀', '👩‍🚀', '👽', '🌠' ]
