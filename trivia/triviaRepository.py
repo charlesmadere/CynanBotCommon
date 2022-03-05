@@ -165,6 +165,10 @@ class TriviaRepository():
             self.__timber.log('TriviaRepository', f'Exception occurred when attempting to fetch trivia from Bongo: {e}')
             return None
 
+        if rawResponse.status_code != 200:
+            self.__timber.log('TriviaRepository', f'Encountered non-200 HTTP status code from Bongo: \"{rawResponse.status_code}\"')
+            return None
+
         jsonResponse: List[Dict[str, object]] = None
         try:
             jsonResponse = rawResponse.json()
@@ -248,6 +252,10 @@ class TriviaRepository():
             self.__timber.log('TriviaRepository', f'Exception occurred when attempting to fetch trivia from jService: {e}')
             return None
 
+        if rawResponse.status_code != 200:
+            self.__timber.log('TriviaRepository', f'Encountered non-200 HTTP status code from jService: \"{rawResponse.status_code}\"')
+            return None
+
         jsonResponse: List[Dict[str, object]] = None
         try:
             jsonResponse = rawResponse.json()
@@ -300,6 +308,10 @@ class TriviaRepository():
             )
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
             self.__timber.log('TriviaRepository', f'Exception occurred when attempting to fetch trivia from Open Trivia Database: {e}')
+            return None
+
+        if rawResponse.status_code != 200:
+            self.__timber.log('TriviaRepository', f'Encountered non-200 HTTP status code from Open Trivia Database: \"{rawResponse.status_code}\"')
             return None
 
         jsonResponse: Dict[str, object] = None
@@ -479,6 +491,10 @@ class TriviaRepository():
             )
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
             self.__timber.log('TriviaRepository', f'Exception occurred when attempting to fetch trivia from Will Fry Trivia API: {e}')
+            return None
+
+        if rawResponse.status_code != 200:
+            self.__timber.log('TriviaRepository', f'Encountered non-200 HTTP status code from Will Fry Trivia API: \"{rawResponse.status_code}\"')
             return None
 
         jsonResponse: Dict[str, object] = None
