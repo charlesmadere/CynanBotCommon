@@ -397,7 +397,7 @@ class TriviaRepository():
 
         if rawResponse.status_code != 200:
             self.__timber.log('TriviaRepository', f'Encountered non-200 HTTP status code from Quiz API: \"{rawResponse.status_code}\"')
-            raise RuntimeError(f'Exception occurred due to non-200 HTTP status code from Quiz API: \"{rawResponse.status_code}\"')
+            return None
 
         jsonResponse: Dict[str, object] = None
         try:
