@@ -191,7 +191,7 @@ def getIntMinSafeSize() -> int:
     return -2147483648
 
 def getRandomSpaceEmoji() -> str:
-    spaceEmoji = [ '🚀', '👾', '☄️', '🌌', '👨‍🚀', '👩‍🚀', '👽', '🌠' ]
+    spaceEmoji: List[str] = [ '🚀', '👾', '☄️', '🌌', '👨‍🚀', '👩‍🚀', '👽', '🌠' ]
     return random.choice(spaceEmoji)
 
 def getStrFromDateTime(dt: datetime) -> str:
