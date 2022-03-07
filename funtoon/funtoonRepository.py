@@ -90,6 +90,7 @@ class FuntoonRepository():
             )
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
             self.__timber.log('FuntoonRepository', f'Exception occurred when attempting to hit Funtoon API \"{url}\" for \"{twitchChannel}\" for event \"{event}\" with JSON payload: {jsonPayload}, and exception: {e}')
+            return False
 
         if rawResponse is not None and rawResponse.status_code == 200:
             if self.__isDebugLoggingEnabled():
@@ -97,7 +98,7 @@ class FuntoonRepository():
 
             return True
         else:
-            self.__timber.log('FuntoonRepository', f'Error when hitting Funtoon API \"{url}\" for \"{twitchChannel}\" for evebt \"{event}\" with token \"{funtoonToken}\" with JSON payload: {jsonPayload}, rawResponse: \"{rawResponse}\"')
+            self.__timber.log('FuntoonRepository', f'Error when hitting Funtoon API \"{url}\" for \"{twitchChannel}\" for event \"{event}\" with token \"{funtoonToken}\" with JSON payload: {jsonPayload}, rawResponse: \"{rawResponse}\"')
             return False
 
     def __isDebugLoggingEnabled(self) -> bool:
@@ -115,6 +116,7 @@ class FuntoonRepository():
         funtoonToken = self.getFuntoonToken(twitchChannel)
 
         if not utils.isValidStr(funtoonToken):
+            self.__timber.log('FuntoonRepository', f'Can\'t perform pkmnBattle as twitchChannel \"{twitchChannel}\" has no Funtoon token: \"{funtoonToken}\"')
             return False
 
         return self.__hitFuntoon(
@@ -141,6 +143,7 @@ class FuntoonRepository():
         funtoonToken = self.getFuntoonToken(twitchChannel)
 
         if not utils.isValidStr(funtoonToken):
+            self.__timber.log('FuntoonRepository', f'Can\'t perform pkmnCatch as twitchChannel \"{twitchChannel}\" has no Funtoon token: \"{funtoonToken}\"')
             return False
 
         data = None
@@ -168,6 +171,7 @@ class FuntoonRepository():
         funtoonToken = self.getFuntoonToken(twitchChannel)
 
         if not utils.isValidStr(funtoonToken):
+            self.__timber.log('FuntoonRepository', f'Can\'t perform pkmnGiveEvolve as twitchChannel \"{twitchChannel}\" has no Funtoon token: \"{funtoonToken}\"')
             return False
 
         return self.__hitFuntoon(
@@ -186,6 +190,7 @@ class FuntoonRepository():
         funtoonToken = self.getFuntoonToken(twitchChannel)
 
         if not utils.isValidStr(funtoonToken):
+            self.__timber.log('FuntoonRepository', f'Can\'t perform pkmnGiveShiny as twitchChannel \"{twitchChannel}\" has no Funtoon token: \"{funtoonToken}\"')
             return False
 
         return self.__hitFuntoon(
