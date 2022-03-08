@@ -101,5 +101,37 @@
         "id": "D2r2kFuMNpKh",
         "question": "InternetBound once defeated a horse by placing a saddle on its back.",
         "type": "boolean"
+    },
+    {
+        "correctAnswers": [ "staying on the ground" ],
+        "id": "qXlcAFddsYOr",
+        "question": "In NEStroid, what is the optimal way for a flying enemy to attack you?",
+        "responses": [ "diving from above", "flanking from the rear", "staying on the ground" ],
+        "type": "multiple"
+    },
+    {
+        "correctAnswers": [ true ],
+        "id": "ffXOxJwV8MNU",
+        "question": "Imyt once hit Charles in the face during an intense game of Family Feud.",
+        "type": "boolean"
+    },
+    {
+        "correctAnswers": [ "FRAMES", "GRIMES" ],
+        "id": "7PrJqhNLrOE0",
+        "question": "Complete the following phrase: PICTURE ______",
+        "responses": [ "FRAMES", "GRIMES" ],
+        "type": "multiple"
+    },
+    {
+        "correctAnswers": [ true ],
+        "id": "RvM8MrUE7yCj",
+        "question": "Stashiocat once tried to break CynanBot after Charles explicitly said not to.",
+        "type": "boolean"
+    },
+    {
+        "correctAnswers": [ true ],
+        "id": "XF0JuQOyEh2a",
+        "question": "The most popular speedrun category for the SNES game Lethal Weapon is Shark dupe%.",
+        "type": "boolean"
     }
 ]
