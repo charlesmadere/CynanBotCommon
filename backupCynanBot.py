@@ -5,7 +5,8 @@ from shutil import SameFileError
 
 
 def find_files(src):
-    relevant_files = []
+    relevant_files = list()
+
     for root, dirs, files in os.walk(src):
         relevant_files.extend(os.path.join(root, f) for f in files
             if f.endswith(".json") or f.endswith(".sqlite"))
@@ -20,14 +21,16 @@ def copy_files(dest, file_list):
         try:
             shutil.copy2(file, dir)
         except SameFileError as e:
-            print(f'Encountered crazy copy error with file \"{file}\" in dir \"{dir}\"')
+            print(f'Encountered crazy copy error with file \"{file}\" in dir \"{dir}\": {e}')
 
 def main():
     args = sys.argv[1:]
 
-    if not args:
+    if not args or len(args) < 2:
         print("./backupCynanBot.py <src> <dest>")
         sys.exit(1)
+
+    print(f'Copying from {args[0]} to {args[1]}')
 
     file_list = find_files(args[0])
     copy_files(args[1], file_list)
