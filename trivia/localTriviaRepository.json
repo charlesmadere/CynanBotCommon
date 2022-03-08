@@ -133,5 +133,12 @@
         "id": "XF0JuQOyEh2a",
         "question": "The most popular speedrun category for the SNES game Lethal Weapon is Shark dupe%.",
         "type": "boolean"
+    },
+    {
+        "correctAnswers": [ "2019", "Stashiocat never stopped bullying" ],
+        "id": "jN8Pac73Mlaq",
+        "question": "What year did stashiocat retire from bullying?",
+        "responses": [ "2017", "2019", "2020", "Stashiocat never stopped bullying" ],
+        "type": "multiple"
     }
 ]
