@@ -9,7 +9,7 @@
         },
         "j_service": {
             "is_enabled": false,
-            "weight": 25
+            "weight": 20
         },
         "local_trivia": {
             "is_enabled": true,
@@ -21,7 +21,7 @@
         },
         "quiz_api": {
             "is_enabled": true,
-            "weight": 75
+            "weight": 30
         },
         "will_fry_trivia": {
             "is_enabled": true,
