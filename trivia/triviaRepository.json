@@ -5,11 +5,11 @@
     "trivia_sources": {
         "bongo": {
             "is_enabled": true,
-            "weight": 175
+            "weight": 400
         },
         "j_service": {
             "is_enabled": false,
-            "weight": 20
+            "weight": 50
         },
         "local_trivia": {
             "is_enabled": true,
@@ -17,15 +17,15 @@
         },
         "open_trivia": {
             "is_enabled": true,
-            "weight": 200
+            "weight": 500
         },
         "quiz_api": {
             "is_enabled": true,
-            "weight": 30
+            "weight": 25
         },
         "will_fry_trivia": {
             "is_enabled": true,
-            "weight": 150
+            "weight": 300
         }
     }
 }
