@@ -9,7 +9,7 @@
         },
         "j_service": {
             "is_enabled": false,
-            "weight": 50
+            "weight": 25
         },
         "local_trivia": {
             "is_enabled": true,
