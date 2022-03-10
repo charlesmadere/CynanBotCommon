@@ -57,7 +57,7 @@ class LocalTriviaRepository():
                 correctAnswers = correctAnswers,
                 multipleChoiceResponses = multipleChoiceResponses,
                 category = category,
-                _id = triviaId,
+                triviaId = triviaId,
                 question = question,
                 triviaDifficulty = triviaDifficulty,
                 triviaSource = TriviaSource.LOCAL_TRIVIA_REPOSITORY
@@ -68,7 +68,7 @@ class LocalTriviaRepository():
             return QuestionAnswerTriviaQuestion(
                 correctAnswers = correctAnswers,
                 category = category,
-                _id = triviaId,
+                triviaId = triviaId,
                 question = question,
                 triviaDifficulty = triviaDifficulty,
                 triviaSource = TriviaSource.LOCAL_TRIVIA_REPOSITORY
