@@ -94,6 +94,7 @@ class TriviaHistoryRepository():
 
         if questionDateTime + self.__minimumTimeDelta >= nowDateTime:
             cursor.close()
+            self.__timber.log('TriviaHistoryRepository', f'Encountered duplicate triviaHistory entry for triviaId:{triviaId} triviaSource:{triviaSource} twitchChannel:{twitchChannel} that is within the window of being a repeat (now:{nowDateTimeStr}) (db:{questionDateTimeStr})')
             return TriviaContentCode.REPEAT
 
         cursor.execute(
