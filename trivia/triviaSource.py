@@ -9,8 +9,8 @@ except:
 class TriviaSource(Enum):
 
     BONGO = auto()
+    JOKE_TRIVIA_REPOSITORY = auto()
     J_SERVICE = auto()
-    LOCAL_TRIVIA_REPOSITORY = auto()
     OPEN_TRIVIA_DATABASE = auto()
     QUIZ_API = auto()
     WILL_FRY_TRIVIA_API = auto()
@@ -24,10 +24,10 @@ class TriviaSource(Enum):
 
         if text == 'bongo':
             return TriviaSource.BONGO
+        elif text == 'joke_trivia_repository':
+            return TriviaSource.JOKE_TRIVIA_REPOSITORY
         elif text == 'j_service':
             return TriviaSource.J_SERVICE
-        elif text == 'local_trivia':
-            return TriviaSource.LOCAL_TRIVIA_REPOSITORY
         elif text == 'open_trivia':
             return TriviaSource.OPEN_TRIVIA_DATABASE
         elif text == 'quiz_api':
@@ -40,10 +40,10 @@ class TriviaSource(Enum):
     def toStr(self) -> str:
         if self is TriviaSource.BONGO:
             return 'BONGO'
+        elif self is TriviaSource.JOKE_TRIVIA_REPOSITORY:
+            return 'JOKE_TRIVIA_REPOSITORY'
         elif self is TriviaSource.J_SERVICE:
             return 'J_SERVICE'
-        elif self is TriviaSource.LOCAL_TRIVIA_REPOSITORY:
-            return 'LOCAL_TRIVIA_REPOSITORY'
         elif self is TriviaSource.OPEN_TRIVIA_DATABASE:
             return 'OPEN_TRIVIA_DATABASE'
         elif self is TriviaSource.QUIZ_API:

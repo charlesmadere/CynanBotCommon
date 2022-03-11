@@ -7,13 +7,13 @@
             "is_enabled": true,
             "weight": 400
         },
+        "joke_trivia_repository": {
+            "is_enabled": true,
+            "weight": 10
+        },
         "j_service": {
             "is_enabled": false,
             "weight": 25
-        },
-        "local_trivia": {
-            "is_enabled": true,
-            "weight": 10
         },
         "open_trivia": {
             "is_enabled": true,

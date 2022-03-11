@@ -1,8 +1,6 @@
-import json
 import random
 from datetime import datetime, timedelta, timezone
 from json.decoder import JSONDecodeError
-from os import path
 from typing import Dict, List, Tuple
 
 import requests
@@ -14,8 +12,9 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
-    from CynanBotCommon.trivia.localTriviaRepository import \
-        LocalTriviaRepository
+    from CynanBotCommon.trivia.generalTriviaSettingsRepository import \
+        GeneralTriviaSettingsRepository
+    from CynanBotCommon.trivia.jokeTriviaRepository import JokeTriviaRepository
     from CynanBotCommon.trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
     from CynanBotCommon.trivia.questionAnswerTriviaQuestion import \
@@ -33,7 +32,9 @@ except:
     from timber.timber import Timber
 
     from trivia.absTriviaQuestion import AbsTriviaQuestion
-    from trivia.localTriviaRepository import LocalTriviaRepository
+    from trivia.generalTriviaSettingsRepository import \
+        GeneralTriviaSettingsRepository
+    from trivia.jokeTriviaRepository import JokeTriviaRepository
     from trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
     from trivia.questionAnswerTriviaQuestion import \
@@ -51,31 +52,29 @@ class TriviaRepository():
 
     def __init__(
         self,
-        localTriviaRepository: LocalTriviaRepository,
+        generalTriviaSettingsRepository: GeneralTriviaSettingsRepository,
+        jokeTriviaRepository: JokeTriviaRepository,
         timber: Timber,
         triviaIdGenerator: TriviaIdGenerator,
         triviaVerifier: TriviaVerifier,
-        quizApiKey: str = None,
-        triviaRepositoryFile: str = 'CynanBotCommon/trivia/triviaRepository.json',
         cacheTimeDelta: timedelta = timedelta(minutes = 2, seconds = 30)
     ):
-        if localTriviaRepository is None:
-            raise ValueError(f'localTriviaRepository argument is malformed: \"{localTriviaRepository}\"')
+        if generalTriviaSettingsRepository is None:
+            raise ValueError(f'generalTriviaSettingsRepository argument is malformed: \"{generalTriviaSettingsRepository}\"')
+        elif jokeTriviaRepository is None:
+            raise ValueError(f'jokeTriviaRepository argument is malformed: \"{jokeTriviaRepository}\"')
         elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif triviaIdGenerator is None:
             raise ValueError(f'triviaIdGenerator argument is malformed: \"{triviaIdGenerator}\"')
         elif triviaVerifier is None:
             raise ValueError(f'triviaVerifier argument is malformed: \"{triviaVerifier}\"')
-        elif not utils.isValidStr(triviaRepositoryFile):
-            raise ValueError(f'triviaRepositoryFile argument is malformed: \"{triviaRepositoryFile}\"')
 
-        self.__localTriviaRepository: LocalTriviaRepository = localTriviaRepository
+        self.__generalTriviaSettingsRepository: GeneralTriviaSettingsRepository = generalTriviaSettingsRepository
+        self.__jokeTriviaRepository: JokeTriviaRepository = jokeTriviaRepository
         self.__timber: Timber = timber
         self.__triviaIdGenerator: TriviaIdGenerator = triviaIdGenerator
         self.__triviaVerifier: TriviaVerifier = triviaVerifier
-        self.__quizApiKey: str = quizApiKey
-        self.__triviaRepositoryFile: str = triviaRepositoryFile
 
         if cacheTimeDelta is None:
             self.__cacheTime = None
@@ -95,7 +94,7 @@ class TriviaRepository():
         elif not utils.hasItems(multipleChoiceResponsesJson):
             raise ValueError(f'multipleChoiceResponsesJson argument is malformed: \"{multipleChoiceResponsesJson}\"')
 
-        maxMultipleChoiceResponses = self.__getMaxMultipleChoiceResponses()
+        maxMultipleChoiceResponses = self.__generalTriviaSettingsRepository.getMaxMultipleChoiceResponses()
         multipleChoiceResponses: List[str] = list()
 
         for correctAnswer in correctAnswers:
@@ -124,7 +123,7 @@ class TriviaRepository():
         if not utils.hasItems(multipleChoiceResponses):
             raise ValueError(f'This trivia question doesn\'t have any multiple choice responses: \"{multipleChoiceResponses}\"')
 
-        minMultipleChoiceResponses = self.__getMinMultipleChoiceResponses()
+        minMultipleChoiceResponses = self.__generalTriviaSettingsRepository.getMinMultipleChoiceResponses()
         if len(multipleChoiceResponses) < minMultipleChoiceResponses:
             raise ValueError(f'This trivia question doesn\'t have enough multiple choice responses (minimum is {minMultipleChoiceResponses}): \"{multipleChoiceResponses}\"')
 
@@ -133,12 +132,12 @@ class TriviaRepository():
 
     def __chooseRandomTriviaSource(
         self,
-        isLocalTriviaRepositoryEnabled: bool = False
+        isJokeTriviaRepositoryEnabled: bool = False
     ) -> TriviaSource:
-        if not utils.isValidBool(isLocalTriviaRepositoryEnabled):
-            raise ValueError(f'isLocalTriviaRepositoryEnabled argument is malformed: \"{isLocalTriviaRepositoryEnabled}\"')
+        if not utils.isValidBool(isJokeTriviaRepositoryEnabled):
+            raise ValueError(f'isJokeTriviaRepositoryEnabled argument is malformed: \"{isJokeTriviaRepositoryEnabled}\"')
 
-        triviaSourcesAndWeights = self.__getAvailableTriviaSourcesAndWeights(isLocalTriviaRepositoryEnabled)
+        triviaSourcesAndWeights = self.__generalTriviaSettingsRepository.getAvailableTriviaSourcesAndWeights(isJokeTriviaRepositoryEnabled)
         triviaSources: List[TriviaSource] = list()
         triviaWeights: List[int] = list()
 
@@ -293,9 +292,9 @@ class TriviaRepository():
             triviaSource = TriviaSource.J_SERVICE
         )
 
-    def __fetchTriviaQuestionFromLocalTriviaRepository(self) -> AbsTriviaQuestion:
-        self.__timber.log('TriviaRepository', 'Fetching trivia question from LocalTriviaRepository...')
-        return self.__localTriviaRepository.fetchRandomQuestion()
+    def __fetchTriviaQuestionFromJokeTriviaRepository(self, twitchChannel: str) -> AbsTriviaQuestion:
+        self.__timber.log('TriviaRepository', 'Fetching trivia question from JokeTriviaRepository...')
+        return self.__jokeTriviaRepository.fetchRandomQuestion(twitchChannel)
 
     def __fetchTriviaQuestionFromOpenTriviaDatabase(self) -> AbsTriviaQuestion:
         self.__timber.log('TriviaRepository', 'Fetching trivia question from Open Trivia Database...')
@@ -391,13 +390,13 @@ class TriviaRepository():
     def __fetchTriviaQuestionFromQuizApi(self) -> AbsTriviaQuestion:
         self.__timber.log('TriviaRepository', 'Fetching trivia question from Quiz API...')
 
-        if not utils.isValidStr(self.__quizApiKey):
-            raise RuntimeError(f'Can\'t fetch trivia question from Quiz API with a malformed key: \"{self.__quizApiKey}\"')
+        if not self.__generalTriviaSettingsRepository.hasQuizApiKey():
+            raise RuntimeError(f'Can\'t fetch trivia question from Quiz API as we have no key')
 
         rawResponse = None
         try:
             rawResponse = requests.get(
-                url = f'https://quizapi.io/api/v1/questions?apiKey={self.__quizApiKey}&limit=1',
+                url = f'https://quizapi.io/api/v1/questions?apiKey={self.__generalTriviaSettingsRepository.requireQuizApiKey()}&limit=1',
                 headers = {
                     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:97.0) Gecko/20100101 Firefox/97.0' # LOOOOL
                 },
@@ -423,7 +422,6 @@ class TriviaRepository():
             raise ValueError(f'Rejecting Quiz API data due to null/empty contents: {jsonResponse}')
 
         triviaJson: Dict[str, object] = jsonResponse[0]
-
         if not utils.hasItems(triviaJson):
             self.__timber.log('TriviaRepository', f'Rejecting Quiz API\'s data due to null/empty contents: {jsonResponse}')
             raise ValueError(f'Rejecting Quiz API\'s data due to null/empty contents: {jsonResponse}')
@@ -552,19 +550,19 @@ class TriviaRepository():
     def fetchTrivia(
         self,
         twitchChannel: str,
-        isLocalTriviaRepositoryEnabled: bool = False
+        isJokeTriviaRepositoryEnabled: bool = False
     ) -> AbsTriviaQuestion:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
-        elif not utils.isValidBool(isLocalTriviaRepositoryEnabled):
-            raise ValueError(f'isLocalTriviaRepositoryEnabled argument is malformed: \"{isLocalTriviaRepositoryEnabled}\"')
+        elif not utils.isValidBool(isJokeTriviaRepositoryEnabled):
+            raise ValueError(f'isJokeTriviaRepositoryEnabled argument is malformed: \"{isJokeTriviaRepositoryEnabled}\"')
 
         now = datetime.now(timezone.utc)
 
         if self.__cacheTimeDelta is None or self.__cacheTime is None or self.__cacheTime + self.__cacheTimeDelta < now or self.__triviaResponse is None:
             self.__triviaResponse = self.__fetchTrivia(
                 twitchChannel = twitchChannel,
-                isLocalTriviaRepositoryEnabled = isLocalTriviaRepositoryEnabled
+                isJokeTriviaRepositoryEnabled = isJokeTriviaRepositoryEnabled
             )
             self.__cacheTime = now
 
@@ -573,20 +571,20 @@ class TriviaRepository():
     def __fetchTrivia(
         self,
         twitchChannel: str,
-        isLocalTriviaRepositoryEnabled: bool = False
+        isJokeTriviaRepositoryEnabled: bool = False
     ) -> AbsTriviaQuestion:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
-        elif not utils.isValidBool(isLocalTriviaRepositoryEnabled):
-            raise ValueError(f'isLocalTriviaRepositoryEnabled argument is malformed: \"{isLocalTriviaRepositoryEnabled}\"')
+        elif not utils.isValidBool(isJokeTriviaRepositoryEnabled):
+            raise ValueError(f'isJokeTriviaRepositoryEnabled argument is malformed: \"{isJokeTriviaRepositoryEnabled}\"')
 
         triviaSource = self.__chooseRandomTriviaSource(
-            isLocalTriviaRepositoryEnabled = isLocalTriviaRepositoryEnabled
+            isJokeTriviaRepositoryEnabled = isJokeTriviaRepositoryEnabled
         )
 
         triviaQuestion: AbsTriviaQuestion = None
-        retryCount: int = 0
-        maxRetryCount: int = self.__getMaxRetryCount()
+        retryCount = 0
+        maxRetryCount = self.__generalTriviaSettingsRepository.getMaxRetryCount()
         attemptedTriviaSources: List[TriviaSource] = list()
 
         while retryCount < maxRetryCount:
@@ -594,10 +592,10 @@ class TriviaRepository():
 
             if triviaSource is TriviaSource.BONGO:
                 triviaQuestion = self.__fetchTriviaQuestionFromBongo()
+            elif triviaSource is TriviaSource.JOKE_TRIVIA_REPOSITORY:
+                triviaQuestion = self.__fetchTriviaQuestionFromJokeTriviaRepository(twitchChannel)
             elif triviaSource is TriviaSource.J_SERVICE:
                 triviaQuestion = self.__fetchTriviaQuestionFromJService()
-            elif triviaSource is TriviaSource.LOCAL_TRIVIA_REPOSITORY:
-                triviaQuestion = self.__fetchTriviaQuestionFromLocalTriviaRepository()
             elif triviaSource is TriviaSource.OPEN_TRIVIA_DATABASE:
                 triviaQuestion = self.__fetchTriviaQuestionFromOpenTriviaDatabase()
             elif triviaSource is TriviaSource.QUIZ_API:
@@ -611,95 +609,12 @@ class TriviaRepository():
                 return triviaQuestion
             else:
                 triviaSource = self.__chooseRandomTriviaSource(
-                   isLocalTriviaRepositoryEnabled = isLocalTriviaRepositoryEnabled
+                   isJokeTriviaRepositoryEnabled = isJokeTriviaRepositoryEnabled
                 )
 
                 retryCount = retryCount + 1
 
         raise RuntimeError(f'Unable to fetch trivia from {attemptedTriviaSources} after {retryCount} attempts (max attempts is {maxRetryCount})')
-
-    def __getAvailableTriviaSourcesAndWeights(
-        self,
-        isLocalTriviaRepositoryEnabled: bool = False
-    ) -> Dict[TriviaSource, int]:
-        if not utils.isValidBool(isLocalTriviaRepositoryEnabled):
-            raise ValueError(f'isLocalTriviaRepositoryEnabled argument is malformed: \"{isLocalTriviaRepositoryEnabled}\"')
-
-        jsonContents = self.__readTriviaRepositoryJson()
-        triviaSourcesJson: Dict = jsonContents['trivia_sources']
-        triviaSources: Dict[TriviaSource, int] = dict()
-
-        for key in triviaSourcesJson:
-            triviaSource = TriviaSource.fromStr(key)
-
-            if triviaSource is TriviaSource.LOCAL_TRIVIA_REPOSITORY and not isLocalTriviaRepositoryEnabled:
-                continue
-            elif triviaSource is TriviaSource.QUIZ_API and not utils.isValidStr(self.__quizApiKey):
-                continue
-
-            triviaSourceJson: Dict[str, object] = triviaSourcesJson[key]
-
-            isEnabled = utils.getBoolFromDict(triviaSourceJson, 'is_enabled', False)
-            if not isEnabled:
-                continue
-
-            weight = utils.getIntFromDict(triviaSourceJson, 'weight', 1)
-            if weight < 1:
-                raise ValueError(f'triviaSource \"{triviaSource}\" has an invalid weight: \"{weight}\"')
-
-            triviaSources[triviaSource] = weight
-
-        if not utils.hasItems(triviaSources):
-            raise RuntimeError(f'triviaSources is empty: \"{triviaSources}\"')
-
-        return triviaSources
-
-    def __getMaxMultipleChoiceResponses(self) -> int:
-        jsonContents = self.__readTriviaRepositoryJson()
-        maxMultipleChoiceResponses = utils.getIntFromDict(jsonContents, 'max_multiple_choice_responses', 5)
-        minMultipleChoiceResponses = utils.getIntFromDict(jsonContents, 'min_multiple_choice_responses', 2)
-
-        if maxMultipleChoiceResponses < 2:
-            raise ValueError(f'maxMultipleChoiceResponses is too small: {maxMultipleChoiceResponses}')
-        elif maxMultipleChoiceResponses < minMultipleChoiceResponses:
-            raise ValueError(f'maxMultipleChoiceResponses ({maxMultipleChoiceResponses}) is less than minMultipleChoiceResponses ({minMultipleChoiceResponses})')
-
-        return maxMultipleChoiceResponses
-
-    def __getMaxRetryCount(self) -> int:
-        jsonContents = self.__readTriviaRepositoryJson()
-        maxRetryCount = utils.getIntFromDict(jsonContents, 'max_retry_count', 3)
-
-        if maxRetryCount < 2:
-            raise ValueError(f'maxRetryCount is too small: \"{maxRetryCount}\"')
-
-        return maxRetryCount
-
-    def __getMinMultipleChoiceResponses(self) -> int:
-        jsonContents = self.__readTriviaRepositoryJson()
-        maxMultipleChoiceResponses = utils.getIntFromDict(jsonContents, 'max_multiple_choice_responses', 5)
-        minMultipleChoiceResponses = utils.getIntFromDict(jsonContents, 'min_multiple_choice_responses', 2)
-
-        if minMultipleChoiceResponses < 2:
-            raise ValueError(f'minMultipleChoiceResponses is too small: \"{minMultipleChoiceResponses}\"')
-        elif minMultipleChoiceResponses > maxMultipleChoiceResponses:
-            raise ValueError(f'minMultipleChoiceResponses ({minMultipleChoiceResponses}) is greater than maxMultipleChoiceResponses ({maxMultipleChoiceResponses})')
-
-        return minMultipleChoiceResponses
-
-    def __readTriviaRepositoryJson(self) -> Dict[str, object]:
-        if not path.exists(self.__triviaRepositoryFile):
-            raise FileNotFoundError(f'Trivia Repository file not found: \"{self.__triviaRepositoryFile}\"')
-
-        with open(self.__triviaRepositoryFile, 'r') as file:
-            jsonContents = json.load(file)
-
-        if jsonContents is None:
-            raise IOError(f'Error reading from Trivia Repository file: \"{self.__triviaRepositoryFile}\"')
-        elif len(jsonContents) == 0:
-            raise ValueError(f'JSON contents of Trivia Repository file \"{self.__triviaRepositoryFile}\" is empty')
-
-        return jsonContents
 
     def __verifyGoodTriviaQuestion(
         self,

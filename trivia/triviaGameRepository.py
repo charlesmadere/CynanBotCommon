@@ -159,12 +159,12 @@ class TriviaGameRepository():
     def fetchTrivia(
         self,
         twitchChannel: str,
-        isLocalTriviaRepositoryEnabled: bool = False
+        isJokeTriviaRepositoryEnabled: bool = False
     ) -> AbsTriviaQuestion:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
-        elif not utils.isValidBool(isLocalTriviaRepositoryEnabled):
-            raise ValueError(f'isLocalTriviaRepositoryEnabled argument is malformed: \"{isLocalTriviaRepositoryEnabled}\"')
+        elif not utils.isValidBool(isJokeTriviaRepositoryEnabled):
+            raise ValueError(f'isJokeTriviaRepositoryEnabled argument is malformed: \"{isJokeTriviaRepositoryEnabled}\"')
 
         state = self.__states.get(twitchChannel.lower())
         if state is None:
@@ -175,7 +175,7 @@ class TriviaGameRepository():
 
         triviaQuestion = self.__triviaRepository.fetchTrivia(
             twitchChannel = twitchChannel,
-            isLocalTriviaRepositoryEnabled = isLocalTriviaRepositoryEnabled
+            isJokeTriviaRepositoryEnabled = isJokeTriviaRepositoryEnabled
         )
 
         state.setTriviaQuestion(triviaQuestion)
