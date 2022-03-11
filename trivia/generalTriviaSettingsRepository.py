@@ -15,7 +15,7 @@ class GeneralTriviaSettingsRepository():
 
     def __init__(
         self,
-        generalSettingsFile: str = ''
+        generalSettingsFile: str = 'CynanBotCommon/trivia/generalTriviaSettingsRepository.json'
     ):
         if not utils.isValidStr(generalSettingsFile):
             raise ValueError(f'generalSettingsFile argument is malformed: \"{generalSettingsFile}\"')
