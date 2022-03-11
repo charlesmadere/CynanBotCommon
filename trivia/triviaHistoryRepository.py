@@ -110,5 +110,4 @@ class TriviaHistoryRepository():
         cursor.close()
 
         self.__timber.log('TriviaHistoryRepository', f'Updated triviaHistory entry for triviaId:{triviaId} triviaSource:{triviaSource} twitchChannel:{twitchChannel} to {nowDateTimeStr} from {questionDateTimeStr}')
-
         return TriviaContentCode.OK
