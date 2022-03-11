@@ -156,6 +156,14 @@
             "question": "What year did stashiocat retire from bullying?",
             "responses": [ "2017", "2019", "2020", "Stashiocat never stopped bullying" ],
             "type": "multiple"
+        },
+        {
+            "compatibleWith": [ "Oatsngoats" ],
+            "correctAnswers": [ "Butter" ],
+            "id": "e6hQTfEL7ws4",
+            "question": "How did Oats's chair become stained?",
+            "responses": [ "Butter", "Ketchup", "Sweat", "Doritos" ],
+            "type": "multiple"
         }
     ]
 }
