@@ -1,6 +1,6 @@
 {
     "max_multiple_choice_responses": 5,
-    "max_retry_count": 5,
+    "max_retry_count": 8,
     "min_multiple_choice_responses": 2,
     "trivia_sources": {
         "bongo": {
