@@ -164,6 +164,19 @@
             "question": "How did Oats's chair become stained?",
             "responses": [ "Butter", "Ketchup", "Sweat", "Doritos" ],
             "type": "multiple"
+        },
+        {
+            "compatibleWith": [ "Imyt", "Oatsngoats" ],
+            "correctAnswers": [ false ],
+            "id": "GK9QtLdfdumq",
+            "question": "In the Imyt vs. Oats hot chip challenge, Imyt spit out the chip.",
+            "type": "boolean"
+        },
+        {
+            "correctAnswers": [ true ],
+            "id": "JzggrtDgVylu",
+            "question": "Being at the top of the cuteness leaderboard means you are a better person.",
+            "type": "boolean"
         }
     ]
 }
