@@ -22,13 +22,7 @@ class GeneralTriviaSettingsRepository():
 
         self.__generalSettingsFile: str = generalSettingsFile
 
-    def getAvailableTriviaSourcesAndWeights(
-        self,
-        isJokeTriviaRepositoryEnabled: bool = False
-    ) -> Dict[TriviaSource, int]:
-        if not utils.isValidBool(isJokeTriviaRepositoryEnabled):
-            raise ValueError(f'isJokeTriviaRepositoryEnabled argument is malformed: \"{isJokeTriviaRepositoryEnabled}\"')
-
+    def getAvailableTriviaSourcesAndWeights(self) -> Dict[TriviaSource, int]:
         jsonContents = self.__readJson()
 
         triviaSourcesJson: Dict[str, object] = jsonContents['trivia_sources']
@@ -39,12 +33,6 @@ class GeneralTriviaSettingsRepository():
 
         for key in triviaSourcesJson:
             triviaSource = TriviaSource.fromStr(key)
-
-            if triviaSource is TriviaSource.JOKE_TRIVIA_REPOSITORY and not isJokeTriviaRepositoryEnabled:
-                continue
-            elif triviaSource is TriviaSource.QUIZ_API and not self.hasQuizApiKey():
-                continue
-
             triviaSourceJson: Dict[str, object] = triviaSourcesJson[key]
 
             isEnabled = utils.getBoolFromDict(triviaSourceJson, 'is_enabled', False)
@@ -95,13 +83,6 @@ class GeneralTriviaSettingsRepository():
 
         return minMultipleChoiceResponses
 
-    def getQuizApiKey(self) -> str:
-        jsonContents = self.__readJson()
-        return jsonContents.get('quiz_api_key')
-
-    def hasQuizApiKey(self) -> bool:
-        return utils.isValidStr(self.getQuizApiKey())
-
     def __readJson(self) -> Dict[str, object]:
         if not os.path.exists(self.__generalSettingsFile):
             raise FileNotFoundError(f'General trivia settings file not found: \"{self.__generalSettingsFile}\"')
@@ -115,11 +96,3 @@ class GeneralTriviaSettingsRepository():
             raise ValueError(f'JSON contents of general trivia settings file \"{self.__generalSettingsFile}\" is empty')
 
         return jsonContents
-
-    def requireQuizApiKey(self) -> str:
-        quizApiKey = self.getQuizApiKey()
-
-        if not utils.isValidStr(quizApiKey):
-            raise ValueError(f'\"quiz_api_key\" in general trivia settings file \"{self.__generalSettingsFile}\" is malformed: \"{quizApiKey}\"')
-
-        return quizApiKey

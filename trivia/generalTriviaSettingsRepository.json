@@ -2,7 +2,6 @@
     "max_multiple_choice_responses": 5,
     "max_retry_count": 8,
     "min_multiple_choice_responses": 2,
-    "quiz_api_key": "",
     "trivia_sources": {
         "bongo": {
             "is_enabled": true,

@@ -57,6 +57,7 @@ class TriviaRepository():
         timber: Timber,
         triviaIdGenerator: TriviaIdGenerator,
         triviaVerifier: TriviaVerifier,
+        quizApiKey: str = None,
         cacheTimeDelta: timedelta = timedelta(minutes = 2, seconds = 30)
     ):
         if generalTriviaSettingsRepository is None:
@@ -75,6 +76,7 @@ class TriviaRepository():
         self.__timber: Timber = timber
         self.__triviaIdGenerator: TriviaIdGenerator = triviaIdGenerator
         self.__triviaVerifier: TriviaVerifier = triviaVerifier
+        self.__quizApiKey: str = quizApiKey
 
         if cacheTimeDelta is None:
             self.__cacheTime = None
@@ -137,7 +139,17 @@ class TriviaRepository():
         if not utils.isValidBool(isJokeTriviaRepositoryEnabled):
             raise ValueError(f'isJokeTriviaRepositoryEnabled argument is malformed: \"{isJokeTriviaRepositoryEnabled}\"')
 
-        triviaSourcesAndWeights = self.__generalTriviaSettingsRepository.getAvailableTriviaSourcesAndWeights(isJokeTriviaRepositoryEnabled)
+        triviaSourcesAndWeights: Dict[TriviaSource, int] = self.__generalTriviaSettingsRepository.getAvailableTriviaSourcesAndWeights()
+
+        if not isJokeTriviaRepositoryEnabled and TriviaSource.JOKE_TRIVIA_REPOSITORY in triviaSourcesAndWeights:
+            del triviaSourcesAndWeights[TriviaSource.JOKE_TRIVIA_REPOSITORY]
+
+        if not self.__hasQuizApiKey() and TriviaSource.QUIZ_API in triviaSourcesAndWeights:
+            del triviaSourcesAndWeights[TriviaSource.QUIZ_API]
+
+        if not utils.hasItems(triviaSourcesAndWeights):
+            raise RuntimeError(f'There are no trivia sources available to be fetched from!')
+
         triviaSources: List[TriviaSource] = list()
         triviaWeights: List[int] = list()
 
@@ -390,13 +402,13 @@ class TriviaRepository():
     def __fetchTriviaQuestionFromQuizApi(self) -> AbsTriviaQuestion:
         self.__timber.log('TriviaRepository', 'Fetching trivia question from Quiz API...')
 
-        if not self.__generalTriviaSettingsRepository.hasQuizApiKey():
+        if not self.__hasQuizApiKey():
             raise RuntimeError(f'Can\'t fetch trivia question from Quiz API as we have no key')
 
         rawResponse = None
         try:
             rawResponse = requests.get(
-                url = f'https://quizapi.io/api/v1/questions?apiKey={self.__generalTriviaSettingsRepository.requireQuizApiKey()}&limit=1',
+                url = f'https://quizapi.io/api/v1/questions?apiKey={self.__quizApiKey}&limit=1',
                 headers = {
                     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:97.0) Gecko/20100101 Firefox/97.0' # LOOOOL
                 },
@@ -615,6 +627,9 @@ class TriviaRepository():
                 retryCount = retryCount + 1
 
         raise RuntimeError(f'Unable to fetch trivia from {attemptedTriviaSources} after {retryCount} attempts (max attempts is {maxRetryCount})')
+
+    def __hasQuizApiKey(self) -> bool:
+        return utils.isValidStr(self.__quizApiKey)
 
     def __verifyGoodTriviaQuestion(
         self,
