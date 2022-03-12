@@ -11,23 +11,23 @@ except:
     from trivia.triviaSource import TriviaSource
 
 
-class GeneralTriviaSettingsRepository():
+class TriviaSettingsRepository():
 
     def __init__(
         self,
-        generalSettingsFile: str = 'CynanBotCommon/trivia/generalTriviaSettingsRepository.json'
+        settingsFile: str = 'CynanBotCommon/trivia/triviaSettingsRepository.json'
     ):
-        if not utils.isValidStr(generalSettingsFile):
-            raise ValueError(f'generalSettingsFile argument is malformed: \"{generalSettingsFile}\"')
+        if not utils.isValidStr(settingsFile):
+            raise ValueError(f'settingsFile argument is malformed: \"{settingsFile}\"')
 
-        self.__generalSettingsFile: str = generalSettingsFile
+        self.__settingsFile: str = settingsFile
 
     def getAvailableTriviaSourcesAndWeights(self) -> Dict[TriviaSource, int]:
         jsonContents = self.__readJson()
 
         triviaSourcesJson: Dict[str, object] = jsonContents['trivia_sources']
         if not utils.hasItems(triviaSourcesJson):
-            raise RuntimeError(f'\"trivia_sources\" field in \"{self.__generalSettingsFile}\" is malformed: \"{triviaSourcesJson}\"')
+            raise RuntimeError(f'\"trivia_sources\" field in \"{self.__settingsFile}\" is malformed: \"{triviaSourcesJson}\"')
 
         triviaSources: Dict[TriviaSource, int] = dict()
 
@@ -41,7 +41,7 @@ class GeneralTriviaSettingsRepository():
 
             weight = utils.getIntFromDict(triviaSourceJson, 'weight', 1)
             if weight < 1:
-                raise ValueError(f'triviaSource \"{triviaSource}\" in \"{self.__generalSettingsFile}\" has an invalid weight: \"{weight}\"')
+                raise ValueError(f'triviaSource \"{triviaSource}\" in \"{self.__settingsFile}\" has an invalid weight: \"{weight}\"')
 
             triviaSources[triviaSource] = weight
 
@@ -84,15 +84,15 @@ class GeneralTriviaSettingsRepository():
         return minMultipleChoiceResponses
 
     def __readJson(self) -> Dict[str, object]:
-        if not os.path.exists(self.__generalSettingsFile):
-            raise FileNotFoundError(f'General trivia settings file not found: \"{self.__generalSettingsFile}\"')
+        if not os.path.exists(self.__settingsFile):
+            raise FileNotFoundError(f'Trivia settings file not found: \"{self.__settingsFile}\"')
 
-        with open(self.__generalSettingsFile, 'r') as file:
+        with open(self.__settingsFile, 'r') as file:
             jsonContents = json.load(file)
 
         if jsonContents is None:
-            raise IOError(f'Error reading from general trivia settings file: \"{self.__generalSettingsFile}\"')
+            raise IOError(f'Error reading from trivia settings file: \"{self.__settingsFile}\"')
         elif len(jsonContents) == 0:
-            raise ValueError(f'JSON contents of general trivia settings file \"{self.__generalSettingsFile}\" is empty')
+            raise ValueError(f'JSON contents of trivia settings file \"{self.__settingsFile}\" is empty')
 
         return jsonContents

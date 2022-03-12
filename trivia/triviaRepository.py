@@ -12,8 +12,6 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
-    from CynanBotCommon.trivia.generalTriviaSettingsRepository import \
-        GeneralTriviaSettingsRepository
     from CynanBotCommon.trivia.jokeTriviaRepository import JokeTriviaRepository
     from CynanBotCommon.trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
@@ -22,6 +20,8 @@ try:
     from CynanBotCommon.trivia.triviaContentCode import TriviaContentCode
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
     from CynanBotCommon.trivia.triviaIdGenerator import TriviaIdGenerator
+    from CynanBotCommon.trivia.triviaSettingsRepository import \
+        TriviaSettingsRepository
     from CynanBotCommon.trivia.triviaSource import TriviaSource
     from CynanBotCommon.trivia.triviaType import TriviaType
     from CynanBotCommon.trivia.triviaVerifier import TriviaVerifier
@@ -32,8 +32,6 @@ except:
     from timber.timber import Timber
 
     from trivia.absTriviaQuestion import AbsTriviaQuestion
-    from trivia.generalTriviaSettingsRepository import \
-        GeneralTriviaSettingsRepository
     from trivia.jokeTriviaRepository import JokeTriviaRepository
     from trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
@@ -42,6 +40,7 @@ except:
     from trivia.triviaContentCode import TriviaContentCode
     from trivia.triviaDifficulty import TriviaDifficulty
     from trivia.triviaIdGenerator import TriviaIdGenerator
+    from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
     from trivia.triviaType import TriviaType
     from trivia.triviaVerifier import TriviaVerifier
@@ -52,29 +51,29 @@ class TriviaRepository():
 
     def __init__(
         self,
-        generalTriviaSettingsRepository: GeneralTriviaSettingsRepository,
         jokeTriviaRepository: JokeTriviaRepository,
         timber: Timber,
         triviaIdGenerator: TriviaIdGenerator,
+        triviaSettingsRepository: TriviaSettingsRepository,
         triviaVerifier: TriviaVerifier,
         quizApiKey: str = None,
         cacheTimeDelta: timedelta = timedelta(minutes = 2, seconds = 30)
     ):
-        if generalTriviaSettingsRepository is None:
-            raise ValueError(f'generalTriviaSettingsRepository argument is malformed: \"{generalTriviaSettingsRepository}\"')
-        elif jokeTriviaRepository is None:
+        if jokeTriviaRepository is None:
             raise ValueError(f'jokeTriviaRepository argument is malformed: \"{jokeTriviaRepository}\"')
         elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif triviaIdGenerator is None:
             raise ValueError(f'triviaIdGenerator argument is malformed: \"{triviaIdGenerator}\"')
+        elif triviaSettingsRepository is None:
+            raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
         elif triviaVerifier is None:
             raise ValueError(f'triviaVerifier argument is malformed: \"{triviaVerifier}\"')
 
-        self.__generalTriviaSettingsRepository: GeneralTriviaSettingsRepository = generalTriviaSettingsRepository
         self.__jokeTriviaRepository: JokeTriviaRepository = jokeTriviaRepository
         self.__timber: Timber = timber
         self.__triviaIdGenerator: TriviaIdGenerator = triviaIdGenerator
+        self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
         self.__triviaVerifier: TriviaVerifier = triviaVerifier
         self.__quizApiKey: str = quizApiKey
 
@@ -96,7 +95,7 @@ class TriviaRepository():
         elif not utils.hasItems(multipleChoiceResponsesJson):
             raise ValueError(f'multipleChoiceResponsesJson argument is malformed: \"{multipleChoiceResponsesJson}\"')
 
-        maxMultipleChoiceResponses = self.__generalTriviaSettingsRepository.getMaxMultipleChoiceResponses()
+        maxMultipleChoiceResponses = self.__triviaSettingsRepository.getMaxMultipleChoiceResponses()
         multipleChoiceResponses: List[str] = list()
 
         for correctAnswer in correctAnswers:
@@ -125,7 +124,7 @@ class TriviaRepository():
         if not utils.hasItems(multipleChoiceResponses):
             raise ValueError(f'This trivia question doesn\'t have any multiple choice responses: \"{multipleChoiceResponses}\"')
 
-        minMultipleChoiceResponses = self.__generalTriviaSettingsRepository.getMinMultipleChoiceResponses()
+        minMultipleChoiceResponses = self.__triviaSettingsRepository.getMinMultipleChoiceResponses()
         if len(multipleChoiceResponses) < minMultipleChoiceResponses:
             raise ValueError(f'This trivia question doesn\'t have enough multiple choice responses (minimum is {minMultipleChoiceResponses}): \"{multipleChoiceResponses}\"')
 
@@ -139,7 +138,7 @@ class TriviaRepository():
         if not utils.isValidBool(isJokeTriviaRepositoryEnabled):
             raise ValueError(f'isJokeTriviaRepositoryEnabled argument is malformed: \"{isJokeTriviaRepositoryEnabled}\"')
 
-        triviaSourcesAndWeights: Dict[TriviaSource, int] = self.__generalTriviaSettingsRepository.getAvailableTriviaSourcesAndWeights()
+        triviaSourcesAndWeights: Dict[TriviaSource, int] = self.__triviaSettingsRepository.getAvailableTriviaSourcesAndWeights()
 
         if not isJokeTriviaRepositoryEnabled and TriviaSource.JOKE_TRIVIA_REPOSITORY in triviaSourcesAndWeights:
             del triviaSourcesAndWeights[TriviaSource.JOKE_TRIVIA_REPOSITORY]
@@ -596,7 +595,7 @@ class TriviaRepository():
 
         triviaQuestion: AbsTriviaQuestion = None
         retryCount = 0
-        maxRetryCount = self.__generalTriviaSettingsRepository.getMaxRetryCount()
+        maxRetryCount = self.__triviaSettingsRepository.getMaxRetryCount()
         attemptedTriviaSources: List[TriviaSource] = list()
 
         while retryCount < maxRetryCount:
