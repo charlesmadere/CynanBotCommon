@@ -495,7 +495,7 @@ class TriviaRepository():
         rawResponse = None
         try:
             rawResponse = requests.get(
-                url = 'https://trivia.willfry.co.uk/api/questions?limit=1',
+                url = 'https://the-trivia-api.com/questions?limit=1',
                 timeout = utils.getDefaultTimeout()
             )
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
