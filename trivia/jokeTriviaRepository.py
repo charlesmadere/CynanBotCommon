@@ -121,7 +121,7 @@ class JokeTriviaRepository():
 
     def __getMaxRetryCount(self) -> int:
         jsonContents = self.__readJson()
-        return utils.getIntFromDict(jsonContents, 'maxRetryCount')
+        return utils.getIntFromDict(jsonContents, 'maxRetryCount', 5)
 
     def __isCompatible(self, compatibleWith: List[str], twitchChannel: str) -> bool:
         if not utils.isValidStr(twitchChannel):
