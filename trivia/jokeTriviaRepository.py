@@ -113,7 +113,7 @@ class JokeTriviaRepository():
     def __fetchRandomQuestionJson(self) -> Dict[str, object]:
         jsonContents = self.__readJson()
 
-        triviaQuestions: List[Dict[str, object]] = jsonContents['triviaQuestion']
+        triviaQuestions: List[Dict[str, object]] = jsonContents['triviaQuestions']
         if not utils.hasItems(triviaQuestions):
             raise ValueError(f'\"triviaQuestions\" field in joke trivia file \"{self.__jokeTriviaFile}\" is malformed: \"{triviaQuestions}\"')
 
