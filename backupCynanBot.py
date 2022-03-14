@@ -5,21 +5,30 @@ from shutil import SameFileError
 from typing import List
 
 
-def findFiles(src) -> List:
-    relevantFiles = list()
+def findFiles(src) -> List[str]:
+    relevantFiles: List[str] = list()
 
     for root, dirs, files in os.walk(src):
-        relevantFiles.extend(os.path.join(root, f) for f in files
-            if f.endswith(".json") or f.endswith(".sqlite"))
+        if '.vscode' in root:
+            continue
+
+        filesToAdd: List[str] = list()
+
+        for file in files:
+            if file.endswith('.json') or file.endswith('.sqlite'):
+                filesToAdd.append(os.path.join(root, file))
+
+        if len(filesToAdd) >= 1:
+            relevantFiles.extend(filesToAdd)
 
     return relevantFiles
 
-def copyFiles(targetDirectory: str, fileList: List):
+def copyFiles(targetDirectory: str, fileList: List[str]):
     for file in fileList:
         commonPath = os.path.commonpath([ targetDirectory, file ])
         targetDirectoryFolderName = targetDirectory[len(commonPath):]
         copyDestination = f'{commonPath}{os.path.sep}{targetDirectoryFolderName}'
-        os.makedirs(copyDestination, exist_ok = True)
+        os.makedirs(name = copyDestination, exist_ok = True)
 
         try:
             shutil.copy2(file, copyDestination)
@@ -30,7 +39,7 @@ def main():
     args: List[str] = sys.argv[1:]
 
     if not args or len(args) != 2:
-        print("./backupCynanBot.py <src> <dest>")
+        print('./backupCynanBot.py <src> <dest>')
         sys.exit(1)
 
     sourceDirectory = os.path.normcase(os.path.normpath(args[0]))
