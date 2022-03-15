@@ -177,7 +177,7 @@ class TwitchTokensRepository():
             rawResponse = requests.get(
                 url = self.__oauth2ValidateUrl,
                 params = {
-                    'Authorization': f'OAuth {self.getAccessToken(twitchHandle)}'
+                    'Authorization': f'OAuth {self.requireAccessToken(twitchHandle)}'
                 },
                 timeout = utils.getDefaultTimeout()
             )
