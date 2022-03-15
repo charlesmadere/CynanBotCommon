@@ -201,8 +201,6 @@ class TwitchTokensRepository():
             raise RuntimeError(f'Exception occurred when attempting to decode Twitch access token validation response for \"{twitchHandle}\" into JSON: {e}')
 
         if jsonResponse.get('client_id') is None or len(jsonResponse['client_id']) == 0:
-            self.__timber.log('TwitchTokensRepository', f'Requesting new Twitch tokens for \"{twitchHandle}\"...')
-
             self.__refreshTokens(
                 twitchClientId = twitchClientId,
                 twitchClientSecret = twitchClientSecret,
