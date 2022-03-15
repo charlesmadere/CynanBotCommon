@@ -115,15 +115,19 @@ class TwitchTokensRepository():
                 timeout = utils.getDefaultTimeout()
             )
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            self.__timber.log('TwitchTokensRepository', f'Exception occurred when attempting to request new Twitch tokens: {e}')
-            raise RuntimeError(f'Exception occurred when attempting to request new Twitch tokens: {e}')
+            self.__timber.log('TwitchTokensRepository', f'Exception occurred when attempting to request new Twitch tokens for \"{twitchHandle}\": {e}')
+            raise RuntimeError(f'Exception occurred when attempting to request new Twitch tokens for \"{twitchHandle}\": {e}')
+
+        if rawResponse.status_code != 200:
+            self.__timber.log('TwitchTokensRepository', f'Encountered non-200 HTTP status code when requesting new Twitch tokens for \"{twitchHandle}\"')
+            raise RuntimeError(f'Encountered non-200 HTTP status code when requesting new Twitch tokens for \"{twitchHandle}\"')
 
         jsonResponse: Dict[str, object] = None
         try:
             jsonResponse = rawResponse.json()
         except JSONDecodeError as e:
-            self.__timber.log('TwitchTokensRepository', f'Exception occurred when attempting to decode new Twitch tokens response into JSON: {e}')
-            raise RuntimeError(f'Exception occurred when attempting to decode new Twitch tokens response into JSON: {e}')
+            self.__timber.log('TwitchTokensRepository', f'Exception occurred when attempting to decode new Twitch tokens response for \"{twitchHandle}\" into JSON: {e}')
+            raise RuntimeError(f'Exception occurred when attempting to decode new Twitch tokens response for \"{twitchHandle}\" into JSON: {e}')
 
         if 'access_token' not in jsonResponse or len(jsonResponse['access_token']) == 0:
             raise TwitchAccessTokenMissingException(f'Received malformed \"access_token\" Twitch token: {jsonResponse}')
@@ -185,12 +189,16 @@ class TwitchTokensRepository():
             self.__timber.log('TwitchTokensRepository', f'Exception occurred when attempting to validate Twitch access token: {e}')
             raise RuntimeError(f'Exception occurred when attempting to validate Twitch access token: {e}')
 
+        if rawResponse.status_code != 200:
+            self.__timber.log('TwitchTokensRepository', f'Encountered non-200 HTTP status code when validating Twitch access token for \"{twitchHandle}\"')
+            raise RuntimeError(f'Encountered non-200 HTTP status code when validating Twitch access token for \"{twitchHandle}\"')
+
         jsonResponse: Dict[str, object] = None
         try:
             jsonResponse = rawResponse.json()
         except JSONDecodeError as e:
-            self.__timber.log('TwitchTokensRepository', f'Exception occurred when attempting to decode Twitch\'s response into JSON: {e}')
-            raise RuntimeError(f'Exception occurred when attempting to decode Twitch\'s response into JSON: {e}')
+            self.__timber.log('TwitchTokensRepository', f'Exception occurred when attempting to decode Twitch access token validation response for \"{twitchHandle}\" into JSON: {e}')
+            raise RuntimeError(f'Exception occurred when attempting to decode Twitch access token validation response for \"{twitchHandle}\" into JSON: {e}')
 
         if jsonResponse.get('client_id') is None or len(jsonResponse['client_id']) == 0:
             self.__timber.log('TwitchTokensRepository', f'Requesting new Twitch tokens for \"{twitchHandle}\"...')
