@@ -130,16 +130,23 @@ class TwitchTokensRepository():
             raise RuntimeError(f'Exception occurred when attempting to decode new Twitch tokens response for \"{twitchHandle}\" into JSON: {e}')
 
         if not utils.hasItems(jsonResponse):
+            self.__timber.log('TwitchTokensRepository', f'Received malformed JSON response when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
             raise ValueError(f'Received malformed JSON response when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
-        elif 'access_token' not in jsonResponse or len(jsonResponse['access_token']) == 0:
-            raise TwitchAccessTokenMissingException(f'Received malformed \"access_token\" when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
-        elif 'refresh_token' not in jsonResponse or len(jsonResponse['refresh_token']) == 0:
-            raise TwitchRefreshTokenMissingException(f'Received malformed \"refresh_token\" when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
+
+        accessToken = utils.getStrFromDict(jsonResponse, 'access_token', fallback = '')
+        refreshToken = utils.getStrFromDict(jsonResponse, 'refresh_token', fallback = '')
+
+        if not utils.isValidStr(accessToken):
+            self.__timber.log('TwitchTokensRepository', f'Received malformed \"access_token\" ({accessToken}) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
+            raise TwitchAccessTokenMissingException(f'Received malformed \"access_token\" ({accessToken}) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
+        elif not utils.isValidStr(refreshToken):
+            self.__timber.log('TwitchTokensRepository', f'Received malformed \"refresh_token\" ({refreshToken}) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
+            raise TwitchRefreshTokenMissingException(f'Received malformed \"refresh_token\" ({refreshToken}) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
 
         jsonContents = self.__readAllJson()
         jsonContents[twitchHandle] = {
-            'accessToken': jsonResponse['access_token'],
-            'refreshToken': jsonResponse['refresh_token']
+            'accessToken': accessToken,
+            'refreshToken': refreshToken
         }
 
         with open(self.__twitchTokensFile, 'w') as file:
