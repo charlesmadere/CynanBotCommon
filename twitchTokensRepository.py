@@ -33,12 +33,15 @@ class TwitchTokensRepository():
     def __init__(
         self,
         timber: Timber,
+        isDebugLoggingEnabled: bool = False,
         oauth2TokenUrl: str = 'https://id.twitch.tv/oauth2/token',
         oauth2ValidateUrl: str = 'https://id.twitch.tv/oauth2/validate',
         twitchTokensFile: str = 'CynanBotCommon/twitchTokensRepository.json'
     ):
         if timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
+        elif not utils.isValidBool(isDebugLoggingEnabled):
+            raise ValueError(f'isDebugLoggingEnabled argument is malformed: \"{isDebugLoggingEnabled}\"')
         elif not utils.isValidUrl(oauth2TokenUrl):
             raise ValueError(f'oauth2TokenUrl argument is malformed: \"{oauth2TokenUrl}\"')
         elif not utils.isValidUrl(oauth2ValidateUrl):
@@ -47,6 +50,7 @@ class TwitchTokensRepository():
             raise ValueError(f'twitchTokensFile argument is malformed: \"{twitchTokensFile}\"')
 
         self.__timber: Timber = timber
+        self.__isDebugLoggingEnabled: bool = isDebugLoggingEnabled
         self.__oauth2TokenUrl: str = oauth2TokenUrl
         self.__oauth2ValidateUrl: str = oauth2ValidateUrl
         self.__twitchTokensFile: str = twitchTokensFile
@@ -142,6 +146,9 @@ class TwitchTokensRepository():
         elif not utils.isValidStr(refreshToken):
             self.__timber.log('TwitchTokensRepository', f'Received malformed \"refresh_token\" ({refreshToken}) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
             raise TwitchRefreshTokenMissingException(f'Received malformed \"refresh_token\" ({refreshToken}) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
+
+        if self.__isDebugLoggingEnabled:
+            self.__timber.log('TwitchTokensRepository', f'JSON response \"{twitchHandle}\" Twitch tokens refresh: {jsonResponse}')
 
         jsonContents = self.__readAllJson()
         jsonContents[twitchHandle] = {
