@@ -75,6 +75,10 @@ class TwitchTokensRepository():
 
         self.__tokensExpireInSeconds: int = None
 
+    def consumeTokensExpireInSeconds(self):
+        self.__timber.log('TwitchTokensRepository', f'tokensExpireInSeconds value consumed, is now None')
+        self.__tokensExpireInSeconds = None
+
     def getAccessToken(self, twitchHandle: str) -> str:
         jsonContents = self.__readJson(twitchHandle)
         return utils.getStrFromDict(jsonContents, 'accessToken', fallback = '')
