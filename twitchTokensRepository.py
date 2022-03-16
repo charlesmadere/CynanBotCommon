@@ -148,7 +148,7 @@ class TwitchTokensRepository():
             raise TwitchRefreshTokenMissingException(f'Received malformed \"refresh_token\" ({refreshToken}) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
 
         if self.__isDebugLoggingEnabled:
-            self.__timber.log('TwitchTokensRepository', f'JSON response \"{twitchHandle}\" Twitch tokens refresh: {jsonResponse}')
+            self.__timber.log('TwitchTokensRepository', f'JSON response for \"{twitchHandle}\" Twitch tokens refresh: {jsonResponse}')
 
         jsonContents = self.__readAllJson()
         jsonContents[twitchHandle] = {
