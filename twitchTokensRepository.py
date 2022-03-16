@@ -46,6 +46,7 @@ class TwitchTokensRepository():
         self,
         timber: Timber,
         isDebugLoggingEnabled: bool = False,
+        tokensExpireInBuffer: int = 300,
         oauth2TokenUrl: str = 'https://id.twitch.tv/oauth2/token',
         oauth2ValidateUrl: str = 'https://id.twitch.tv/oauth2/validate',
         twitchTokensFile: str = 'CynanBotCommon/twitchTokensRepository.json'
@@ -54,6 +55,10 @@ class TwitchTokensRepository():
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not utils.isValidBool(isDebugLoggingEnabled):
             raise ValueError(f'isDebugLoggingEnabled argument is malformed: \"{isDebugLoggingEnabled}\"')
+        elif not utils.isValidNum(tokensExpireInBuffer):
+            raise ValueError(f'tokensExpireInBuffer argument is malformed: \"{tokensExpireInBuffer}\"')
+        elif tokensExpireInBuffer < 120:
+            raise ValueError(f'tokensExpireInBuffer argument is too aggressive: {tokensExpireInBuffer}')
         elif not utils.isValidUrl(oauth2TokenUrl):
             raise ValueError(f'oauth2TokenUrl argument is malformed: \"{oauth2TokenUrl}\"')
         elif not utils.isValidUrl(oauth2ValidateUrl):
@@ -63,9 +68,12 @@ class TwitchTokensRepository():
 
         self.__timber: Timber = timber
         self.__isDebugLoggingEnabled: bool = isDebugLoggingEnabled
+        self.__tokensExpireInBuffer: int = tokensExpireInBuffer
         self.__oauth2TokenUrl: str = oauth2TokenUrl
         self.__oauth2ValidateUrl: str = oauth2ValidateUrl
         self.__twitchTokensFile: str = twitchTokensFile
+
+        self.__tokensExpireInSeconds: int = None
 
     def getAccessToken(self, twitchHandle: str) -> str:
         jsonContents = self.__readJson(twitchHandle)
@@ -74,6 +82,9 @@ class TwitchTokensRepository():
     def getRefreshToken(self, twitchHandle: str) -> str:
         jsonContents = self.__readJson(twitchHandle)
         return utils.getStrFromDict(jsonContents, 'refreshToken', fallback = '')
+
+    def getTokensExpireInSeconds(self) -> int:
+        return self.__tokensExpireInSeconds
 
     def __readAllJson(self) -> Dict[str, object]:
         if not os.path.exists(self.__twitchTokensFile):
@@ -162,7 +173,7 @@ class TwitchTokensRepository():
         elif not utils.isValidNum(expiresIn):
             self.__timber.log('TwitchTokensRepository', f'Received malformed \"expires_in\" ({expiresIn}) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
             raise TwitchExpiresInMissingException(f'Received malformed \"expires_in\" ({expiresIn}) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
-        elif expiresIn < 900:
+        elif expiresIn < 900: # 900 seconds = 15 minutes
             self.__timber.log('TwitchTokensRepository', f'Received overly aggressive \"expires_in\" ({expiresIn}) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
             raise TwitchExpiresInOverlyAggressiveException(f'Received overly aggressive \"expires_in\" ({expiresIn}) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
 
@@ -178,7 +189,13 @@ class TwitchTokensRepository():
         with open(self.__twitchTokensFile, 'w') as file:
             json.dump(jsonContents, file, indent = 4, sort_keys = True)
 
-        self.__timber.log('TwitchTokensRepository', f'Saved new Twitch tokens for \"{twitchHandle}\" (expires in {expiresIn} seconds)')
+        if self.__tokensExpireInSeconds is None or self.__tokensExpireInSeconds > expiresIn:
+            if self.__isDebugLoggingEnabled:
+                self.__timber.log('TwitchTokensRepository', f'Current tokensExpireInSeconds value is {self.__tokensExpireInSeconds}, will be overwritten with {expiresIn} ({expiresIn - self.__tokensExpireInBuffer} after subtracting buffer) from \"{twitchHandle}\"')
+
+            self.__tokensExpireInSeconds = expiresIn - self.__tokensExpireInBuffer
+
+        self.__timber.log('TwitchTokensRepository', f'Saved new Twitch tokens for \"{twitchHandle}\" (expires in {self.__tokensExpireInSeconds} seconds)')
 
     def requireAccessToken(self, twitchHandle: str) -> str:
         accessToken = self.getAccessToken(twitchHandle)
