@@ -76,6 +76,9 @@ class TwitchTokensRepository():
         self.__tokensExpireInSeconds: int = None
 
     def consumeTokensExpireInSeconds(self):
+        if self.__tokensExpireInSeconds is None:
+            return
+
         self.__timber.log('TwitchTokensRepository', f'tokensExpireInSeconds value consumed, is now None')
         self.__tokensExpireInSeconds = None
 
