@@ -129,10 +129,12 @@ class TwitchTokensRepository():
             self.__timber.log('TwitchTokensRepository', f'Exception occurred when attempting to decode new Twitch tokens response for \"{twitchHandle}\" into JSON: {e}')
             raise RuntimeError(f'Exception occurred when attempting to decode new Twitch tokens response for \"{twitchHandle}\" into JSON: {e}')
 
-        if 'access_token' not in jsonResponse or len(jsonResponse['access_token']) == 0:
-            raise TwitchAccessTokenMissingException(f'Received malformed \"access_token\" Twitch token: {jsonResponse}')
+        if not utils.hasItems(jsonResponse):
+            raise ValueError(f'Received malformed JSON response when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
+        elif 'access_token' not in jsonResponse or len(jsonResponse['access_token']) == 0:
+            raise TwitchAccessTokenMissingException(f'Received malformed \"access_token\" when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
         elif 'refresh_token' not in jsonResponse or len(jsonResponse['refresh_token']) == 0:
-            raise TwitchRefreshTokenMissingException(f'Received malformed \"refresh_token\" Twitch token: {jsonResponse}')
+            raise TwitchRefreshTokenMissingException(f'Received malformed \"refresh_token\" when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
 
         jsonContents = self.__readAllJson()
         jsonContents[twitchHandle] = {
