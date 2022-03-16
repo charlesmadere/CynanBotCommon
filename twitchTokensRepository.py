@@ -191,9 +191,7 @@ class TwitchTokensRepository():
             self.__timber.log('TwitchTokensRepository', f'Exception occurred when attempting to validate Twitch access token: {e}')
             raise RuntimeError(f'Exception occurred when attempting to validate Twitch access token: {e}')
 
-        if rawResponse.status_code != 200:
-            self.__timber.log('TwitchTokensRepository', f'Encountered non-200 HTTP status code when validating Twitch access token for \"{twitchHandle}\"')
-            raise RuntimeError(f'Encountered non-200 HTTP status code when validating Twitch access token for \"{twitchHandle}\"')
+        # We are intentionally NOT checking the HTTP status code here.
 
         jsonResponse: Dict[str, object] = None
         try:
@@ -202,7 +200,7 @@ class TwitchTokensRepository():
             self.__timber.log('TwitchTokensRepository', f'Exception occurred when attempting to decode Twitch access token validation response for \"{twitchHandle}\" into JSON: {e}')
             raise RuntimeError(f'Exception occurred when attempting to decode Twitch access token validation response for \"{twitchHandle}\" into JSON: {e}')
 
-        if jsonResponse.get('client_id') is None or len(jsonResponse['client_id']) == 0:
+        if rawResponse.status_code != 200 or jsonResponse.get('client_id') is None or len(jsonResponse['client_id']) == 0:
             self.__refreshTokens(
                 twitchClientId = twitchClientId,
                 twitchClientSecret = twitchClientSecret,
