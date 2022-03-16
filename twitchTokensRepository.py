@@ -46,7 +46,7 @@ class TwitchTokensRepository():
         self,
         timber: Timber,
         isDebugLoggingEnabled: bool = False,
-        tokensExpireInBuffer: int = 300,
+        tokensExpireInSecondsBuffer: int = 300,
         oauth2TokenUrl: str = 'https://id.twitch.tv/oauth2/token',
         oauth2ValidateUrl: str = 'https://id.twitch.tv/oauth2/validate',
         twitchTokensFile: str = 'CynanBotCommon/twitchTokensRepository.json'
@@ -55,10 +55,10 @@ class TwitchTokensRepository():
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not utils.isValidBool(isDebugLoggingEnabled):
             raise ValueError(f'isDebugLoggingEnabled argument is malformed: \"{isDebugLoggingEnabled}\"')
-        elif not utils.isValidNum(tokensExpireInBuffer):
-            raise ValueError(f'tokensExpireInBuffer argument is malformed: \"{tokensExpireInBuffer}\"')
-        elif tokensExpireInBuffer < 120:
-            raise ValueError(f'tokensExpireInBuffer argument is too aggressive: {tokensExpireInBuffer}')
+        elif not utils.isValidNum(tokensExpireInSecondsBuffer):
+            raise ValueError(f'tokensExpireInSecondsBuffer argument is malformed: \"{tokensExpireInSecondsBuffer}\"')
+        elif tokensExpireInSecondsBuffer < 120:
+            raise ValueError(f'tokensExpireInBuffer argument is too aggressive: {tokensExpireInSecondsBuffer}')
         elif not utils.isValidUrl(oauth2TokenUrl):
             raise ValueError(f'oauth2TokenUrl argument is malformed: \"{oauth2TokenUrl}\"')
         elif not utils.isValidUrl(oauth2ValidateUrl):
@@ -68,7 +68,7 @@ class TwitchTokensRepository():
 
         self.__timber: Timber = timber
         self.__isDebugLoggingEnabled: bool = isDebugLoggingEnabled
-        self.__tokensExpireInBuffer: int = tokensExpireInBuffer
+        self.__tokensExpireInSecondsBuffer: int = tokensExpireInSecondsBuffer
         self.__oauth2TokenUrl: str = oauth2TokenUrl
         self.__oauth2ValidateUrl: str = oauth2ValidateUrl
         self.__twitchTokensFile: str = twitchTokensFile
@@ -169,7 +169,7 @@ class TwitchTokensRepository():
 
         accessToken = utils.getStrFromDict(jsonResponse, 'access_token', fallback = '')
         refreshToken = utils.getStrFromDict(jsonResponse, 'refresh_token', fallback = '')
-        expiresIn = utils.getIntFromDict(jsonResponse, 'expires_in', fallback = -1)
+        expiresInSeconds = utils.getIntFromDict(jsonResponse, 'expires_in', fallback = -1)
 
         if not utils.isValidStr(accessToken):
             self.__timber.log('TwitchTokensRepository', f'Received malformed \"access_token\" ({accessToken}) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
@@ -177,12 +177,12 @@ class TwitchTokensRepository():
         elif not utils.isValidStr(refreshToken):
             self.__timber.log('TwitchTokensRepository', f'Received malformed \"refresh_token\" ({refreshToken}) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
             raise TwitchRefreshTokenMissingException(f'Received malformed \"refresh_token\" ({refreshToken}) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
-        elif not utils.isValidNum(expiresIn):
-            self.__timber.log('TwitchTokensRepository', f'Received malformed \"expires_in\" ({expiresIn}) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
-            raise TwitchExpiresInMissingException(f'Received malformed \"expires_in\" ({expiresIn}) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
-        elif expiresIn < 900: # 900 seconds = 15 minutes
-            self.__timber.log('TwitchTokensRepository', f'Received overly aggressive \"expires_in\" ({expiresIn}) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
-            raise TwitchExpiresInOverlyAggressiveException(f'Received overly aggressive \"expires_in\" ({expiresIn}) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
+        elif not utils.isValidNum(expiresInSeconds):
+            self.__timber.log('TwitchTokensRepository', f'Received malformed \"expires_in\" ({expiresInSeconds}) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
+            raise TwitchExpiresInMissingException(f'Received malformed \"expires_in\" ({expiresInSeconds}) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
+        elif expiresInSeconds < 900: # 900 seconds = 15 minutes
+            self.__timber.log('TwitchTokensRepository', f'Received overly aggressive \"expires_in\" ({expiresInSeconds} seconds) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
+            raise TwitchExpiresInOverlyAggressiveException(f'Received overly aggressive \"expires_in\" ({expiresInSeconds} seconds) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
 
         if self.__isDebugLoggingEnabled:
             self.__timber.log('TwitchTokensRepository', f'JSON response for \"{twitchHandle}\" Twitch tokens refresh: {jsonResponse}')
@@ -196,13 +196,8 @@ class TwitchTokensRepository():
         with open(self.__twitchTokensFile, 'w') as file:
             json.dump(jsonContents, file, indent = 4, sort_keys = True)
 
-        if self.__tokensExpireInSeconds is None or self.__tokensExpireInSeconds > expiresIn:
-            if self.__isDebugLoggingEnabled:
-                self.__timber.log('TwitchTokensRepository', f'Current tokensExpireInSeconds value is {self.__tokensExpireInSeconds}, will be overwritten with {expiresIn} ({expiresIn - self.__tokensExpireInBuffer} after subtracting buffer) from \"{twitchHandle}\"')
-
-            self.__tokensExpireInSeconds = expiresIn - self.__tokensExpireInBuffer
-
-        self.__timber.log('TwitchTokensRepository', f'Saved new Twitch tokens for \"{twitchHandle}\" (expires in {self.__tokensExpireInSeconds} seconds)')
+        self.__timber.log('TwitchTokensRepository', f'Saved new Twitch tokens for \"{twitchHandle}\" (which expire in {expiresInSeconds} seconds)')
+        self.__updateExpiresInSeconds(expiresInSeconds)
 
     def requireAccessToken(self, twitchHandle: str) -> str:
         accessToken = self.getAccessToken(twitchHandle)
@@ -219,6 +214,18 @@ class TwitchTokensRepository():
             raise ValueError(f'\"refreshToken\" value for \"{twitchHandle}\" in \"{self.__twitchTokensFile}\" is malformed: \"{refreshToken}\"')
 
         return refreshToken
+
+    def __updateExpiresInSeconds(self, expiresInSeconds: int):
+        if not utils.isValidNum(expiresInSeconds):
+            raise ValueError(f'expiresInSeconds argument is malformed: \"{expiresInSeconds}\"')
+        elif expiresInSeconds < 900: # 900 seconds = 15 minutes
+            raise ValueError(f'expiresInSeconds argument is overly aggressive: {expiresInSeconds}')
+
+        if self.__tokensExpireInSeconds is None or self.__tokensExpireInSeconds > expiresInSeconds:
+            if self.__isDebugLoggingEnabled:
+                self.__timber.log('TwitchTokensRepository', f'Current tokensExpireInSeconds value is {self.__tokensExpireInSeconds}, will be overwritten with {expiresInSeconds} ({expiresInSeconds - self.__tokensExpireInSecondsBuffer} after subtracting buffer)')
+
+            self.__tokensExpireInSeconds = expiresInSeconds - self.__tokensExpireInSecondsBuffer
 
     def validateAndRefreshAccessToken(
         self,
