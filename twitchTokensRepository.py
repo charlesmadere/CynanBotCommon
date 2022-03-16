@@ -119,8 +119,8 @@ class TwitchTokensRepository():
             raise RuntimeError(f'Exception occurred when attempting to request new Twitch tokens for \"{twitchHandle}\": {e}')
 
         if rawResponse.status_code != 200:
-            self.__timber.log('TwitchTokensRepository', f'Encountered non-200 HTTP status code when requesting new Twitch tokens for \"{twitchHandle}\"')
-            raise RuntimeError(f'Encountered non-200 HTTP status code when requesting new Twitch tokens for \"{twitchHandle}\"')
+            self.__timber.log('TwitchTokensRepository', f'Encountered non-200 HTTP status code when requesting new Twitch tokens for \"{twitchHandle}\": {rawResponse.status_code}')
+            raise RuntimeError(f'Encountered non-200 HTTP status code when requesting new Twitch tokens for \"{twitchHandle}\": {rawResponse.status_code}')
 
         jsonResponse: Dict[str, object] = None
         try:
