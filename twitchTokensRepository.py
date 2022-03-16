@@ -22,6 +22,18 @@ class TwitchAccessTokenMissingException(Exception):
         super().__init__(message)
 
 
+class TwitchExpiresInMissingException(Exception):
+
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
+class TwitchExpiresInOverlyAggressiveException(Exception):
+
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
 class TwitchRefreshTokenMissingException(Exception):
 
     def __init__(self, message: str):
@@ -139,6 +151,7 @@ class TwitchTokensRepository():
 
         accessToken = utils.getStrFromDict(jsonResponse, 'access_token', fallback = '')
         refreshToken = utils.getStrFromDict(jsonResponse, 'refresh_token', fallback = '')
+        expiresIn = utils.getIntFromDict(jsonResponse, 'expires_in', fallback = -1)
 
         if not utils.isValidStr(accessToken):
             self.__timber.log('TwitchTokensRepository', f'Received malformed \"access_token\" ({accessToken}) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
@@ -146,6 +159,12 @@ class TwitchTokensRepository():
         elif not utils.isValidStr(refreshToken):
             self.__timber.log('TwitchTokensRepository', f'Received malformed \"refresh_token\" ({refreshToken}) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
             raise TwitchRefreshTokenMissingException(f'Received malformed \"refresh_token\" ({refreshToken}) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
+        elif not utils.isValidNum(expiresIn):
+            self.__timber.log('TwitchTokensRepository', f'Received malformed \"expires_in\" ({expiresIn}) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
+            raise TwitchExpiresInMissingException(f'Received malformed \"expires_in\" ({expiresIn}) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
+        elif expiresIn < 900:
+            self.__timber.log('TwitchTokensRepository', f'Received overly aggressive \"expires_in\" ({expiresIn}) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
+            raise TwitchExpiresInOverlyAggressiveException(f'Received overly aggressive \"expires_in\" ({expiresIn}) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
 
         if self.__isDebugLoggingEnabled:
             self.__timber.log('TwitchTokensRepository', f'JSON response for \"{twitchHandle}\" Twitch tokens refresh: {jsonResponse}')
@@ -159,7 +178,7 @@ class TwitchTokensRepository():
         with open(self.__twitchTokensFile, 'w') as file:
             json.dump(jsonContents, file, indent = 4, sort_keys = True)
 
-        self.__timber.log('TwitchTokensRepository', f'Saved new Twitch tokens for \"{twitchHandle}\"')
+        self.__timber.log('TwitchTokensRepository', f'Saved new Twitch tokens for \"{twitchHandle}\" (expires in {expiresIn} seconds)')
 
     def requireAccessToken(self, twitchHandle: str) -> str:
         accessToken = self.getAccessToken(twitchHandle)
