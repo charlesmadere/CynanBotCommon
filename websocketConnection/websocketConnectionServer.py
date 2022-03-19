@@ -122,6 +122,10 @@ class WebsocketConnectionServer():
             except Exception as e:
                 self.__timber.log('WebsocketConnectionServer', f'Encountered exception within `__start()`: {e}')
 
+                if str(e) == 'Event loop is closed':
+                    self.__timber.log('WebsocketConnectionServer', f'Breaking from `__start()` loop')
+                    break
+
             if self.__isDebugLoggingEnabled:
                 self.__timber.log('WebsocketConnectionServer', f'Sleeping within `__start()`')
 
