@@ -4,6 +4,7 @@ from typing import Dict, Pattern
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
@@ -18,6 +19,7 @@ try:
         TrueFalseTriviaQuestion
 except:
     import utils
+    from timber.timber import Timber
 
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.multipleChoiceTriviaQuestion import \
@@ -35,11 +37,15 @@ class TriviaGameRepository():
 
     def __init__(
         self,
+        timber: Timber,
         triviaRepository: TriviaRepository
     ):
-        if triviaRepository is None:
+        if timber is None:
+            raise ValueError(f'timber argument is malformed: \"{timber}\"')
+        elif triviaRepository is None:
             raise ValueError(f'triviaRepository argument is malformed: \"{triviaRepository}\"')
 
+        self.__timber: Timber = timber
         self.__triviaRepository: TriviaRepository = triviaRepository
         self.__states: Dict[str, TriviaGameState] = dict()
         self.__fullWordAnswerRegEx: Pattern = re.compile(r"\w+|\d+", re.IGNORECASE)
@@ -250,6 +256,8 @@ class TriviaGameRepository():
             raise RuntimeError(f'there is no TriviaGameState available for Twitch channel \"{twitchChannel}\"')
         elif state.getTriviaQuestion() is None:
             raise RuntimeError(f'there is no trivia question available for Twitch channel \"{twitchChannel}\"')
+
+        self.__timber.log('TriviaGameRepository', f'Starting new trivia game for {userName}:{userId} in {twitchChannel}...')
 
         state.startNewTriviaGame(
             userIdThatRedeemed = userId,
