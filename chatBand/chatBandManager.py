@@ -75,7 +75,7 @@ class ChatBandManager():
         chatBandMember: ChatBandMember = self.__chatBandMemberCache[self.__getCooldownKey(twitchChannel, author)]
 
         if chatBandMember is None:
-            jsonContents = self.__readJson(twitchChannel)
+            jsonContents = self.__readJsonForTwitchChannel(twitchChannel)
 
             if utils.hasItems(jsonContents):
                 for key in jsonContents:
@@ -151,17 +151,18 @@ class ChatBandManager():
 
         return jsonContents
 
-    def __readJson(self, twitchChannel: str) -> ChatBandMember:
+    def __readJsonForTwitchChannel(self, twitchChannel: str) -> ChatBandMember:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
         jsonContents = self.__readAllJson()
-        if not utils.hasItems(jsonContents):
-            return None
+        twitchChannelsJson: Dict[str, object] = jsonContents.get('twitchChannels')
+        if not utils.hasItems(twitchChannelsJson):
+            raise ValueError(f'\"twitchChannels\" JSON contents of Chat Band file \"{self.__chatBandFile}\" is missing/empty')
 
-        for key in jsonContents:
+        for key in twitchChannelsJson:
             if key.lower() == twitchChannel.lower():
-                return jsonContents[key]
+                return twitchChannelsJson[key]
 
         return None
 

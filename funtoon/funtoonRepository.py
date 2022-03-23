@@ -102,8 +102,8 @@ class FuntoonRepository():
             return False
 
     def __isDebugLoggingEnabled(self) -> bool:
-        jsonContents = self.__readJson()
-        return utils.getBoolFromDict(jsonContents, 'debugLoggingEnabled', False)
+        jsonContents = self.__readAllJson()
+        return utils.getBoolFromDict(jsonContents, 'debugLoggingEnabled', fallback = False)
 
     def pkmnBattle(self, userThatRedeemed: str, userToBattle: str, twitchChannel: str) -> bool:
         if not utils.isValidStr(userThatRedeemed):
@@ -200,7 +200,7 @@ class FuntoonRepository():
             data = userThatRedeemed
         )
 
-    def __readJson(self) -> Dict[str, object]:
+    def __readAllJson(self) -> Dict[str, object]:
         if not os.path.exists(self.__funtoonRepositoryFile):
             raise FileNotFoundError(f'Funtoon repository file not found: \"{self.__funtoonRepositoryFile}\"')
 
@@ -218,8 +218,7 @@ class FuntoonRepository():
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
-        jsonContents = self.__readJson()
-
+        jsonContents = self.__readAllJson()
         twitchChannelsJson: Dict[str, object] = jsonContents.get('twitchChannels')
         if not utils.hasItems(twitchChannelsJson):
             raise ValueError(f'\"twitchChannels\" JSON contents of Funtoon repository file \"{self.__funtoonRepositoryFile}\" is missing/empty')
