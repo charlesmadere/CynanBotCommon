@@ -67,6 +67,10 @@ class TranslationHelper():
             self.__timber.log('TranslationHelper', f'Exception occurred when attempting to fetch translation from DeepL for \"{text}\": {e}')
             raise RuntimeError(f'Exception occurred when attempting to fetch translation from DeepL for \"{text}\": {e}')
 
+        if rawResponse.status_code != 200:
+            self.__timber.log('TranslationHelper', f'Encountered non-200 HTTP status code when fetching translation from DeepL for \"{text}\": {rawResponse.status_code}')
+            raise RuntimeError(f'Encountered non-200 HTTP status code when fetching translation from DeepL for \"{text}\": {rawResponse.status_code}')
+
         jsonResponse: Dict[str, object] = None
         try:
             jsonResponse = rawResponse.json()

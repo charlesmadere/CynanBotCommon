@@ -63,6 +63,10 @@ class AnalogueStoreRepository():
             self.__timber.log('AnalogueStoreRepository', f'Exception occurred when attempting to fetch Analogue store stock: {e}')
             raise RuntimeError(f'Exception occurred when attempting to fetch Analogue store stock: {e}')
 
+        if rawResponse.status_code != 200:
+            self.__timber.log('AnalogueStoreRepository', f'Encountered non-200 HTTP status code when fetching Analogue store stock: {rawResponse.status_code}')
+            raise RuntimeError(f'Encountered non-200 HTTP status code when fetching Analogue store stock: {rawResponse.status_code}')
+
         htmlTree = html.fromstring(rawResponse.content)
         if htmlTree is None:
             self.__timber.log('AnalogueStoreRepository', f'Analogue store\'s htmlTree is malformed: \"{htmlTree}\"')

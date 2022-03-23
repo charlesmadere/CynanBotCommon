@@ -61,6 +61,10 @@ class JishoHelper():
             self.__timber.log('JishoHelper', f'Exception occurred when attempting to search Jisho for \"{query}\": {e}')
             raise RuntimeError(f'Exception occurred when attempting to search Jisho for \"{query}\": {e}')
 
+        if rawResponse.status_code != 200:
+            self.__timber.log('JishoHelper', f'Encountered non-200 HTTP status code when searching Jisho for \"{query}\": {rawResponse.status_code}')
+            raise RuntimeError(f'Encountered non-200 HTTP status code when searching Jisho for \"{query}\": {rawResponse.status_code}')
+
         jsonResponse: Dict[str, object] = None
         try:
             jsonResponse = rawResponse.json()
