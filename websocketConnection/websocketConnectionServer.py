@@ -123,6 +123,8 @@ class WebsocketConnectionServer():
                 self.__timber.log('WebsocketConnectionServer', f'Encountered exception within `__start()`: {e}')
 
                 if str(e) == 'Event loop is closed':
+                    # this annoying code provides us an escape from this infinite loop when using
+                    # CTRL+C at the terminal to stop the bot
                     self.__timber.log('WebsocketConnectionServer', f'Breaking from `__start()` loop')
                     break
 
