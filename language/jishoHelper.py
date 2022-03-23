@@ -48,11 +48,11 @@ class JishoHelper():
             raise ValueError(f'query argument is malformed: \"{query}\"')
 
         query = query.strip()
+        encodedQuery = quote(query)
         self.__timber.log('JishoHelper', f'Looking up \"{query}\" at Jisho...')
 
         rawResponse = None
         try:
-            encodedQuery = quote(query)
             rawResponse = requests.get(
                 url = f'https://jisho.org/api/v1/search/words?keyword={encodedQuery}',
                 timeout = utils.getDefaultTimeout()
