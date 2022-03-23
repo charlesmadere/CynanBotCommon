@@ -72,6 +72,7 @@ class ChatBandManager():
         elif not utils.isValidStr(message):
             raise ValueError(f'message argument is malformed: \"{message}\"')
 
+        isDebugLoggingEnabled = self.__isDebugLoggingEnabled()
         chatBandMember: ChatBandMember = self.__chatBandMemberCache[self.__getCooldownKey(twitchChannel, author)]
 
         if chatBandMember is None:
@@ -90,12 +91,19 @@ class ChatBandManager():
                         )
 
                         self.__chatBandMemberCache[self.__getCooldownKey(twitchChannel, author)] = chatBandMember
+
+                        if isDebugLoggingEnabled:
+                            self.__timber.log('ChatBandManager', f'Saving \"{twitchChannel}\" chat band member in cache: {self.__toEventData(chatBandMember)}')
+
                         break
 
         if chatBandMember is None:
             self.__chatBandMemberCache[self.__getCooldownKey(twitchChannel, author)] = self.__stubChatBandMember
 
         if chatBandMember is not None and chatBandMember is not self.__stubChatBandMember and chatBandMember.isEnabled() and chatBandMember.getKeyPhrase() == message:
+            if isDebugLoggingEnabled:
+                self.__timber.log('ChatBandManager', f'Found corresponding \"{twitchChannel}\" chat band member for given message: {self.__toEventData(chatBandMember)}')
+
             return chatBandMember
         else:
             return None
@@ -107,6 +115,10 @@ class ChatBandManager():
             raise ValueError(f'author argument is malformed: \"{author}\"')
 
         return f'{twitchChannel.lower()}:{author.lower()}'
+
+    def __isDebugLoggingEnabled(self) -> bool:
+        jsonContents = self.__readAllJson()
+        return utils.getBoolFromDict(jsonContents, 'debugLoggingEnabled', fallback = False)
 
     async def playInstrumentForMessage(self, twitchChannel: str, author: str, message: str) -> bool:
         if not utils.isValidStr(twitchChannel):
@@ -128,6 +140,9 @@ class ChatBandManager():
             return False
         elif not self.__lastChatBandMessageTimes.isReadyAndUpdate(self.__getCooldownKey(twitchChannel, author)):
             return False
+
+        if self.__isDebugLoggingEnabled():
+            self.__timber.log('ChatBandManager', f'New \"{twitchChannel}\" Chat Band event: {self.__toEventData(chatBandMember)}')
 
         await self.__websocketConnectionServer.sendEvent(
             twitchChannel = twitchChannel,

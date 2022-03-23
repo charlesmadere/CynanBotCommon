@@ -74,7 +74,9 @@ class FuntoonRepository():
             'event': event
         }
 
-        if self.__isDebugLoggingEnabled():
+        isDebugLoggingEnabled = self.__isDebugLoggingEnabled()
+
+        if isDebugLoggingEnabled:
             self.__timber.log('FuntoonRepository', f'Hitting Funtoon API \"{url}\" for \"{twitchChannel}\" for event \"{event}\" with JSON payload:\n{jsonPayload}')
 
         rawResponse = None
@@ -93,7 +95,7 @@ class FuntoonRepository():
             return False
 
         if rawResponse is not None and rawResponse.status_code == 200:
-            if self.__isDebugLoggingEnabled():
+            if isDebugLoggingEnabled:
                 self.__timber.log('FuntoonRepository', f'Successfully hit Funtoon API \"{url}\" for \"{twitchChannel}\" for event \"{event}\"')
 
             return True
