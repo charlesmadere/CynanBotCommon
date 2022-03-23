@@ -78,11 +78,10 @@ class TwitchTokensRepository():
         return utils.getStrFromDict(jsonContents, 'accessToken', fallback = '')
 
     def getExpiringTwitchHandles(self) -> List[str]:
-        expiringTwitchHandles: List[str] = list()
-
         if not utils.hasItems(self.__tokenExpirations):
-            return expiringTwitchHandles
+            return None
 
+        expiringTwitchHandles: List[str] = list()
         nowDateTime = datetime.now(timezone.utc)
 
         for twitchHandle, expirationDateTime in self.__tokenExpirations.items():
