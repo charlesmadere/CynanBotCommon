@@ -259,8 +259,8 @@ class TwitchTokensRepository():
                 timeout = utils.getDefaultTimeout()
             )
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            self.__timber.log('TwitchTokensRepository', f'Exception occurred when attempting to validate Twitch access token: {e}')
-            raise RuntimeError(f'Exception occurred when attempting to validate Twitch access token: {e}')
+            self.__timber.log('TwitchTokensRepository', f'Exception occurred when attempting to validate \"{twitchHandle}\" Twitch access token": {e}')
+            raise RuntimeError(f'Exception occurred when attempting to validate \"{twitchHandle}\" Twitch access token: {e}')
 
         # We are intentionally NOT checking the HTTP status code here.
 
@@ -268,8 +268,8 @@ class TwitchTokensRepository():
         try:
             jsonResponse = rawResponse.json()
         except JSONDecodeError as e:
-            self.__timber.log('TwitchTokensRepository', f'Exception occurred when attempting to decode Twitch access token validation response for \"{twitchHandle}\" into JSON: {e}')
-            raise RuntimeError(f'Exception occurred when attempting to decode Twitch access token validation response for \"{twitchHandle}\" into JSON: {e}')
+            self.__timber.log('TwitchTokensRepository', f'Exception occurred when attempting to decode \"{twitchHandle}\" Twitch access token validation response into JSON: {e}')
+            raise RuntimeError(f'Exception occurred when attempting to decode \"{twitchHandle}\" Twitch access token validation response into JSON: {e}')
 
         if rawResponse.status_code != 200 or jsonResponse.get('client_id') is None or len(jsonResponse['client_id']) == 0:
             self.__refreshTokens(
