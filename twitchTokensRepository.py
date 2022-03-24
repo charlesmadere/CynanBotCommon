@@ -199,7 +199,7 @@ class TwitchTokensRepository():
             self.__timber.log('TwitchTokensRepository', f'JSON response for \"{twitchHandle}\" Twitch tokens refresh: {jsonResponse}')
 
         jsonContents = self.__readAllJson()
-        jsonContents[twitchHandle] = {
+        jsonContents['twitchHandles'][twitchHandle] = {
             'accessToken': accessToken,
             'refreshToken': refreshToken
         }
