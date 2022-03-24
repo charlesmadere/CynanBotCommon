@@ -136,7 +136,7 @@ class JokeTriviaRepository():
 
         return False
 
-    def __readJson(self) -> List[Dict[str, object]]:
+    def __readAllJson(self) -> Dict[str, object]:
         if not path.exists(self.__jokeTriviaFile):
             raise FileNotFoundError(f'Joke trivia file not found: \"{self.__jokeTriviaFile}\"')
 
