@@ -85,7 +85,7 @@ class TwitchTokensRepository():
         nowDateTime = datetime.now(timezone.utc)
 
         for twitchHandle, expirationDateTime in self.__tokenExpirations.items():
-            if expirationDateTime is None or expirationDateTime + self.__tokensExpirationBuffer >= nowDateTime:
+            if expirationDateTime is None or nowDateTime + self.__tokensExpirationBuffer >= expirationDateTime:
                 expiringTwitchHandles.append(twitchHandle)
 
         return expiringTwitchHandles
