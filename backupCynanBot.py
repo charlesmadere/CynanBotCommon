@@ -15,7 +15,7 @@ def findFiles(src) -> List[str]:
         filesToAdd: List[str] = list()
 
         for file in files:
-            if file.endswith('.json') or file.endswith('.sqlite'):
+            if file.endswith('.json') or file.endswith('.old') or file.endswith('.sqlite'):
                 filesToAdd.append(os.path.join(root, file))
 
         if len(filesToAdd) >= 1:
