@@ -111,16 +111,16 @@ class JokeTriviaRepository():
             raise ValueError(f'triviaType \"{triviaType}\" is unknown for Local Trivia Repository: {questionJson}')
 
     def __fetchRandomQuestionJson(self) -> Dict[str, object]:
-        jsonContents = self.__readJson()
+        jsonContents = self.__readAllJson()
 
-        triviaQuestions: List[Dict[str, object]] = jsonContents['triviaQuestions']
+        triviaQuestions: List[Dict[str, object]] = jsonContents.get('triviaQuestions')
         if not utils.hasItems(triviaQuestions):
             raise ValueError(f'\"triviaQuestions\" field in joke trivia file \"{self.__jokeTriviaFile}\" is malformed: \"{triviaQuestions}\"')
 
         return random.choice(triviaQuestions)
 
     def __getMaxRetryCount(self) -> int:
-        jsonContents = self.__readJson()
+        jsonContents = self.__readAllJson()
         return utils.getIntFromDict(jsonContents, 'maxRetryCount', 5)
 
     def __isCompatible(self, compatibleWith: List[str], twitchChannel: str) -> bool:
