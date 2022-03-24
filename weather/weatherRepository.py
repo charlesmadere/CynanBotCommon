@@ -1,4 +1,3 @@
-import locale
 from datetime import timedelta
 from json.decoder import JSONDecodeError
 from typing import Dict, List
