@@ -9,6 +9,13 @@
             "type": "boolean"
         },
         {
+            "compatibleWith": [ "Oatsngoats" ],
+            "correctAnswers": [ true ],
+            "id": "t0YkaoJkNSoy",
+            "question": "InternetBound is Oats's simp.",
+            "type": "boolean"
+        },
+        {
             "compatibleWith": [ "Imyt" ],
             "correctAnswers": [ true ],
             "id": "ljlq4yo7sowj",
