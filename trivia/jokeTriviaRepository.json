@@ -166,10 +166,10 @@
         },
         {
             "compatibleWith": [ "Oatsngoats" ],
-            "correctAnswers": [ "Butter" ],
+            "correctAnswers": [ "Butter", "Nut Sweat" ],
             "id": "e6hQTfEL7ws4",
             "question": "How did Oats's chair become stained?",
-            "responses": [ "Butter", "Ketchup", "Sweat", "Doritos" ],
+            "responses": [ "Butter", "Ketchup", "Nut Sweat", "Doritos" ],
             "type": "multiple"
         },
         {
