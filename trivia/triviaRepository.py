@@ -546,15 +546,25 @@ class TriviaRepository():
                 multipleChoiceResponsesJson = resultJson['incorrectAnswers']
             )
 
-            return MultipleChoiceTriviaQuestion(
-                correctAnswers = correctAnswers,
-                multipleChoiceResponses = multipleChoiceResponses,
-                category = category,
-                question = question,
-                triviaId = triviaId,
-                triviaDifficulty = TriviaDifficulty.UNKNOWN,
-                triviaSource = TriviaSource.WILL_FRY_TRIVIA_API
-            )
+            if self.__isActuallyTrueFalseQuestion(correctAnswers, multipleChoiceResponses):
+                return TrueFalseTriviaQuestion(
+                    correctAnswers = utils.strsToBools(correctAnswers),
+                    category = category,
+                    question = question,
+                    triviaId = triviaId,
+                    triviaDifficulty = TriviaDifficulty.UNKNOWN,
+                    triviaSource = TriviaSource.WILL_FRY_TRIVIA_API
+                )
+            else:
+                return MultipleChoiceTriviaQuestion(
+                    correctAnswers = correctAnswers,
+                    multipleChoiceResponses = multipleChoiceResponses,
+                    category = category,
+                    question = question,
+                    triviaId = triviaId,
+                    triviaDifficulty = TriviaDifficulty.UNKNOWN,
+                    triviaSource = TriviaSource.WILL_FRY_TRIVIA_API
+                )
         else:
             raise ValueError(f'triviaType \"{triviaType}\" is not supported for Will Fry Trivia API: {jsonResponse}')
 
@@ -629,6 +639,34 @@ class TriviaRepository():
 
     def __hasQuizApiKey(self) -> bool:
         return utils.isValidStr(self.__quizApiKey)
+
+    def __isActuallyTrueFalseQuestion(
+        self,
+        correctAnswers: List[str],
+        multipleChoiceResponses: List[str]
+    ) -> bool:
+        if not utils.hasItems(correctAnswers):
+            raise ValueError(f'correctAnswers argument is malformed: \"{correctAnswers}\"')
+        elif not utils.hasItems(multipleChoiceResponses):
+            raise ValueError(f'multipleChoiceResponses argument is malformed: \"{multipleChoiceResponses}\"')
+
+        for correctAnswer in correctAnswers:
+            if correctAnswer.lower() != str(True).lower() and correctAnswer.lower() != str(False).lower():
+                return False
+
+        if len(multipleChoiceResponses) != 2:
+            return False
+
+        containsTrue = False
+        containsFalse = False
+
+        for response in multipleChoiceResponses:
+            if response.lower() == str(True).lower():
+                containsTrue = True
+            elif response.lower() == str(False).lower():
+                containsFalse = True
+
+        return containsTrue and containsFalse
 
     def __verifyGoodTriviaQuestion(
         self,

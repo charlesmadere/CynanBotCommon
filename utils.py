@@ -281,3 +281,11 @@ def strToBool(s: str) -> bool:
         raise ValueError(f's argument is malformed: \"{s}\"')
 
     return falseRegEx.match(s) is None
+
+def strsToBools(l: List[str]) -> List[bool]:
+    newList: List[bool] = list()
+
+    for s in l:
+        newList.append(strToBool(s))
+
+    return newList
