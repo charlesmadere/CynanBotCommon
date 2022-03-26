@@ -108,7 +108,7 @@ class TriviaRepository():
 
         for incorrectAnswer in multipleChoiceResponsesJson:
             incorrectAnswer = utils.cleanStr(incorrectAnswer, htmlUnescape = True)
-            add: bool = True
+            add = True
 
             for response in multipleChoiceResponses:
                 if incorrectAnswer.lower() == response.lower():
