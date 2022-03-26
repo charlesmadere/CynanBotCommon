@@ -128,7 +128,7 @@ class TriviaRepository():
         if len(multipleChoiceResponses) < minMultipleChoiceResponses:
             raise ValueError(f'This trivia question doesn\'t have enough multiple choice responses (minimum is {minMultipleChoiceResponses}): \"{multipleChoiceResponses}\"')
 
-        random.shuffle(multipleChoiceResponses)
+        multipleChoiceResponses.sort(key = lambda response: response.lower())
         return multipleChoiceResponses
 
     def __chooseRandomTriviaSource(
