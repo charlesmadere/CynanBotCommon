@@ -224,15 +224,25 @@ class TriviaRepository():
                 multipleChoiceResponsesJson = triviaJson['incorrect_answers']
             )
 
-            return MultipleChoiceTriviaQuestion(
-                correctAnswers = correctAnswers,
-                multipleChoiceResponses = multipleChoiceResponses,
-                category = category,
-                question = question,
-                triviaId = triviaId,
-                triviaDifficulty = triviaDifficulty,
-                triviaSource = TriviaSource.BONGO
-            )
+            if self.__isActuallyTrueFalseQuestion(correctAnswers, multipleChoiceResponses):
+                return TrueFalseTriviaQuestion(
+                    correctAnswers = utils.strsToBools(correctAnswers),
+                    category = category,
+                    question = question,
+                    triviaId = triviaId,
+                    triviaDifficulty = triviaDifficulty,
+                    triviaSource = TriviaSource.BONGO
+                )
+            else:
+                return MultipleChoiceTriviaQuestion(
+                    correctAnswers = correctAnswers,
+                    multipleChoiceResponses = multipleChoiceResponses,
+                    category = category,
+                    question = question,
+                    triviaId = triviaId,
+                    triviaDifficulty = triviaDifficulty,
+                    triviaSource = TriviaSource.BONGO
+                )
         elif triviaType is TriviaType.TRUE_FALSE:
             correctAnswer = utils.getBoolFromDict(triviaJson, 'correct_answer')
             correctAnswers: List[bool] = list()
@@ -373,15 +383,25 @@ class TriviaRepository():
                 multipleChoiceResponsesJson = resultJson['incorrect_answers']
             )
 
-            return MultipleChoiceTriviaQuestion(
-                correctAnswers = correctAnswers,
-                multipleChoiceResponses = multipleChoiceResponses,
-                category = category,
-                question = question,
-                triviaId = triviaId,
-                triviaDifficulty = triviaDifficulty,
-                triviaSource = TriviaSource.OPEN_TRIVIA_DATABASE
-            )
+            if self.__isActuallyTrueFalseQuestion(correctAnswers, multipleChoiceResponses):
+                return TrueFalseTriviaQuestion(
+                    correctAnswers = utils.strsToBools(correctAnswers),
+                    category = category,
+                    question = question,
+                    triviaId = triviaId,
+                    triviaDifficulty = triviaDifficulty,
+                    triviaSource = TriviaSource.OPEN_TRIVIA_DATABASE
+                )
+            else:
+                return MultipleChoiceTriviaQuestion(
+                    correctAnswers = correctAnswers,
+                    multipleChoiceResponses = multipleChoiceResponses,
+                    category = category,
+                    question = question,
+                    triviaId = triviaId,
+                    triviaDifficulty = triviaDifficulty,
+                    triviaSource = TriviaSource.OPEN_TRIVIA_DATABASE
+                )
         elif triviaType is TriviaType.TRUE_FALSE:
             correctAnswer = utils.getBoolFromDict(resultJson, 'correct_answer')
             correctAnswers: List[bool] = list()
@@ -479,15 +499,25 @@ class TriviaRepository():
             multipleChoiceResponsesJson = filteredAnswers
         )
 
-        return MultipleChoiceTriviaQuestion(
-            correctAnswers = correctAnswers,
-            multipleChoiceResponses = multipleChoiceResponses,
-            category = category,
-            question = question,
-            triviaId = triviaId,
-            triviaDifficulty = triviaDifficulty,
-            triviaSource = TriviaSource.QUIZ_API
-        )
+        if self.__isActuallyTrueFalseQuestion(correctAnswers, multipleChoiceResponses):
+            return TrueFalseTriviaQuestion(
+                correctAnswers = utils.strsToBools(correctAnswers),
+                category = category,
+                question = question,
+                triviaId = triviaId,
+                triviaDifficulty = triviaDifficulty,
+                triviaSource = TriviaSource.QUIZ_API
+            )
+        else:
+            return MultipleChoiceTriviaQuestion(
+                correctAnswers = correctAnswers,
+                multipleChoiceResponses = multipleChoiceResponses,
+                category = category,
+                question = question,
+                triviaId = triviaId,
+                triviaDifficulty = triviaDifficulty,
+                triviaSource = TriviaSource.QUIZ_API
+            )
 
     def __fetchTriviaQuestionFromWillFryTriviaApi(self) -> AbsTriviaQuestion:
         self.__timber.log('TriviaRepository', 'Fetching trivia question from Will Fry Trivia API...')
