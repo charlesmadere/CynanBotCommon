@@ -4,21 +4,30 @@ from typing import List
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
+    from CynanBotCommon.trivia.triviaIdGenerator import TriviaIdGenerator
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
 except:
     import utils
 
     from trivia.absTriviaQuestion import AbsTriviaQuestion
+    from trivia.triviaIdGenerator import TriviaIdGenerator
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
 
 
 class AbsTriviaQuestionRepository(ABC):
 
-    def __init__(self, triviaSettingsRepository: TriviaSettingsRepository):
-        if triviaSettingsRepository is None:
+    def __init__(
+        self,
+        triviaIdGenerator: TriviaIdGenerator,
+        triviaSettingsRepository: TriviaSettingsRepository
+    ):
+        if triviaIdGenerator is None:
+            raise ValueError(f'triviaIdGenerator argument is malformed: \"{triviaIdGenerator}\"')
+        elif triviaSettingsRepository is None:
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
 
+        self._triviaIdGenerator: TriviaIdGenerator = triviaIdGenerator
         self._triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
 
     def _buildMultipleChoiceResponsesList(
@@ -70,3 +79,31 @@ class AbsTriviaQuestionRepository(ABC):
     @abstractmethod
     def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
         pass
+
+    def _verifyIsActuallyMultipleChoiceQuestion(
+        self,
+        correctAnswers: List[str],
+        multipleChoiceResponses: List[str]
+    ) -> bool:
+        if not utils.hasItems(correctAnswers):
+            raise ValueError(f'correctAnswers argument is malformed: \"{correctAnswers}\"')
+        elif not utils.hasItems(multipleChoiceResponses):
+            raise ValueError(f'multipleChoiceResponses argument is malformed: \"{multipleChoiceResponses}\"')
+
+        for correctAnswer in correctAnswers:
+            if correctAnswer.lower() != str(True).lower() and correctAnswer.lower() != str(False).lower():
+                return True
+
+        if len(multipleChoiceResponses) != 2:
+            return True
+
+        containsTrue = False
+        containsFalse = False
+
+        for response in multipleChoiceResponses:
+            if response.lower() == str(True).lower():
+                containsTrue = True
+            elif response.lower() == str(False).lower():
+                containsFalse = True
+
+        return not containsTrue or not containsFalse
