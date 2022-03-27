@@ -15,6 +15,8 @@ try:
     from CynanBotCommon.trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
+    from CynanBotCommon.trivia.triviaExceptions import \
+        UnsupportedTriviaTypeException
     from CynanBotCommon.trivia.triviaIdGenerator import TriviaIdGenerator
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
@@ -31,6 +33,7 @@ except:
     from trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
     from trivia.triviaDifficulty import TriviaDifficulty
+    from trivia.triviaExceptions import UnsupportedTriviaTypeException
     from trivia.triviaIdGenerator import TriviaIdGenerator
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
@@ -54,7 +57,7 @@ class BongoTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self.__timber: Timber = timber
 
     def fetchTriviaQuestion(self) -> AbsTriviaQuestion:
-        self.__timber.log('BongoTriviaRepository', 'Fetching trivia question...')
+        self.__timber.log('BongoTriviaQuestionRepository', 'Fetching trivia question...')
 
         rawResponse = None
         try:
@@ -63,29 +66,28 @@ class BongoTriviaQuestionRepository(AbsTriviaQuestionRepository):
                 timeout = utils.getDefaultTimeout()
             )
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            self.__timber.log('BongoTriviaRepository', f'Exception occurred when attempting to fetch trivia from Bongo: {e}')
+            self.__timber.log('BongoTriviaQuestionRepository', f'Exception occurred when attempting to fetch trivia from Bongo: {e}')
             return None
 
         if rawResponse.status_code != 200:
-            self.__timber.log('BongoTriviaRepository', f'Encountered non-200 HTTP status code from Bongo: \"{rawResponse.status_code}\"')
+            self.__timber.log('BongoTriviaQuestionRepository', f'Encountered non-200 HTTP status code from Bongo: \"{rawResponse.status_code}\"')
             return None
 
         jsonResponse: List[Dict[str, object]] = None
         try:
             jsonResponse = rawResponse.json()
         except JSONDecodeError as e:
-            self.__timber.log('BongoTriviaRepository', f'Exception occurred when attempting to decode Bongo\'s response into JSON: {e}')
+            self.__timber.log('BongoTriviaQuestionRepository', f'Exception occurred when attempting to decode response into JSON: {e}')
             raise RuntimeError(f'Exception occurred when attempting to decode Bongo\'s response into JSON: {e}')
 
         if not utils.hasItems(jsonResponse):
-            self.__timber.log('BongoTriviaRepository', f'Rejecting Bongo\'s API data due to null/empty contents: {jsonResponse}')
-            raise ValueError(f'Rejecting Bongo\'s API data due to null/empty contents: {jsonResponse}')
+            self.__timber.log('BongoTriviaQuestionRepository', f'Rejecting JSON data due to null/empty contents: {jsonResponse}')
+            raise ValueError(f'Rejecting Bongo\'s JSON data due to null/empty contents: {jsonResponse}')
 
         triviaJson: Dict[str, object] = jsonResponse[0]
-
         if not utils.hasItems(triviaJson):
-            self.__timber.log('BongoTriviaRepository', f'Rejecting Bongo\'s API data due to null/empty contents: {jsonResponse}')
-            raise ValueError(f'Rejecting Bongo\'s API data due to null/empty contents: {jsonResponse}')
+            self.__timber.log('BongoTriviaQuestionRepository', f'Rejecting JSON data due to null/empty contents: {jsonResponse}')
+            raise ValueError(f'Rejecting Bongo\'s JSON data due to null/empty contents: {jsonResponse}')
 
         triviaDifficulty = TriviaDifficulty.fromStr(utils.getStrFromDict(triviaJson, 'difficulty', fallback = ''))
         triviaType = TriviaType.fromStr(utils.getStrFromDict(triviaJson, 'type'))
@@ -124,6 +126,7 @@ class BongoTriviaQuestionRepository(AbsTriviaQuestionRepository):
                     triviaSource = TriviaSource.BONGO
                 )
             else:
+                self.__timber.log('BongoTriviaQuestionRepository', f'Encountered a multiple choice question that is actually true/false')
                 triviaType = TriviaType.TRUE_FALSE
 
         if triviaType is TriviaType.TRUE_FALSE:
@@ -140,4 +143,4 @@ class BongoTriviaQuestionRepository(AbsTriviaQuestionRepository):
                 triviaSource = TriviaSource.BONGO
             )
 
-        raise RuntimeError(f'Fetched unknown TriviaType from Bongo: \"{triviaType}\"')
+        raise UnsupportedTriviaTypeException(f'triviaType \"{triviaType}\" is not supported for Bongo: {jsonResponse}')
