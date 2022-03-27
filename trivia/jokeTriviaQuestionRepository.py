@@ -37,7 +37,7 @@ except:
     from trivia.trueFalseTriviaQuestion import TrueFalseTriviaQuestion
 
 
-class JokeTriviaRepository(AbsTriviaQuestionRepository):
+class JokeTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
     def __init__(
         self,
