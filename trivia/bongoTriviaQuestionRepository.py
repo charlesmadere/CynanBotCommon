@@ -1,7 +1,5 @@
-import random
-from datetime import datetime, timedelta, timezone
 from json.decoder import JSONDecodeError
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
 import requests
 from requests import ConnectionError, HTTPError, Timeout
@@ -14,19 +12,14 @@ try:
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.absTriviaQuestionRepository import \
         AbsTriviaQuestionRepository
-    from CynanBotCommon.trivia.jokeTriviaRepository import JokeTriviaRepository
     from CynanBotCommon.trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
-    from CynanBotCommon.trivia.questionAnswerTriviaQuestion import \
-        QuestionAnswerTriviaQuestion
-    from CynanBotCommon.trivia.triviaContentCode import TriviaContentCode
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
     from CynanBotCommon.trivia.triviaIdGenerator import TriviaIdGenerator
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
     from CynanBotCommon.trivia.triviaSource import TriviaSource
     from CynanBotCommon.trivia.triviaType import TriviaType
-    from CynanBotCommon.trivia.triviaVerifier import TriviaVerifier
     from CynanBotCommon.trivia.trueFalseTriviaQuestion import \
         TrueFalseTriviaQuestion
 except:
@@ -35,18 +28,13 @@ except:
 
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.absTriviaQuestionRepository import AbsTriviaQuestionRepository
-    from trivia.jokeTriviaRepository import JokeTriviaRepository
     from trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
-    from trivia.questionAnswerTriviaQuestion import \
-        QuestionAnswerTriviaQuestion
-    from trivia.triviaContentCode import TriviaContentCode
     from trivia.triviaDifficulty import TriviaDifficulty
     from trivia.triviaIdGenerator import TriviaIdGenerator
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
     from trivia.triviaType import TriviaType
-    from trivia.triviaVerifier import TriviaVerifier
     from trivia.trueFalseTriviaQuestion import TrueFalseTriviaQuestion
 
 
