@@ -4,6 +4,9 @@ from typing import List
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
+    from CynanBotCommon.trivia.triviaExceptions import (
+        NoTriviaMultipleChoiceResponsesException,
+        TooFewTriviaMultipleChoiceResponsesException)
     from CynanBotCommon.trivia.triviaIdGenerator import TriviaIdGenerator
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
@@ -11,6 +14,9 @@ except:
     import utils
 
     from trivia.absTriviaQuestion import AbsTriviaQuestion
+    from trivia.triviaExceptions import (
+        NoTriviaMultipleChoiceResponsesException,
+        TooFewTriviaMultipleChoiceResponsesException)
     from trivia.triviaIdGenerator import TriviaIdGenerator
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
 
@@ -67,11 +73,11 @@ class AbsTriviaQuestionRepository(ABC):
                     break
 
         if not utils.hasItems(multipleChoiceResponses):
-            raise ValueError(f'This trivia question doesn\'t have any multiple choice responses: \"{multipleChoiceResponses}\"')
+            raise NoTriviaMultipleChoiceResponsesException(f'This trivia question doesn\'t have any multiple choice responses: \"{multipleChoiceResponses}\"')
 
         minMultipleChoiceResponses = self._triviaSettingsRepository.getMinMultipleChoiceResponses()
         if len(multipleChoiceResponses) < minMultipleChoiceResponses:
-            raise ValueError(f'This trivia question doesn\'t have enough multiple choice responses (minimum is {minMultipleChoiceResponses}): \"{multipleChoiceResponses}\"')
+            raise TooFewTriviaMultipleChoiceResponsesException(f'This trivia question doesn\'t have enough multiple choice responses (minimum is {minMultipleChoiceResponses}): \"{multipleChoiceResponses}\"')
 
         multipleChoiceResponses.sort(key = lambda response: response.lower())
         return multipleChoiceResponses
