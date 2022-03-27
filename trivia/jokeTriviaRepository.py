@@ -7,11 +7,16 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
+    from CynanBotCommon.trivia.absTriviaQuestionRepository import \
+        AbsTriviaQuestionRepository
     from CynanBotCommon.trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
     from CynanBotCommon.trivia.questionAnswerTriviaQuestion import \
         QuestionAnswerTriviaQuestion
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
+    from CynanBotCommon.trivia.triviaIdGenerator import TriviaIdGenerator
+    from CynanBotCommon.trivia.triviaSettingsRepository import \
+        TriviaSettingsRepository
     from CynanBotCommon.trivia.triviaSource import TriviaSource
     from CynanBotCommon.trivia.triviaType import TriviaType
     from CynanBotCommon.trivia.trueFalseTriviaQuestion import \
@@ -21,21 +26,28 @@ except:
     from timber.timber import Timber
 
     from trivia.absTriviaQuestion import AbsTriviaQuestion
+    from trivia.absTriviaQuestionRepository import AbsTriviaQuestionRepository
     from trivia.questionAnswerTriviaQuestion import \
         QuestionAnswerTriviaQuestion
     from trivia.triviaDifficulty import TriviaDifficulty
+    from trivia.triviaIdGenerator import TriviaIdGenerator
+    from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
     from trivia.triviaType import TriviaType
     from trivia.trueFalseTriviaQuestion import TrueFalseTriviaQuestion
 
 
-class JokeTriviaRepository():
+class JokeTriviaRepository(AbsTriviaQuestionRepository):
 
     def __init__(
         self,
         timber: Timber,
+        triviaIdGenerator: TriviaIdGenerator,
+        triviaSettingsRepository: TriviaSettingsRepository,
         jokeTriviaFile: str = 'CynanBotCommon/trivia/jokeTriviaRepository.json'
     ):
+        super().__init__(triviaIdGenerator, triviaSettingsRepository)
+
         if timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not utils.isValidStr(jokeTriviaFile):
@@ -44,7 +56,7 @@ class JokeTriviaRepository():
         self.__timber: Timber = timber
         self.__jokeTriviaFile: str = jokeTriviaFile
 
-    def fetchRandomQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
+    def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
@@ -53,7 +65,7 @@ class JokeTriviaRepository():
         maxRetryCount = self.__getMaxRetryCount()
 
         while questionJson is None and retryCount <= maxRetryCount:
-            questionJson = self.__fetchRandomQuestionJson()
+            questionJson = self.__fetchTriviaQuestionJson()
 
             compatibleWith: List[str] = questionJson.get('compatibleWith')
             if not self.__isCompatible(compatibleWith, twitchChannel):
@@ -110,7 +122,7 @@ class JokeTriviaRepository():
         else:
             raise ValueError(f'triviaType \"{triviaType}\" is unknown for Local Trivia Repository: {questionJson}')
 
-    def __fetchRandomQuestionJson(self) -> Dict[str, object]:
+    def __fetchTriviaQuestionJson(self) -> Dict[str, object]:
         jsonContents = self.__readAllJson()
 
         triviaQuestions: List[Dict[str, object]] = jsonContents.get('triviaQuestions')
