@@ -24,6 +24,8 @@ try:
         QuestionAnswerTriviaQuestion
     from CynanBotCommon.trivia.triviaContentCode import TriviaContentCode
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
+    from CynanBotCommon.trivia.triviaExceptions import \
+        TooManyTriviaFetchAttemptsException
     from CynanBotCommon.trivia.triviaIdGenerator import TriviaIdGenerator
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
@@ -48,6 +50,7 @@ except:
         QuestionAnswerTriviaQuestion
     from trivia.triviaContentCode import TriviaContentCode
     from trivia.triviaDifficulty import TriviaDifficulty
+    from trivia.triviaExceptions import TooManyTriviaFetchAttemptsException
     from trivia.triviaIdGenerator import TriviaIdGenerator
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
@@ -502,7 +505,7 @@ class TriviaRepository():
 
                 retryCount = retryCount + 1
 
-        raise RuntimeError(f'Unable to fetch trivia from {attemptedTriviaSources} after {retryCount} attempts (max attempts is {maxRetryCount})')
+        raise TooManyTriviaFetchAttemptsException(f'Unable to fetch trivia from {attemptedTriviaSources} after {retryCount} attempts (max attempts is {maxRetryCount})')
 
     def __hasQuizApiKey(self) -> bool:
         return utils.isValidStr(self.__quizApiKey)
