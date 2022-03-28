@@ -5,6 +5,7 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.triviaExceptions import (
+        NoTriviaCorrectAnswersException,
         NoTriviaMultipleChoiceResponsesException,
         TooFewTriviaMultipleChoiceResponsesException)
     from CynanBotCommon.trivia.triviaIdGenerator import TriviaIdGenerator
@@ -15,6 +16,7 @@ except:
 
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.triviaExceptions import (
+        NoTriviaCorrectAnswersException,
         NoTriviaMultipleChoiceResponsesException,
         TooFewTriviaMultipleChoiceResponsesException)
     from trivia.triviaIdGenerator import TriviaIdGenerator
@@ -42,9 +44,9 @@ class AbsTriviaQuestionRepository(ABC):
         multipleChoiceResponsesJson: List[str]
     ) -> List[str]:
         if not utils.hasItems(correctAnswers):
-            raise ValueError(f'correctAnswers argument is malformed: \"{correctAnswers}\"')
+            raise NoTriviaCorrectAnswersException(f'correctAnswers argument is malformed: \"{correctAnswers}\"')
         elif not utils.hasItems(multipleChoiceResponsesJson):
-            raise ValueError(f'multipleChoiceResponsesJson argument is malformed: \"{multipleChoiceResponsesJson}\"')
+            raise NoTriviaMultipleChoiceResponsesException(f'multipleChoiceResponsesJson argument is malformed: \"{multipleChoiceResponsesJson}\"')
 
         maxMultipleChoiceResponses = self._triviaSettingsRepository.getMaxMultipleChoiceResponses()
         multipleChoiceResponses: List[str] = list()
@@ -92,9 +94,9 @@ class AbsTriviaQuestionRepository(ABC):
         multipleChoiceResponses: List[str]
     ) -> bool:
         if not utils.hasItems(correctAnswers):
-            raise ValueError(f'correctAnswers argument is malformed: \"{correctAnswers}\"')
+            raise NoTriviaCorrectAnswersException(f'correctAnswers argument is malformed: \"{correctAnswers}\"')
         elif not utils.hasItems(multipleChoiceResponses):
-            raise ValueError(f'multipleChoiceResponses argument is malformed: \"{multipleChoiceResponses}\"')
+            raise NoTriviaMultipleChoiceResponsesException(f'multipleChoiceResponses argument is malformed: \"{multipleChoiceResponses}\"')
 
         for correctAnswer in correctAnswers:
             if correctAnswer.lower() != str(True).lower() and correctAnswer.lower() != str(False).lower():
