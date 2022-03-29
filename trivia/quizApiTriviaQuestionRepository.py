@@ -89,13 +89,13 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
             raise RuntimeError(f'Exception occurred when attempting to decode Quiz API\'s response into JSON: {e}')
 
         if not utils.hasItems(jsonResponse):
-            self.__timber.log('QuizApiTriviaQuestionRepository', f'Rejecting Quiz API\'s data due to null/empty contents: {jsonResponse}')
-            raise ValueError(f'Rejecting Quiz API data due to null/empty contents: {jsonResponse}')
+            self.__timber.log('QuizApiTriviaQuestionRepository', f'Rejecting Quiz API\'s JSON data due to null/empty contents: {jsonResponse}')
+            raise ValueError(f'Rejecting Quiz API JSON data due to null/empty contents: {jsonResponse}')
 
         triviaJson: Dict[str, object] = jsonResponse[0]
         if not utils.hasItems(triviaJson):
-            self.__timber.log('QuizApiTriviaQuestionRepository', f'Rejecting Quiz API\'s data due to null/empty contents: {jsonResponse}')
-            raise ValueError(f'Rejecting Quiz API\'s data due to null/empty contents: {jsonResponse}')
+            self.__timber.log('QuizApiTriviaQuestionRepository', f'Rejecting Quiz API\'s JSON data due to null/empty contents: {jsonResponse}')
+            raise ValueError(f'Rejecting Quiz API\'s JSON data due to null/empty contents: {jsonResponse}')
 
         triviaDifficulty = TriviaDifficulty.fromStr(utils.getStrFromDict(triviaJson, 'difficulty', fallback = ''))
         category = utils.getStrFromDict(triviaJson, 'category', fallback = '', clean = True)
@@ -135,25 +135,27 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
                     correctAnswers.append(pair[1])
 
         if not utils.hasItems(correctAnswers):
-            raise NoTriviaCorrectAnswersException(f'Rejecting Quiz API\'s data due to there being no correct answers: {jsonResponse}')
+            raise NoTriviaCorrectAnswersException(f'Rejecting Quiz API\'s JSON data due to there being no correct answers: {jsonResponse}')
 
         multipleChoiceResponses = self._buildMultipleChoiceResponsesList(
             correctAnswers = correctAnswers,
             multipleChoiceResponsesJson = filteredAnswers
         )
 
-        if self._verifyIsActuallyMultipleChoiceQuestion(correctAnswers, multipleChoiceResponses):
-            return MultipleChoiceTriviaQuestion(
-                correctAnswers = correctAnswers,
-                multipleChoiceResponses = multipleChoiceResponses,
-                category = category,
-                question = question,
-                triviaId = triviaId,
-                triviaDifficulty = triviaDifficulty,
-                triviaSource = TriviaSource.QUIZ_API
-            )
-        else:
-            triviaType = TriviaType.TRUE_FALSE
+        if triviaType is TriviaType.MULTIPLE_CHOICE:
+            if self._verifyIsActuallyMultipleChoiceQuestion(correctAnswers, multipleChoiceResponses):
+                return MultipleChoiceTriviaQuestion(
+                    correctAnswers = correctAnswers,
+                    multipleChoiceResponses = multipleChoiceResponses,
+                    category = category,
+                    question = question,
+                    triviaId = triviaId,
+                    triviaDifficulty = triviaDifficulty,
+                    triviaSource = TriviaSource.QUIZ_API
+                )
+            else:
+                self.__timber.log('QuizApiTriviaQuestionRepository', f'Encountered a multiple choice question that is better suited for true/false')
+                triviaType = TriviaType.TRUE_FALSE
 
         if triviaType is TriviaType.TRUE_FALSE:
             return TrueFalseTriviaQuestion(

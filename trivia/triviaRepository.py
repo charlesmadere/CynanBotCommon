@@ -1,12 +1,6 @@
 import random
 from datetime import datetime, timedelta, timezone
-from json.decoder import JSONDecodeError
-from typing import Dict, List
-
-import requests
-from requests import ConnectionError, HTTPError, Timeout
-from requests.exceptions import ReadTimeout, TooManyRedirects
-from urllib3.exceptions import MaxRetryError, NewConnectionError
+from typing import Dict, List, Optional
 
 try:
     import CynanBotCommon.utils as utils
@@ -18,17 +12,15 @@ try:
         BongoTriviaQuestionRepository
     from CynanBotCommon.trivia.jokeTriviaQuestionRepository import \
         JokeTriviaQuestionRepository
+    from CynanBotCommon.trivia.jServiceTriviaQuestionRepository import \
+        JServiceTriviaQuestionRepository
     from CynanBotCommon.trivia.openTriviaDatabaseTriviaQuestionRepository import \
         OpenTriviaDatabaseTriviaQuestionRepository
-    from CynanBotCommon.trivia.questionAnswerTriviaQuestion import \
-        QuestionAnswerTriviaQuestion
     from CynanBotCommon.trivia.quizApiTriviaQuestionRepository import \
         QuizApiTriviaQuestionRepository
     from CynanBotCommon.trivia.triviaContentCode import TriviaContentCode
-    from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
     from CynanBotCommon.trivia.triviaExceptions import \
         TooManyTriviaFetchAttemptsException
-    from CynanBotCommon.trivia.triviaIdGenerator import TriviaIdGenerator
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
     from CynanBotCommon.trivia.triviaSource import TriviaSource
@@ -43,16 +35,14 @@ except:
     from trivia.absTriviaQuestionRepository import AbsTriviaQuestionRepository
     from trivia.jokeTriviaQuestionRepository import \
         JokeTriviaQuestionRepository
+    from trivia.jServiceTriviaQuestionRepository import \
+        JServiceTriviaQuestionRepository
     from trivia.openTriviaDatabaseTriviaQuestionRepository import \
         OpenTriviaDatabaseTriviaQuestionRepository
-    from trivia.questionAnswerTriviaQuestion import \
-        QuestionAnswerTriviaQuestion
     from trivia.quizApiTriviaQuestionRepository import \
         QuizApiTriviaQuestionRepository
     from trivia.triviaContentCode import TriviaContentCode
-    from trivia.triviaDifficulty import TriviaDifficulty
     from trivia.triviaExceptions import TooManyTriviaFetchAttemptsException
-    from trivia.triviaIdGenerator import TriviaIdGenerator
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
     from trivia.triviaVerifier import TriviaVerifier
@@ -64,25 +54,25 @@ class TriviaRepository():
         self,
         bongoTriviaQuestionRepository: BongoTriviaQuestionRepository,
         jokeTriviaQuestionRepository: JokeTriviaQuestionRepository,
+        jServiceTriviaQuestionRepository: JServiceTriviaQuestionRepository,
         openTriviaDatabaseTriviaQuestionRepository: OpenTriviaDatabaseTriviaQuestionRepository,
-        quizApiTriviaQuestionRepository: QuizApiTriviaQuestionRepository,
+        quizApiTriviaQuestionRepository: Optional[QuizApiTriviaQuestionRepository],
         timber: Timber,
-        triviaIdGenerator: TriviaIdGenerator,
         triviaSettingsRepository: TriviaSettingsRepository,
         triviaVerifier: TriviaVerifier,
         willFryTriviaQuestionRepository: WillFryTriviaQuestionRepository,
-        cacheTimeDelta: timedelta = timedelta(minutes = 2, seconds = 30)
+        cacheTimeDelta: Optional[timedelta] = timedelta(minutes = 2, seconds = 30)
     ):
         if bongoTriviaQuestionRepository is None:
             raise ValueError(f'bongoTriviaQuestionRepository argument is malformed: \"{bongoTriviaQuestionRepository}\"')
         elif jokeTriviaQuestionRepository is None:
             raise ValueError(f'jokeTriviaQuestionRepository argument is malformed: \"{jokeTriviaQuestionRepository}\"')
+        elif jServiceTriviaQuestionRepository is None:
+            raise ValueError(f'jServiceTriviaQuestionRepository argument is malformed: \"{jServiceTriviaQuestionRepository}\"')
         elif openTriviaDatabaseTriviaQuestionRepository is None:
             raise ValueError(f'openTriviaDatabaseTriviaQuestionRepository argument is malformed: \"{openTriviaDatabaseTriviaQuestionRepository}\"')
         elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif triviaIdGenerator is None:
-            raise ValueError(f'triviaIdGenerator argument is malformed: \"{triviaIdGenerator}\"')
         elif triviaSettingsRepository is None:
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
         elif triviaVerifier is None:
@@ -92,10 +82,10 @@ class TriviaRepository():
 
         self.__bongoTriviaQuestionRepository: AbsTriviaQuestionRepository = bongoTriviaQuestionRepository
         self.__jokeTriviaQuestionRepository: AbsTriviaQuestionRepository = jokeTriviaQuestionRepository
+        self.__jServiceTriviaQuestionRepository: AbsTriviaQuestionRepository = jServiceTriviaQuestionRepository
         self.__openTriviaDatabaseTriviaQuestionRepository: AbsTriviaQuestionRepository = openTriviaDatabaseTriviaQuestionRepository
         self.__quizApiTriviaQuestionRepository: AbsTriviaQuestionRepository = quizApiTriviaQuestionRepository
         self.__timber: Timber = timber
-        self.__triviaIdGenerator: TriviaIdGenerator = triviaIdGenerator
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
         self.__triviaVerifier: TriviaVerifier = triviaVerifier
         self.__willFryTriviaQuestionRepository: AbsTriviaQuestionRepository = willFryTriviaQuestionRepository
@@ -138,60 +128,6 @@ class TriviaRepository():
             raise RuntimeError(f'Trivia sources returned by random.choices() is malformed: \"{randomChoices}\"')
 
         return randomChoices[0]
-
-    def __fetchTriviaQuestionFromJService(self) -> AbsTriviaQuestion:
-        self.__timber.log('TriviaRepository', 'Fetching trivia question from jService...')
-
-        rawResponse = None
-        try:
-            rawResponse = requests.get(
-                url = 'https://jservice.io/api/random',
-                timeout = utils.getDefaultTimeout()
-            )
-        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            self.__timber.log('TriviaRepository', f'Exception occurred when attempting to fetch trivia from jService: {e}')
-            return None
-
-        if rawResponse.status_code != 200:
-            self.__timber.log('TriviaRepository', f'Encountered non-200 HTTP status code from jService: \"{rawResponse.status_code}\"')
-            return None
-
-        jsonResponse: List[Dict[str, object]] = None
-        try:
-            jsonResponse = rawResponse.json()
-        except JSONDecodeError as e:
-            self.__timber.log('TriviaRepository', f'Exception occurred when attempting to decode jService\'s response into JSON: {e}')
-            raise RuntimeError(f'Exception occurred when attempting to decode jService\'s response into JSON: {e}')
-
-        if not utils.hasItems(jsonResponse):
-            self.__timber.log('TriviaRepository', f'Rejecting jService data due to null/empty contents: {jsonResponse}')
-            raise ValueError(f'Rejecting jService data due to null/empty contents: {jsonResponse}')
-
-        resultJson: Dict[str, object] = jsonResponse[0]
-
-        if not utils.hasItems(resultJson):
-            self.__timber.log('TriviaRepository', f'Rejecting jService data due to null/empty contents: {jsonResponse}')
-            raise ValueError(f'Rejecting jService data due to null/empty contents: {jsonResponse}')
-
-        category = utils.getStrFromDict(resultJson['category'], 'title', fallback = '', clean = True)
-        question = utils.getStrFromDict(resultJson, 'question', clean = True)
-
-        triviaId = utils.getStrFromDict(resultJson, 'id', fallback = '')
-        if not utils.isValidStr(triviaId):
-            triviaId = self.__triviaIdGenerator.generate(category = category, question = question)
-
-        correctAnswer = utils.getStrFromDict(resultJson, 'answer', clean = True)
-        correctAnswers: List[str] = list()
-        correctAnswers.append(correctAnswer)
-
-        return QuestionAnswerTriviaQuestion(
-            correctAnswers = correctAnswers,
-            category = category,
-            question = question,
-            triviaId = triviaId,
-            triviaDifficulty = TriviaDifficulty.UNKNOWN,
-            triviaSource = TriviaSource.J_SERVICE
-        )
 
     def fetchTrivia(
         self,
@@ -241,7 +177,7 @@ class TriviaRepository():
             elif triviaSource is TriviaSource.JOKE_TRIVIA_REPOSITORY:
                 triviaQuestion = self.__jokeTriviaQuestionRepository.fetchTriviaQuestion(twitchChannel)
             elif triviaSource is TriviaSource.J_SERVICE:
-                triviaQuestion = self.__fetchTriviaQuestionFromJService()
+                triviaQuestion = self.__jServiceTriviaQuestionRepository.fetchTriviaQuestion(twitchChannel)
             elif triviaSource is TriviaSource.OPEN_TRIVIA_DATABASE:
                 triviaQuestion = self.__openTriviaDatabaseTriviaQuestionRepository.fetchTriviaQuestion(twitchChannel)
             elif triviaSource is TriviaSource.QUIZ_API:

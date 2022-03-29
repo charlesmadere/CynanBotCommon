@@ -66,19 +66,19 @@ class BongoTriviaQuestionRepository(AbsTriviaQuestionRepository):
                 timeout = utils.getDefaultTimeout()
             )
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            self.__timber.log('BongoTriviaQuestionRepository', f'Exception occurred when attempting to fetch trivia from Bongo: {e}')
+            self.__timber.log('BongoTriviaQuestionRepository', f'Exception occurred when attempting to fetch trivia question: {e}')
             return None
 
         if rawResponse.status_code != 200:
-            self.__timber.log('BongoTriviaQuestionRepository', f'Encountered non-200 HTTP status code from Bongo: \"{rawResponse.status_code}\"')
+            self.__timber.log('BongoTriviaQuestionRepository', f'Encountered non-200 HTTP status code: \"{rawResponse.status_code}\"')
             return None
 
         jsonResponse: List[Dict[str, object]] = None
         try:
             jsonResponse = rawResponse.json()
         except JSONDecodeError as e:
-            self.__timber.log('BongoTriviaQuestionRepository', f'Exception occurred when attempting to decode response into JSON: {e}')
-            raise RuntimeError(f'Exception occurred when attempting to decode Bongo\'s response into JSON: {e}')
+            self.__timber.log('BongoTriviaQuestionRepository', f'Exception occurred when attempting to decode Bongo\'s API response into JSON: {e}')
+            raise RuntimeError(f'Exception occurred when attempting to decode Bongo\'s API response into JSON: {e}')
 
         if not utils.hasItems(jsonResponse):
             self.__timber.log('BongoTriviaQuestionRepository', f'Rejecting JSON data due to null/empty contents: {jsonResponse}')
@@ -126,7 +126,7 @@ class BongoTriviaQuestionRepository(AbsTriviaQuestionRepository):
                     triviaSource = TriviaSource.BONGO
                 )
             else:
-                self.__timber.log('BongoTriviaQuestionRepository', f'Encountered a multiple choice question that is actually true/false')
+                self.__timber.log('BongoTriviaQuestionRepository', f'Encountered a multiple choice question that is better suited for true/false')
                 triviaType = TriviaType.TRUE_FALSE
 
         if triviaType is TriviaType.TRUE_FALSE:

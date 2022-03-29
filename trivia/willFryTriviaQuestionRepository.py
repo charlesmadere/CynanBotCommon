@@ -66,7 +66,7 @@ class WillFryTriviaQuestionRepository(AbsTriviaQuestionRepository):
                 timeout = utils.getDefaultTimeout()
             )
         except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            self.__timber.log('WillFryTriviaQuestionRepository', f'Exception occurred when attempting to fetch trivia: {e}')
+            self.__timber.log('WillFryTriviaQuestionRepository', f'Exception occurred when attempting to fetch trivia question: {e}')
             return None
 
         if rawResponse.status_code != 200:
@@ -77,16 +77,16 @@ class WillFryTriviaQuestionRepository(AbsTriviaQuestionRepository):
         try:
             jsonResponse = rawResponse.json()
         except JSONDecodeError as e:
-            self.__timber.log('WillFryTriviaQuestionRepository', f'Exception occurred when attempting to decode response into JSON: {e}')
-            raise RuntimeError(f'Exception occurred when attempting to decode Will Fry Trivia response into JSON: {e}')
+            self.__timber.log('WillFryTriviaQuestionRepository', f'Exception occurred when attempting to decode Will Fry Trivia\'s response into JSON: {e}')
+            raise RuntimeError(f'Exception occurred when attempting to decode Will Fry Trivia\'s API response into JSON: {e}')
 
         if not utils.hasItems(jsonResponse):
-            self.__timber.log('WillFryTriviaQuestionRepository', f'Rejecting JSON data due to null/empty contents: {jsonResponse}')
+            self.__timber.log('WillFryTriviaQuestionRepository', f'Rejecting Will Fry Trivia\'s JSON data due to null/empty contents: {jsonResponse}')
             raise ValueError(f'Rejecting Will Fry Trivia\'s JSON data due to null/empty contents: {jsonResponse}')
 
         triviaJson: Dict[str, object] = jsonResponse[0]
         if not utils.hasItems(triviaJson):
-            self.__timber.log('WillFryTriviaQuestionRepository', f'Rejecting JSON data due to null/empty contents: {jsonResponse}')
+            self.__timber.log('WillFryTriviaQuestionRepository', f'Rejecting Will Fry Trivia\'s JSON data due to null/empty contents: {jsonResponse}')
             raise ValueError(f'Rejecting Will Fry Trivia\'s JSON data due to null/empty contents: {jsonResponse}')
 
         triviaType = TriviaType.fromStr(utils.getStrFromDict(triviaJson, 'type'))
@@ -118,7 +118,7 @@ class WillFryTriviaQuestionRepository(AbsTriviaQuestionRepository):
                     triviaSource = TriviaSource.WILL_FRY_TRIVIA_API
                 )
             else:
-                self.__timber.log('WillFryTriviaQuestionRepository', f'Encountered a multiple choice question that is actually true/false')
+                self.__timber.log('WillFryTriviaQuestionRepository', f'Encountered a multiple choice question that is better suited for true/false')
                 triviaType = TriviaType.TRUE_FALSE
 
         if triviaType is TriviaType.TRUE_FALSE:

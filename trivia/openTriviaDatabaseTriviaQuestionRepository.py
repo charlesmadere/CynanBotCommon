@@ -77,28 +77,28 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
         try:
             jsonResponse = rawResponse.json()
         except JSONDecodeError as e:
-            self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Exception occurred when attempting to decode Open Trivia Database\'s response into JSON: {e}')
-            raise RuntimeError(f'Exception occurred when attempting to decode Open Trivia Database\'s response into JSON: {e}')
+            self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Exception occurred when attempting to decode Open Trivia Database\'s API response into JSON: {e}')
+            raise RuntimeError(f'Exception occurred when attempting to decode Open Trivia Database\'s API response into JSON: {e}')
 
         if not utils.hasItems(jsonResponse):
-            self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Rejecting Open Trivia Database\'s data due to null/empty JSON contents: {jsonResponse}')
-            raise ValueError(f'Rejecting Open Trivia Database\'s data due to null/empty JSON contents: {jsonResponse}')
+            self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Rejecting Open Trivia Database\'s JSON data due to null/empty JSON contents: {jsonResponse}')
+            raise ValueError(f'Rejecting Open Trivia Database\'s JSON data due to null/empty JSON contents: {jsonResponse}')
         elif utils.getIntFromDict(jsonResponse, 'response_code', fallback = -1) != 0:
-            self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Rejecting Open Trivia Database\'s data due to bad \"response_code\" value: {jsonResponse}')
-            raise ValueError(f'Rejecting Open Trivia Database\'s data due to bad \"response_code\" value: {jsonResponse}')
+            self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Rejecting Open Trivia Database\'s JSON data due to bad \"response_code\" value: {jsonResponse}')
+            raise ValueError(f'Rejecting Open Trivia Database\'s JSON data due to bad \"response_code\" value: {jsonResponse}')
         elif not utils.hasItems(jsonResponse.get('results')):
-            self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Rejecting Open Trivia Database\'s data due to missing/null/empty \"results\" array: {jsonResponse}')
-            raise ValueError(f'Rejecting Open Trivia Database\'s data due to missing/null/empty \"results\" array: {jsonResponse}')
+            self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Rejecting Open Trivia Database\'s JSON data due to missing/null/empty \"results\" array: {jsonResponse}')
+            raise ValueError(f'Rejecting Open Trivia Database\'s JSON data due to missing/null/empty \"results\" array: {jsonResponse}')
 
-        resultJson: Dict[str, object] = jsonResponse['results'][0]
-        if not utils.hasItems(resultJson):
-            self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Rejecting Open Trivia Database\'s data due to null/empty \"results\" contents: {jsonResponse}')
-            raise ValueError(f'Rejecting Open Trivia Database\'s API data due to null/empty contents: {jsonResponse}')
+        triviaJson: Dict[str, object] = jsonResponse['results'][0]
+        if not utils.hasItems(triviaJson):
+            self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Rejecting Open Trivia Database\'s JSON data due to null/empty \"results\" contents: {jsonResponse}')
+            raise ValueError(f'Rejecting Open Trivia Database\'s JSON API data due to null/empty contents: {jsonResponse}')
 
-        triviaDifficulty = TriviaDifficulty.fromStr(utils.getStrFromDict(resultJson, 'difficulty', fallback = ''))
-        triviaType = TriviaType.fromStr(utils.getStrFromDict(resultJson, 'type'))
-        category = utils.getStrFromDict(resultJson, 'category', fallback = '', clean = True, htmlUnescape = True)
-        question = utils.getStrFromDict(resultJson, 'question', clean = True, htmlUnescape = True)
+        triviaDifficulty = TriviaDifficulty.fromStr(utils.getStrFromDict(triviaJson, 'difficulty', fallback = ''))
+        triviaType = TriviaType.fromStr(utils.getStrFromDict(triviaJson, 'type'))
+        category = utils.getStrFromDict(triviaJson, 'category', fallback = '', clean = True, htmlUnescape = True)
+        question = utils.getStrFromDict(triviaJson, 'question', clean = True, htmlUnescape = True)
 
         triviaId = self._triviaIdGenerator.generate(
             category = category,
@@ -107,13 +107,13 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
         )
 
         if triviaType is TriviaType.MULTIPLE_CHOICE:
-            correctAnswer = utils.getStrFromDict(resultJson, 'correct_answer', clean = True, htmlUnescape = True)
+            correctAnswer = utils.getStrFromDict(triviaJson, 'correct_answer', clean = True, htmlUnescape = True)
             correctAnswers: List[str] = list()
             correctAnswers.append(correctAnswer)
 
             multipleChoiceResponses = self._buildMultipleChoiceResponsesList(
                 correctAnswers = correctAnswers,
-                multipleChoiceResponsesJson = resultJson['incorrect_answers']
+                multipleChoiceResponsesJson = triviaJson['incorrect_answers']
             )
 
             if self._verifyIsActuallyMultipleChoiceQuestion(correctAnswers, multipleChoiceResponses):
@@ -127,10 +127,11 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
                     triviaSource = TriviaSource.OPEN_TRIVIA_DATABASE
                 )
             else:
+                self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', 'Encountered a multiple choice question that is better suited for true/false')
                 triviaType = TriviaType.TRUE_FALSE
 
         if triviaType is TriviaType.TRUE_FALSE:
-            correctAnswer = utils.getBoolFromDict(resultJson, 'correct_answer')
+            correctAnswer = utils.getBoolFromDict(triviaJson, 'correct_answer')
             correctAnswers: List[bool] = list()
             correctAnswers.append(correctAnswer)
 
