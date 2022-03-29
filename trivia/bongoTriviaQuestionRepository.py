@@ -56,7 +56,7 @@ class BongoTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         self.__timber: Timber = timber
 
-    def fetchTriviaQuestion(self) -> AbsTriviaQuestion:
+    def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
         self.__timber.log('BongoTriviaQuestionRepository', 'Fetching trivia question...')
 
         rawResponse = None
