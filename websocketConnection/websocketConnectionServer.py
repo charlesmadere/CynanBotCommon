@@ -97,10 +97,10 @@ class WebsocketConnectionServer():
             raise ValueError(f'eventLoop argument is malformed: \"{eventLoop}\"')
 
         if self.__isStarted:
-            self.__timber.log('WebsocketConnectionServer', f'Not starting server as it has already been started')
+            self.__timber.log('WebsocketConnectionServer', 'Not starting server as it has already been started')
             return
 
-        self.__timber.log('WebsocketConnectionServer', f'Starting server...')
+        self.__timber.log('WebsocketConnectionServer', 'Starting server...')
         self.__isStarted = True
         eventLoop.create_task(self.__start())
 
