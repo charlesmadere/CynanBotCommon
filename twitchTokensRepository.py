@@ -49,7 +49,7 @@ class TwitchTokensRepository():
         oauth2TokenUrl: str = 'https://id.twitch.tv/oauth2/token',
         oauth2ValidateUrl: str = 'https://id.twitch.tv/oauth2/validate',
         twitchTokensFile: str = 'CynanBotCommon/twitchTokensRepository.json',
-        tokensExpirationBuffer: timedelta = timedelta(minutes = 5)
+        tokensExpirationBuffer: timedelta = timedelta(minutes = 10)
     ):
         if timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
