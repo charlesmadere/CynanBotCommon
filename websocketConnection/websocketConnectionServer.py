@@ -100,8 +100,8 @@ class WebsocketConnectionServer():
             self.__timber.log('WebsocketConnectionServer', 'Not starting server as it has already been started')
             return
 
-        self.__timber.log('WebsocketConnectionServer', 'Starting server...')
         self.__isStarted = True
+        self.__timber.log('WebsocketConnectionServer', 'Starting server...')
         eventLoop.create_task(self.__start())
 
     async def __start(self):
