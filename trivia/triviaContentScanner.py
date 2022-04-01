@@ -35,7 +35,7 @@ class TriviaContentScanner():
         self.__maxQuestionLength: int = maxQuestionLength
         self.__bannedWordsFile: str = bannedWordsFile
 
-    def __readBannedWordsList(self) -> List[str]:
+    async def __readBannedWordsList(self) -> List[str]:
         if not path.exists(self.__bannedWordsFile):
             raise FileNotFoundError(f'Banned Words file not found: \"{self.__bannedWordsFile}\"')
 
@@ -55,17 +55,17 @@ class TriviaContentScanner():
         else:
             return None
 
-    def verify(self, question: AbsTriviaQuestion) -> TriviaContentCode:
+    async def verify(self, question: AbsTriviaQuestion) -> TriviaContentCode:
         if question is None:
             return TriviaContentCode.IS_NONE
 
-        lengthsContentCode = self.__verifyQuestionContentLengths(question)
+        lengthsContentCode = await self.__verifyQuestionContentLengths(question)
         if lengthsContentCode is not TriviaContentCode.OK:
             return lengthsContentCode
 
-        return self.__verifyQuestionContentSanity(question)
+        return await self.__verifyQuestionContentSanity(question)
 
-    def __verifyQuestionContentLengths(self, question: AbsTriviaQuestion) -> TriviaContentCode:
+    async def __verifyQuestionContentLengths(self, question: AbsTriviaQuestion) -> TriviaContentCode:
         if len(question.getQuestion()) >= self.__maxQuestionLength:
             return TriviaContentCode.QUESTION_TOO_LONG
 
@@ -75,7 +75,7 @@ class TriviaContentScanner():
 
         return TriviaContentCode.OK
 
-    def __verifyQuestionContentSanity(self, question: AbsTriviaQuestion) -> TriviaContentCode:
+    async def __verifyQuestionContentSanity(self, question: AbsTriviaQuestion) -> TriviaContentCode:
         strings: List[str] = list()
         strings.append(question.getQuestion().lower())
         strings.append(question.getPrompt().lower())
@@ -83,7 +83,7 @@ class TriviaContentScanner():
         for response in question.getResponses():
             strings.append(response.lower())
 
-        bannedWords = self.__readBannedWordsList()
+        bannedWords = await self.__readBannedWordsList()
 
         for string in strings:
             if not utils.isValidStr(string):

@@ -38,7 +38,7 @@ class AbsTriviaQuestionRepository(ABC):
         self._triviaIdGenerator: TriviaIdGenerator = triviaIdGenerator
         self._triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
 
-    def _buildMultipleChoiceResponsesList(
+    async def _buildMultipleChoiceResponsesList(
         self,
         correctAnswers: List[str],
         multipleChoiceResponsesJson: List[str]
@@ -48,7 +48,7 @@ class AbsTriviaQuestionRepository(ABC):
         elif not utils.hasItems(multipleChoiceResponsesJson):
             raise NoTriviaMultipleChoiceResponsesException(f'multipleChoiceResponsesJson argument is malformed: \"{multipleChoiceResponsesJson}\"')
 
-        maxMultipleChoiceResponses = self._triviaSettingsRepository.getMaxMultipleChoiceResponses()
+        maxMultipleChoiceResponses = await self._triviaSettingsRepository.getMaxMultipleChoiceResponses()
         multipleChoiceResponses: List[str] = list()
 
         for correctAnswer in correctAnswers:
@@ -77,7 +77,7 @@ class AbsTriviaQuestionRepository(ABC):
         if not utils.hasItems(multipleChoiceResponses):
             raise NoTriviaMultipleChoiceResponsesException(f'This trivia question doesn\'t have any multiple choice responses: \"{multipleChoiceResponses}\"')
 
-        minMultipleChoiceResponses = self._triviaSettingsRepository.getMinMultipleChoiceResponses()
+        minMultipleChoiceResponses = await self._triviaSettingsRepository.getMinMultipleChoiceResponses()
         if len(multipleChoiceResponses) < minMultipleChoiceResponses:
             raise TooFewTriviaMultipleChoiceResponsesException(f'This trivia question doesn\'t have enough multiple choice responses (minimum is {minMultipleChoiceResponses}): \"{multipleChoiceResponses}\"')
 
@@ -85,10 +85,10 @@ class AbsTriviaQuestionRepository(ABC):
         return multipleChoiceResponses
 
     @abstractmethod
-    def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
+    async def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
         pass
 
-    def _verifyIsActuallyMultipleChoiceQuestion(
+    async def _verifyIsActuallyMultipleChoiceQuestion(
         self,
         correctAnswers: List[str],
         multipleChoiceResponses: List[str]

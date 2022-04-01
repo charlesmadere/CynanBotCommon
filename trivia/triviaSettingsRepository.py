@@ -22,8 +22,8 @@ class TriviaSettingsRepository():
 
         self.__settingsFile: str = settingsFile
 
-    def getAvailableTriviaSourcesAndWeights(self) -> Dict[TriviaSource, int]:
-        jsonContents = self.__readJson()
+    async def getAvailableTriviaSourcesAndWeights(self) -> Dict[TriviaSource, int]:
+        jsonContents = await self.__readJson()
 
         triviaSourcesJson: Dict[str, object] = jsonContents['trivia_sources']
         if not utils.hasItems(triviaSourcesJson):
@@ -50,8 +50,8 @@ class TriviaSettingsRepository():
 
         return triviaSources
 
-    def getMaxMultipleChoiceResponses(self) -> int:
-        jsonContents = self.__readJson()
+    async def getMaxMultipleChoiceResponses(self) -> int:
+        jsonContents = await self.__readJson()
         maxMultipleChoiceResponses = utils.getIntFromDict(jsonContents, 'max_multiple_choice_responses', 5)
         minMultipleChoiceResponses = utils.getIntFromDict(jsonContents, 'min_multiple_choice_responses', 2)
 
@@ -62,8 +62,8 @@ class TriviaSettingsRepository():
 
         return maxMultipleChoiceResponses
 
-    def getMaxRetryCount(self) -> int:
-        jsonContents = self.__readJson()
+    async def getMaxRetryCount(self) -> int:
+        jsonContents = await self.__readJson()
         maxRetryCount = utils.getIntFromDict(jsonContents, 'max_retry_count', 3)
 
         if maxRetryCount < 2:
@@ -71,8 +71,8 @@ class TriviaSettingsRepository():
 
         return maxRetryCount
 
-    def getMinMultipleChoiceResponses(self) -> int:
-        jsonContents = self.__readJson()
+    async def getMinMultipleChoiceResponses(self) -> int:
+        jsonContents = await self.__readJson()
         maxMultipleChoiceResponses = utils.getIntFromDict(jsonContents, 'max_multiple_choice_responses', 5)
         minMultipleChoiceResponses = utils.getIntFromDict(jsonContents, 'min_multiple_choice_responses', 2)
 
@@ -83,7 +83,7 @@ class TriviaSettingsRepository():
 
         return minMultipleChoiceResponses
 
-    def __readJson(self) -> Dict[str, object]:
+    async def __readJson(self) -> Dict[str, object]:
         if not os.path.exists(self.__settingsFile):
             raise FileNotFoundError(f'Trivia settings file not found: \"{self.__settingsFile}\"')
 

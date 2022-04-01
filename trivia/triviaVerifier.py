@@ -29,18 +29,18 @@ class TriviaVerifier():
         self.__triviaContentScanner: TriviaContentScanner = triviaContentScanner
         self.__triviaHistoryRepository: TriviaHistoryRepository = triviaHistoryRepository
 
-    def verify(self, question: AbsTriviaQuestion, twitchChannel: str) -> bool:
+    async def verify(self, question: AbsTriviaQuestion, twitchChannel: str) -> bool:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
         if question is None:
             return TriviaContentCode.IS_NONE
 
-        contentScannerCode = self.__triviaContentScanner.verify(question)
+        contentScannerCode = await self.__triviaContentScanner.verify(question)
         if contentScannerCode is not TriviaContentCode.OK:
             return contentScannerCode
 
-        historyRepositoryCode = self.__triviaHistoryRepository.verify(question, twitchChannel)
+        historyRepositoryCode = await self.__triviaHistoryRepository.verify(question, twitchChannel)
         if historyRepositoryCode is not TriviaContentCode.OK:
             return historyRepositoryCode
 

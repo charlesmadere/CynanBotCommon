@@ -56,19 +56,19 @@ class JokeTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self.__timber: Timber = timber
         self.__jokeTriviaFile: str = jokeTriviaFile
 
-    def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
+    async def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
         questionJson: Dict[str, object] = None
         retryCount = 0
-        maxRetryCount = self.__getMaxRetryCount()
+        maxRetryCount = await self.__getMaxRetryCount()
 
         while questionJson is None and retryCount <= maxRetryCount:
-            questionJson = self.__fetchTriviaQuestionJson()
+            questionJson = await self.__fetchTriviaQuestionJson()
 
             compatibleWith: List[str] = questionJson.get('compatibleWith')
-            if not self.__isCompatible(compatibleWith, twitchChannel):
+            if not await self.__isCompatible(compatibleWith, twitchChannel):
                 questionJson = None
 
             retryCount = retryCount + 1
@@ -122,8 +122,8 @@ class JokeTriviaQuestionRepository(AbsTriviaQuestionRepository):
         else:
             raise ValueError(f'triviaType \"{triviaType}\" is unknown for Local Trivia Repository: {questionJson}')
 
-    def __fetchTriviaQuestionJson(self) -> Dict[str, object]:
-        jsonContents = self.__readAllJson()
+    async def __fetchTriviaQuestionJson(self) -> Dict[str, object]:
+        jsonContents = await self.__readAllJson()
 
         triviaQuestions: List[Dict[str, object]] = jsonContents.get('triviaQuestions')
         if not utils.hasItems(triviaQuestions):
@@ -131,11 +131,11 @@ class JokeTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         return random.choice(triviaQuestions)
 
-    def __getMaxRetryCount(self) -> int:
-        jsonContents = self.__readAllJson()
+    async def __getMaxRetryCount(self) -> int:
+        jsonContents = await self.__readAllJson()
         return utils.getIntFromDict(jsonContents, 'maxRetryCount', 5)
 
-    def __isCompatible(self, compatibleWith: List[str], twitchChannel: str) -> bool:
+    async def __isCompatible(self, compatibleWith: List[str], twitchChannel: str) -> bool:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
@@ -148,7 +148,7 @@ class JokeTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         return False
 
-    def __readAllJson(self) -> Dict[str, object]:
+    async def __readAllJson(self) -> Dict[str, object]:
         if not path.exists(self.__jokeTriviaFile):
             raise FileNotFoundError(f'Joke trivia file not found: \"{self.__jokeTriviaFile}\"')
 
