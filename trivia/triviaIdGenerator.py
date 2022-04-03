@@ -11,7 +11,7 @@ class TriviaIdGenerator():
     def __init__(self):
         pass
 
-    def generate(
+    async def generate(
         self,
         question: str,
         category: str = None,

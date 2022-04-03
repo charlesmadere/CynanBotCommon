@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import aiohttp
 
@@ -53,7 +53,7 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self.__clientSession: aiohttp.ClientSession = clientSession
         self.__timber: Timber = timber
 
-    async def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
+    async def fetchTriviaQuestion(self, twitchChannel: Optional[str]) -> AbsTriviaQuestion:
         self.__timber.log('JServiceTriviaQuestionRepository', 'Fetching trivia question...')
 
         response = await self.__clientSession.get('https://jservice.io/api/random')
@@ -81,7 +81,7 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         triviaId = utils.getStrFromDict(triviaJson, 'id', fallback = '')
         if not utils.isValidStr(triviaId):
-            triviaId = self._triviaIdGenerator.generate(category = category, question = question)
+            triviaId = await self._triviaIdGenerator.generate(category = category, question = question)
 
         if triviaType is TriviaType.QUESTION_ANSWER:
             correctAnswer = utils.getStrFromDict(triviaJson, 'answer', clean = True)

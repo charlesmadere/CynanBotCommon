@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import aiohttp
 
@@ -56,7 +56,7 @@ class WillFryTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self.__clientSession: aiohttp.ClientSession = clientSession
         self.__timber: Timber = timber
 
-    async def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
+    async def fetchTriviaQuestion(self, twitchChannel: Optional[str]) -> AbsTriviaQuestion:
         self.__timber.log('WillFryTriviaQuestionRepository', 'Fetching trivia question...')
 
         response = await self.__clientSession.get('https://the-trivia-api.com/questions?limit=1')
@@ -82,19 +82,19 @@ class WillFryTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         triviaId = utils.getStrFromDict(triviaJson, 'id', fallback = '')
         if not utils.isValidStr(triviaId):
-            triviaId = self._triviaIdGenerator.generate(category = category, question = question)
+            triviaId = await self._triviaIdGenerator.generate(category = category, question = question)
 
         if triviaType is TriviaType.MULTIPLE_CHOICE:
             correctAnswer = utils.getStrFromDict(triviaJson, 'correctAnswer', clean = True, htmlUnescape = True)
             correctAnswers: List[str] = list()
             correctAnswers.append(correctAnswer)
 
-            multipleChoiceResponses = self._buildMultipleChoiceResponsesList(
+            multipleChoiceResponses = await self._buildMultipleChoiceResponsesList(
                 correctAnswers = correctAnswers,
                 multipleChoiceResponsesJson = triviaJson['incorrectAnswers']
             )
 
-            if self._verifyIsActuallyMultipleChoiceQuestion(correctAnswers, multipleChoiceResponses):
+            if await self._verifyIsActuallyMultipleChoiceQuestion(correctAnswers, multipleChoiceResponses):
                 return MultipleChoiceTriviaQuestion(
                     correctAnswers = correctAnswers,
                     multipleChoiceResponses = multipleChoiceResponses,

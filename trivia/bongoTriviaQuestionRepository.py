@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import aiohttp
 
@@ -56,7 +56,7 @@ class BongoTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self.__clientSession: aiohttp.ClientSession = clientSession
         self.__timber: Timber = timber
 
-    async def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
+    async def fetchTriviaQuestion(self, twitchChannel: Optional[str]) -> AbsTriviaQuestion:
         self.__timber.log('BongoTriviaQuestionRepository', 'Fetching trivia question...')
 
         response = await self.__clientSession.get('https://beta-trivia.bongo.best/?limit=1')
@@ -83,7 +83,7 @@ class BongoTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         triviaId = utils.getStrFromDict(triviaJson, 'id', fallback = '')
         if not utils.isValidStr(triviaId):
-            triviaId = self._triviaIdGenerator.generate(
+            triviaId = await self._triviaIdGenerator.generate(
                 category = category,
                 difficulty = triviaDifficulty.toStr(),
                 question = question
@@ -94,15 +94,12 @@ class BongoTriviaQuestionRepository(AbsTriviaQuestionRepository):
             correctAnswers: List[str] = list()
             correctAnswers.append(correctAnswer)
 
-            multipleChoiceResponses = self._buildMultipleChoiceResponsesList(
+            multipleChoiceResponses = await self._buildMultipleChoiceResponsesList(
                 correctAnswers = correctAnswers,
                 multipleChoiceResponsesJson = triviaJson['incorrect_answers']
             )
 
-            if self._verifyIsActuallyMultipleChoiceQuestion(
-                correctAnswers = correctAnswers,
-                multipleChoiceResponses = multipleChoiceResponses
-            ):
+            if await self._verifyIsActuallyMultipleChoiceQuestion(correctAnswers, multipleChoiceResponses):
                 return MultipleChoiceTriviaQuestion(
                     correctAnswers = correctAnswers,
                     multipleChoiceResponses = multipleChoiceResponses,

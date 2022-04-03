@@ -1,7 +1,7 @@
 import json
 import random
 from os import path
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 try:
     import CynanBotCommon.utils as utils
@@ -14,6 +14,8 @@ try:
     from CynanBotCommon.trivia.questionAnswerTriviaQuestion import \
         QuestionAnswerTriviaQuestion
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
+    from CynanBotCommon.trivia.triviaExceptions import \
+        UnsupportedTriviaTypeException
     from CynanBotCommon.trivia.triviaIdGenerator import TriviaIdGenerator
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
@@ -30,6 +32,7 @@ except:
     from trivia.questionAnswerTriviaQuestion import \
         QuestionAnswerTriviaQuestion
     from trivia.triviaDifficulty import TriviaDifficulty
+    from trivia.triviaExceptions import UnsupportedTriviaTypeException
     from trivia.triviaIdGenerator import TriviaIdGenerator
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
@@ -44,48 +47,33 @@ class JokeTriviaQuestionRepository(AbsTriviaQuestionRepository):
         timber: Timber,
         triviaIdGenerator: TriviaIdGenerator,
         triviaSettingsRepository: TriviaSettingsRepository,
-        jokeTriviaFile: str = 'CynanBotCommon/trivia/jokeTriviaRepository.json'
+        jokeTriviaQuestionFile: str = 'CynanBotCommon/trivia/jokeTriviaQuestionRepository.json'
     ):
         super().__init__(triviaIdGenerator, triviaSettingsRepository)
 
         if timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif not utils.isValidStr(jokeTriviaFile):
-            raise ValueError(f'jokeTriviaFile argument is malformed: \"{jokeTriviaFile}\"')
+        elif not utils.isValidStr(jokeTriviaQuestionFile):
+            raise ValueError(f'jokeTriviaQuestionFile argument is malformed: \"{jokeTriviaQuestionFile}\"')
 
         self.__timber: Timber = timber
-        self.__jokeTriviaFile: str = jokeTriviaFile
+        self.__jokeTriviaQuestionFile: str = jokeTriviaQuestionFile
 
-    async def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
-        if not utils.isValidStr(twitchChannel):
-            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+    async def fetchTriviaQuestion(self, twitchChannel: Optional[str]) -> AbsTriviaQuestion:
+        triviaJson: Optional[Dict[str, object]] = await self.__fetchTriviaQuestionJson(twitchChannel)
 
-        questionJson: Dict[str, object] = None
-        retryCount = 0
-        maxRetryCount = await self.__getMaxRetryCount()
-
-        while questionJson is None and retryCount <= maxRetryCount:
-            questionJson = await self.__fetchTriviaQuestionJson()
-
-            compatibleWith: List[str] = questionJson.get('compatibleWith')
-            if not await self.__isCompatible(compatibleWith, twitchChannel):
-                questionJson = None
-
-            retryCount = retryCount + 1
-
-        if not utils.hasItems(questionJson):
-            self.__timber.log('JokeTriviaRepository', f'Failed to find a compatible trivia question after {retryCount} retries')
+        if not utils.hasItems(triviaJson):
             return None
 
-        category = utils.getStrFromDict(questionJson, 'category', fallback = '', clean = True)
-        question = utils.getStrFromDict(questionJson, 'question', clean = True)
-        triviaDifficulty = TriviaDifficulty.fromStr(questionJson.get('difficulty'))
-        triviaId = utils.getStrFromDict(questionJson, 'id')
-        triviaType = TriviaType.fromStr(utils.getStrFromDict(questionJson, 'type'))
+        category = utils.getStrFromDict(triviaJson, 'category', fallback = '', clean = True)
+        question = utils.getStrFromDict(triviaJson, 'question', clean = True)
+        triviaDifficulty = TriviaDifficulty.fromStr(triviaJson.get('difficulty'))
+        triviaId = utils.getStrFromDict(triviaJson, 'id')
+        triviaType = TriviaType.fromStr(utils.getStrFromDict(triviaJson, 'type'))
 
         if triviaType is TriviaType.MULTIPLE_CHOICE:
-            correctAnswers: List[str] = questionJson['correctAnswers']
-            multipleChoiceResponses: List[str] = questionJson['responses']
+            correctAnswers: List[str] = triviaJson['correctAnswers']
+            multipleChoiceResponses: List[str] = triviaJson['responses']
             random.shuffle(multipleChoiceResponses)
 
             return MultipleChoiceTriviaQuestion(
@@ -98,7 +86,7 @@ class JokeTriviaQuestionRepository(AbsTriviaQuestionRepository):
                 triviaSource = TriviaSource.JOKE_TRIVIA_REPOSITORY
             )
         elif triviaType is TriviaType.QUESTION_ANSWER:
-            correctAnswers: List[str] = questionJson['correctAnswers']
+            correctAnswers: List[str] = triviaJson['correctAnswers']
 
             return QuestionAnswerTriviaQuestion(
                 correctAnswers = correctAnswers,
@@ -109,7 +97,7 @@ class JokeTriviaQuestionRepository(AbsTriviaQuestionRepository):
                 triviaSource = TriviaSource.JOKE_TRIVIA_REPOSITORY
             )
         elif triviaType is TriviaType.TRUE_FALSE:
-            correctAnswers: List[bool] = questionJson['correctAnswers']
+            correctAnswers: List[bool] = triviaJson['correctAnswers']
 
             return TrueFalseTriviaQuestion(
                 correctAnswers = correctAnswers,
@@ -120,44 +108,42 @@ class JokeTriviaQuestionRepository(AbsTriviaQuestionRepository):
                 triviaSource = TriviaSource.JOKE_TRIVIA_REPOSITORY
             )
         else:
-            raise ValueError(f'triviaType \"{triviaType}\" is unknown for Local Trivia Repository: {questionJson}')
+            raise UnsupportedTriviaTypeException(f'triviaType \"{triviaType}\" is not supported for Joke Trivia Question Repository: {triviaJson}')
 
-    async def __fetchTriviaQuestionJson(self) -> Dict[str, object]:
+    async def __fetchTriviaQuestionJson(self, twitchChannel: Optional[str]) -> Optional[Dict[str, object]]:
         jsonContents = await self.__readAllJson()
 
         triviaQuestions: List[Dict[str, object]] = jsonContents.get('triviaQuestions')
         if not utils.hasItems(triviaQuestions):
-            raise ValueError(f'\"triviaQuestions\" field in joke trivia file \"{self.__jokeTriviaFile}\" is malformed: \"{triviaQuestions}\"')
+            return None
 
-        return random.choice(triviaQuestions)
+        acceptableTriviaQuestions: List[Dict[str, object]] = list()
 
-    async def __getMaxRetryCount(self) -> int:
-        jsonContents = await self.__readAllJson()
-        return utils.getIntFromDict(jsonContents, 'maxRetryCount', 5)
+        for triviaQuestion in triviaQuestions:
+            compatibleWith: Optional[List[str]] = triviaQuestion.get('compatibleWith')
 
-    async def __isCompatible(self, compatibleWith: List[str], twitchChannel: str) -> bool:
-        if not utils.isValidStr(twitchChannel):
-            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+            if utils.hasItems(compatibleWith):
+                if utils.isValidStr(twitchChannel):
+                    for tc in compatibleWith:
+                        if tc.lower() == twitchChannel.lower():
+                            acceptableTriviaQuestions.append(triviaQuestion)
+                            break
+            else:
+                acceptableTriviaQuestions.append(triviaQuestion)
 
-        if not utils.hasItems(compatibleWith):
-            return True
-
-        for tc in compatibleWith:
-            if tc.lower() == twitchChannel.lower():
-                return True
-
-        return False
+        if utils.hasItems(acceptableTriviaQuestions):
+            return random.choice(acceptableTriviaQuestions)
+        else:
+            return None
 
     async def __readAllJson(self) -> Dict[str, object]:
-        if not path.exists(self.__jokeTriviaFile):
-            raise FileNotFoundError(f'Joke trivia file not found: \"{self.__jokeTriviaFile}\"')
+        if not path.exists(self.__jokeTriviaQuestionFile):
+            raise FileNotFoundError(f'Joke trivia question file not found: \"{self.__jokeTriviaQuestionFile}\"')
 
-        with open(self.__jokeTriviaFile, 'r') as file:
+        with open(self.__jokeTriviaQuestionFile, 'r') as file:
             jsonContents = json.load(file)
 
         if jsonContents is None:
-            raise IOError(f'Error reading from joke trivia file: \"{self.__jokeTriviaFile}\"')
-        elif len(jsonContents) == 0:
-            raise ValueError(f'JSON contents of joke trivia file \"{self.__jokeTriviaFile}\" is empty')
+            raise IOError(f'Error reading from joke trivia file: \"{self.__jokeTriviaQuestionFile}\"')
 
         return jsonContents

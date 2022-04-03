@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import aiohttp
 
@@ -56,7 +56,7 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self.__clientSession: aiohttp.ClientSession = clientSession
         self.__timber: Timber = timber
 
-    async def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
+    async def fetchTriviaQuestion(self, twitchChannel: Optional[str]) -> AbsTriviaQuestion:
         self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', 'Fetching trivia question...')
 
         response = await self.__clientSession.get('https://opentdb.com/api.php?amount=1')
@@ -87,7 +87,7 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
         category = utils.getStrFromDict(triviaJson, 'category', fallback = '', clean = True, htmlUnescape = True)
         question = utils.getStrFromDict(triviaJson, 'question', clean = True, htmlUnescape = True)
 
-        triviaId = self._triviaIdGenerator.generate(
+        triviaId = await self._triviaIdGenerator.generate(
             category = category,
             difficulty = triviaDifficulty.toStr(),
             question = question
@@ -98,12 +98,12 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
             correctAnswers: List[str] = list()
             correctAnswers.append(correctAnswer)
 
-            multipleChoiceResponses = self._buildMultipleChoiceResponsesList(
+            multipleChoiceResponses = await self._buildMultipleChoiceResponsesList(
                 correctAnswers = correctAnswers,
                 multipleChoiceResponsesJson = triviaJson['incorrect_answers']
             )
 
-            if self._verifyIsActuallyMultipleChoiceQuestion(correctAnswers, multipleChoiceResponses):
+            if await self._verifyIsActuallyMultipleChoiceQuestion(correctAnswers, multipleChoiceResponses):
                 return MultipleChoiceTriviaQuestion(
                     correctAnswers = correctAnswers,
                     multipleChoiceResponses = multipleChoiceResponses,
