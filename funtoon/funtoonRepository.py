@@ -78,7 +78,7 @@ class FuntoonRepository():
         isDebugLoggingEnabled = await self.__isDebugLoggingEnabled()
 
         if isDebugLoggingEnabled:
-            self.__timber.log('FuntoonRepository', f'Hitting Funtoon API \"{url}\" for \"{twitchChannel}\" for event \"{event}\" with JSON payload:\n{jsonPayload}')
+            self.__timber.log('FuntoonRepository', f'Hitting Funtoon API \"{url}\" for \"{twitchChannel}\" for event \"{event}\" with JSON payload: {jsonPayload}')
 
         response = await self.__clientSession.get(
             url = url,
@@ -97,7 +97,7 @@ class FuntoonRepository():
 
             return True
         else:
-            self.__timber.log('FuntoonRepository', f'Error when hitting Funtoon API \"{url}\" for \"{twitchChannel}\" for event \"{event}\" with token \"{funtoonToken}\" with JSON payload: {jsonPayload}, rawResponse: \"{response}\"')
+            self.__timber.log('FuntoonRepository', f'Error when hitting Funtoon API \"{url}\" for \"{twitchChannel}\" for event \"{event}\" with token \"{funtoonToken}\" with JSON payload: {jsonPayload}, response: \"{response}\"')
             response.close()
             return False
 
