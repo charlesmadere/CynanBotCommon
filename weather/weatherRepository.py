@@ -180,7 +180,7 @@ class WeatherRepository():
         conditions: List[str] = list()
         if 'weather' in currentJson and len(currentJson['weather']) >= 1:
             for conditionJson in currentJson['weather']:
-                conditions.append(self.__prettifyCondition(conditionJson))
+                conditions.append(await self.__prettifyCondition(conditionJson))
 
         alerts: List[str] = list()
         if 'alerts' in jsonResponse and len(jsonResponse['alerts']) >= 1:
@@ -221,7 +221,7 @@ class WeatherRepository():
             uvIndex = uvIndex
         )
 
-    def __prettifyCondition(self, conditionJson: Dict) -> str:
+    async def __prettifyCondition(self, conditionJson: Dict) -> str:
         conditionIcon = ''
         if 'id' in conditionJson:
             conditionId = utils.getStrFromDict(conditionJson, 'id')
