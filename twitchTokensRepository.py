@@ -149,7 +149,7 @@ class TwitchTokensRepository():
 
         response = await self.__clientSession.get(
             url = self.__oauth2TokenUrl,
-            params = {
+            headers = {
                     'client_id': twitchClientId,
                     'client_secret': twitchClientSecret,
                     'grant_type': 'refresh_token',
@@ -240,7 +240,7 @@ class TwitchTokensRepository():
 
         response = await self.__clientSession.get(
             url = self.__oauth2ValidateUrl,
-            params = {
+            headers = {
                 'Authorization': f'OAuth {self.requireAccessToken(twitchHandle)}'
             }
         )
