@@ -52,6 +52,7 @@ class TriviaSettingsRepository():
 
     async def getMaxMultipleChoiceResponses(self) -> int:
         jsonContents = await self.__readJson()
+
         maxMultipleChoiceResponses = utils.getIntFromDict(jsonContents, 'max_multiple_choice_responses', 5)
         minMultipleChoiceResponses = utils.getIntFromDict(jsonContents, 'min_multiple_choice_responses', 2)
 
