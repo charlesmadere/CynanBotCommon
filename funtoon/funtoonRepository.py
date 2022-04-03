@@ -2,10 +2,7 @@ import json
 import os
 from typing import Dict
 
-import requests
-from requests import ConnectionError, HTTPError, Timeout
-from requests.exceptions import ReadTimeout, TooManyRedirects
-from urllib3.exceptions import MaxRetryError, NewConnectionError
+import aiohttp
 
 try:
     import CynanBotCommon.utils as utils
@@ -23,26 +20,30 @@ class FuntoonRepository():
 
     def __init__(
         self,
+        clientSession: aiohttp.ClientSession,
         timber: Timber,
         funtoonApiUrl: str = 'https://funtoon.party/api',
         funtoonRepositoryFile: str = 'CynanBotCommon/funtoon/funtoonRepository.json'
     ):
-        if timber is None:
+        if clientSession is None:
+            raise ValueError(f'clientSession argument is malformed: \"{clientSession}\"')
+        elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not utils.isValidUrl(funtoonApiUrl):
             raise ValueError(f'funtoonApiUrl argument is malformed: \"{funtoonApiUrl}\"')
         elif not utils.isValidStr(funtoonRepositoryFile):
             raise ValueError(f'funtoonRepositoryFile argument is malformed: \"{funtoonRepositoryFile}\"')
 
+        self.__clientSession: aiohttp.ClientSession = clientSession
         self.__timber: Timber = timber
         self.__funtoonApiUrl: str = funtoonApiUrl
         self.__funtoonRepositoryFile: str = funtoonRepositoryFile
 
-    def getFuntoonToken(self, twitchChannel: str) -> str:
+    async def getFuntoonToken(self, twitchChannel: str) -> str:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
-        twitchChannelJson = self.__readJsonForTwitchChannel(twitchChannel)
+        twitchChannelJson = await self.__readJsonForTwitchChannel(twitchChannel)
         if twitchChannelJson is None:
             return None
 
@@ -52,7 +53,7 @@ class FuntoonRepository():
 
         return token
 
-    def __hitFuntoon(
+    async def __hitFuntoon(
         self,
         event: str,
         funtoonToken: str,
@@ -66,7 +67,7 @@ class FuntoonRepository():
         elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
-        url: str = f'{self.__funtoonApiUrl}/events/custom'
+        url = f'{self.__funtoonApiUrl}/events/custom'
 
         jsonPayload = {
             'channel': twitchChannel,
@@ -74,40 +75,37 @@ class FuntoonRepository():
             'event': event
         }
 
-        isDebugLoggingEnabled = self.__isDebugLoggingEnabled()
+        isDebugLoggingEnabled = await self.__isDebugLoggingEnabled()
 
         if isDebugLoggingEnabled:
             self.__timber.log('FuntoonRepository', f'Hitting Funtoon API \"{url}\" for \"{twitchChannel}\" for event \"{event}\" with JSON payload:\n{jsonPayload}')
 
-        rawResponse = None
-        try:
-            rawResponse = requests.post(
-                url = url,
-                headers = {
-                    'Authorization': funtoonToken,
-                    'Content-Type': 'application/json'
-                },
-                json = jsonPayload,
-                timeout = utils.getDefaultTimeout()
-            )
-        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            self.__timber.log('FuntoonRepository', f'Exception occurred when attempting to hit Funtoon API \"{url}\" for \"{twitchChannel}\" for event \"{event}\" with JSON payload: {jsonPayload}, and exception: {e}')
-            return False
+        response = await self.__clientSession.get(
+            url = url,
+            headers = {
+                'Authorization': funtoonToken,
+                'Content-Type': 'application/json'
+            },
+            json = jsonPayload
+        )
 
-        if rawResponse is not None and rawResponse.status_code == 200:
+        if response.status == 200:
+            response.close()
+
             if isDebugLoggingEnabled:
                 self.__timber.log('FuntoonRepository', f'Successfully hit Funtoon API \"{url}\" for \"{twitchChannel}\" for event \"{event}\"')
 
             return True
         else:
-            self.__timber.log('FuntoonRepository', f'Error when hitting Funtoon API \"{url}\" for \"{twitchChannel}\" for event \"{event}\" with token \"{funtoonToken}\" with JSON payload: {jsonPayload}, rawResponse: \"{rawResponse}\"')
+            self.__timber.log('FuntoonRepository', f'Error when hitting Funtoon API \"{url}\" for \"{twitchChannel}\" for event \"{event}\" with token \"{funtoonToken}\" with JSON payload: {jsonPayload}, rawResponse: \"{response}\"')
+            response.close()
             return False
 
-    def __isDebugLoggingEnabled(self) -> bool:
-        jsonContents = self.__readAllJson()
+    async def __isDebugLoggingEnabled(self) -> bool:
+        jsonContents = await self.__readAllJson()
         return utils.getBoolFromDict(jsonContents, 'debugLoggingEnabled', fallback = False)
 
-    def pkmnBattle(self, userThatRedeemed: str, userToBattle: str, twitchChannel: str) -> bool:
+    async def pkmnBattle(self, userThatRedeemed: str, userToBattle: str, twitchChannel: str) -> bool:
         if not utils.isValidStr(userThatRedeemed):
             raise ValueError(f'userThatRedeemed argument is malformed: \"{userThatRedeemed}\"')
         elif not utils.isValidStr(userToBattle):
@@ -115,13 +113,13 @@ class FuntoonRepository():
         elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
-        funtoonToken = self.getFuntoonToken(twitchChannel)
+        funtoonToken = await self.getFuntoonToken(twitchChannel)
 
         if not utils.isValidStr(funtoonToken):
             self.__timber.log('FuntoonRepository', f'Can\'t perform pkmnBattle as twitchChannel \"{twitchChannel}\" has no Funtoon token: \"{funtoonToken}\"')
             return False
 
-        return self.__hitFuntoon(
+        return await self.__hitFuntoon(
             event = 'battle',
             funtoonToken = funtoonToken,
             twitchChannel = twitchChannel,
@@ -131,7 +129,7 @@ class FuntoonRepository():
             }
         )
 
-    def pkmnCatch(
+    async def pkmnCatch(
         self,
         userThatRedeemed: str,
         twitchChannel: str,
@@ -142,7 +140,7 @@ class FuntoonRepository():
         elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
-        funtoonToken = self.getFuntoonToken(twitchChannel)
+        funtoonToken = await self.getFuntoonToken(twitchChannel)
 
         if not utils.isValidStr(funtoonToken):
             self.__timber.log('FuntoonRepository', f'Can\'t perform pkmnCatch as twitchChannel \"{twitchChannel}\" has no Funtoon token: \"{funtoonToken}\"')
@@ -157,52 +155,52 @@ class FuntoonRepository():
                 'catchType': funtoonPkmnCatchType.toStr()
             }
 
-        return self.__hitFuntoon(
+        return await self.__hitFuntoon(
             event = 'catch',
             funtoonToken = funtoonToken,
             twitchChannel = twitchChannel,
             data = data
         )
 
-    def pkmnGiveEvolve(self, userThatRedeemed: str, twitchChannel: str) -> bool:
+    async def pkmnGiveEvolve(self, userThatRedeemed: str, twitchChannel: str) -> bool:
         if not utils.isValidStr(userThatRedeemed):
             raise ValueError(f'userThatRedeemed argument is malformed: \"{userThatRedeemed}\"')
         elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
-        funtoonToken = self.getFuntoonToken(twitchChannel)
+        funtoonToken = await self.getFuntoonToken(twitchChannel)
 
         if not utils.isValidStr(funtoonToken):
             self.__timber.log('FuntoonRepository', f'Can\'t perform pkmnGiveEvolve as twitchChannel \"{twitchChannel}\" has no Funtoon token: \"{funtoonToken}\"')
             return False
 
-        return self.__hitFuntoon(
+        return await self.__hitFuntoon(
             event = 'giveFreeEvolve',
             funtoonToken = funtoonToken,
             twitchChannel = twitchChannel,
             data = userThatRedeemed
         )
 
-    def pkmnGiveShiny(self, userThatRedeemed: str, twitchChannel: str) -> bool:
+    async def pkmnGiveShiny(self, userThatRedeemed: str, twitchChannel: str) -> bool:
         if not utils.isValidStr(userThatRedeemed):
             raise ValueError(f'userThatRedeemed argument is malformed: \"{userThatRedeemed}\"')
         elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
-        funtoonToken = self.getFuntoonToken(twitchChannel)
+        funtoonToken = await self.getFuntoonToken(twitchChannel)
 
         if not utils.isValidStr(funtoonToken):
             self.__timber.log('FuntoonRepository', f'Can\'t perform pkmnGiveShiny as twitchChannel \"{twitchChannel}\" has no Funtoon token: \"{funtoonToken}\"')
             return False
 
-        return self.__hitFuntoon(
+        return await self.__hitFuntoon(
             event = 'giveFreeShiny',
             funtoonToken = funtoonToken,
             twitchChannel = twitchChannel,
             data = userThatRedeemed
         )
 
-    def __readAllJson(self) -> Dict[str, object]:
+    async def __readAllJson(self) -> Dict[str, object]:
         if not os.path.exists(self.__funtoonRepositoryFile):
             raise FileNotFoundError(f'Funtoon repository file not found: \"{self.__funtoonRepositoryFile}\"')
 
@@ -216,11 +214,11 @@ class FuntoonRepository():
 
         return jsonContents
 
-    def __readJsonForTwitchChannel(self, twitchChannel: str) -> Dict[str, object]:
+    async def __readJsonForTwitchChannel(self, twitchChannel: str) -> Dict[str, object]:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
-        jsonContents = self.__readAllJson()
+        jsonContents = await self.__readAllJson()
         twitchChannelsJson: Dict[str, object] = jsonContents.get('twitchChannels')
         if not utils.hasItems(twitchChannelsJson):
             raise ValueError(f'\"twitchChannels\" JSON contents of Funtoon repository file \"{self.__funtoonRepositoryFile}\" is missing/empty')
