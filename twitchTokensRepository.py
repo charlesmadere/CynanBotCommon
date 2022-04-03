@@ -249,7 +249,11 @@ class TwitchTokensRepository():
         jsonResponse: Dict[str, object] = await response.json()
         response.close()
 
-        if responseStatus != 200 or jsonResponse.get('client_id') is None or len(jsonResponse['client_id']) == 0:
+        expiresInSeconds: int = None
+        if jsonResponse is not None and utils.isValidNum(jsonResponse.get('expires_in')):
+            expiresInSeconds = utils.getIntFromDict(jsonResponse, 'expires_in')
+
+        if responseStatus != 200 or jsonResponse is None or jsonResponse.get('client_id') is None or len(jsonResponse['client_id']) == 0 or (expiresInSeconds is not None and expiresInSeconds < 900):
             await self.__refreshTokens(
                 twitchClientId = twitchClientId,
                 twitchClientSecret = twitchClientSecret,
