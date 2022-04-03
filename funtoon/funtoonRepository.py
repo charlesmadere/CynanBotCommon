@@ -80,7 +80,7 @@ class FuntoonRepository():
         if isDebugLoggingEnabled:
             self.__timber.log('FuntoonRepository', f'Hitting Funtoon API \"{url}\" for \"{twitchChannel}\" for event \"{event}\" with JSON payload: {jsonPayload}')
 
-        response = await self.__clientSession.get(
+        response = await self.__clientSession.post(
             url = url,
             headers = {
                 'Authorization': funtoonToken,
