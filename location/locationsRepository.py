@@ -29,14 +29,14 @@ class LocationsRepository():
         self.__locationsFile: str = locationsFile
         self.__locationsCache: Dict[str, Location] = dict()
 
-    def getLocation(self, locationId: str) -> Location:
+    async def getLocation(self, locationId: str) -> Location:
         if not utils.isValidStr(locationId):
             raise ValueError(f'locationId argument is malformed: \"{locationId}\"')
 
         if locationId.lower() in self.__locationsCache:
             return self.__locationsCache[locationId.lower()]
 
-        jsonContents = self.__readAllJson()
+        jsonContents = await self.__readAllJson()
 
         for _id in jsonContents:
             if _id.lower() == locationId.lower():
@@ -56,7 +56,7 @@ class LocationsRepository():
 
         raise RuntimeError(f'Unable to find location with ID \"{locationId}\" in locations file: \"{self.__locationsFile}\"')
 
-    def __readAllJson(self) -> Dict[str, object]:
+    async def __readAllJson(self) -> Dict[str, object]:
         if not path.exists(self.__locationsFile):
             raise FileNotFoundError(f'Locations file not found: \"{self.__locationsFile}\"')
 
