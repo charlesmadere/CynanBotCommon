@@ -1,7 +1,6 @@
 import json
 import os
 from datetime import datetime, timedelta, timezone
-from json.decoder import JSONDecodeError
 from typing import Dict, List
 
 import aiohttp
@@ -246,7 +245,6 @@ class TwitchTokensRepository():
             }
         )
 
-        # we are saving but INTENTIONALLY NOT checking the HTTP status before the JSON operation
         responseStatus = response.status
         jsonResponse: Dict[str, object] = await response.json()
         response.close()
