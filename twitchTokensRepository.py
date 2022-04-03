@@ -197,11 +197,8 @@ class TwitchTokensRepository():
         with open(self.__twitchTokensFile, 'w') as file:
             json.dump(jsonContents, file, indent = 4, sort_keys = True)
 
-        nowDateTime = datetime.now(timezone.utc)
-        expiresAtDateTime = nowDateTime + timedelta(seconds = expiresInSeconds)
-        self.__tokenExpirations[twitchHandle] = expiresAtDateTime
-
-        self.__timber.log('TwitchTokensRepository', f'Saved new Twitch tokens for \"{twitchHandle}\" (expiration is at {expiresAtDateTime.isoformat()}, which is in {expiresInSeconds} seconds)')
+        self.__saveUserTokenExpirationTime(twitchHandle, expiresInSeconds)
+        self.__timber.log('TwitchTokensRepository', f'Saved new Twitch tokens for \"{twitchHandle}\" (expiration is in {expiresInSeconds} seconds)')
 
     def requireAccessToken(self, twitchHandle: str) -> str:
         if not utils.isValidStr(twitchHandle):
@@ -222,6 +219,17 @@ class TwitchTokensRepository():
             raise ValueError(f'\"refreshToken\" value for \"{twitchHandle}\" in \"{self.__twitchTokensFile}\" is malformed: \"{refreshToken}\"')
 
         return refreshToken
+
+    def __saveUserTokenExpirationTime(self, twitchHandle: str, expiresInSeconds: int):
+        if not utils.isValidStr(twitchHandle):
+            raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
+        elif not utils.isValidNum(expiresInSeconds):
+            raise ValueError(f'expiresInSeconds argument is malformed: \"{expiresInSeconds}\"')
+        elif expiresInSeconds <= 0:
+            raise ValueError(f'expiresInSeconds can\'t be <= 0: {expiresInSeconds}')
+
+        nowDateTime = datetime.now(timezone.utc)
+        self.__tokenExpirations[twitchHandle] = nowDateTime + timedelta(sedconds = expiresInSeconds)
 
     async def validateAndRefreshAccessToken(
         self,
@@ -264,4 +272,5 @@ class TwitchTokensRepository():
                 twitchHandle = twitchHandle
             )
         else:
-            self.__timber.log('TwitchTokensRepository', f'No need to request new Twitch tokens for \"{twitchHandle}\"')
+            self.__saveUserTokenExpirationTime(twitchHandle, expiresInSeconds)
+            self.__timber.log('TwitchTokensRepository', f'No need yet to request new Twitch tokens for \"{twitchHandle}\" (expiration is in {expiresInSeconds} seconds)')
