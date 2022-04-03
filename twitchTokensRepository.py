@@ -229,7 +229,7 @@ class TwitchTokensRepository():
             raise ValueError(f'expiresInSeconds can\'t be <= 0: {expiresInSeconds}')
 
         nowDateTime = datetime.now(timezone.utc)
-        self.__tokenExpirations[twitchHandle] = nowDateTime + timedelta(sedconds = expiresInSeconds)
+        self.__tokenExpirations[twitchHandle] = nowDateTime + timedelta(seconds = expiresInSeconds)
 
     async def validateAndRefreshAccessToken(
         self,
