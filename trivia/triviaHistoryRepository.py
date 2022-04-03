@@ -52,7 +52,7 @@ class TriviaHistoryRepository():
 
         connection.commit()
 
-    def verify(self, question: AbsTriviaQuestion, twitchChannel: str) -> TriviaContentCode:
+    async def verify(self, question: AbsTriviaQuestion, twitchChannel: str) -> TriviaContentCode:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 

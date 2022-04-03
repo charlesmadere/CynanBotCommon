@@ -51,7 +51,7 @@ class TriviaGameRepository():
         self.__fullWordAnswerRegEx: Pattern = re.compile(r"\w+|\d+", re.IGNORECASE)
         self.__multipleChoiceAnswerRegEx: Pattern = re.compile(r"[a-z]", re.IGNORECASE)
 
-    def __applyAnswerCleanup(self, text: str) -> str:
+    async def __applyAnswerCleanup(self, text: str) -> str:
         if not utils.isValidStr(text):
             return ''
 
@@ -59,7 +59,7 @@ class TriviaGameRepository():
         regexResult = self.__fullWordAnswerRegEx.findall(text)
         return ''.join(regexResult)
 
-    def checkAnswer(
+    async def checkAnswer(
         self,
         answer: str,
         twitchChannel: str,
@@ -88,12 +88,12 @@ class TriviaGameRepository():
 
         state.setAnswered()
 
-        if self.__checkAnswer(answer, triviaQuestion):
+        if await self.__checkAnswer(answer, triviaQuestion):
             return TriviaGameCheckResult.CORRECT_ANSWER
         else:
             return TriviaGameCheckResult.INCORRECT_ANSWER
 
-    def __checkAnswer(self, answer: str, triviaQuestion: AbsTriviaQuestion) -> bool:
+    async def __checkAnswer(self, answer: str, triviaQuestion: AbsTriviaQuestion) -> bool:
         if triviaQuestion is None:
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
 
@@ -101,19 +101,19 @@ class TriviaGameRepository():
             return False
 
         if triviaQuestion.getTriviaType() is TriviaType.MULTIPLE_CHOICE:
-            return self.__checkAnswerMultipleChoice(answer, triviaQuestion)
+            return await self.__checkAnswerMultipleChoice(answer, triviaQuestion)
         elif triviaQuestion.getTriviaType() is TriviaType.QUESTION_ANSWER:
-            return self.__checkAnswerQuestionAnswer(answer, triviaQuestion)
+            return await self.__checkAnswerQuestionAnswer(answer, triviaQuestion)
         elif triviaQuestion.getTriviaType() is TriviaType.TRUE_FALSE:
-            return self.__checkAnswerTrueFalse(answer, triviaQuestion)
+            return await self.__checkAnswerTrueFalse(answer, triviaQuestion)
         else:
             raise RuntimeError(f'Unsupported TriviaType: \"{triviaQuestion.getTriviaType()}\"')
 
-    def __checkAnswerMultipleChoice(self, answer: str, triviaQuestion: MultipleChoiceTriviaQuestion) -> bool:
+    async def __checkAnswerMultipleChoice(self, answer: str, triviaQuestion: MultipleChoiceTriviaQuestion) -> bool:
         if triviaQuestion is None:
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
 
-        answer = self.__applyAnswerCleanup(answer)
+        answer = await self.__applyAnswerCleanup(answer)
 
         if not utils.isValidStr(answer) or len(answer) != 1:
             return False
@@ -125,15 +125,15 @@ class TriviaGameRepository():
 
         return index in triviaQuestion.getCorrectAnswerOrdinals()
 
-    def __checkAnswerQuestionAnswer(self, answer: str, triviaQuestion: QuestionAnswerTriviaQuestion) -> bool:
+    async def __checkAnswerQuestionAnswer(self, answer: str, triviaQuestion: QuestionAnswerTriviaQuestion) -> bool:
         if triviaQuestion is None:
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
 
-        cleanedAnswer = self.__applyAnswerCleanup(answer)
+        cleanedAnswer = await self.__applyAnswerCleanup(answer)
         correctAnswers = triviaQuestion.getCorrectAnswers()
 
         for correctAnswer in correctAnswers:
-            cleanedCorrectAnswer = self.__applyAnswerCleanup(correctAnswer)
+            cleanedCorrectAnswer = await self.__applyAnswerCleanup(correctAnswer)
 
             # This if statement prevents a potentially really weird edge case of the correctanswer
             # being something that is dropped completely from the string in the applyAnswerCleanup()
@@ -146,7 +146,7 @@ class TriviaGameRepository():
 
         return False
 
-    def __checkAnswerTrueFalse(
+    async def __checkAnswerTrueFalse(
         self,
         answer: str,
         triviaQuestion: TrueFalseTriviaQuestion
@@ -154,7 +154,7 @@ class TriviaGameRepository():
         if triviaQuestion is None:
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
 
-        answer = self.__applyAnswerCleanup(answer)
+        answer = await self.__applyAnswerCleanup(answer)
 
         if not utils.isValidStr(answer):
             return False
@@ -162,7 +162,7 @@ class TriviaGameRepository():
         answerBool = utils.strToBool(answer)
         return answerBool in triviaQuestion.getCorrectAnswerBools()
 
-    def fetchTrivia(
+    async def fetchTrivia(
         self,
         twitchChannel: str,
         isJokeTriviaRepositoryEnabled: bool = False
@@ -179,13 +179,12 @@ class TriviaGameRepository():
         else:
             state.setAnswered()
 
-        triviaQuestion = self.__triviaRepository.fetchTrivia(
+        triviaQuestion = await self.__triviaRepository.fetchTrivia(
             twitchChannel = twitchChannel,
             isJokeTriviaRepositoryEnabled = isJokeTriviaRepositoryEnabled
         )
 
         state.setTriviaQuestion(triviaQuestion)
-
         return triviaQuestion
 
     def getTrivia(self, twitchChannel: str) -> AbsTriviaQuestion:

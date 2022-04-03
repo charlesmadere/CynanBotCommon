@@ -1,10 +1,6 @@
-from json.decoder import JSONDecodeError
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
-import requests
-from requests import ConnectionError, HTTPError, Timeout
-from requests.exceptions import ReadTimeout, TooManyRedirects
-from urllib3.exceptions import MaxRetryError, NewConnectionError
+import aiohttp
 
 try:
     import CynanBotCommon.utils as utils
@@ -46,6 +42,7 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
     def __init__(
         self,
+        clientSession: aiohttp.ClientSession,
         quizApiKey: str,
         timber: Timber,
         triviaIdGenerator: TriviaIdGenerator,
@@ -53,40 +50,33 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
     ):
         super().__init__(triviaIdGenerator, triviaSettingsRepository)
 
-        if not utils.isValidStr(quizApiKey):
+        if clientSession is None:
+            raise ValueError(f'clientSession argument is malformed: \"{clientSession}\"')
+        elif not utils.isValidStr(quizApiKey):
             raise ValueError(f'quizApiKey argument is malformed: \"{quizApiKey}\"')
         elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
 
+        self.__clientSession: aiohttp.ClientSession = clientSession
         self.__quizApiKey: str = quizApiKey
         self.__timber: Timber = timber
 
-    def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
+    async def fetchTriviaQuestion(self, twitchChannel: Optional[str]) -> AbsTriviaQuestion:
         self.__timber.log('QuizApiTriviaQuestionRepository', 'Fetching trivia question...')
 
-        rawResponse = None
-        try:
-            rawResponse = requests.get(
-                url = f'https://quizapi.io/api/v1/questions?apiKey={self.__quizApiKey}&limit=1',
-                headers = {
-                    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:97.0) Gecko/20100101 Firefox/97.0' # LOOOOL
-                },
-                timeout = utils.getDefaultTimeout()
-            )
-        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            self.__timber.log('QuizApiTriviaQuestionRepository', f'Exception occurred when attempting to fetch trivia question: {e}')
+        response = await self.__clientSession.get(
+            url = f'https://quizapi.io/api/v1/questions?apiKey={self.__quizApiKey}&limit=1',
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:97.0) Gecko/20100101 Firefox/97.0' # LOOOOL
+            }
+        )
+
+        if response.status != 200:
+            self.__timber.log('QuizApiTriviaQuestionRepository', f'Encountered non-200 HTTP status code: \"{response.status}\"')
             return None
 
-        if rawResponse.status_code != 200:
-            self.__timber.log('QuizApiTriviaQuestionRepository', f'Encountered non-200 HTTP status code: \"{rawResponse.status_code}\"')
-            return None
-
-        jsonResponse: Dict[str, object] = None
-        try:
-            jsonResponse = rawResponse.json()
-        except JSONDecodeError as e:
-            self.__timber.log('QuizApiTriviaQuestionRepository', f'Exception occurred when attempting to decode Quiz API\'s response into JSON: {e}')
-            raise RuntimeError(f'Exception occurred when attempting to decode Quiz API\'s response into JSON: {e}')
+        jsonResponse: Dict[str, object] = await response.json()
+        response.close()
 
         if not utils.hasItems(jsonResponse):
             self.__timber.log('QuizApiTriviaQuestionRepository', f'Rejecting Quiz API\'s JSON data due to null/empty contents: {jsonResponse}')
@@ -106,7 +96,7 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         triviaId = utils.getStrFromDict(triviaJson, 'id', fallback = '')
         if not utils.isValidStr(triviaId):
-            triviaId = self._triviaIdGenerator.generate(
+            triviaId = await self._triviaIdGenerator.generate(
                 category = category,
                 difficulty = triviaDifficulty.toStr(),
                 question = question
@@ -137,13 +127,13 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
         if not utils.hasItems(correctAnswers):
             raise NoTriviaCorrectAnswersException(f'Rejecting Quiz API\'s JSON data due to there being no correct answers: {jsonResponse}')
 
-        multipleChoiceResponses = self._buildMultipleChoiceResponsesList(
+        multipleChoiceResponses = await self._buildMultipleChoiceResponsesList(
             correctAnswers = correctAnswers,
             multipleChoiceResponsesJson = filteredAnswers
         )
 
         if triviaType is TriviaType.MULTIPLE_CHOICE:
-            if self._verifyIsActuallyMultipleChoiceQuestion(correctAnswers, multipleChoiceResponses):
+            if await self._verifyIsActuallyMultipleChoiceQuestion(correctAnswers, multipleChoiceResponses):
                 return MultipleChoiceTriviaQuestion(
                     correctAnswers = correctAnswers,
                     multipleChoiceResponses = multipleChoiceResponses,

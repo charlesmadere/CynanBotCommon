@@ -1,5 +1,5 @@
 import locale
-from typing import List
+from typing import List, Optional
 
 try:
     import CynanBotCommon.utils as utils
@@ -16,7 +16,7 @@ class WeatherReport():
 
     def __init__(
         self,
-        airQualityIndex: AirQualityIndex,
+        airQualityIndex: Optional[AirQualityIndex],
         temperature: float,
         tomorrowsHighTemperature: float,
         tomorrowsLowTemperature: float,

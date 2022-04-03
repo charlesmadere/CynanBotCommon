@@ -1,5 +1,4 @@
 {
-    "maxRetryCount": 5,
     "triviaQuestions": [
         {
             "compatibleWith": [ "Imyt" ],

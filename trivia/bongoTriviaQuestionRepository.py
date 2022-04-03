@@ -1,10 +1,6 @@
-from json.decoder import JSONDecodeError
-from typing import Dict, List
+from typing import Dict, List, Optional
 
-import requests
-from requests import ConnectionError, HTTPError, Timeout
-from requests.exceptions import ReadTimeout, TooManyRedirects
-from urllib3.exceptions import MaxRetryError, NewConnectionError
+import aiohttp
 
 try:
     import CynanBotCommon.utils as utils
@@ -45,40 +41,31 @@ class BongoTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
     def __init__(
         self,
+        clientSession: aiohttp.ClientSession,
         timber: Timber,
         triviaIdGenerator: TriviaIdGenerator,
         triviaSettingsRepository: TriviaSettingsRepository
     ):
         super().__init__(triviaIdGenerator, triviaSettingsRepository)
 
-        if timber is None:
+        if clientSession is None:
+            raise ValueError(f'clientSession argument is malformed: \"{clientSession}\"')
+        elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
 
+        self.__clientSession: aiohttp.ClientSession = clientSession
         self.__timber: Timber = timber
 
-    def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
+    async def fetchTriviaQuestion(self, twitchChannel: Optional[str]) -> AbsTriviaQuestion:
         self.__timber.log('BongoTriviaQuestionRepository', 'Fetching trivia question...')
 
-        rawResponse = None
-        try:
-            rawResponse = requests.get(
-                url = 'https://beta-trivia.bongo.best/?limit=1',
-                timeout = utils.getDefaultTimeout()
-            )
-        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            self.__timber.log('BongoTriviaQuestionRepository', f'Exception occurred when attempting to fetch trivia question: {e}')
+        response = await self.__clientSession.get('https://beta-trivia.bongo.best/?limit=1')
+        if response.status != 200:
+            self.__timber.log('BongoTriviaQuestionRepository', f'Encountered non-200 HTTP status code: {response.status}')
             return None
 
-        if rawResponse.status_code != 200:
-            self.__timber.log('BongoTriviaQuestionRepository', f'Encountered non-200 HTTP status code: \"{rawResponse.status_code}\"')
-            return None
-
-        jsonResponse: List[Dict[str, object]] = None
-        try:
-            jsonResponse = rawResponse.json()
-        except JSONDecodeError as e:
-            self.__timber.log('BongoTriviaQuestionRepository', f'Exception occurred when attempting to decode Bongo\'s API response into JSON: {e}')
-            raise RuntimeError(f'Exception occurred when attempting to decode Bongo\'s API response into JSON: {e}')
+        jsonResponse: List[Dict[str, object]] = await response.json()
+        response.close()
 
         if not utils.hasItems(jsonResponse):
             self.__timber.log('BongoTriviaQuestionRepository', f'Rejecting JSON data due to null/empty contents: {jsonResponse}')
@@ -96,7 +83,7 @@ class BongoTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         triviaId = utils.getStrFromDict(triviaJson, 'id', fallback = '')
         if not utils.isValidStr(triviaId):
-            triviaId = self._triviaIdGenerator.generate(
+            triviaId = await self._triviaIdGenerator.generate(
                 category = category,
                 difficulty = triviaDifficulty.toStr(),
                 question = question
@@ -107,15 +94,12 @@ class BongoTriviaQuestionRepository(AbsTriviaQuestionRepository):
             correctAnswers: List[str] = list()
             correctAnswers.append(correctAnswer)
 
-            multipleChoiceResponses = self._buildMultipleChoiceResponsesList(
+            multipleChoiceResponses = await self._buildMultipleChoiceResponsesList(
                 correctAnswers = correctAnswers,
                 multipleChoiceResponsesJson = triviaJson['incorrect_answers']
             )
 
-            if self._verifyIsActuallyMultipleChoiceQuestion(
-                correctAnswers = correctAnswers,
-                multipleChoiceResponses = multipleChoiceResponses
-            ):
+            if await self._verifyIsActuallyMultipleChoiceQuestion(correctAnswers, multipleChoiceResponses):
                 return MultipleChoiceTriviaQuestion(
                     correctAnswers = correctAnswers,
                     multipleChoiceResponses = multipleChoiceResponses,

@@ -1,11 +1,7 @@
 from datetime import timedelta
-from json.decoder import JSONDecodeError
-from typing import Dict, List
+from typing import Dict, List, Optional
 
-import requests
-from requests import ConnectionError, HTTPError, Timeout
-from requests.exceptions import ReadTimeout, TooManyRedirects
-from urllib3.exceptions import MaxRetryError, NewConnectionError
+import aiohttp
 
 try:
     import CynanBotCommon.utils as utils
@@ -30,12 +26,15 @@ class WeatherRepository():
 
     def __init__(
         self,
+        clientSession: aiohttp.ClientSession,
         oneWeatherApiKey: str,
         timber: Timber,
         maxAlerts: int = 2,
         cacheTimeDelta: timedelta = timedelta(minutes = 20)
     ):
-        if not utils.isValidStr(oneWeatherApiKey):
+        if clientSession is None:
+            raise ValueError(f'clientSession argument is malformed: \"{clientSession}\"')
+        elif not utils.isValidStr(oneWeatherApiKey):
             raise ValueError(f'oneWeatherApiKey argument is malformed: \"{oneWeatherApiKey}\"')
         elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
@@ -46,13 +45,15 @@ class WeatherRepository():
         elif cacheTimeDelta is None:
             raise ValueError(f'cacheTimeDelta argument is malformed: \"{cacheTimeDelta}\"')
 
+        self.__clientSession: aiohttp.ClientSession = clientSession
         self.__oneWeatherApiKey: str = oneWeatherApiKey
         self.__timber: Timber = timber
         self.__maxAlerts: int = maxAlerts
+
         self.__cache = TimedDict(timeDelta = cacheTimeDelta)
         self.__conditionIcons: Dict[str, str] = self.__createConditionIconsDict()
 
-    def __chooseTomorrowFromForecast(self, jsonResponse: Dict) -> Dict[str, object]:
+    async def __chooseTomorrowFromForecast(self, jsonResponse: Dict) -> Dict[str, object]:
         currentSunrise = jsonResponse['current']['sunrise']
         currentSunset = jsonResponse['current']['sunset']
 
@@ -108,7 +109,7 @@ class WeatherRepository():
 
         return icons
 
-    def __fetchAirQualityIndex(self, location: Location) -> AirQualityIndex:
+    async def __fetchAirQualityIndex(self, location: Location) -> Optional[AirQualityIndex]:
         if location is None:
             raise ValueError(f'location argument is malformed: \"{location}\"')
 
@@ -118,28 +119,26 @@ class WeatherRepository():
         requestUrl = 'https://api.openweathermap.org/data/2.5/air_pollution?appid={}&lat={}&lon={}'.format(
             self.__oneWeatherApiKey, location.getLatitude(), location.getLongitude())
 
-        rawResponse = None
-        try:
-            rawResponse = requests.get(url = requestUrl, timeout = utils.getDefaultTimeout())
-        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            self.__timber.log('WeatherRepository', f'Exception occurred when attempting to fetch air quality index from Open Weather for \"{location.getLocationId()}\" ({location.getName()}): {e}')
-            raise RuntimeError(f'Exception occurred when attempting to fetch air quality index from Open Weather for \"{location.getLocationId()}\" ({location.getName()}): {e}')
+        response = await self.__clientSession.get(requestUrl)
+        if response.status != 200:
+            self.__timber.log('WeatherRepository', f'Encountered non-200 HTTP status code when fetching air quality index for \"{location.getName()}\" ({location.getLocationId()}): {response.status}')
+            raise RuntimeError(f'Encountered non-200 HTTP status code when fetching air quality index for \"{location.getName()}\" ({location.getLocationId()}): {response.status}')
 
-        jsonResponse: Dict[str, object] = None
-        try:
-            jsonResponse = rawResponse.json()
-        except JSONDecodeError as e:
-            self.__timber.log('WeatherRepository', f'Exception occurred when attempting to decode Open Weather\'s air quality index response into JSON for \"{location.getLocationId()}\" ({location.getName()}): {e}')
-            raise RuntimeError(f'Exception occurred when attempting to decode Open Weather\'s air quality index response into JSON for \"{location.getLocationId()}\" ({location.getName()}): {e}')
+        jsonResponse = await response.json()
+        response.close()
 
         airQualityIndex = utils.getIntFromDict(
             d = jsonResponse['list'][0]['main'],
-            key = 'aqi'
+            key = 'aqi',
+            fallback = -1
         )
 
-        return AirQualityIndex.fromInt(airQualityIndex)
+        if airQualityIndex == -1:
+            return None
+        else:
+            return AirQualityIndex.fromInt(airQualityIndex)
 
-    def fetchWeather(self, location: Location) -> WeatherReport:
+    async def fetchWeather(self, location: Location) -> WeatherReport:
         if location is None:
             raise ValueError(f'location argument is malformed: \"{location}\"')
 
@@ -147,12 +146,12 @@ class WeatherRepository():
         if cacheValue is not None:
             return cacheValue
 
-        weatherReport = self.__fetchWeather(location)
+        weatherReport = await self.__fetchWeather(location)
         self.__cache[location.getLocationId()] = weatherReport
 
         return weatherReport
 
-    def __fetchWeather(self, location: Location) -> WeatherReport:
+    async def __fetchWeather(self, location: Location) -> WeatherReport:
         if location is None:
             raise ValueError(f'location argument is malformed: \"{location}\"')
 
@@ -164,19 +163,13 @@ class WeatherRepository():
         requestUrl = 'https://api.openweathermap.org/data/2.5/onecall?appid={}&lat={}&lon={}&exclude=minutely,hourly&units=metric'.format(
             self.__oneWeatherApiKey, location.getLatitude(), location.getLongitude())
 
-        rawResponse = None
-        try:
-            rawResponse = requests.get(url = requestUrl, timeout = utils.getDefaultTimeout())
-        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            self.__timber.log('WeatherRepository', f'Exception occurred when attempting to fetch weather conditions from Open Weather for \"{location.getLocationId()}\" ({location.getName()}): {e}')
-            raise RuntimeError(f'Exception occurred when attempting to fetch weather conditions from Open Weather for \"{location.getLocationId()}\" ({location.getName()}): {e}')
+        response = await self.__clientSession.get(requestUrl)
+        if response.status != 200:
+            self.__timber.log('WeatherRepository', f'Encountered non-200 HTTP status code when fetching weather for \"{location.getName()}\" ({location.getLocationId()}): {response.status}')
+            raise RuntimeError(f'Encountered non-200 HTTP status code when fetching weather for \"{location.getName()}\" ({location.getLocationId()}): {response.status}')
 
-        jsonResponse: Dict[str, object] = None
-        try:
-            jsonResponse = rawResponse.json()
-        except JSONDecodeError as e:
-            self.__timber.log('WeatherRepository', f'Exception occurred when attempting to decode Open Weather\'s weather response into JSON for \"{location.getLocationId()}\" ({location.getName()}): {e}')
-            raise RuntimeError(f'Exception occurred when attempting to decode Open Weather\'s weather response into JSON for \"{location.getLocationId()}\" ({location.getName()}): {e}')
+        jsonResponse = await response.json()
+        response.close()
 
         currentJson: Dict[str, object] = jsonResponse['current']
         humidity = int(round(utils.getFloatFromDict(currentJson, 'humidity')))
@@ -204,7 +197,7 @@ class WeatherRepository():
                     if len(alerts) >= self.__maxAlerts:
                         break
 
-        tomorrowsJson = self.__chooseTomorrowFromForecast(jsonResponse)
+        tomorrowsJson = await self.__chooseTomorrowFromForecast(jsonResponse)
         tomorrowsHighTemperature = utils.getFloatFromDict(tomorrowsJson['temp'], 'max')
         tomorrowsLowTemperature = utils.getFloatFromDict(tomorrowsJson['temp'], 'min')
 
@@ -213,8 +206,10 @@ class WeatherRepository():
             for conditionJson in tomorrowsJson['weather']:
                 tomorrowsConditions.append(conditionJson['description'])
 
+        airQualityIndex = await self.__fetchAirQualityIndex(location)
+
         return WeatherReport(
-            airQualityIndex = self.__fetchAirQualityIndex(location),
+            airQualityIndex = airQualityIndex,
             temperature = temperature,
             tomorrowsHighTemperature = tomorrowsHighTemperature,
             tomorrowsLowTemperature = tomorrowsLowTemperature,

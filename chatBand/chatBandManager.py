@@ -1,7 +1,7 @@
 import json
 from datetime import timedelta
 from os import path
-from typing import Dict
+from typing import Dict, Optional
 
 try:
     import CynanBotCommon.utils as utils
@@ -59,12 +59,12 @@ class ChatBandManager():
         self.__chatBandMemberCache.clear()
         self.__timber.log('ChatBandManager', 'Caches cleared')
 
-    def __findChatBandMember(
+    async def __findChatBandMember(
         self,
         twitchChannel: str,
         author: str,
         message: str
-    ) -> ChatBandMember:
+    ) -> Optional[ChatBandMember]:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
         elif not utils.isValidStr(author):
@@ -72,11 +72,11 @@ class ChatBandManager():
         elif not utils.isValidStr(message):
             raise ValueError(f'message argument is malformed: \"{message}\"')
 
-        isDebugLoggingEnabled = self.__isDebugLoggingEnabled()
+        isDebugLoggingEnabled = await self.__isDebugLoggingEnabled()
         chatBandMember: ChatBandMember = self.__chatBandMemberCache[self.__getCooldownKey(twitchChannel, author)]
 
         if chatBandMember is None:
-            jsonContents = self.__readJsonForTwitchChannel(twitchChannel)
+            jsonContents = await self.__readJsonForTwitchChannel(twitchChannel)
 
             if utils.hasItems(jsonContents):
                 for key in jsonContents:
@@ -116,8 +116,8 @@ class ChatBandManager():
 
         return f'{twitchChannel.lower()}:{author.lower()}'
 
-    def __isDebugLoggingEnabled(self) -> bool:
-        jsonContents = self.__readAllJson()
+    async def __isDebugLoggingEnabled(self) -> bool:
+        jsonContents = await self.__readAllJson()
         return utils.getBoolFromDict(jsonContents, 'debugLoggingEnabled', fallback = False)
 
     async def playInstrumentForMessage(self, twitchChannel: str, author: str, message: str) -> bool:
@@ -128,7 +128,7 @@ class ChatBandManager():
         elif not utils.isValidStr(message):
             raise ValueError(f'message argument is malformed: \"{message}\"')
 
-        chatBandMember = self.__findChatBandMember(
+        chatBandMember = await self.__findChatBandMember(
             twitchChannel = twitchChannel,
             author = author,
             message = message
@@ -141,7 +141,7 @@ class ChatBandManager():
         elif not self.__lastChatBandMessageTimes.isReadyAndUpdate(self.__getCooldownKey(twitchChannel, author)):
             return False
 
-        if self.__isDebugLoggingEnabled():
+        if await self.__isDebugLoggingEnabled():
             self.__timber.log('ChatBandManager', f'New \"{twitchChannel}\" Chat Band event: {self.__toEventData(chatBandMember)}')
 
         await self.__websocketConnectionServer.sendEvent(
@@ -152,7 +152,7 @@ class ChatBandManager():
 
         return True
 
-    def __readAllJson(self) -> Dict[str, object]:
+    async def __readAllJson(self) -> Dict[str, object]:
         if not path.exists(self.__chatBandFile):
             raise FileNotFoundError(f'Chat Band file not found: \"{self.__chatBandFile}\"')
 
@@ -166,11 +166,11 @@ class ChatBandManager():
 
         return jsonContents
 
-    def __readJsonForTwitchChannel(self, twitchChannel: str) -> Dict[str, object]:
+    async def __readJsonForTwitchChannel(self, twitchChannel: str) -> Dict[str, object]:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
-        jsonContents = self.__readAllJson()
+        jsonContents = await self.__readAllJson()
         twitchChannelsJson: Dict[str, object] = jsonContents.get('twitchChannels')
         if not utils.hasItems(twitchChannelsJson):
             raise ValueError(f'\"twitchChannels\" JSON contents of Chat Band file \"{self.__chatBandFile}\" is missing/empty')

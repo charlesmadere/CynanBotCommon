@@ -1,13 +1,9 @@
 import json
 import os
 from datetime import datetime, timedelta, timezone
-from json.decoder import JSONDecodeError
 from typing import Dict, List
 
-import requests
-from requests import ConnectionError, HTTPError, Timeout
-from requests.exceptions import ReadTimeout, TooManyRedirects
-from urllib3.exceptions import MaxRetryError, NewConnectionError
+import aiohttp
 
 try:
     import CynanBotCommon.utils as utils
@@ -45,13 +41,16 @@ class TwitchTokensRepository():
 
     def __init__(
         self,
+        clientSession: aiohttp.ClientSession,
         timber: Timber,
         oauth2TokenUrl: str = 'https://id.twitch.tv/oauth2/token',
         oauth2ValidateUrl: str = 'https://id.twitch.tv/oauth2/validate',
         twitchTokensFile: str = 'CynanBotCommon/twitchTokensRepository.json',
         tokensExpirationBuffer: timedelta = timedelta(minutes = 10)
     ):
-        if timber is None:
+        if clientSession is None:
+            raise ValueError(f'clientSession argument is malformed: \"{clientSession}\"')
+        elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not utils.isValidUrl(oauth2TokenUrl):
             raise ValueError(f'oauth2TokenUrl argument is malformed: \"{oauth2TokenUrl}\"')
@@ -62,6 +61,7 @@ class TwitchTokensRepository():
         elif tokensExpirationBuffer is None:
             raise ValueError(f'tokensExpirationBuffer argument is malformed: \"{tokensExpirationBuffer}\"')
 
+        self.__clientSession: aiohttp.ClientSession = clientSession
         self.__timber: Timber = timber
         self.__oauth2TokenUrl: str = oauth2TokenUrl
         self.__oauth2ValidateUrl: str = oauth2ValidateUrl
@@ -132,7 +132,7 @@ class TwitchTokensRepository():
         # is a good bit easier to handle than throwing an exception, or something else like that.
         return dict()
 
-    def __refreshTokens(
+    async def __refreshTokens(
         self,
         twitchClientId: str,
         twitchClientSecret: str,
@@ -147,32 +147,22 @@ class TwitchTokensRepository():
 
         self.__timber.log('TwitchTokensRepository', f'Refreshing Twitch tokens for \"{twitchHandle}\"...')
 
-        rawResponse = None
-        try:
-            rawResponse = requests.post(
-                url = self.__oauth2TokenUrl,
-                params = {
+        response = await self.__clientSession.get(
+            url = self.__oauth2TokenUrl,
+            params = {
                     'client_id': twitchClientId,
                     'client_secret': twitchClientSecret,
                     'grant_type': 'refresh_token',
                     'refresh_token': self.requireRefreshToken(twitchHandle)
-                },
-                timeout = utils.getDefaultTimeout()
-            )
-        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            self.__timber.log('TwitchTokensRepository', f'Exception occurred when attempting to request new Twitch tokens for \"{twitchHandle}\": {e}')
-            raise RuntimeError(f'Exception occurred when attempting to request new Twitch tokens for \"{twitchHandle}\": {e}')
+            }
+        )
 
-        if rawResponse.status_code != 200:
-            self.__timber.log('TwitchTokensRepository', f'Encountered non-200 HTTP status code when requesting new Twitch tokens for \"{twitchHandle}\": {rawResponse.status_code}')
-            raise RuntimeError(f'Encountered non-200 HTTP status code when requesting new Twitch tokens for \"{twitchHandle}\": {rawResponse.status_code}')
+        if response.status != 200:
+            self.__timber.log('TwitchTokensRepository', f'Encountered non-200 HTTP status code when requesting new Twitch tokens for \"{twitchHandle}\": {response.status}')
+            raise RuntimeError(f'Encountered non-200 HTTP status code when requesting new Twitch tokens for \"{twitchHandle}\": {response.status}')
 
-        jsonResponse: Dict[str, object] = None
-        try:
-            jsonResponse = rawResponse.json()
-        except JSONDecodeError as e:
-            self.__timber.log('TwitchTokensRepository', f'Exception occurred when attempting to decode new Twitch tokens response for \"{twitchHandle}\" into JSON: {e}')
-            raise RuntimeError(f'Exception occurred when attempting to decode new Twitch tokens response for \"{twitchHandle}\" into JSON: {e}')
+        jsonResponse: Dict[str, object] = await response.json()
+        response.close()
 
         if not utils.hasItems(jsonResponse):
             self.__timber.log('TwitchTokensRepository', f'Received malformed JSON response when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
@@ -233,7 +223,7 @@ class TwitchTokensRepository():
 
         return refreshToken
 
-    def validateAndRefreshAccessToken(
+    async def validateAndRefreshAccessToken(
         self,
         twitchClientId: str,
         twitchClientSecret: str,
@@ -248,30 +238,19 @@ class TwitchTokensRepository():
 
         self.__timber.log('TwitchTokensRepository', f'Validating Twitch access token for \"{twitchHandle}\"...')
 
-        rawResponse = None
-        try:
-            rawResponse = requests.get(
-                url = self.__oauth2ValidateUrl,
-                params = {
-                    'Authorization': f'OAuth {self.requireAccessToken(twitchHandle)}'
-                },
-                timeout = utils.getDefaultTimeout()
-            )
-        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            self.__timber.log('TwitchTokensRepository', f'Exception occurred when attempting to validate \"{twitchHandle}\" Twitch access token": {e}')
-            raise RuntimeError(f'Exception occurred when attempting to validate \"{twitchHandle}\" Twitch access token: {e}')
+        response = await self.__clientSession.get(
+            url = self.__oauth2ValidateUrl,
+            params = {
+                'Authorization': f'OAuth {self.requireAccessToken(twitchHandle)}'
+            }
+        )
 
-        # We are intentionally NOT checking the HTTP status code here.
+        responseStatus = response.status
+        jsonResponse: Dict[str, object] = await response.json()
+        response.close()
 
-        jsonResponse: Dict[str, object] = None
-        try:
-            jsonResponse = rawResponse.json()
-        except JSONDecodeError as e:
-            self.__timber.log('TwitchTokensRepository', f'Exception occurred when attempting to decode \"{twitchHandle}\" Twitch access token validation response into JSON: {e}')
-            raise RuntimeError(f'Exception occurred when attempting to decode \"{twitchHandle}\" Twitch access token validation response into JSON: {e}')
-
-        if rawResponse.status_code != 200 or jsonResponse.get('client_id') is None or len(jsonResponse['client_id']) == 0:
-            self.__refreshTokens(
+        if responseStatus != 200 or jsonResponse.get('client_id') is None or len(jsonResponse['client_id']) == 0:
+            await self.__refreshTokens(
                 twitchClientId = twitchClientId,
                 twitchClientSecret = twitchClientSecret,
                 twitchHandle = twitchHandle

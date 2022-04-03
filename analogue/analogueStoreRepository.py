@@ -1,11 +1,8 @@
 from datetime import datetime, timedelta, timezone
 from typing import List
 
-import requests
+import aiohttp
 from lxml import html
-from requests import ConnectionError, HTTPError, Timeout
-from requests.exceptions import ReadTimeout, TooManyRedirects
-from urllib3.exceptions import MaxRetryError, NewConnectionError
 
 try:
     import CynanBotCommon.utils as utils
@@ -26,48 +23,46 @@ class AnalogueStoreRepository():
 
     def __init__(
         self,
+        clientSession: aiohttp.ClientSession,
         timber: Timber,
         storeUrl: str = 'https://www.analogue.co/store',
         cacheTimeDelta: timedelta = timedelta(hours = 1)
     ):
-        if timber is None:
+        if clientSession is None:
+            raise ValueError(f'clientSession argument is malformed: \"{clientSession}\"')
+        elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not utils.isValidUrl(storeUrl):
             raise ValueError(f'storeUrl argument is malformed: \"{storeUrl}\"')
         elif cacheTimeDelta is None:
             raise ValueError(f'cacheTimeDelta argument is malformed: \"{cacheTimeDelta}\"')
 
+        self.__clientSession: aiohttp.ClientSession = clientSession
         self.__timber: Timber = timber
         self.__storeUrl: str = storeUrl
-        self.__cacheTime = datetime.now(timezone.utc) - cacheTimeDelta
         self.__cacheTimeDelta: timedelta = cacheTimeDelta
+
+        self.__cacheTime = datetime.now(timezone.utc) - cacheTimeDelta
         self.__storeStock: AnalogueStoreStock = None
 
-    def fetchStoreStock(self) -> AnalogueStoreStock:
+    async def fetchStoreStock(self) -> AnalogueStoreStock:
         if self.__cacheTime + self.__cacheTimeDelta < datetime.now(timezone.utc) or self.__storeStock is None:
             self.__storeStock = self.__fetchStoreStock()
             self.__cacheTime = datetime.now(timezone.utc)
 
-        return self.__storeStock
+        return await self.__storeStock
 
-    def getStoreUrl(self) -> str:
-        return self.__storeUrl
-
-    def __fetchStoreStock(self) -> AnalogueStoreStock:
+    async def __fetchStoreStock(self) -> AnalogueStoreStock:
         self.__timber.log('AnalogueStoreRepository', f'Fetching Analogue store stock...')
 
-        rawResponse = None
-        try:
-            rawResponse = requests.get(url = self.__storeUrl, timeout = utils.getDefaultTimeout())
-        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            self.__timber.log('AnalogueStoreRepository', f'Exception occurred when attempting to fetch Analogue store stock: {e}')
-            raise RuntimeError(f'Exception occurred when attempting to fetch Analogue store stock: {e}')
+        response = await self.__clientSession.get(self.__storeUrl)
+        if response.status != 200:
+            self.__timber.log('AnalogueStoreRepository', f'Encountered non-200 HTTP status code when fetching Analogue store stock: {response.status}')
+            raise RuntimeError(f'Encountered non-200 HTTP status code when fetching Analogue store stock: {response.status}')
 
-        if rawResponse.status_code != 200:
-            self.__timber.log('AnalogueStoreRepository', f'Encountered non-200 HTTP status code when fetching Analogue store stock: {rawResponse.status_code}')
-            raise RuntimeError(f'Encountered non-200 HTTP status code when fetching Analogue store stock: {rawResponse.status_code}')
+        htmlTree = html.fromstring(await response.read())
+        response.close()
 
-        htmlTree = html.fromstring(rawResponse.content)
         if htmlTree is None:
             self.__timber.log('AnalogueStoreRepository', f'Analogue store\'s htmlTree is malformed: \"{htmlTree}\"')
             raise ValueError(f'Analogue store\'s htmlTree is malformed: \"{htmlTree}\"')
