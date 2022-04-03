@@ -147,9 +147,9 @@ class TwitchTokensRepository():
 
         self.__timber.log('TwitchTokensRepository', f'Refreshing Twitch tokens for \"{twitchHandle}\"...')
 
-        response = await self.__clientSession.get(
+        response = await self.__clientSession.post(
             url = self.__oauth2TokenUrl,
-            headers = {
+            params = {
                     'client_id': twitchClientId,
                     'client_secret': twitchClientSecret,
                     'grant_type': 'refresh_token',
