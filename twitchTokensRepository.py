@@ -249,11 +249,15 @@ class TwitchTokensRepository():
         jsonResponse: Dict[str, object] = await response.json()
         response.close()
 
-        expiresInSeconds: int = None
+        clientId: str = None
+        if jsonResponse is not None and utils.isValidStr(jsonResponse.get('client_id')):
+            clientId = utils.getStrFromDict(jsonResponse, 'client_id')
+
+        expiresInSeconds: int = -1
         if jsonResponse is not None and utils.isValidNum(jsonResponse.get('expires_in')):
             expiresInSeconds = utils.getIntFromDict(jsonResponse, 'expires_in')
 
-        if responseStatus != 200 or jsonResponse is None or jsonResponse.get('client_id') is None or len(jsonResponse['client_id']) == 0 or (expiresInSeconds is not None and expiresInSeconds < 900):
+        if responseStatus != 200 or not utils.isValidStr(clientId) or expiresInSeconds < 900: # 900 seconds = 15 minutes
             await self.__refreshTokens(
                 twitchClientId = twitchClientId,
                 twitchClientSecret = twitchClientSecret,
