@@ -1,10 +1,7 @@
 from datetime import timedelta
 
-import requests
+import aiohttp
 import xmltodict
-from requests import ConnectionError, HTTPError, Timeout
-from requests.exceptions import ReadTimeout, TooManyRedirects
-from urllib3.exceptions import MaxRetryError, NewConnectionError
 
 try:
     import CynanBotCommon.utils as utils
@@ -26,18 +23,22 @@ class WordOfTheDayRepository():
 
     def __init__(
         self,
+        clientSession: aiohttp.ClientSession,
         timber: Timber,
         cacheTimeDelta: timedelta = timedelta(hours = 1)
     ):
-        if timber is None:
+        if clientSession is None:
+            raise ValueError(f'clientSession argument is malformed: \"{clientSession}\"')
+        elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif cacheTimeDelta is None:
             raise ValueError(f'cacheTimeDelta argument is malformed: \"{cacheTimeDelta}\"')
 
+        self.__clientSession: aiohttp.ClientSession = clientSession
         self.__timber: Timber = timber
         self.__cache: TimedDict = TimedDict(timeDelta = cacheTimeDelta)
 
-    def fetchWotd(self, languageEntry: LanguageEntry) -> WordOfTheDayResponse:
+    async def fetchWotd(self, languageEntry: LanguageEntry) -> WordOfTheDayResponse:
         if languageEntry is None:
             raise ValueError(f'languageEntry argument is malformed: \"{languageEntry}\"')
         elif not languageEntry.hasWotdApiCode():
@@ -47,34 +48,31 @@ class WordOfTheDayRepository():
         if cacheValue is not None:
             return cacheValue
 
-        wotd = self.__fetchWotd(languageEntry)
+        wotd = await self.__fetchWotd(languageEntry)
         self.__cache[languageEntry] = wotd
 
         return wotd
 
-    def __fetchWotd(self, languageEntry: LanguageEntry) -> WordOfTheDayResponse:
+    async def __fetchWotd(self, languageEntry: LanguageEntry) -> WordOfTheDayResponse:
         if languageEntry is None:
             raise ValueError(f'languageEntry argument is malformed: \"{languageEntry}\"')
         elif not languageEntry.hasWotdApiCode():
             raise ValueError(f'the given languageEntry is not supported for Word Of The Day: \"{languageEntry.getName()}\"')
 
-        self.__timber.log('WordOfTheDayRepository', f'Fetching Word Of The Day for \"{languageEntry.getName()}\"...')
+        self.__timber.log('WordOfTheDayRepository', f'Fetching Word Of The Day for \"{languageEntry.getName()}\" ({languageEntry.getWotdApiCode()})...')
 
         ##############################################################################
         # retrieve word of the day from https://www.transparent.com/word-of-the-day/ #
         ##############################################################################
 
-        rawResponse = None
-        try:
-            rawResponse = requests.get(
-                url = f'https://wotd.transparent.com/rss/{languageEntry.getWotdApiCode()}-widget.xml?t=0',
-                timeout = utils.getDefaultTimeout()
-            )
-        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            self.__timber.log('WordOfTheDayRepository', f'Exception occurred when attempting to fetch Word Of The Day for \"{languageEntry.getName()}\" ({languageEntry.getWotdApiCode()}): {e}')
-            raise RuntimeError(f'Exception occurred when attempting to fetch Word Of The Day for \"{languageEntry.getName()}\" ({languageEntry.getWotdApiCode()}): {e}')
+        response = await self.__clientSession.get(f'https://wotd.transparent.com/rss/{languageEntry.getWotdApiCode()}-widget.xml?t=0')
+        if response.status != 200:
+            self.__timber.log('WordOfTheDayRepository', f'Encountered non-200 HTTP status code when fetching Word Of The Day for \"{languageEntry.getName()}\" ({languageEntry.getWotdApiCode()}): {response.status}')
+            raise RuntimeError(f'Encountered non-200 HTTP status code when fetching Word Of The Day for \"{languageEntry.getName()}\" ({languageEntry.getWotdApiCode()}): {response.status}')
 
-        xmlTree = xmltodict.parse(rawResponse.content)
+        xmlTree = xmltodict.parse(await response.read())
+        response.close()
+
         if not utils.hasItems(xmlTree):
             self.__timber.log('WordOfTheDayRepository', f'xmlTree for \"{languageEntry.getName()}\" is malformed: {xmlTree}')
             raise RuntimeError(f'xmlTree for \"{languageEntry.getName()}\" is malformed: {xmlTree}')
