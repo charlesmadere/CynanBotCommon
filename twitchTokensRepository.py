@@ -70,14 +70,14 @@ class TwitchTokensRepository():
 
         self.__tokenExpirations: Dict[str, datetime] = dict()
 
-    def getAccessToken(self, twitchHandle: str) -> str:
+    async def getAccessToken(self, twitchHandle: str) -> str:
         if not utils.isValidStr(twitchHandle):
             raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
 
-        jsonContents = self.__readJsonForTwitchHandle(twitchHandle)
+        jsonContents = await self.__readJsonForTwitchHandle(twitchHandle)
         return utils.getStrFromDict(jsonContents, 'accessToken', fallback = '')
 
-    def getExpiringTwitchHandles(self) -> List[str]:
+    async def getExpiringTwitchHandles(self) -> List[str]:
         if not utils.hasItems(self.__tokenExpirations):
             return None
 
@@ -90,18 +90,18 @@ class TwitchTokensRepository():
 
         return expiringTwitchHandles
 
-    def getRefreshToken(self, twitchHandle: str) -> str:
+    async def getRefreshToken(self, twitchHandle: str) -> str:
         if not utils.isValidStr(twitchHandle):
             raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
 
-        jsonContents = self.__readJsonForTwitchHandle(twitchHandle)
+        jsonContents = await self.__readJsonForTwitchHandle(twitchHandle)
         return utils.getStrFromDict(jsonContents, 'refreshToken', fallback = '')
 
-    def __isDebugLoggingEnabled(self) -> bool:
-        jsonContents = self.__readAllJson()
+    async def __isDebugLoggingEnabled(self) -> bool:
+        jsonContents = await self.__readAllJson()
         return utils.getBoolFromDict(jsonContents, 'debugLoggingEnabled', fallback = False)
 
-    def __readAllJson(self) -> Dict[str, object]:
+    async def __readAllJson(self) -> Dict[str, object]:
         if not os.path.exists(self.__twitchTokensFile):
             raise FileNotFoundError(f'Twitch tokens file not found: \"{self.__twitchTokensFile}\"')
 
@@ -115,11 +115,11 @@ class TwitchTokensRepository():
 
         return jsonContents
 
-    def __readJsonForTwitchHandle(self, twitchHandle: str) -> Dict[str, object]:
+    async def __readJsonForTwitchHandle(self, twitchHandle: str) -> Dict[str, object]:
         if not utils.isValidStr(twitchHandle):
             raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
 
-        jsonContents = self.__readAllJson()
+        jsonContents = await self.__readAllJson()
         twitchHandlesJson: Dict[str, object] = jsonContents.get('twitchHandles')
         if not utils.hasItems(twitchHandlesJson):
             raise ValueError(f'\"twitchHandles\" JSON contents of Twitch tokens file \"{self.__twitchTokensFile}\" is missing/empty')
@@ -153,7 +153,7 @@ class TwitchTokensRepository():
                     'client_id': twitchClientId,
                     'client_secret': twitchClientSecret,
                     'grant_type': 'refresh_token',
-                    'refresh_token': self.requireRefreshToken(twitchHandle)
+                    'refresh_token': await self.requireRefreshToken(twitchHandle)
             }
         )
 
@@ -185,7 +185,7 @@ class TwitchTokensRepository():
             self.__timber.log('TwitchTokensRepository', f'Received overly aggressive \"expires_in\" ({expiresInSeconds} seconds) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
             raise TwitchExpiresInOverlyAggressiveException(f'Received overly aggressive \"expires_in\" ({expiresInSeconds} seconds) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
 
-        if self.__isDebugLoggingEnabled():
+        if await self.__isDebugLoggingEnabled():
             self.__timber.log('TwitchTokensRepository', f'JSON response for \"{twitchHandle}\" Twitch tokens refresh: {jsonResponse}')
 
         jsonContents = self.__readAllJson()
@@ -200,21 +200,21 @@ class TwitchTokensRepository():
         self.__saveUserTokenExpirationTime(twitchHandle, expiresInSeconds)
         self.__timber.log('TwitchTokensRepository', f'Saved new Twitch tokens for \"{twitchHandle}\" (expiration is in {expiresInSeconds} seconds)')
 
-    def requireAccessToken(self, twitchHandle: str) -> str:
+    async def requireAccessToken(self, twitchHandle: str) -> str:
         if not utils.isValidStr(twitchHandle):
             raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
 
-        accessToken = self.getAccessToken(twitchHandle)
+        accessToken = await self.getAccessToken(twitchHandle)
         if not utils.isValidStr(accessToken):
             raise ValueError(f'\"accessToken\" value for \"{twitchHandle}\" in \"{self.__twitchTokensFile}\" is malformed: \"{accessToken}\"')
 
         return accessToken
 
-    def requireRefreshToken(self, twitchHandle: str) -> str:
+    async def requireRefreshToken(self, twitchHandle: str) -> str:
         if not utils.isValidStr(twitchHandle):
             raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
 
-        refreshToken = self.getRefreshToken(twitchHandle)
+        refreshToken = await self.getRefreshToken(twitchHandle)
         if not utils.isValidStr(refreshToken):
             raise ValueError(f'\"refreshToken\" value for \"{twitchHandle}\" in \"{self.__twitchTokensFile}\" is malformed: \"{refreshToken}\"')
 
@@ -249,7 +249,7 @@ class TwitchTokensRepository():
         response = await self.__clientSession.get(
             url = self.__oauth2ValidateUrl,
             headers = {
-                'Authorization': f'OAuth {self.requireAccessToken(twitchHandle)}'
+                'Authorization': f'OAuth {await self.requireAccessToken(twitchHandle)}'
             }
         )
 
