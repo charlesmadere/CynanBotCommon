@@ -188,7 +188,7 @@ class TwitchTokensRepository():
         if await self.__isDebugLoggingEnabled():
             self.__timber.log('TwitchTokensRepository', f'JSON response for \"{twitchHandle}\" Twitch tokens refresh: {jsonResponse}')
 
-        jsonContents = self.__readAllJson()
+        jsonContents = await self.__readAllJson()
         jsonContents['twitchHandles'][twitchHandle] = {
             'accessToken': accessToken,
             'refreshToken': refreshToken
@@ -197,7 +197,7 @@ class TwitchTokensRepository():
         with open(self.__twitchTokensFile, 'w') as file:
             json.dump(jsonContents, file, indent = 4, sort_keys = True)
 
-        self.__saveUserTokenExpirationTime(twitchHandle, expiresInSeconds)
+        await self.__saveUserTokenExpirationTime(twitchHandle, expiresInSeconds)
         self.__timber.log('TwitchTokensRepository', f'Saved new Twitch tokens for \"{twitchHandle}\" (expiration is in {expiresInSeconds} seconds)')
 
     async def requireAccessToken(self, twitchHandle: str) -> str:
@@ -220,7 +220,7 @@ class TwitchTokensRepository():
 
         return refreshToken
 
-    def __saveUserTokenExpirationTime(self, twitchHandle: str, expiresInSeconds: int):
+    async def __saveUserTokenExpirationTime(self, twitchHandle: str, expiresInSeconds: int):
         if not utils.isValidStr(twitchHandle):
             raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
         elif not utils.isValidNum(expiresInSeconds):
@@ -272,5 +272,5 @@ class TwitchTokensRepository():
                 twitchHandle = twitchHandle
             )
         else:
-            self.__saveUserTokenExpirationTime(twitchHandle, expiresInSeconds)
+            await self.__saveUserTokenExpirationTime(twitchHandle, expiresInSeconds)
             self.__timber.log('TwitchTokensRepository', f'No need yet to request new Twitch tokens for \"{twitchHandle}\" (expiration is in {expiresInSeconds} seconds)')
