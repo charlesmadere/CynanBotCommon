@@ -18,7 +18,7 @@ class TriviaScoreRepository():
         self.__backingDatabase: BackingDatabase = backingDatabase
         self.__initDatabaseTable()
 
-    def fetchTriviaScore(
+    async def fetchTriviaScore(
         self,
         twitchChannel: str,
         userId: str
@@ -73,7 +73,7 @@ class TriviaScoreRepository():
             userId = userId
         )
 
-    def incrementTotalLosses(
+    async def incrementTotalLosses(
         self,
         twitchChannel: str,
         userId: str
@@ -85,7 +85,7 @@ class TriviaScoreRepository():
         elif userId == '0':
             raise ValueError(f'userId argument is an illegal value: \"{userId}\"')
 
-        result = self.fetchTriviaScore(
+        result = await self.fetchTriviaScore(
             twitchChannel = twitchChannel,
             userId = userId
         )
@@ -106,7 +106,7 @@ class TriviaScoreRepository():
             userId = result.getUserId()
         )
 
-        self.__updateTriviaScore(
+        await self.__updateTriviaScore(
             newStreak = newResult.getStreak(),
             newTotalLosses = newResult.getTotalLosses(),
             newTotalWins = newResult.getTotalWins(),
@@ -116,7 +116,7 @@ class TriviaScoreRepository():
 
         return newResult
 
-    def incrementTotalWins(
+    async def incrementTotalWins(
         self,
         twitchChannel: str,
         userId: str
@@ -128,7 +128,7 @@ class TriviaScoreRepository():
         elif userId == '0':
             raise ValueError(f'userId argument is an illegal value: \"{userId}\"')
 
-        result = self.fetchTriviaScore(
+        result = await self.fetchTriviaScore(
             twitchChannel = twitchChannel,
             userId = userId
         )
@@ -149,7 +149,7 @@ class TriviaScoreRepository():
             userId = result.getUserId()
         )
 
-        self.__updateTriviaScore(
+        await self.__updateTriviaScore(
             newStreak = newResult.getStreak(),
             newTotalLosses = newResult.getTotalLosses(),
             newTotalWins = newResult.getTotalWins(),
@@ -176,7 +176,7 @@ class TriviaScoreRepository():
 
         connection.commit()
 
-    def __updateTriviaScore(
+    async def __updateTriviaScore(
         self,
         newStreak: int,
         newTotalLosses: int,
