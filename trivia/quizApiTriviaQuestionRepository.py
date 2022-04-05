@@ -48,7 +48,7 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
         triviaIdGenerator: TriviaIdGenerator,
         triviaSettingsRepository: TriviaSettingsRepository
     ):
-        super().__init__(triviaIdGenerator, triviaSettingsRepository)
+        super().__init__(triviaSettingsRepository)
 
         if clientSession is None:
             raise ValueError(f'clientSession argument is malformed: \"{clientSession}\"')
@@ -56,10 +56,13 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
             raise ValueError(f'quizApiKey argument is malformed: \"{quizApiKey}\"')
         elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
+        elif triviaIdGenerator is None:
+            raise ValueError(f'triviaIdGenerator argument is malformed: \"{triviaIdGenerator}\"')
 
         self.__clientSession: aiohttp.ClientSession = clientSession
         self.__quizApiKey: str = quizApiKey
         self.__timber: Timber = timber
+        self.__triviaIdGenerator: TriviaIdGenerator = triviaIdGenerator
 
     async def fetchTriviaQuestion(self, twitchChannel: Optional[str]) -> AbsTriviaQuestion:
         self.__timber.log('QuizApiTriviaQuestionRepository', 'Fetching trivia question...')
@@ -96,7 +99,7 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         triviaId = utils.getStrFromDict(triviaJson, 'id', fallback = '')
         if not utils.isValidStr(triviaId):
-            triviaId = await self._triviaIdGenerator.generate(
+            triviaId = await self.__triviaIdGenerator.generate(
                 category = category,
                 difficulty = triviaDifficulty.toStr(),
                 question = question
