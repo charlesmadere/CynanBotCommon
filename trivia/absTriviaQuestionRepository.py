@@ -8,7 +8,6 @@ try:
         NoTriviaCorrectAnswersException,
         NoTriviaMultipleChoiceResponsesException,
         TooFewTriviaMultipleChoiceResponsesException)
-    from CynanBotCommon.trivia.triviaIdGenerator import TriviaIdGenerator
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
 except:
@@ -19,7 +18,6 @@ except:
         NoTriviaCorrectAnswersException,
         NoTriviaMultipleChoiceResponsesException,
         TooFewTriviaMultipleChoiceResponsesException)
-    from trivia.triviaIdGenerator import TriviaIdGenerator
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
 
 
@@ -27,15 +25,11 @@ class AbsTriviaQuestionRepository(ABC):
 
     def __init__(
         self,
-        triviaIdGenerator: TriviaIdGenerator,
         triviaSettingsRepository: TriviaSettingsRepository
     ):
-        if triviaIdGenerator is None:
-            raise ValueError(f'triviaIdGenerator argument is malformed: \"{triviaIdGenerator}\"')
-        elif triviaSettingsRepository is None:
+        if triviaSettingsRepository is None:
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
 
-        self._triviaIdGenerator: TriviaIdGenerator = triviaIdGenerator
         self._triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
 
     async def _buildMultipleChoiceResponsesList(

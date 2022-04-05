@@ -16,7 +16,6 @@ try:
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
     from CynanBotCommon.trivia.triviaExceptions import \
         UnsupportedTriviaTypeException
-    from CynanBotCommon.trivia.triviaIdGenerator import TriviaIdGenerator
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
     from CynanBotCommon.trivia.triviaSource import TriviaSource
@@ -33,7 +32,6 @@ except:
         QuestionAnswerTriviaQuestion
     from trivia.triviaDifficulty import TriviaDifficulty
     from trivia.triviaExceptions import UnsupportedTriviaTypeException
-    from trivia.triviaIdGenerator import TriviaIdGenerator
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
     from trivia.triviaType import TriviaType
@@ -45,11 +43,10 @@ class JokeTriviaQuestionRepository(AbsTriviaQuestionRepository):
     def __init__(
         self,
         timber: Timber,
-        triviaIdGenerator: TriviaIdGenerator,
         triviaSettingsRepository: TriviaSettingsRepository,
         jokeTriviaQuestionFile: str = 'CynanBotCommon/trivia/jokeTriviaQuestionRepository.json'
     ):
-        super().__init__(triviaIdGenerator, triviaSettingsRepository)
+        super().__init__(triviaSettingsRepository)
 
         if timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
@@ -60,6 +57,8 @@ class JokeTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self.__jokeTriviaQuestionFile: str = jokeTriviaQuestionFile
 
     async def fetchTriviaQuestion(self, twitchChannel: Optional[str]) -> AbsTriviaQuestion:
+        self.__timber.log('JokeTriviaQuestionRepository', 'Fetching trivia question...')
+
         triviaJson: Optional[Dict[str, object]] = await self.__fetchTriviaQuestionJson(twitchChannel)
 
         if not utils.hasItems(triviaJson):

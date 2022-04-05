@@ -43,15 +43,18 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
         triviaIdGenerator: TriviaIdGenerator,
         triviaSettingsRepository: TriviaSettingsRepository
     ):
-        super().__init__(triviaIdGenerator, triviaSettingsRepository)
+        super().__init__(triviaSettingsRepository)
 
         if clientSession is None:
             raise ValueError(f'clientSession argument is malformed: \"{clientSession}\"')
         elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
+        elif triviaIdGenerator is None:
+            raise ValueError(f'triviaIdGenerator argument is malformed: \"{triviaIdGenerator}\"')
 
         self.__clientSession: aiohttp.ClientSession = clientSession
         self.__timber: Timber = timber
+        self.__triviaIdGenerator: TriviaIdGenerator = triviaIdGenerator
 
     async def fetchTriviaQuestion(self, twitchChannel: Optional[str]) -> AbsTriviaQuestion:
         self.__timber.log('JServiceTriviaQuestionRepository', 'Fetching trivia question...')
@@ -81,7 +84,7 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         triviaId = utils.getStrFromDict(triviaJson, 'id', fallback = '')
         if not utils.isValidStr(triviaId):
-            triviaId = await self._triviaIdGenerator.generate(category = category, question = question)
+            triviaId = await self.__triviaIdGenerator.generate(category = category, question = question)
 
         if triviaType is TriviaType.QUESTION_ANSWER:
             correctAnswer = utils.getStrFromDict(triviaJson, 'answer', clean = True)
