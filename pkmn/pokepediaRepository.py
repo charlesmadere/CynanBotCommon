@@ -1,10 +1,6 @@
-from json.decoder import JSONDecodeError
 from typing import Dict, List
 
-import requests
-from requests import ConnectionError, HTTPError, Timeout
-from requests.exceptions import ReadTimeout, TooManyRedirects
-from urllib3.exceptions import MaxRetryError, NewConnectionError
+import aiohttp
 
 try:
     import CynanBotCommon.utils as utils
@@ -32,11 +28,15 @@ class PokepediaRepository():
 
     def __init__(
         self,
+        clientSession: aiohttp.ClientSession,
         timber: Timber
     ):
-        if timber is None:
+        if clientSession is None:
+            raise ValueError(f'clientSession argument is malformed: \"{clientSession}\"')
+        elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
 
+        self.__clientSession: aiohttp.ClientSession = clientSession
         self.__timber: Timber = timber
 
     def __getElementTypeGenerationDictionary(
@@ -251,7 +251,7 @@ class PokepediaRepository():
 
         return moveGenerationDictionary
 
-    def searchMoves(self, name: str) -> PokepediaMove:
+    async def searchMoves(self, name: str) -> PokepediaMove:
         if not utils.isValidStr(name):
             raise ValueError(f'name argument is malformed: \"{name}\"')
 
@@ -259,26 +259,13 @@ class PokepediaRepository():
         name = name.replace(' ', '-')
         self.__timber.log('PokepediaRepository', f'Searching PokeAPI for move \"{name}\"...')
 
-        rawResponse = None
-        try:
-            rawResponse = requests.get(
-                url = f'https://pokeapi.co/api/v2/move/{name}/',
-                timeout = utils.getDefaultTimeout()
-            )
-        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            self.__timber.log('PokepediaRepository', f'Exception occurred when attempting to fetch Pokemon move \"{name}\": {e}')
-            raise RuntimeError(f'Exception occurred when attempting to fetch Pokemon move \"{name}\": {e}')
+        response = await self.__clientSession.get(f'https://pokeapi.co/api/v2/move/{name}/')
+        if response.status != 200:
+            self.__timber.log('PokepediaRepository', f'Encountered non-200 HTTP status code from PokeAPI when searching for \"{name}\" move: \"{response.status}\"')
+            raise RuntimeError(f'Exception occurred due to non-200 HTTP status code from PokeAPI when searching for \"{name}\" move: \"{response.status}\"')
 
-        if rawResponse.status_code != 200:
-            self.__timber.log('PokepediaRepository', f'Encountered non-200 HTTP status code from PokeAPI when searching for \"{name}\" move: \"{rawResponse.status_code}\"')
-            raise RuntimeError(f'Exception occurred due to non-200 HTTP status code from PokeAPI when searching for \"{name}\" move: \"{rawResponse.status_code}\"')
-
-        jsonResponse: Dict[str, object] = None
-        try:
-            jsonResponse = rawResponse.json()
-        except JSONDecodeError as e:
-            self.__timber.log('PokepediaRepository', f'Exception occurred when attempting to decode Pokemon move response into JSON for \"{name}\": {e}')
-            raise RuntimeError(f'Exception occurred when attempting to decode Pokemon move response into JSON for \"{name}\": {e}')
+        jsonResponse = await response.json()
+        response.close()
 
         return PokepediaMove(
             generationMoves = self.__getMoveGenerationDictionary(jsonResponse),
@@ -288,7 +275,7 @@ class PokepediaRepository():
             rawName = utils.getStrFromDict(jsonResponse, 'name')
         )
 
-    def searchPokemon(self, name: str) -> PokepediaPokemon:
+    async def searchPokemon(self, name: str) -> PokepediaPokemon:
         if not utils.isValidStr(name):
             raise ValueError(f'name argument is malformed: \"{name}\"')
 
@@ -296,26 +283,13 @@ class PokepediaRepository():
         name = name.replace(' ', '-')
         self.__timber.log('PokepediaRepository', f'Searching PokeAPI for Pokemon \"{name}\"...')
 
-        rawResponse = None
-        try:
-            rawResponse = requests.get(
-                url = f'https://pokeapi.co/api/v2/pokemon/{name}/',
-                timeout = utils.getDefaultTimeout()
-            )
-        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            self.__timber.log('PokepediaRepository', f'Exception occurred when attempting to fetch Pokemon \"{name}\": {e}')
-            raise RuntimeError(f'Exception occurred when attempting to fetch Pokemon \"{name}\": {e}')
+        response = await self.__clientSession.get(f'https://pokeapi.co/api/v2/pokemon/{name}/')
+        if response.status != 200:
+            self.__timber.log('PokepediaRepository', f'Encountered non-200 HTTP status code from PokeAPI when searching for \"{name}\" Pokemon: \"{response.status}\"')
+            raise RuntimeError(f'Exception occurred due to non-200 HTTP status code from PokeAPI when searching for \"{name}\" Pokemon: \"{response.status}\"')
 
-        if rawResponse.status_code != 200:
-            self.__timber.log('PokepediaRepository', f'Encountered non-200 HTTP status code from PokeAPI when searching for \"{name}\" Pokemon: \"{rawResponse.status_code}\"')
-            raise RuntimeError(f'Exception occurred due to non-200 HTTP status code from PokeAPI when searching for \"{name}\" Pokemon: \"{rawResponse.status_code}\"')
-
-        jsonResponse: Dict[str, object] = None
-        try:
-            jsonResponse = rawResponse.json()
-        except JSONDecodeError as e:
-            self.__timber.log('PokepediaRepository', f'Exception occurred when attempting to decode Pokemon response into JSON for \"{name}\": {e}')
-            raise RuntimeError(f'Exception occurred when attempting to decode Pokemon response into JSON for \"{name}\": {e}')
+        jsonResponse = await response.json()
+        response.close()
 
         pokedexId = utils.getIntFromDict(jsonResponse, 'id')
         initialGeneration = PokepediaGeneration.fromPokedexId(pokedexId)
