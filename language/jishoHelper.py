@@ -1,11 +1,7 @@
-from json.decoder import JSONDecodeError
-from typing import Dict, List
+from typing import List
 from urllib.parse import quote
 
-import requests
-from requests import ConnectionError, HTTPError, Timeout
-from requests.exceptions import ReadTimeout, TooManyRedirects
-from urllib3.exceptions import MaxRetryError, NewConnectionError
+import aiohttp
 
 try:
     import CynanBotCommon.utils as utils
@@ -24,11 +20,14 @@ class JishoHelper():
 
     def __init__(
         self,
+        clientSession: aiohttp.ClientSession,
         timber: Timber,
         definitionsMaxSize: int = 3,
         variantsMaxSize: int = 3
     ):
-        if timber is None:
+        if clientSession is None:
+            raise ValueError(f'clientSession argument is malformed: \"{clientSession}\"')
+        elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not utils.isValidNum(definitionsMaxSize):
             raise ValueError(f'definitionsMaxSize argument is malformed: \"{definitionsMaxSize}\"')
@@ -39,11 +38,12 @@ class JishoHelper():
         elif variantsMaxSize < 1 or variantsMaxSize > 5:
             raise ValueError(f'variantsMaxSize argument is out of bounds: \"{variantsMaxSize}\"')
 
+        self.__clientSession: aiohttp.ClientSession = clientSession
         self.__timber: Timber = timber
         self.__definitionsMaxSize: int = definitionsMaxSize
         self.__variantsMaxSize: int = variantsMaxSize
 
-    def search(self, query: str) -> JishoResult:
+    async def search(self, query: str) -> JishoResult:
         if not utils.isValidStr(query):
             raise ValueError(f'query argument is malformed: \"{query}\"')
 
@@ -51,26 +51,13 @@ class JishoHelper():
         encodedQuery = quote(query)
         self.__timber.log('JishoHelper', f'Looking up \"{query}\" at Jisho...')
 
-        rawResponse = None
-        try:
-            rawResponse = requests.get(
-                url = f'https://jisho.org/api/v1/search/words?keyword={encodedQuery}',
-                timeout = utils.getDefaultTimeout()
-            )
-        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            self.__timber.log('JishoHelper', f'Exception occurred when attempting to search Jisho for \"{query}\": {e}')
-            raise RuntimeError(f'Exception occurred when attempting to search Jisho for \"{query}\": {e}')
+        response = await self.__clientSession.get(f'https://jisho.org/api/v1/search/words?keyword={encodedQuery}')
+        if response.status != 200:
+            self.__timber.log('JishoHelper', f'Encountered non-200 HTTP status code when searching Jisho for \"{query}\": {response.status}')
+            raise RuntimeError(f'Encountered non-200 HTTP status code when searching Jisho for \"{query}\": {response.status}')
 
-        if rawResponse.status_code != 200:
-            self.__timber.log('JishoHelper', f'Encountered non-200 HTTP status code when searching Jisho for \"{query}\": {rawResponse.status_code}')
-            raise RuntimeError(f'Encountered non-200 HTTP status code when searching Jisho for \"{query}\": {rawResponse.status_code}')
-
-        jsonResponse: Dict[str, object] = None
-        try:
-            jsonResponse = rawResponse.json()
-        except JSONDecodeError as e:
-            self.__timber.log('JishoHelper', f'Exception occurred when attempting to decode Jisho\'s response for \"{query}\" into JSON: {e}')
-            raise RuntimeError(f'Exception occurred when attempting to decode Jisho\'s response for \"{query}\" into JSON: {e}')
+        jsonResponse = await response.json()
+        response.close()
 
         if not utils.hasItems(jsonResponse):
             raise RuntimeError(f'Jisho\'s response for \"{query}\" has malformed or empty JSON: {jsonResponse}')

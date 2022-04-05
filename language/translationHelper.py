@@ -1,14 +1,10 @@
 import json
 import random
-from json.decoder import JSONDecodeError
 from os import path
 from typing import Dict
 
-import requests
+import aiohttp
 from google.cloud import translate_v2 as translate
-from requests import ConnectionError, HTTPError, Timeout
-from requests.exceptions import ReadTimeout, TooManyRedirects
-from urllib3.exceptions import MaxRetryError, NewConnectionError
 
 try:
     import CynanBotCommon.utils as utils
@@ -32,12 +28,15 @@ class TranslationHelper():
 
     def __init__(
         self,
+        clientSession: aiohttp.ClientSession,
         languagesRepository: LanguagesRepository,
         deepLAuthKey: str,
         timber: Timber,
         googleServiceAccountFile: str = 'CynanBotCommon/language/googleServiceAccount.json'
     ):
-        if languagesRepository is None:
+        if clientSession is None:
+            raise ValueError(f'clientSession argument is malformed: \"{clientSession}\"')
+        elif languagesRepository is None:
             raise ValueError(f'languagesRepository argument is malformed: \"{languagesRepository}\"')
         elif not utils.isValidStr(deepLAuthKey):
             raise ValueError(f'deepLAuthKey argument is malformed: \"{deepLAuthKey}\"')
@@ -46,13 +45,14 @@ class TranslationHelper():
         elif not utils.isValidStr(googleServiceAccountFile):
             raise ValueError(f'googleServiceAccountFile argument is malformed: \"{googleServiceAccountFile}\"')
 
+        self.__clientSession: aiohttp.ClientSession = clientSession
         self.__languagesRepository: LanguagesRepository = languagesRepository
         self.__deepLAuthKey: str = deepLAuthKey
         self.__timber: Timber = timber
         self.__googleServiceAccountFile: str = googleServiceAccountFile
         self.__googleTranslateClient = None
 
-    def __deepLTranslate(self, text: str, targetLanguageEntry: LanguageEntry) -> TranslationResponse:
+    async def __deepLTranslate(self, text: str, targetLanguageEntry: LanguageEntry) -> TranslationResponse:
         self.__timber.log('TranslationHelper', f'Fetching translation from DeepL...')
 
         # Retrieve translation from DeepL API: https://www.deepl.com/en/docs-api/
@@ -60,23 +60,13 @@ class TranslationHelper():
         requestUrl = 'https://api-free.deepl.com/v2/translate?auth_key={}&text={}&target_lang={}'.format(
             self.__deepLAuthKey, text, targetLanguageEntry.getIso6391Code())
 
-        rawResponse = None
-        try:
-            rawResponse = requests.get(url = requestUrl, timeout = utils.getDefaultTimeout())
-        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            self.__timber.log('TranslationHelper', f'Exception occurred when attempting to fetch translation from DeepL for \"{text}\": {e}')
-            raise RuntimeError(f'Exception occurred when attempting to fetch translation from DeepL for \"{text}\": {e}')
+        response = await self.__clientSession.get(requestUrl)
+        if response.status != 200:
+            self.__timber.log('TranslationHelper', f'Encountered non-200 HTTP status code when fetching translation from DeepL for \"{text}\": {response.status}')
+            raise RuntimeError(f'Encountered non-200 HTTP status code when fetching translation from DeepL for \"{text}\": {response.status}')
 
-        if rawResponse.status_code != 200:
-            self.__timber.log('TranslationHelper', f'Encountered non-200 HTTP status code when fetching translation from DeepL for \"{text}\": {rawResponse.status_code}')
-            raise RuntimeError(f'Encountered non-200 HTTP status code when fetching translation from DeepL for \"{text}\": {rawResponse.status_code}')
-
-        jsonResponse: Dict[str, object] = None
-        try:
-            jsonResponse = rawResponse.json()
-        except JSONDecodeError as e:
-            self.__timber.log('TranslationHelper', f'Exception occurred when attempting to decode DeepL\'s response for \"{text}\" into JSON: {e}')
-            raise RuntimeError(f'Exception occurred when attempting to decode DeepL\'s response for \"{text}\" into JSON: {e}')
+        jsonResponse = await response.json()
+        response.close()
 
         if not utils.hasItems(jsonResponse):
             self.__timber.log('TranslationHelper', f'DeepL\'s JSON response is null/empty for \"{text}\": {jsonResponse}')
@@ -101,11 +91,11 @@ class TranslationHelper():
             translationApiSource = TranslationApiSource.DEEP_L
         )
 
-    def __getGoogleTranslateClient(self):
+    async def __getGoogleTranslateClient(self):
         if self.__googleTranslateClient is None:
             self.__timber.log('TranslationHelper', f'Initializing new Google translate.Client instance...')
 
-            if not self.__hasGoogleApiCredentials():
+            if not await self.__hasGoogleApiCredentials():
                 raise RuntimeError(f'Unable to initialize a new Google translate.Client instance because the Google API credentials are missing')
             elif not path.exists(self.__googleServiceAccountFile):
                 raise FileNotFoundError(f'googleServiceAccount file not found: \"{self.__googleServiceAccountFile}\"')
@@ -114,7 +104,7 @@ class TranslationHelper():
 
         return self.__googleTranslateClient
 
-    def __googleTranslate(self, text: str, targetLanguageEntry: LanguageEntry) -> TranslationResponse:
+    async def __googleTranslate(self, text: str, targetLanguageEntry: LanguageEntry) -> TranslationResponse:
         self.__timber.log('TranslationHelper', f'Fetching translation from Google Translate...')
 
         translationResult = self.__getGoogleTranslateClient().translate(
@@ -146,7 +136,7 @@ class TranslationHelper():
             translationApiSource = TranslationApiSource.GOOGLE_TRANSLATE
         )
 
-    def __hasGoogleApiCredentials(self) -> bool:
+    async def __hasGoogleApiCredentials(self) -> bool:
         if not path.exists(self.__googleServiceAccountFile):
             return False
 
@@ -155,7 +145,7 @@ class TranslationHelper():
 
         return utils.hasItems(jsonContents)
 
-    def translate(
+    async def translate(
         self,
         text: str,
         targetLanguageEntry: LanguageEntry = None
@@ -170,12 +160,12 @@ class TranslationHelper():
         elif targetLanguageEntry is None:
             targetLanguageEntry = self.__languagesRepository.requireLanguageForCommand('en', hasIso6391Code = True)
 
-        if self.__googleTranslateClient is None and not self.__hasGoogleApiCredentials():
+        if self.__googleTranslateClient is None and not await self.__hasGoogleApiCredentials():
             # This isn't an optimal situation, but it means that we're currently running in a
             # situation where we have no Google API credentials, but we do have DeepL credentials.
             # So here we'll just always use DeepL for translation, rather than evenly splitting
             # the workload between both services.
-            return self.__deepLTranslate(text, targetLanguageEntry)
+            return await self.__deepLTranslate(text, targetLanguageEntry)
 
         # In order to help keep us from running beyond the free usage tiers for the Google
         # Translate and DeepL translation services, let's randomly choose which translation service
@@ -187,8 +177,8 @@ class TranslationHelper():
             translationApiSource = random.choice(list(TranslationApiSource))
 
         if translationApiSource is TranslationApiSource.DEEP_L:
-            return self.__deepLTranslate(text, targetLanguageEntry)
+            return await self.__deepLTranslate(text, targetLanguageEntry)
         elif translationApiSource is TranslationApiSource.GOOGLE_TRANSLATE:
-            return self.__googleTranslate(text, targetLanguageEntry)
+            return await self.__googleTranslate(text, targetLanguageEntry)
         else:
             raise ValueError(f'unknown TranslationApiSource: \"{translationApiSource}\"')
