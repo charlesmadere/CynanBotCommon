@@ -25,7 +25,11 @@
         },
         "will_fry_trivia": {
             "is_enabled": true,
-            "weight": 300
+            "weight": 350
+        },
+        "wwtbam": {
+            "is_enabled": true,
+            "weight": 250
         }
     }
 }

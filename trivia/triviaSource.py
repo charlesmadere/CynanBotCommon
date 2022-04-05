@@ -14,6 +14,7 @@ class TriviaSource(Enum):
     OPEN_TRIVIA_DATABASE = auto()
     QUIZ_API = auto()
     WILL_FRY_TRIVIA_API = auto()
+    WWTBAM = auto()
 
     @classmethod
     def fromStr(cls, text: str):
@@ -34,6 +35,8 @@ class TriviaSource(Enum):
             return TriviaSource.QUIZ_API
         elif text == 'will_fry_trivia':
             return TriviaSource.WILL_FRY_TRIVIA_API
+        elif text == 'wwtbam':
+            return TriviaSource.WWTBAM
         else:
             raise ValueError(f'unknown TriviaSource: \"{text}\"')
 
@@ -50,5 +53,7 @@ class TriviaSource(Enum):
             return 'QUIZ_API'
         elif self is TriviaSource.WILL_FRY_TRIVIA_API:
             return 'WILL_FRY_TRIVIA_API'
+        elif self is TriviaSource.WWTBAM:
+            return 'WWTBAM'
         else:
             raise ValueError(f'unknown TriviaSource: \"{self}\"')

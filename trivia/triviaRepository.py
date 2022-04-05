@@ -26,6 +26,8 @@ try:
     from CynanBotCommon.trivia.triviaVerifier import TriviaVerifier
     from CynanBotCommon.trivia.willFryTriviaQuestionRepository import \
         WillFryTriviaQuestionRepository
+    from CynanBotCommon.trivia.wwtbamTriviaQuestionRepository import \
+        WwtbamTriviaQuestionRepository
 except:
     import utils
     from timber.timber import Timber
@@ -45,6 +47,8 @@ except:
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
     from trivia.triviaVerifier import TriviaVerifier
+    from trivia.wwtbamTriviaQuestionRepository import \
+        WwtbamTriviaQuestionRepository
 
 
 class TriviaRepository():
@@ -59,7 +63,8 @@ class TriviaRepository():
         timber: Timber,
         triviaSettingsRepository: TriviaSettingsRepository,
         triviaVerifier: TriviaVerifier,
-        willFryTriviaQuestionRepository: WillFryTriviaQuestionRepository
+        willFryTriviaQuestionRepository: WillFryTriviaQuestionRepository,
+        wwtbamTriviaQuestionRepository: WwtbamTriviaQuestionRepository
     ):
         if bongoTriviaQuestionRepository is None:
             raise ValueError(f'bongoTriviaQuestionRepository argument is malformed: \"{bongoTriviaQuestionRepository}\"')
@@ -77,6 +82,8 @@ class TriviaRepository():
             raise ValueError(f'triviaVerifier argument is malformed: \"{triviaVerifier}\"')
         elif willFryTriviaQuestionRepository is None:
             raise ValueError(f'willFryTriviaQuestionRepository argument is malformed: \"{willFryTriviaQuestionRepository}\"')
+        elif wwtbamTriviaQuestionRepository is None:
+            raise ValueError(f'wwtbamTriviaQuestionRepository argument is malformed: \"{wwtbamTriviaQuestionRepository}\"')
 
         self.__bongoTriviaQuestionRepository: AbsTriviaQuestionRepository = bongoTriviaQuestionRepository
         self.__jokeTriviaQuestionRepository: AbsTriviaQuestionRepository = jokeTriviaQuestionRepository
@@ -87,6 +94,7 @@ class TriviaRepository():
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
         self.__triviaVerifier: TriviaVerifier = triviaVerifier
         self.__willFryTriviaQuestionRepository: AbsTriviaQuestionRepository = willFryTriviaQuestionRepository
+        self.__wwtbamTriviaQuestionRepository: AbsTriviaQuestionRepository = wwtbamTriviaQuestionRepository
 
     async def __chooseRandomTriviaSource(
         self,
@@ -168,6 +176,8 @@ class TriviaRepository():
                 triviaQuestion = await self.__quizApiTriviaQuestionRepository.fetchTriviaQuestion(twitchChannel)
             elif triviaSource is TriviaSource.WILL_FRY_TRIVIA_API:
                 triviaQuestion = await self.__willFryTriviaQuestionRepository.fetchTriviaQuestion(twitchChannel)
+            elif triviaSource is TriviaSource.WWTBAM:
+                triviaQuestion = await self.__wwtbamTriviaQuestionRepository.fetchTriviaQuestion(twitchChannel)
             else:
                 raise ValueError(f'unknown TriviaSource: \"{triviaSource}\"')
 
