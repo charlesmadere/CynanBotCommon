@@ -1,11 +1,7 @@
 from datetime import datetime, timedelta, timezone
-from json.decoder import JSONDecodeError
-from typing import Dict, List
+from typing import List
 
-import requests
-from requests import ConnectionError, HTTPError, Timeout
-from requests.exceptions import ReadTimeout, TooManyRedirects
-from urllib3.exceptions import MaxRetryError, NewConnectionError
+import aiohttp
 
 try:
     import CynanBotCommon.utils as utils
@@ -101,28 +97,32 @@ class TamaleGuyRepository():
 
     def __init__(
         self,
+        clientSession: aiohttp.ClientSession,
         timber: Timber,
         cacheTimeDelta: timedelta = timedelta(hours = 1)
     ):
-        if timber is None:
+        if clientSession is None:
+            raise ValueError(f'clientSession argument is malformed: \"{clientSession}\"')
+        elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif cacheTimeDelta is None:
             raise ValueError(f'cacheTimeDelta argument is malformed: \"{cacheTimeDelta}\"')
 
+        self.__clientSession: aiohttp.ClientSession = clientSession
         self.__timber: Timber = timber
         self.__cacheTimeDelta: timedelta = cacheTimeDelta
 
         self.__cacheTime = datetime.now(timezone.utc) - cacheTimeDelta
         self.__storeStock: TamaleGuyStoreStock = None
 
-    def fetchStoreStock(self) -> TamaleGuyStoreStock:
+    async def fetchStoreStock(self) -> TamaleGuyStoreStock:
         if self.__cacheTime + self.__cacheTimeDelta < datetime.now(timezone.utc) or self.__storeStock is None:
-            self.__storeStock = self.__refreshStoreStock()
+            self.__storeStock = await self.__refreshStoreStock()
             self.__cacheTime = datetime.now(timezone.utc)
 
         return self.__storeStock
 
-    def __getProductsList(self, dataJson: List) -> List[TamaleGuyStoreEntry]:
+    async def __getProductsList(self, dataJson: List) -> List[TamaleGuyStoreEntry]:
         products: List[str] = list()
 
         if not utils.hasItems(dataJson):
@@ -140,29 +140,20 @@ class TamaleGuyRepository():
 
         return products
 
-    def __refreshStoreStock(self) -> TamaleGuyStoreStock:
+    async def __refreshStoreStock(self) -> TamaleGuyStoreStock:
         self.__timber.log('TamaleGuyRepository', f'Refreshing Tamale Guy store stock...')
 
-        rawResponse = None
-        try:
-            rawResponse = requests.get(
-                url = 'https://cdn4.editmysite.com/app/store/api/v13/editor/users/133185089/sites/894723485170061581/store-locations/11ead036057c3aa5b510ac1f6bbba828/products?page=1&per_page=200&include=images,categories&fulfillments[]=pickup',
-                timeout = utils.getDefaultTimeout()
-            )
-        except (ConnectionError, HTTPError, MaxRetryError, NewConnectionError, ReadTimeout, Timeout, TooManyRedirects) as e:
-            self.__timber.log('TamaleGuyRepository', f'Exception occurred when attempting to fetch Tamale Guy store stock: {e}')
-            raise RuntimeError(f'Exception occurred when attempting to fetch Tamale Guy store stock: {e}')
+        response = await self.__clientSession.get('https://cdn4.editmysite.com/app/store/api/v13/editor/users/133185089/sites/894723485170061581/store-locations/11ead036057c3aa5b510ac1f6bbba828/products?page=1&per_page=200&include=images,categories&fulfillments[]=pickup')
+        if response.status != 200:
+            self.__timber.log('TamaleGuyRepository', f'Encountered non-200 HTTP status code when fetching Tamale Guy store stock: {response.status}')
+            raise RuntimeError(f'Encountered non-200 HTTP status code when fetching Tamale Guy store stock: {response.status}')
 
-        jsonResponse: Dict[str, object] = None
-        try:
-            jsonResponse = rawResponse.json()
-        except JSONDecodeError as e:
-            self.__timber.log('TamaleGuyRepository', f'Exception occurred when attempting to decode Tamale Guy store stock response into JSON: {e}')
-            raise RuntimeError(f'Exception occurred when attempting to decode Tamale Guy store stock response into JSON: {e}')
+        jsonResponse = await response.json()
+        response.close()
 
         if 'data' not in jsonResponse:
             raise ValueError(f'JSON response for Tamale Guy store stock is missing the \"data\" field: {jsonResponse}')
 
         return TamaleGuyStoreStock(
-            products = self.__getProductsList(jsonResponse['data'])
+            products = await self.__getProductsList(jsonResponse['data'])
         )
