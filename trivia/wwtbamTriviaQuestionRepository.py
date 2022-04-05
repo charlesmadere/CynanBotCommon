@@ -53,15 +53,29 @@ class WwtbamTriviaQuestionRepository(AbsTriviaQuestionRepository):
         triviaId = utils.getStrFromDict(triviaDict, 'triviaId')
         question = utils.getStrFromDict(triviaDict, 'question', clean = True)
 
-        correctAnswer = utils.getStrFromDict(triviaDict, 'correctAnswer', clean = True)
-        correctAnswers: List[str] = list()
-        correctAnswers.append(correctAnswer)
-
         responses: List[str] = list()
         responses.append(utils.getStrFromDict(triviaDict, 'responseA', clean = True))
         responses.append(utils.getStrFromDict(triviaDict, 'responseB', clean = True))
         responses.append(utils.getStrFromDict(triviaDict, 'responseC', clean = True))
         responses.append(utils.getStrFromDict(triviaDict, 'responseD', clean = True))
+
+        correctAnswerIndex = utils.getStrFromDict(triviaDict, 'correctAnswer', clean = True)
+
+        correctAnswer: str = None
+        if correctAnswerIndex.lower() == 'a':
+            correctAnswer = responses[0]
+        elif correctAnswerIndex.lower() == 'b':
+            correctAnswer = responses[1]
+        elif correctAnswerIndex.lower() == 'c':
+            correctAnswer = responses[2]
+        elif correctAnswerIndex.lower() == 'd':
+            correctAnswer = responses[3]
+
+        if not utils.isValidStr(correctAnswer):
+            raise RuntimeError(f'Unknown correctAnswerIndex: \"{correctAnswerIndex}\"')
+
+        correctAnswers: List[str] = list()
+        correctAnswers.append(correctAnswer)
 
         multipleChoiceResponses = await self._buildMultipleChoiceResponsesList(
             correctAnswers = correctAnswers,
