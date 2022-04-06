@@ -1,8 +1,9 @@
 from typing import Dict, List, Optional
 
+import aiosqlite
+
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.backingDatabase import BackingDatabase
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.absTriviaQuestionRepository import \
@@ -15,7 +16,6 @@ try:
     from CynanBotCommon.trivia.triviaSource import TriviaSource
 except:
     import utils
-    from backingDatabase import BackingDatabase
     from timber.timber import Timber
 
     from trivia.absTriviaQuestion import AbsTriviaQuestion
@@ -43,7 +43,7 @@ class WwtbamTriviaQuestionRepository(AbsTriviaQuestionRepository):
             raise ValueError(f'triviaDatabaseFile argument is malformed: \"{triviaDatabaseFile}\"')
 
         self.__timber: Timber = timber
-        self.__backingDatabase: BackingDatabase = BackingDatabase(triviaDatabaseFile)
+        self.__triviaDatabaseFile: str = triviaDatabaseFile
 
     async def fetchTriviaQuestion(self, twitchChannel: Optional[str]) -> AbsTriviaQuestion:
         self.__timber.log('WwtbamTriviaQuestionRepository', 'Fetching trivia question...')
@@ -93,8 +93,8 @@ class WwtbamTriviaQuestionRepository(AbsTriviaQuestionRepository):
         )
 
     async def __fetchTriviaQuestionDict(self) -> Dict[str, object]:
-        cursor = self.__backingDatabase.getConnection().cursor()
-        cursor.execute(
+        connection = await aiosqlite.connect(self.__triviaDatabaseFile)
+        cursor = await connection.execute(
             '''
                 SELECT correctAnswer, question, responseA, responseB, responseC, responseD, triviaId FROM wwtbamTriviaQuestions
                 ORDER BY RANDOM()
@@ -102,9 +102,11 @@ class WwtbamTriviaQuestionRepository(AbsTriviaQuestionRepository):
             '''
         )
 
-        row = cursor.fetchone()
+        row = await cursor.fetchone()
+        if not utils.hasItems(row) or len(row) != 7:
+            raise RuntimeError(f'Received malformed data from WWTBAM database: {row}')
 
-        return {
+        triviaQuestionDict: Dict[str, object] = {
             'correctAnswer': row[0],
             'question': row[1],
             'responseA': row[2],
@@ -113,3 +115,7 @@ class WwtbamTriviaQuestionRepository(AbsTriviaQuestionRepository):
             'responseD': row[5],
             'triviaId': row[6]
         }
+
+        await cursor.close()
+        await connection.close()
+        return triviaQuestionDict
