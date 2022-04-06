@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
+from aiosqlite import Connection
+
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.backingDatabase import BackingDatabase
@@ -34,11 +36,20 @@ class TriviaHistoryRepository():
         self.__timber: Timber = timber
         self.__minimumTimeDelta: timedelta = minimumTimeDelta
 
-        self.__initDatabaseTable()
+        self.__isDatabaseReady: bool = False
 
-    def __initDatabaseTable(self):
-        connection = self.__backingDatabase.getConnection()
-        connection.execute(
+    async def __getDatabaseConnection(self) -> Connection:
+        await self.__initDatabaseTable()
+        return await self.__backingDatabase.getConnection()
+
+    async def __initDatabaseTable(self):
+        if self.__isDatabaseReady:
+            return
+
+        self.__isDatabaseReady = True
+
+        connection = await self.__backingDatabase.getConnection()
+        cursor = await connection.execute(
             '''
                 CREATE TABLE IF NOT EXISTS triviaHistory (
                     datetime TEXT NOT NULL,
@@ -50,7 +61,9 @@ class TriviaHistoryRepository():
             '''
         )
 
-        connection.commit()
+        await connection.commit()
+        await cursor.close()
+        await connection.close()
 
     async def verify(self, question: AbsTriviaQuestion, twitchChannel: str) -> TriviaContentCode:
         if not utils.isValidStr(twitchChannel):
@@ -62,9 +75,8 @@ class TriviaHistoryRepository():
         triviaId = question.getTriviaId()
         triviaSource = question.getTriviaSource().toStr()
 
-        connection = self.__backingDatabase.getConnection()
-        cursor = connection.cursor()
-        cursor.execute(
+        connection = await self.__getDatabaseConnection()
+        cursor = await connection.execute(
             '''
                 SELECT datetime FROM triviaHistory
                 WHERE triviaId = ? AND triviaSource = ? AND twitchChannel = ?
@@ -72,12 +84,12 @@ class TriviaHistoryRepository():
             ( triviaId, triviaSource, twitchChannel )
         )
 
-        row = cursor.fetchone()
+        row = await cursor.fetchone()
         nowDateTime = datetime.now(timezone.utc)
         nowDateTimeStr = nowDateTime.isoformat()
 
         if row is None:
-            cursor.execute(
+            await cursor.execute(
                 '''
                     INSERT INTO triviaHistory (datetime, triviaId, triviaSource, twitchChannel)
                     VALUES (?, ?, ?, ?)
@@ -85,19 +97,21 @@ class TriviaHistoryRepository():
                 ( nowDateTimeStr, triviaId, triviaSource, twitchChannel )
             )
 
-            connection.commit()
-            cursor.close()
+            await connection.commit()
+            await cursor.close()
+            await connection.close()
             return TriviaContentCode.OK
 
         questionDateTimeStr: str = row[0]
         questionDateTime = datetime.fromisoformat(questionDateTimeStr)
 
         if questionDateTime + self.__minimumTimeDelta >= nowDateTime:
-            cursor.close()
+            await cursor.close()
+            await connection.close()
             self.__timber.log('TriviaHistoryRepository', f'Encountered duplicate triviaHistory entry for triviaId:{triviaId} triviaSource:{triviaSource} twitchChannel:{twitchChannel} that is within the window of being a repeat (now:{nowDateTimeStr}) (db:{questionDateTimeStr})')
             return TriviaContentCode.REPEAT
 
-        cursor.execute(
+        await cursor.execute(
             '''
                 UPDATE triviaHistory
                 SET datetime = ?
@@ -106,8 +120,9 @@ class TriviaHistoryRepository():
             ( nowDateTimeStr, triviaId, triviaSource, twitchChannel )
         )
 
-        connection.commit()
-        cursor.close()
+        await connection.commit()
+        await cursor.close()
+        await connection.close()
 
         self.__timber.log('TriviaHistoryRepository', f'Updated triviaHistory entry for triviaId:{triviaId} triviaSource:{triviaSource} twitchChannel:{twitchChannel} to {nowDateTimeStr} from {questionDateTimeStr}')
         return TriviaContentCode.OK

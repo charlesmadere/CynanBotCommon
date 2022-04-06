@@ -1,3 +1,5 @@
+from aiosqlite import Connection
+
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.backingDatabase import BackingDatabase
@@ -16,7 +18,8 @@ class TriviaScoreRepository():
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
 
         self.__backingDatabase: BackingDatabase = backingDatabase
-        self.__initDatabaseTable()
+
+        self.__isDatabaseReady: bool = False
 
     async def fetchTriviaScore(
         self,
@@ -30,9 +33,8 @@ class TriviaScoreRepository():
         elif userId == '0':
             raise ValueError(f'userId argument is an illegal value: \"{userId}\"')
 
-        connection = self.__backingDatabase.getConnection()
-        cursor = connection.cursor()
-        cursor.execute(
+        connection = await self.__getDatabaseConnection()
+        cursor = await connection.execute(
             '''
                 SELECT streak, totalLosses, totalWins, twitchChannel, userId FROM triviaScores
                 WHERE twitchChannel = ? AND userId = ?
@@ -40,7 +42,7 @@ class TriviaScoreRepository():
             ( twitchChannel, userId )
         )
 
-        row = cursor.fetchone()
+        row = await cursor.fetchone()
 
         if row is not None:
             result = TriviaScoreResult(
@@ -51,7 +53,8 @@ class TriviaScoreRepository():
                 userId = row[4]
             )
 
-            cursor.close()
+            await cursor.close()
+            await connection.close()
             return result
 
         cursor.execute(
@@ -62,8 +65,9 @@ class TriviaScoreRepository():
             ( 0, 0, 0, twitchChannel, userId )
         )
 
-        connection.commit()
-        cursor.close()
+        await connection.commit()
+        await cursor.close()
+        await connection.close()
 
         return TriviaScoreResult(
             streak = 0,
@@ -159,9 +163,18 @@ class TriviaScoreRepository():
 
         return newResult
 
-    def __initDatabaseTable(self):
-        connection = self.__backingDatabase.getConnection()
-        connection.execute(
+    async def __getDatabaseConnection(self) -> Connection:
+        await self.__initDatabaseTable()
+        return await self.__backingDatabase.getConnection()
+
+    async def __initDatabaseTable(self):
+        if self.__isDatabaseReady:
+            return
+
+        self.__isDatabaseReady = True
+
+        connection = await self.__backingDatabase.getConnection()
+        cursor = await connection.execute(
             '''
                 CREATE TABLE IF NOT EXISTS triviaScores (
                     streak INTEGER NOT NULL DEFAULT 0,
@@ -174,7 +187,9 @@ class TriviaScoreRepository():
             '''
         )
 
-        connection.commit()
+        await connection.commit()
+        await cursor.close()
+        await connection.close()
 
     async def __updateTriviaScore(
         self,
@@ -197,9 +212,8 @@ class TriviaScoreRepository():
         elif userId == '0':
             raise ValueError(f'userId argument is an illegal value: \"{userId}\"')
 
-        connection = self.__backingDatabase.getConnection()
-        cursor = connection.cursor()
-        cursor.execute(
+        connection = await self.__backingDatabase.getConnection()
+        cursor = await connection.execute(
             '''
                 INSERT INTO triviaScores (streak, totalLosses, totalWins, twitchChannel, userId)
                 VALUES (?, ?, ?, ?, ?)
@@ -208,5 +222,6 @@ class TriviaScoreRepository():
             ( newStreak, newTotalLosses, newTotalWins, twitchChannel, userId )
         )
 
-        connection.commit()
-        cursor.close()
+        await connection.commit()
+        await cursor.close()
+        await connection.close()
