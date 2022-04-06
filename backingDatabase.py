@@ -1,5 +1,5 @@
-import sqlite3
-from sqlite3 import Connection
+import aiosqlite
+from aiosqlite import Connection
 
 try:
     import CynanBotCommon.utils as utils
@@ -9,11 +9,11 @@ except:
 
 class BackingDatabase():
 
-    def __init__(self, databaseFile: str = 'CynanBotCommon/database.sqlite'):
-        if not utils.isValidStr(databaseFile):
-            raise ValueError(f'databaseFile argument is malformed: \"{databaseFile}\"')
+    def __init__(self, backingDatabaseFile: str = 'CynanBotCommon/database.sqlite'):
+        if not utils.isValidStr(backingDatabaseFile):
+            raise ValueError(f'backingDatabaseFile argument is malformed: \"{backingDatabaseFile}\"')
 
-        self.__connection: Connection = sqlite3.connect(databaseFile)
+        self.__backingDatabaseFile: str = backingDatabaseFile
 
-    def getConnection(self) -> Connection:
-        return self.__connection
+    async def getConnection(self) -> Connection:
+        return await aiosqlite.connect(self.__backingDatabaseFile)
