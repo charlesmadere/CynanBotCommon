@@ -31,9 +31,8 @@ class Timber():
 
         tag = tag.strip()
         msg = msg.strip()
-
         now = SimpleDateTime()
-        logStatement = f'{now.getDateAndTime()} — {tag} — {msg}'
+        logStatement = f'{now.getDateAndTimeStr()} — {tag} — {msg}'
 
         self.__writeToLogFile(now, logStatement)
 

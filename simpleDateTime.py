@@ -5,25 +5,32 @@ class SimpleDateTime():
 
     def __init__(
         self,
+        now: datetime = None,
         timeZone: timezone = timezone.utc
     ):
-        if timeZone is None:
-            raise ValueError(f'timeZone argument is malformed: \"{timeZone}\"')
+        if now is None:
+            if timeZone is None:
+                raise ValueError('Both `now` and `timeZone` can\'t be `None`!')
+            else:
+                self.__now: datetime = datetime.now(timeZone)
+        else:
+            self.__now: datetime = now
 
-        now: datetime = datetime.now(timeZone)
+        self.__year: str = self.__now.strftime('%Y')
+        self.__month: str = self.__now.strftime('%m')
+        self.__day: str = self.__now.strftime('%d')
+        self.__hour: str = self.__now.strftime('%H')
+        self.__minute: str = self.__now.strftime('%M')
+        self.__second: str = self.__now.strftime('%S')
 
-        self.__year: str = now.strftime('%Y')
-        self.__month: str = now.strftime('%m')
-        self.__day: str = now.strftime('%d')
-        self.__hour: str = now.strftime('%H')
-        self.__minute: str = now.strftime('%M')
-        self.__second: str = now.strftime('%S')
-
-    def getDate(self) -> str:
+    def getDateStr(self) -> str:
         return f'{self.getYear()}/{self.getMonth()}/{self.getDay()}'
 
-    def getDateAndTime(self) -> str:
-        return f'{self.getDate()} {self.getTime()}'
+    def getDateTime(self) -> datetime:
+        return self.__now
+
+    def getDateAndTimeStr(self) -> str:
+        return f'{self.getDateStr()} {self.getTimeStr()}'
 
     def getDay(self) -> str:
         return self.__day
@@ -40,7 +47,7 @@ class SimpleDateTime():
     def getSecond(self) -> str:
         return self.__second
 
-    def getTime(self) -> str:
+    def getTimeStr(self) -> str:
         return f'{self.getHour()}:{self.getMinute()}:{self.getSecond()}'
 
     def getYear(self) -> str:
