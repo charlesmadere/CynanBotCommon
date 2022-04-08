@@ -23,14 +23,11 @@ class SimpleDateTime():
         self.__minute: str = self.__now.strftime('%M')
         self.__second: str = self.__now.strftime('%S')
 
-    def getDateStr(self) -> str:
-        return f'{self.getYear()}/{self.getMonth()}/{self.getDay()}'
-
     def getDateTime(self) -> datetime:
         return self.__now
 
     def getDateAndTimeStr(self) -> str:
-        return f'{self.getDateStr()} {self.getTimeStr()}'
+        return f'{self.getYearMonthDayStr()} {self.getTimeStr()}'
 
     def getDay(self) -> str:
         return self.__day
@@ -44,6 +41,9 @@ class SimpleDateTime():
     def getMonth(self) -> str:
         return self.__month
 
+    def getMonthInt(self) -> int:
+        return self.__now.month
+
     def getSecond(self) -> str:
         return self.__second
 
@@ -52,3 +52,9 @@ class SimpleDateTime():
 
     def getYear(self) -> str:
         return self.__year
+
+    def getYearInt(self) -> int:
+        return self.__now.year
+
+    def getYearMonthDayStr(self) -> str:
+        return f'{self.getYear()}/{self.getMonth()}/{self.getDay()}'
