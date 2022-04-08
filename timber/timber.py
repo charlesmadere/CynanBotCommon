@@ -2,57 +2,70 @@ import os
 
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.simpleDateTime import SimpleDateTime
+    from CynanBotCommon.timber.timberEntry import TimberEntry
 except:
     import utils
-    from simpleDateTime import SimpleDateTime
+
+    from timber.timberEntry import TimberEntry
 
 
 class Timber():
 
     def __init__(
         self,
-        alsoLogToStandardOut: bool = True,
+        alsoPrintToStandardOut: bool = True,
         timberRootDirectory: str = 'CynanBotCommon/timber'
     ):
-        if not utils.isValidBool(alsoLogToStandardOut):
-            raise ValueError(f'alsoLogToStandardOut argument is malformed: \"{alsoLogToStandardOut}\"')
+        if not utils.isValidBool(alsoPrintToStandardOut):
+            raise ValueError(f'alsoPrintToStandardOut argument is malformed: \"{alsoPrintToStandardOut}\"')
         elif not utils.isValidStr(timberRootDirectory):
             raise ValueError(f'timberRootDirectory argument is malformed: \"{timberRootDirectory}\"')
 
-        self.__alsoLogToStandardOut: bool = alsoLogToStandardOut
+        self.__alsoPrintToStandardOut: bool = alsoPrintToStandardOut
         self.__timberRootDirectory: str = timberRootDirectory
+
+    def __getLogStatement(
+        self,
+        ensureNewLine: bool,
+        timberEntry: TimberEntry
+    ) -> str:
+        if not utils.isValidBool(ensureNewLine):
+            raise ValueError(f'ensureNewLine argument is malformed: \"{ensureNewLine}\"')
+        elif timberEntry is None:
+            raise ValueError(f'timberEntry argument is malformed: \"{timberEntry}\"')
+
+        logStatement = f'{timberEntry.getSimpleDateTime().getDateAndTimeStr()} — {timberEntry.getTag()} — {timberEntry.getMsg()}'
+        logStatement.strip()
+
+        if ensureNewLine:
+            logStatement = f'{logStatement}\n'
+
+        return logStatement
 
     def log(self, tag: str, msg: str):
         if not utils.isValidStr(tag):
             raise ValueError(f'tag argument is malformed: \"{tag}\"')
         elif not utils.isValidStr(msg):
-            return
+            raise ValueError(f'msg argument is malformed: \"{msg}\"')
 
-        tag = tag.strip()
-        msg = msg.strip()
-        now = SimpleDateTime()
-        logStatement = f'{now.getDateAndTimeStr()} — {tag} — {msg}'
+        timberEntry = TimberEntry(tag, msg)
+        self.__writeToLogFile(timberEntry)
 
-        self.__writeToLogFile(now, logStatement)
+        if self.__alsoPrintToStandardOut:
+            print(self.__getLogStatement(False, timberEntry))
 
-        if self.__alsoLogToStandardOut:
-            print(logStatement)
+    def __writeToLogFile(self, timberEntry: TimberEntry):
+        if timberEntry is None:
+            raise ValueError(f'timberEntry argument is malformed: \"{timberEntry}\"')
 
-    def __writeToLogFile(self, now: SimpleDateTime, logStatement: str):
-        if now is None:
-            raise ValueError(f'now argument is malformed: \"{now}\"')
-        elif not utils.isValidStr(logStatement):
-            raise ValueError(f'logStatement argument is malformed: \"{logStatement}\"')
-
-        timberDirectory = f'{self.__timberRootDirectory}/{now.getYear()}/{now.getMonth()}'
-        timberFile = f'{timberDirectory}/{now.getDay()}.log'
+        sdt = timberEntry.getSimpleDateTime()
+        timberDirectory = f'{self.__timberRootDirectory}/{sdt.getYear()}/{sdt.getMonth()}'
+        timberFile = f'{timberDirectory}/{sdt.getDay()}.log'
 
         if not os.path.exists(timberDirectory):
             os.makedirs(timberDirectory)
 
-        if logStatement[len(logStatement) - 1] != '\n':
-            logStatement = f'{logStatement}\n'
+        logStatement = self.__getLogStatement(True, timberEntry)
 
         with open(timberFile, 'a') as file:
             file.write(logStatement)
