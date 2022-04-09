@@ -1,3 +1,4 @@
+from asyncio import TimeoutError
 from typing import Dict, List
 
 import aiohttp
@@ -259,7 +260,13 @@ class PokepediaRepository():
         name = name.replace(' ', '-')
         self.__timber.log('PokepediaRepository', f'Searching PokeAPI for move \"{name}\"...')
 
-        response = await self.__clientSession.get(f'https://pokeapi.co/api/v2/move/{name}/')
+        response = None
+        try:
+            response = await self.__clientSession.get(f'https://pokeapi.co/api/v2/move/{name}/')
+        except (aiohttp.ClientError, TimeoutError) as e:
+            self.__timber.log('PokepediaRepository', f'Encountered network error from PokeAPI when searching for \"{name}\" move: {e}')
+            raise RuntimeError(f'Encountered network error from PokeAPI when searching for \"{name}\" move: {e}')
+
         if response.status != 200:
             self.__timber.log('PokepediaRepository', f'Encountered non-200 HTTP status code from PokeAPI when searching for \"{name}\" move: \"{response.status}\"')
             raise RuntimeError(f'Exception occurred due to non-200 HTTP status code from PokeAPI when searching for \"{name}\" move: \"{response.status}\"')
@@ -283,7 +290,13 @@ class PokepediaRepository():
         name = name.replace(' ', '-')
         self.__timber.log('PokepediaRepository', f'Searching PokeAPI for Pokemon \"{name}\"...')
 
-        response = await self.__clientSession.get(f'https://pokeapi.co/api/v2/pokemon/{name}/')
+        response = None
+        try:
+            response = await self.__clientSession.get(f'https://pokeapi.co/api/v2/pokemon/{name}/')
+        except (aiohttp.ClientError, TimeoutError) as e:
+            self.__timber.log('PokepediaRepository', f'Encountered network error from PokeAPI when searching for \"{name}\" Pokemon: {e}')
+            raise RuntimeError(f'Encountered network error from PokeAPI when searching for \"{name}\" Pokemon: {e}')
+
         if response.status != 200:
             self.__timber.log('PokepediaRepository', f'Encountered non-200 HTTP status code from PokeAPI when searching for \"{name}\" Pokemon: \"{response.status}\"')
             raise RuntimeError(f'Exception occurred due to non-200 HTTP status code from PokeAPI when searching for \"{name}\" Pokemon: \"{response.status}\"')
