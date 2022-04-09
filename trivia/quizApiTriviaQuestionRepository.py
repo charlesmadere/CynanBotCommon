@@ -1,3 +1,4 @@
+from asyncio import TimeoutError
 from typing import Dict, List, Optional, Tuple
 
 import aiohttp
@@ -67,12 +68,17 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
     async def fetchTriviaQuestion(self, twitchChannel: Optional[str]) -> AbsTriviaQuestion:
         self.__timber.log('QuizApiTriviaQuestionRepository', 'Fetching trivia question...')
 
-        response = await self.__clientSession.get(
-            url = f'https://quizapi.io/api/v1/questions?apiKey={self.__quizApiKey}&limit=1',
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:97.0) Gecko/20100101 Firefox/97.0' # LOOOOL
-            }
-        )
+        response = None
+        try:
+            response = await self.__clientSession.get(
+                url = f'https://quizapi.io/api/v1/questions?apiKey={self.__quizApiKey}&limit=1',
+                headers = {
+                    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:97.0) Gecko/20100101 Firefox/97.0' # LOOOOL
+                }
+            )
+        except (aiohttp.ClientError, TimeoutError) as e:
+            self.__timber.log('QuizApiTriviaQuestionRepository', f'Encountered network error: {e}')
+            return None
 
         if response.status != 200:
             self.__timber.log('QuizApiTriviaQuestionRepository', f'Encountered non-200 HTTP status code: \"{response.status}\"')

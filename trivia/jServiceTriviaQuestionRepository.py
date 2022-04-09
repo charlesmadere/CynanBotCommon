@@ -1,3 +1,4 @@
+from asyncio import TimeoutError
 from typing import Dict, List, Optional
 
 import aiohttp
@@ -59,7 +60,13 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
     async def fetchTriviaQuestion(self, twitchChannel: Optional[str]) -> AbsTriviaQuestion:
         self.__timber.log('JServiceTriviaQuestionRepository', 'Fetching trivia question...')
 
-        response = await self.__clientSession.get('https://jservice.io/api/random')
+        response = None
+        try:
+            response = await self.__clientSession.get('https://jservice.io/api/random')
+        except (aiohttp.ClientError, TimeoutError) as e:
+            self.__timber.log('JServiceTriviaQuestionRepository', f'Encountered network error: {e}')
+            return None
+
         if response.status != 200:
             self.__timber.log('JServiceTriviaQuestionRepository', f'Encountered non-200 HTTP status code: \"{response.status}\"')
             return None

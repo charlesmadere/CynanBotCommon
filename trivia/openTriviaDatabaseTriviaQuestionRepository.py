@@ -1,3 +1,4 @@
+from asyncio import TimeoutError
 from typing import Dict, List, Optional
 
 import aiohttp
@@ -62,7 +63,13 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
     async def fetchTriviaQuestion(self, twitchChannel: Optional[str]) -> AbsTriviaQuestion:
         self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', 'Fetching trivia question...')
 
-        response = await self.__clientSession.get('https://opentdb.com/api.php?amount=1')
+        response = None
+        try:
+            response = await self.__clientSession.get('https://opentdb.com/api.php?amount=1')
+        except (aiohttp.ClientError, TimeoutError) as e:
+            self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Encountered network error: {e}')
+            return None
+
         if response.status != 200:
             self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Encountered non-200 HTTP status code: \"{response.status}\"')
             return None
