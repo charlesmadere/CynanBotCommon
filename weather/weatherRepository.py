@@ -1,3 +1,4 @@
+from asyncio import TimeoutError
 from datetime import timedelta
 from typing import Dict, List, Optional
 
@@ -119,10 +120,16 @@ class WeatherRepository():
         requestUrl = 'https://api.openweathermap.org/data/2.5/air_pollution?appid={}&lat={}&lon={}'.format(
             self.__oneWeatherApiKey, location.getLatitude(), location.getLongitude())
 
-        response = await self.__clientSession.get(requestUrl)
+        response = None
+        try:
+            response = await self.__clientSession.get(requestUrl)
+        except (aiohttp.ClientError, TimeoutError) as e:
+            self.__timber.log('WeatherRepository', f'Encountered network error when fetching air quality index for \"{location.getName()}\" ({location.getLocationId()}): {e}')
+            return None
+
         if response.status != 200:
             self.__timber.log('WeatherRepository', f'Encountered non-200 HTTP status code when fetching air quality index for \"{location.getName()}\" ({location.getLocationId()}): {response.status}')
-            raise RuntimeError(f'Encountered non-200 HTTP status code when fetching air quality index for \"{location.getName()}\" ({location.getLocationId()}): {response.status}')
+            return None
 
         jsonResponse = await response.json()
         response.close()
@@ -163,10 +170,16 @@ class WeatherRepository():
         requestUrl = 'https://api.openweathermap.org/data/2.5/onecall?appid={}&lat={}&lon={}&exclude=minutely,hourly&units=metric'.format(
             self.__oneWeatherApiKey, location.getLatitude(), location.getLongitude())
 
-        response = await self.__clientSession.get(requestUrl)
+        response = None
+        try:
+            response = await self.__clientSession.get(requestUrl)
+        except (aiohttp.ClientError, TimeoutError) as e:
+            self.__timber.log('WeatherRepository', f'Encountered network error when fetching weather for \"{location.getName()}\" ({location.getLocationId()}): {e}')
+            return None
+
         if response.status != 200:
             self.__timber.log('WeatherRepository', f'Encountered non-200 HTTP status code when fetching weather for \"{location.getName()}\" ({location.getLocationId()}): {response.status}')
-            raise RuntimeError(f'Encountered non-200 HTTP status code when fetching weather for \"{location.getName()}\" ({location.getLocationId()}): {response.status}')
+            return None
 
         jsonResponse = await response.json()
         response.close()
