@@ -59,8 +59,8 @@ class Timber():
             raise ValueError(f'timberEntry argument is malformed: \"{timberEntry}\"')
 
         sdt = timberEntry.getSimpleDateTime()
-        timberDirectory = f'{self.__timberRootDirectory}/{sdt.getYear()}/{sdt.getMonth()}'
-        timberFile = f'{timberDirectory}/{sdt.getDay()}.log'
+        timberDirectory = f'{self.__timberRootDirectory}/{sdt.getYearStr()}/{sdt.getMonthStr()}'
+        timberFile = f'{timberDirectory}/{sdt.getDayStr()}.log'
 
         if not os.path.exists(timberDirectory):
             os.makedirs(timberDirectory)

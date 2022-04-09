@@ -16,45 +16,38 @@ class SimpleDateTime():
         else:
             self.__now: datetime = now
 
-        self.__year: str = self.__now.strftime('%Y')
-        self.__month: str = self.__now.strftime('%m')
-        self.__day: str = self.__now.strftime('%d')
-        self.__hour: str = self.__now.strftime('%H')
-        self.__minute: str = self.__now.strftime('%M')
-        self.__second: str = self.__now.strftime('%S')
-
     def getDateTime(self) -> datetime:
         return self.__now
 
     def getDateAndTimeStr(self) -> str:
         return f'{self.getYearMonthDayStr()} {self.getTimeStr()}'
 
-    def getDay(self) -> str:
-        return self.__day
+    def getDayStr(self) -> str:
+        return self.__now.strftime('%d')
 
-    def getHour(self) -> str:
-        return self.__hour
+    def getHourStr(self) -> str:
+        return self.__now.strftime('%H')
 
-    def getMinute(self) -> str:
-        return self.__minute
+    def getMinuteStr(self) -> str:
+        return self.__now.strftime('%M')
 
-    def getMonth(self) -> str:
-        return self.__month
+    def getMonthStr(self) -> str:
+        return self.__now.strftime('%m')
 
     def getMonthInt(self) -> int:
         return self.__now.month
 
-    def getSecond(self) -> str:
-        return self.__second
+    def getSecondStr(self) -> str:
+        return self.__now.strftime('%S')
 
     def getTimeStr(self) -> str:
-        return f'{self.getHour()}:{self.getMinute()}:{self.getSecond()}'
-
-    def getYear(self) -> str:
-        return self.__year
+        return f'{self.getHourStr()}:{self.getMinuteStr()}:{self.getSecondStr()}'
 
     def getYearInt(self) -> int:
         return self.__now.year
 
+    def getYearStr(self) -> str:
+        return self.__now.strftime('%Y')
+
     def getYearMonthDayStr(self) -> str:
-        return f'{self.getYear()}/{self.getMonth()}/{self.getDay()}'
+        return f'{self.getYearStr()}/{self.getMonthStr()}/{self.getDayStr()}'
