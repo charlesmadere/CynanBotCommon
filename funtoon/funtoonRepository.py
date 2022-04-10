@@ -1,5 +1,6 @@
 import json
 import os
+from asyncio import TimeoutError
 from typing import Dict
 
 import aiohttp
@@ -80,14 +81,18 @@ class FuntoonRepository():
         if isDebugLoggingEnabled:
             self.__timber.log('FuntoonRepository', f'Hitting Funtoon API \"{url}\" for \"{twitchChannel}\" for event \"{event}\" with JSON payload: {jsonPayload}')
 
-        response = await self.__clientSession.post(
-            url = url,
-            headers = {
-                'Authorization': funtoonToken,
-                'Content-Type': 'application/json'
-            },
-            json = jsonPayload
-        )
+        try:
+            response = await self.__clientSession.post(
+                url = url,
+                headers = {
+                    'Authorization': funtoonToken,
+                    'Content-Type': 'application/json'
+                },
+                json = jsonPayload
+            )
+        except (aiohttp.ClientError, TimeoutError) as e:
+            self.__timber.log('FuntoonRepository', f'Encountered network error for \"{twitchChannel}\" for event \"{event}\": {e}')
+            return False
 
         if response.status == 200:
             response.close()

@@ -1,3 +1,4 @@
+from asyncio import TimeoutError
 from datetime import datetime, timedelta, timezone
 from typing import List
 
@@ -122,7 +123,7 @@ class TamaleGuyRepository():
 
         return self.__storeStock
 
-    async def __getProductsList(self, dataJson: List) -> List[TamaleGuyStoreEntry]:
+    def __getProductsList(self, dataJson: List) -> List[TamaleGuyStoreEntry]:
         products: List[str] = list()
 
         if not utils.hasItems(dataJson):
@@ -143,7 +144,13 @@ class TamaleGuyRepository():
     async def __refreshStoreStock(self) -> TamaleGuyStoreStock:
         self.__timber.log('TamaleGuyRepository', f'Refreshing Tamale Guy store stock...')
 
-        response = await self.__clientSession.get('https://cdn4.editmysite.com/app/store/api/v13/editor/users/133185089/sites/894723485170061581/store-locations/11ead036057c3aa5b510ac1f6bbba828/products?page=1&per_page=200&include=images,categories&fulfillments[]=pickup')
+        response = None
+        try:
+            response = await self.__clientSession.get('https://cdn4.editmysite.com/app/store/api/v13/editor/users/133185089/sites/894723485170061581/store-locations/11ead036057c3aa5b510ac1f6bbba828/products?page=1&per_page=200&include=images,categories&fulfillments[]=pickup')
+        except (aiohttp.ClientError, TimeoutError) as e:
+            self.__timber.log('TamaleGuyRepository', f'Encountered network error: {e}')
+            raise RuntimeError(f'Encountered network error when fetching Tamale Guy store stock: {e}')
+
         if response.status != 200:
             self.__timber.log('TamaleGuyRepository', f'Encountered non-200 HTTP status code when fetching Tamale Guy store stock: {response.status}')
             raise RuntimeError(f'Encountered non-200 HTTP status code when fetching Tamale Guy store stock: {response.status}')
@@ -155,5 +162,5 @@ class TamaleGuyRepository():
             raise ValueError(f'JSON response for Tamale Guy store stock is missing the \"data\" field: {jsonResponse}')
 
         return TamaleGuyStoreStock(
-            products = await self.__getProductsList(jsonResponse['data'])
+            products = self.__getProductsList(jsonResponse['data'])
         )
