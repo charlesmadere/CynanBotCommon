@@ -94,7 +94,7 @@ class FuntoonRepository():
             self.__timber.log('FuntoonRepository', f'Encountered network error for \"{twitchChannel}\" for event \"{event}\": {e}')
             return False
 
-        if response.status == 200:
+        if response is not None and response.status == 200:
             response.close()
 
             if isDebugLoggingEnabled:
