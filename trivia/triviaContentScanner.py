@@ -16,8 +16,8 @@ class TriviaContentScanner():
 
     def __init__(
         self,
-        maxAnswerLength: int = 75,
-        maxQuestionLength: int = 325,
+        maxAnswerLength: int = 80,
+        maxQuestionLength: int = 350,
         bannedWordsFile: str = 'CynanBotCommon/trivia/bannedWords.txt'
     ):
         if not utils.isValidNum(maxAnswerLength):
