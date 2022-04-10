@@ -1,3 +1,4 @@
+from asyncio import TimeoutError
 from typing import List
 from urllib.parse import quote
 
@@ -47,11 +48,17 @@ class JishoHelper():
         if not utils.isValidStr(query):
             raise ValueError(f'query argument is malformed: \"{query}\"')
 
-        query = query.strip()
+        query = utils.cleanStr(query)
         encodedQuery = quote(query)
         self.__timber.log('JishoHelper', f'Looking up \"{query}\" at Jisho...')
 
-        response = await self.__clientSession.get(f'https://jisho.org/api/v1/search/words?keyword={encodedQuery}')
+        response = None
+        try:
+            response = await self.__clientSession.get(f'https://jisho.org/api/v1/search/words?keyword={encodedQuery}')
+        except (aiohttp.ClientError, TimeoutError) as e:
+            self.__timber.log('JishoHelper', f'Encountered network error when searching Jisho for \"{query}\": {e}')
+            raise RuntimeError(f'Encountered network error when searching Jisho for \"{query}\": {e}')
+
         if response.status != 200:
             self.__timber.log('JishoHelper', f'Encountered non-200 HTTP status code when searching Jisho for \"{query}\": {response.status}')
             raise RuntimeError(f'Encountered non-200 HTTP status code when searching Jisho for \"{query}\": {response.status}')

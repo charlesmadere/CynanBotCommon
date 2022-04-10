@@ -1,5 +1,6 @@
 import json
 import random
+from asyncio import TimeoutError
 from os import path
 from typing import Dict
 
@@ -60,7 +61,12 @@ class TranslationHelper():
         requestUrl = 'https://api-free.deepl.com/v2/translate?auth_key={}&text={}&target_lang={}'.format(
             self.__deepLAuthKey, text, targetLanguageEntry.getIso6391Code())
 
-        response = await self.__clientSession.get(requestUrl)
+        try:
+            response = await self.__clientSession.get(requestUrl)
+        except (aiohttp.ClientError, TimeoutError) as e:
+            self.__timber.log('TranslationHelper', f'Encountered network error when translating \"{text}\": {e}')
+            raise RuntimeError(f'Encountered network error when translating \"{text}\": {e}')
+
         if response.status != 200:
             self.__timber.log('TranslationHelper', f'Encountered non-200 HTTP status code when fetching translation from DeepL for \"{text}\": {response.status}')
             raise RuntimeError(f'Encountered non-200 HTTP status code when fetching translation from DeepL for \"{text}\": {response.status}')

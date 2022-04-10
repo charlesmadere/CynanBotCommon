@@ -1,3 +1,4 @@
+from asyncio import TimeoutError
 from datetime import datetime, timedelta, timezone
 from typing import List
 
@@ -55,7 +56,13 @@ class AnalogueStoreRepository():
     async def __fetchStoreStock(self) -> AnalogueStoreStock:
         self.__timber.log('AnalogueStoreRepository', f'Fetching Analogue store stock...')
 
-        response = await self.__clientSession.get(self.__storeUrl)
+        response = None
+        try:
+            response = await self.__clientSession.get(self.__storeUrl)
+        except (aiohttp.ClientError, TimeoutError) as e:
+            self.__timber.log('AnalogueStoreRepository', f'Encountered network error: {e}')
+            raise RuntimeError(f'Encountered network error when fetching Analogue store stock: {e}')
+
         if response.status != 200:
             self.__timber.log('AnalogueStoreRepository', f'Encountered non-200 HTTP status code when fetching Analogue store stock: {response.status}')
             raise RuntimeError(f'Encountered non-200 HTTP status code when fetching Analogue store stock: {response.status}')
