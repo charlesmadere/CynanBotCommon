@@ -1,5 +1,6 @@
 import json
 import os
+from asyncio import TimeoutError
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List
 
@@ -147,15 +148,20 @@ class TwitchTokensRepository():
 
         self.__timber.log('TwitchTokensRepository', f'Refreshing Twitch tokens for \"{twitchHandle}\"...')
 
-        response = await self.__clientSession.post(
-            url = self.__oauth2TokenUrl,
-            params = {
-                    'client_id': twitchClientId,
-                    'client_secret': twitchClientSecret,
-                    'grant_type': 'refresh_token',
-                    'refresh_token': await self.requireRefreshToken(twitchHandle)
-            }
-        )
+        response = None
+        try:
+            response = await self.__clientSession.post(
+                url = self.__oauth2TokenUrl,
+                params = {
+                        'client_id': twitchClientId,
+                        'client_secret': twitchClientSecret,
+                        'grant_type': 'refresh_token',
+                        'refresh_token': await self.requireRefreshToken(twitchHandle)
+                }
+            )
+        except (aiohttp.ClientError, TimeoutError) as e:
+            self.__timber.log('TwitchTokensRepository', f'Encountered network error when requesting new Twitch tokens for \"{twitchHandle}\": {e}')
+            raise RuntimeError(f'Encountered network error when requesting new Twitch tokens for \"{twitchHandle}\": {e}')
 
         if response.status != 200:
             self.__timber.log('TwitchTokensRepository', f'Encountered non-200 HTTP status code when requesting new Twitch tokens for \"{twitchHandle}\": {response.status}')
@@ -246,12 +252,17 @@ class TwitchTokensRepository():
 
         self.__timber.log('TwitchTokensRepository', f'Validating Twitch access token for \"{twitchHandle}\"...')
 
-        response = await self.__clientSession.get(
-            url = self.__oauth2ValidateUrl,
-            headers = {
-                'Authorization': f'OAuth {await self.requireAccessToken(twitchHandle)}'
-            }
-        )
+        response = None
+        try:
+            response = await self.__clientSession.get(
+                url = self.__oauth2ValidateUrl,
+                headers = {
+                    'Authorization': f'OAuth {await self.requireAccessToken(twitchHandle)}'
+                }
+            )
+        except (aiohttp.ClientError, TimeoutError) as e:
+            self.__timber.log('TwitchTokensRepository', f'Encountered network error when validating Twitch access token for \"{twitchHandle}\": {e}')
+            return
 
         responseStatus = response.status
         jsonResponse: Dict[str, object] = await response.json()
