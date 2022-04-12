@@ -175,11 +175,11 @@ class WeatherRepository():
             response = await self.__clientSession.get(requestUrl)
         except (aiohttp.ClientError, TimeoutError) as e:
             self.__timber.log('WeatherRepository', f'Encountered network error when fetching weather for \"{location.getName()}\" ({location.getLocationId()}): {e}')
-            return None
+            raise RuntimeError(f'Encountered network error when fetching weather for \"{location.getName()}\" ({location.getLocationId()})')
 
         if response.status != 200:
             self.__timber.log('WeatherRepository', f'Encountered non-200 HTTP status code when fetching weather for \"{location.getName()}\" ({location.getLocationId()}): {response.status}')
-            return None
+            raise RuntimeError(f'Encountered network error when fetching weather for \"{location.getName()}\" ({location.getLocationId()})')
 
         jsonResponse = await response.json()
         response.close()
