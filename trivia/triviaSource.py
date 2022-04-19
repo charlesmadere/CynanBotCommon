@@ -12,6 +12,7 @@ class TriviaSource(Enum):
     JOKE_TRIVIA_REPOSITORY = auto()
     J_SERVICE = auto()
     LORD_OF_THE_RINGS = auto()
+    MILLIONAIRE = auto()
     OPEN_TRIVIA_DATABASE = auto()
     QUIZ_API = auto()
     WILL_FRY_TRIVIA_API = auto()
@@ -34,6 +35,8 @@ class TriviaSource(Enum):
             return TriviaSource.OPEN_TRIVIA_DATABASE
         elif text == 'lord_of_the_rings':
             return TriviaSource.LORD_OF_THE_RINGS
+        elif text == 'millionaire':
+            return TriviaSource.MILLIONAIRE
         elif text == 'quiz_api':
             return TriviaSource.QUIZ_API
         elif text == 'will_fry_trivia':
@@ -52,6 +55,8 @@ class TriviaSource(Enum):
             return 'J_SERVICE'
         elif self is TriviaSource.LORD_OF_THE_RINGS:
             return 'LORD_OF_THE_RINGS'
+        elif self is TriviaSource.MILLIONAIRE:
+            return 'MILLIONAIRE'
         elif self is TriviaSource.OPEN_TRIVIA_DATABASE:
             return 'OPEN_TRIVIA_DATABASE'
         elif self is TriviaSource.QUIZ_API:

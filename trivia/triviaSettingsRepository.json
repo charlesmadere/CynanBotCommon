@@ -19,6 +19,10 @@
             "is_enabled": false,
             "weight": 15
         },
+        "millionaire": {
+            "is_enabled": true,
+            "weight": 700
+        },
         "open_trivia": {
             "is_enabled": true,
             "weight": 1000
