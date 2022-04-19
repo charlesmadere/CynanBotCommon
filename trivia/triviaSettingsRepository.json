@@ -15,6 +15,10 @@
             "is_enabled": false,
             "weight": 25
         },
+        "lord_of_the_rings": {
+            "is_enabled": false,
+            "weight": 25
+        },
         "open_trivia": {
             "is_enabled": true,
             "weight": 500
