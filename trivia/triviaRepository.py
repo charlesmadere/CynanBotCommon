@@ -15,6 +15,8 @@ try:
         JServiceTriviaQuestionRepository
     from CynanBotCommon.trivia.lotrTriviaQuestionsRepository import \
         LotrTriviaQuestionRepository
+    from CynanBotCommon.trivia.millionaireTriviaQuestionRepository import \
+        MillionaireTriviaQuestionRepository
     from CynanBotCommon.trivia.openTriviaDatabaseTriviaQuestionRepository import \
         OpenTriviaDatabaseTriviaQuestionRepository
     from CynanBotCommon.trivia.quizApiTriviaQuestionRepository import \
@@ -42,6 +44,8 @@ except:
         JServiceTriviaQuestionRepository
     from trivia.lotrTriviaQuestionsRepository import \
         LotrTriviaQuestionRepository
+    from trivia.millionaireTriviaQuestionRepository import \
+        MillionaireTriviaQuestionRepository
     from trivia.openTriviaDatabaseTriviaQuestionRepository import \
         OpenTriviaDatabaseTriviaQuestionRepository
     from trivia.quizApiTriviaQuestionRepository import \
@@ -64,6 +68,7 @@ class TriviaRepository():
         jServiceTriviaQuestionRepository: JServiceTriviaQuestionRepository,
         openTriviaDatabaseTriviaQuestionRepository: OpenTriviaDatabaseTriviaQuestionRepository,
         lotrTriviaQuestionsRepository: LotrTriviaQuestionRepository,
+        millionaireTriviaQuestionRepository: MillionaireTriviaQuestionRepository,
         quizApiTriviaQuestionRepository: Optional[QuizApiTriviaQuestionRepository],
         timber: Timber,
         triviaSettingsRepository: TriviaSettingsRepository,
@@ -79,6 +84,8 @@ class TriviaRepository():
             raise ValueError(f'jServiceTriviaQuestionRepository argument is malformed: \"{jServiceTriviaQuestionRepository}\"')
         elif lotrTriviaQuestionsRepository is None:
             raise ValueError(f'lotrTriviaQuestionsRepository argument is malformed: \"{lotrTriviaQuestionsRepository}\"')
+        elif millionaireTriviaQuestionRepository is None:
+            raise ValueError(f'millionaireTriviaQuestionRepository argument is malformed: \"{millionaireTriviaQuestionRepository}\"')
         elif openTriviaDatabaseTriviaQuestionRepository is None:
             raise ValueError(f'openTriviaDatabaseTriviaQuestionRepository argument is malformed: \"{openTriviaDatabaseTriviaQuestionRepository}\"')
         elif timber is None:
@@ -96,6 +103,7 @@ class TriviaRepository():
         self.__jokeTriviaQuestionRepository: AbsTriviaQuestionRepository = jokeTriviaQuestionRepository
         self.__jServiceTriviaQuestionRepository: AbsTriviaQuestionRepository = jServiceTriviaQuestionRepository
         self.__lotrTriviaQuestionsRepository: AbsTriviaQuestionRepository = lotrTriviaQuestionsRepository
+        self.__millionaireTriviaQuestionRepository: AbsTriviaQuestionRepository = millionaireTriviaQuestionRepository
         self.__openTriviaDatabaseTriviaQuestionRepository: AbsTriviaQuestionRepository = openTriviaDatabaseTriviaQuestionRepository
         self.__quizApiTriviaQuestionRepository: AbsTriviaQuestionRepository = quizApiTriviaQuestionRepository
         self.__timber: Timber = timber
@@ -180,6 +188,8 @@ class TriviaRepository():
                 triviaQuestion = await self.__jServiceTriviaQuestionRepository.fetchTriviaQuestion(twitchChannel)
             elif triviaSource is TriviaSource.LORD_OF_THE_RINGS:
                 triviaQuestion = await self.__lotrTriviaQuestionsRepository.fetchTriviaQuestion(twitchChannel)
+            elif triviaSource is TriviaSource.MILLIONAIRE:
+                triviaQuestion = await self.__millionaireTriviaQuestionRepository.fetchTriviaQuestion(twitchChannel)
             elif triviaSource is TriviaSource.OPEN_TRIVIA_DATABASE:
                 triviaQuestion = await self.__openTriviaDatabaseTriviaQuestionRepository.fetchTriviaQuestion(twitchChannel)
             elif triviaSource is TriviaSource.QUIZ_API:
