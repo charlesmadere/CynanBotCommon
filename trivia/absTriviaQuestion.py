@@ -51,7 +51,7 @@ class AbsTriviaQuestion(ABC):
         pass
 
     @abstractmethod
-    def getPrompt(self, delimiter: str = '') -> str:
+    def getPrompt(self, delimiter: str = ' ') -> str:
         pass
 
     def getQuestion(self) -> str:
