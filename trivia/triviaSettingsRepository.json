@@ -5,35 +5,35 @@
     "trivia_sources": {
         "bongo": {
             "is_enabled": true,
-            "weight": 400
+            "weight": 900
         },
         "joke_trivia_repository": {
             "is_enabled": true,
             "weight": 10
         },
         "j_service": {
-            "is_enabled": false,
-            "weight": 25
+            "is_enabled": true,
+            "weight": 20
         },
         "lord_of_the_rings": {
-            "is_enabled": false,
-            "weight": 25
+            "is_enabled": true,
+            "weight": 15
         },
         "open_trivia": {
             "is_enabled": true,
-            "weight": 500
+            "weight": 1000
         },
         "quiz_api": {
             "is_enabled": true,
-            "weight": 10
+            "weight": 5
         },
         "will_fry_trivia": {
             "is_enabled": true,
-            "weight": 350
+            "weight": 800
         },
         "wwtbam": {
             "is_enabled": true,
-            "weight": 250
+            "weight": 600
         }
     }
 }
