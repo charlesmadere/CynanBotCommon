@@ -33,7 +33,7 @@ class LotrTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self,
         timber: Timber,
         triviaSettingsRepository: TriviaSettingsRepository,
-        triviaDatabaseFile: str = 'CynanBotCommon/trivia/lotrDatabase.sqlite'
+        triviaDatabaseFile: str = 'CynanBotCommon/trivia/lotrTriviaQuestionsDatabase.sqlite'
     ):
         super().__init__(triviaSettingsRepository)
 
