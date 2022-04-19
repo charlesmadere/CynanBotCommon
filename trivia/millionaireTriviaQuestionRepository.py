@@ -65,6 +65,7 @@ class MillionaireTriviaQuestionRepository(AbsTriviaQuestionRepository):
         return MultipleChoiceTriviaQuestion(
             correctAnswers = correctAnswer,
             multipleChoiceResponses = multipleChoiceResponses,
+            category = None,
             question = question,
             triviaId = triviaId,
             triviaDifficulty = TriviaDifficulty.UNKNOWN,
