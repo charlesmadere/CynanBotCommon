@@ -49,11 +49,10 @@ class QuestionAnswerTriviaQuestion(AbsTriviaQuestion):
         return correctAnswers
 
     def getPrompt(self, delimiter: str = None) -> str:
-        categoryText: str = ''
         if self.hasCategory():
-            categoryText = f' (category is \"{self.getCategory()}\")'
-
-        return f'Jeopardy format{categoryText} — {self.getQuestion()}'
+            return f'(category is \"{self.getCategory()}\") {self.getQuestion()}'
+        else:
+            return self.getQuestion()
 
     def getResponses(self) -> List[str]:
         return list()
