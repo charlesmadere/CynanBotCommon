@@ -8,7 +8,7 @@
             "weight": 900
         },
         "joke_trivia_repository": {
-            "is_enabled": true,
+            "is_enabled": false,
             "weight": 10
         },
         "j_service": {
@@ -16,7 +16,7 @@
             "weight": 20
         },
         "lord_of_the_rings": {
-            "is_enabled": true,
+            "is_enabled": false,
             "weight": 15
         },
         "open_trivia": {
