@@ -106,7 +106,7 @@ class BongoTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
             multipleChoiceResponses = await self._buildMultipleChoiceResponsesList(
                 correctAnswers = correctAnswers,
-                multipleChoiceResponsesJson = triviaJson['incorrect_answers']
+                multipleChoiceResponses = triviaJson['incorrect_answers']
             )
 
             if await self._verifyIsActuallyMultipleChoiceQuestion(correctAnswers, multipleChoiceResponses):

@@ -101,7 +101,7 @@ class WillFryTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
             multipleChoiceResponses = await self._buildMultipleChoiceResponsesList(
                 correctAnswers = correctAnswers,
-                multipleChoiceResponsesJson = triviaJson['incorrectAnswers']
+                multipleChoiceResponses = triviaJson['incorrectAnswers']
             )
 
             if await self._verifyIsActuallyMultipleChoiceQuestion(correctAnswers, multipleChoiceResponses):

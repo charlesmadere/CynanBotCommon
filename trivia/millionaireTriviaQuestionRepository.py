@@ -59,7 +59,7 @@ class MillionaireTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         multipleChoiceResponses = await self._buildMultipleChoiceResponsesList(
             correctAnswers = correctAnswers,
-            multipleChoiceResponsesJson = triviaDict['responses']
+            multipleChoiceResponses = triviaDict['responses']
         )
 
         return MultipleChoiceTriviaQuestion(
