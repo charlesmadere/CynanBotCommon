@@ -35,48 +35,55 @@ class AbsTriviaQuestionRepository(ABC):
     async def _buildMultipleChoiceResponsesList(
         self,
         correctAnswers: List[str],
-        multipleChoiceResponsesJson: List[str]
+        multipleChoiceResponses: List[str]
     ) -> List[str]:
         if not utils.hasItems(correctAnswers):
             raise NoTriviaCorrectAnswersException(f'correctAnswers argument is malformed: \"{correctAnswers}\"')
-        elif not utils.hasItems(multipleChoiceResponsesJson):
-            raise NoTriviaMultipleChoiceResponsesException(f'multipleChoiceResponsesJson argument is malformed: \"{multipleChoiceResponsesJson}\"')
+        elif not utils.hasItems(multipleChoiceResponses):
+            raise NoTriviaMultipleChoiceResponsesException(f'multipleChoiceResponses argument is malformed: \"{multipleChoiceResponses}\"')
 
         maxMultipleChoiceResponses = await self._triviaSettingsRepository.getMaxMultipleChoiceResponses()
-        multipleChoiceResponses: List[str] = list()
+        filteredMultipleChoiceResponses: List[str] = list()
 
         for correctAnswer in correctAnswers:
-            multipleChoiceResponses.append(correctAnswer)
+            filteredMultipleChoiceResponses.append(correctAnswer)
 
         # Annoyingly, I've encountered a few situations where we can have a question with more
         # than one of the same multiple choice answers. The below logic takes some steps to make
         # sure this doesn't happen, while also ensuring that we don't have too many multiple
         # choice responses.
 
-        for incorrectAnswer in multipleChoiceResponsesJson:
-            incorrectAnswer = utils.cleanStr(incorrectAnswer, htmlUnescape = True)
+        for response in multipleChoiceResponses:
+            cleanedResponse = utils.cleanStr(response, htmlUnescape = True)
+            if not utils.isValidStr(cleanedResponse):
+                continue
+
             add = True
 
-            for response in multipleChoiceResponses:
-                if incorrectAnswer.lower() == response.lower():
+            for filteredResponse in filteredMultipleChoiceResponses:
+                if cleanedResponse.lower() == filteredResponse.lower():
                     add = False
                     break
 
             if add:
-                multipleChoiceResponses.append(incorrectAnswer)
+                filteredMultipleChoiceResponses.append(cleanedResponse)
 
-                if len(multipleChoiceResponses) >= maxMultipleChoiceResponses:
+                if len(filteredMultipleChoiceResponses) >= maxMultipleChoiceResponses:
                     break
 
-        if not utils.hasItems(multipleChoiceResponses):
-            raise NoTriviaMultipleChoiceResponsesException(f'This trivia question doesn\'t have any multiple choice responses: \"{multipleChoiceResponses}\"')
+        if not utils.hasItems(filteredMultipleChoiceResponses):
+            raise NoTriviaMultipleChoiceResponsesException(f'This trivia question doesn\'t have any multiple choice responses: \"{filteredMultipleChoiceResponses}\"')
 
         minMultipleChoiceResponses = await self._triviaSettingsRepository.getMinMultipleChoiceResponses()
-        if len(multipleChoiceResponses) < minMultipleChoiceResponses:
-            raise TooFewTriviaMultipleChoiceResponsesException(f'This trivia question doesn\'t have enough multiple choice responses (minimum is {minMultipleChoiceResponses}): \"{multipleChoiceResponses}\"')
+        if len(filteredMultipleChoiceResponses) < minMultipleChoiceResponses:
+            raise TooFewTriviaMultipleChoiceResponsesException(f'This trivia question doesn\'t have enough multiple choice responses (minimum is {minMultipleChoiceResponses}): \"{filteredMultipleChoiceResponses}\"')
 
-        multipleChoiceResponses.sort(key = lambda response: response.lower())
-        return multipleChoiceResponses
+        if utils.areAllStrsInts(filteredMultipleChoiceResponses):
+            filteredMultipleChoiceResponses.sort(key = lambda response: int(response))
+        else:
+            filteredMultipleChoiceResponses.sort(key = lambda response: response.lower())
+
+        return filteredMultipleChoiceResponses
 
     @abstractmethod
     async def fetchTriviaQuestion(self, twitchChannel: Optional[str]) -> AbsTriviaQuestion:
