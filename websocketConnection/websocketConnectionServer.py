@@ -23,30 +23,33 @@ class WebsocketConnectionServer():
 
     def __init__(
         self,
+        eventLoop: AbstractEventLoop,
         timber: Timber,
         isDebugLoggingEnabled: bool = False,
+        sleepTimeSeconds: float = 5,
         eventQueueBlockTimeoutSeconds: int = 3,
         port: int = 8765,
-        sleepTimeSeconds: int = 5,
         host: str = '0.0.0.0',
         eventTimeToLive: timedelta = timedelta(seconds = 30)
     ):
-        if timber is None:
+        if eventLoop is None:
+            raise ValueError(f'eventLoop argument is malformed: \"{eventLoop}\"')
+        elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not utils.isValidBool(isDebugLoggingEnabled):
             raise ValueError(f'isDebugLoggingEnabled argument is malformed: \"{isDebugLoggingEnabled}\"')
         elif not utils.isValidNum(eventQueueBlockTimeoutSeconds):
             raise ValueError(f'eventQueueBlockTimeoutSeconds argument is malformed: \"{eventQueueBlockTimeoutSeconds}\"')
+        elif not utils.isValidNum(sleepTimeSeconds):
+            raise ValueError(f'sleepTimeSeconds argument is malformed: \"{sleepTimeSeconds}\"')
+        elif sleepTimeSeconds < 3:
+            raise ValueError(f'sleepTimeSeconds argument is too aggressive: {sleepTimeSeconds}')
         elif eventQueueBlockTimeoutSeconds < 1:
             raise ValueError(f'eventQueueBlockTimeoutSeconds is out of bounds: \"{eventQueueBlockTimeoutSeconds}\"')
         elif not utils.isValidNum(port):
             raise ValueError(f'port argument is malformed: \"{port}\"')
         elif port <= 0:
             raise ValueError(f'port argument is out of bounds: \"{port}\"')
-        elif not utils.isValidNum(sleepTimeSeconds):
-            raise ValueError(f'sleepTimeSeconds argument is malformed: \"{sleepTimeSeconds}\"')
-        elif sleepTimeSeconds < 3:
-            raise ValueError(f'sleepTimeSeconds argument is too aggressive: \"{sleepTimeSeconds}\"')
         elif not utils.isValidStr(host):
             raise ValueError(f'host argument is malformed: \"{host}\"')
         elif eventTimeToLive is None:
@@ -60,8 +63,8 @@ class WebsocketConnectionServer():
         self.__host: str = host
         self.__eventTimeToLive: timedelta = eventTimeToLive
 
-        self.__isStarted: bool = False
         self.__eventQueue: SimpleQueue[WebsocketEvent] = SimpleQueue()
+        eventLoop.create_task(self.__startEventLoop())
 
     async def sendEvent(
         self,
@@ -82,32 +85,13 @@ class WebsocketConnectionServer():
             'eventData': eventData
         }
 
-        if not self.__isStarted:
-            self.__timber.log('WebsocketConnectionServer', f'Server has not yet been started, but attempted to add event to queue: {event}')
-            return
-
         if self.__isDebugLoggingEnabled:
             currentSize = self.__eventQueue.qsize()
             self.__timber.log('WebsocketConnectionServer', f'Adding event to queue (current size is {currentSize}, new size will be {currentSize + 1}): {event}')
 
         self.__eventQueue.put(WebsocketEvent(eventData = event))
 
-    def start(self, eventLoop: AbstractEventLoop):
-        if eventLoop is None:
-            raise ValueError(f'eventLoop argument is malformed: \"{eventLoop}\"')
-
-        if self.__isStarted:
-            self.__timber.log('WebsocketConnectionServer', 'Not starting server as it has already been started')
-            return
-
-        self.__isStarted = True
-        self.__timber.log('WebsocketConnectionServer', 'Starting server...')
-        eventLoop.create_task(self.__start())
-
-    async def __start(self):
-        if self.__isDebugLoggingEnabled:
-            self.__timber.log('WebsocketConnectionServer', f'Entered `__start()` (queue size: {self.__eventQueue.qsize()})')
-
+    async def __startEventLoop(self):
         while True:
             try:
                 async with websockets.serve(
