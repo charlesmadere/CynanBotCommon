@@ -1,19 +1,32 @@
+import asyncio
 import re
+from asyncio import AbstractEventLoop
 from datetime import datetime, timedelta, timezone
+from queue import SimpleQueue
 from typing import Dict, Pattern
 
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.trivia.absTriviaAction import AbsTriviaAction
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
+    from CynanBotCommon.trivia.checkAnswerTriviaAction import \
+        CheckAnswerTriviaAction
     from CynanBotCommon.trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
     from CynanBotCommon.trivia.questionAnswerTriviaQuestion import \
         QuestionAnswerTriviaQuestion
+    from CynanBotCommon.trivia.startNewGameTriviaAction import \
+        StartNewGameTriviaAction
+    from CynanBotCommon.trivia.triviaActionType import TriviaActionType
+    from CynanBotCommon.trivia.triviaExceptions import \
+        UnknownTriviaActionTypeException
     from CynanBotCommon.trivia.triviaGameCheckResult import \
         TriviaGameCheckResult
     from CynanBotCommon.trivia.triviaGameState import TriviaGameState
     from CynanBotCommon.trivia.triviaRepository import TriviaRepository
+    from CynanBotCommon.trivia.triviaScoreRepository import \
+        TriviaScoreRepository
     from CynanBotCommon.trivia.triviaType import TriviaType
     from CynanBotCommon.trivia.trueFalseTriviaQuestion import \
         TrueFalseTriviaQuestion
@@ -21,14 +34,20 @@ except:
     import utils
     from timber.timber import Timber
 
+    from trivia.absTriviaAction import AbsTriviaAction
     from trivia.absTriviaQuestion import AbsTriviaQuestion
+    from trivia.checkAnswerTriviaAction import CheckAnswerTriviaAction
     from trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
     from trivia.questionAnswerTriviaQuestion import \
         QuestionAnswerTriviaQuestion
+    from trivia.startNewGameTriviaAction import StartNewGameTriviaAction
+    from trivia.triviaActionType import TriviaActionType
+    from trivia.triviaExceptions import UnknownTriviaActionTypeException
     from trivia.triviaGameCheckResult import TriviaGameCheckResult
     from trivia.triviaGameState import TriviaGameState
     from trivia.triviaRepository import TriviaRepository
+    from trivia.triviaScoreRepository import TriviaScoreRepository
     from trivia.triviaType import TriviaType
     from trivia.trueFalseTriviaQuestion import TrueFalseTriviaQuestion
 
@@ -37,19 +56,36 @@ class TriviaGameRepository():
 
     def __init__(
         self,
+        eventLoop: AbstractEventLoop,
         timber: Timber,
-        triviaRepository: TriviaRepository
+        triviaRepository: TriviaRepository,
+        triviaScoreRepository: TriviaScoreRepository,
+        sleepTimeSeconds: float = 0.5
     ):
-        if timber is None:
+        if eventLoop is None:
+            raise ValueError(f'eventLoop argument is malformed: \"{eventLoop}\"')
+        elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif triviaRepository is None:
             raise ValueError(f'triviaRepository argument is malformed: \"{triviaRepository}\"')
+        elif triviaScoreRepository is None:
+            raise ValueError(f'triviaScoreRepository argument is malformed: \"{triviaScoreRepository}\"')
+        elif not utils.isValidNum(sleepTimeSeconds):
+            raise ValueError(f'sleepTimeSeconds argument is malformed: \"{sleepTimeSeconds}\"')
+        elif sleepTimeSeconds < 0.1 or sleepTimeSeconds > 5:
+            raise ValueError(f'sleepTimeSeconds argument is out of bounds: {sleepTimeSeconds}')
 
         self.__timber: Timber = timber
         self.__triviaRepository: TriviaRepository = triviaRepository
+        self.__triviaScoreRepository: TriviaScoreRepository = triviaScoreRepository
+        self.__sleepTimeSeconds: float = sleepTimeSeconds
+
         self.__states: Dict[str, TriviaGameState] = dict()
         self.__fullWordAnswerRegEx: Pattern = re.compile(r"\w+|\d+", re.IGNORECASE)
         self.__multipleChoiceAnswerRegEx: Pattern = re.compile(r"[a-z]", re.IGNORECASE)
+
+        self.__actionQueue: SimpleQueue[AbsTriviaAction] = SimpleQueue()
+        eventLoop.create_task(self.__startActionLoop())
 
     async def __applyAnswerCleanup(self, text: str) -> str:
         if not utils.isValidStr(text):
@@ -201,6 +237,31 @@ class TriviaGameRepository():
 
         return triviaQuestion
 
+    async def __handleActionCheckAnswer(self, action: CheckAnswerTriviaAction):
+        if action is None:
+            raise ValueError(f'action argument is malformed: \"{action}\"')
+        elif action.getTriviaActionType() is not TriviaActionType.CHECK_ANSWER:
+            raise RuntimeError(f'TriviaActionType is not {TriviaActionType.CHECK_ANSWER}: \"{action.getTriviaActionType()}\"')
+
+        state = self.__states.get(action.getTwitchChannel().lower())
+        if state is None:
+            
+            return
+
+        # TODO
+
+        pass
+
+    async def __handleActionStartNewGame(self, action: StartNewGameTriviaAction):
+        if action is None:
+            raise ValueError(f'action argument is malformed: \"{action}\"')
+        elif action.getTriviaActionType() is not TriviaActionType.START_NEW_GAME:
+            raise RuntimeError(f'TriviaActionType is not {TriviaActionType.START_NEW_GAME}: \"{action.getTriviaActionType()}\"')
+
+        # TODO
+
+        pass
+
     def isAnswered(self, twitchChannel: str) -> bool:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
@@ -237,6 +298,20 @@ class TriviaGameRepository():
 
         state.setAnswered()
 
+    async def __startActionLoop(self):
+        while True:
+            while not self.__actionQueue.empty():
+                action = self.__actionQueue.get()
+
+                if action.getTriviaActionType() is TriviaActionType.CHECK_ANSWER:
+                    await self.__handleActionCheckAnswer(action)
+                elif action.getTriviaActionType() is TriviaActionType.START_NEW_GAME:
+                    await self.__handleActionStartNewGame(action)
+                else:
+                    raise UnknownTriviaActionTypeException(f'Unknown TriviaActionType: \"{action.getTriviaActionType()}\"')
+
+            asyncio.sleep(self.__sleepTimeSeconds)
+
     def startNewTriviaGame(
         self,
         twitchChannel: str,
@@ -262,3 +337,9 @@ class TriviaGameRepository():
             userIdThatRedeemed = userId,
             userNameThatRedeemed = userName
         )
+
+    def submitAction(self, action: AbsTriviaAction):
+        if action is None:
+            raise ValueError(f'action argument is malformed: \"{action}\"')
+
+        self.__actionQueue.put(action)
