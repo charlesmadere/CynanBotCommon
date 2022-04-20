@@ -79,7 +79,7 @@ class WwtbamTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         multipleChoiceResponses = await self._buildMultipleChoiceResponsesList(
             correctAnswers = correctAnswers,
-            multipleChoiceResponsesJson = responses
+            multipleChoiceResponses = responses
         )
 
         return MultipleChoiceTriviaQuestion(

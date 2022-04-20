@@ -138,7 +138,7 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         multipleChoiceResponses = await self._buildMultipleChoiceResponsesList(
             correctAnswers = correctAnswers,
-            multipleChoiceResponsesJson = filteredAnswers
+            multipleChoiceResponses = filteredAnswers
         )
 
         if triviaType is TriviaType.MULTIPLE_CHOICE:
