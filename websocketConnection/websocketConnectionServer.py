@@ -115,7 +115,7 @@ class WebsocketConnectionServer():
             if self.__isDebugLoggingEnabled:
                 self.__timber.log('WebsocketConnectionServer', f'Sleeping within `__start()`')
 
-            asyncio.sleep(self.__sleepTimeSeconds)
+            await asyncio.sleep(self.__sleepTimeSeconds)
 
     async def __websocketConnectionReceived(self, websocket, path):
         if self.__isDebugLoggingEnabled:
