@@ -310,7 +310,7 @@ class TriviaGameRepository():
                 else:
                     raise UnknownTriviaActionTypeException(f'Unknown TriviaActionType: \"{action.getTriviaActionType()}\"')
 
-            asyncio.sleep(self.__sleepTimeSeconds)
+            await asyncio.sleep(self.__sleepTimeSeconds)
 
     def startNewTriviaGame(
         self,

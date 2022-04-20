@@ -81,7 +81,7 @@ class Timber():
                 timberEntry = self.__entryQueue.get()
                 self.__log(timberEntry)
 
-            asyncio.sleep(self.__sleepTimeSeconds)
+            await asyncio.sleep(self.__sleepTimeSeconds)
 
     def __writeToLogFile(self, timberEntry: TimberEntry):
         if timberEntry is None:
