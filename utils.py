@@ -8,6 +8,21 @@ from typing import List, Pattern
 from urllib.parse import urlparse
 
 
+def areAllStrsInts(l: List[str]) -> bool:
+    if not hasItems(l):
+        raise ValueError(f'l argument is malformed: \"{l}\"')
+
+    for s in l:
+        try:
+            number = int(s)
+
+            if not isValidNum(number):
+                return False
+        except (SyntaxError, TypeError, ValueError):
+            return False
+
+    return True
+
 def areValidBools(l: List[bool]) -> bool:
     if not hasItems(l):
         return False
