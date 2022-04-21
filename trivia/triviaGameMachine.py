@@ -211,7 +211,7 @@ class TriviaGameMachine():
 
         state = self.__states.get(action.getTwitchChannel().lower())
         if state is None:
-            await self.__eventQueue.put(GameNotReadyCheckAnswerTriviaEvent(
+            self.__eventQueue.put(GameNotReadyCheckAnswerTriviaEvent(
                 answer = action.getAnswer(),
                 twitchChannel = action.getTwitchChannel(),
                 userId = action.getUserId(),
@@ -220,7 +220,7 @@ class TriviaGameMachine():
             return
 
         if state.getUserId() != action.getUserId():
-            await self.__eventQueue.put(WrongUserCheckAnswerTriviaEvent(
+            self.__eventQueue.put(WrongUserCheckAnswerTriviaEvent(
                 answer = action.getAnswer(),
                 twitchChannel = action.getTwitchChannel(),
                 userId = action.getUserId(),
@@ -231,7 +231,7 @@ class TriviaGameMachine():
         now = datetime.now(timezone.utc)
 
         if state.getEndTime() < now:
-            await self.__eventQueue.put(OutOfTimeCheckAnswerTriviaEvent(
+            self.__eventQueue.put(OutOfTimeCheckAnswerTriviaEvent(
                 answer = action.getAnswer(),
                 twitchChannel = action.getTwitchChannel(),
                 userId = action.getUserId(),
@@ -245,7 +245,7 @@ class TriviaGameMachine():
                 userId = action.getUserId()
             )
 
-            await self.__eventQueue.put(IncorrectAnswerTriviaEvent(
+            self.__eventQueue.put(IncorrectAnswerTriviaEvent(
                 triviaQuestion = state.getTriviaQuestion(),
                 answer = action.getAnswer(),
                 twitchChannel = action.getTwitchChannel(),
@@ -262,7 +262,7 @@ class TriviaGameMachine():
             userId = action.getUserId()
         )
 
-        await self.__eventQueue.put(CorrectAnswerTriviaEvent(
+        self.__eventQueue.put(CorrectAnswerTriviaEvent(
             triviaQuestion = state.getTriviaQuestion(),
             pointsForWinning = state.getPointsForWinning(),
             answer = action.getAnswer(),
@@ -281,7 +281,7 @@ class TriviaGameMachine():
         now = datetime.now(timezone.utc)
 
         if state is not None and state.getEndTime() < now:
-            await self.__eventQueue.put(GameAlreadyInProgressTriviaEvent(
+            self.__eventQueue.put(GameAlreadyInProgressTriviaEvent(
                 twitchChannel = action.getTwitchChannel(),
                 userId = action.getUserId(),
                 userName = action.getUserName()
@@ -298,7 +298,7 @@ class TriviaGameMachine():
             self.__timber.log('TriviaGameMachine', f'Reached limit on trivia fetch attempts without being able to successfully retrieve a question: {e}')
 
         if triviaQuestion is None:
-            await self.__eventQueue.put(FailedToFetchQuestionTriviaEvent(
+            self.__eventQueue.put(FailedToFetchQuestionTriviaEvent(
                 twitchChannel = action.getTwitchChannel(),
                 userId = action.getUserId(),
                 userName = action.getUserName()
@@ -314,7 +314,7 @@ class TriviaGameMachine():
             userName = action.getUserName()
         )
 
-        await self.__eventQueue.put(NewGameTriviaEvent(
+        self.__eventQueue.put(NewGameTriviaEvent(
             triviaQuestion = triviaQuestion,
             pointsForWinning = action.getPointsForWinning(),
             secondsToLive = action.getSecondsToLive(),
