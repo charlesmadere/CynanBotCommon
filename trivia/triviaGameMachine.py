@@ -331,7 +331,7 @@ class TriviaGameMachine():
         statesToRemove: List[TriviaGameState] = list()
 
         for state in self.__states.values():
-            if state.getEndTime() < now:
+            if state is not None and state.getEndTime() < now:
                 statesToRemove.append(state)
 
         if not utils.hasItems(statesToRemove):
