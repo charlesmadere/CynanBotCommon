@@ -266,6 +266,7 @@ class TriviaGameMachine():
             triviaQuestion = state.getTriviaQuestion(),
             pointsForWinning = state.getPointsForWinning(),
             answer = action.getAnswer(),
+            twitchChannel = action.getTwitchChannel(),
             userId = action.getUserId(),
             userName = action.getUserName(),
             triviaScoreResult = triviaScoreResult
