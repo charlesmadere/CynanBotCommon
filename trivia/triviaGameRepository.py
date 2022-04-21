@@ -264,6 +264,7 @@ class TriviaGameRepository():
 
         await self.__eventQueue.put(CorrectAnswerTriviaEvent(
             triviaQuestion = state.getTriviaQuestion(),
+            pointsForWinning = state.getPointsForWinning(),
             answer = action.getAnswer(),
             userId = action.getUserId(),
             userName = action.getUserName(),
