@@ -1,28 +1,41 @@
 import asyncio
 import re
 from asyncio import AbstractEventLoop
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from queue import SimpleQueue
-from typing import Dict, Pattern
+from typing import Dict, List, Pattern
 
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.absTriviaAction import AbsTriviaAction
+    from CynanBotCommon.trivia.absTriviaEvent import AbsTriviaEvent
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.checkAnswerTriviaAction import \
         CheckAnswerTriviaAction
+    from CynanBotCommon.trivia.correctAnswerTriviaEvent import \
+        CorrectAnswerTriviaEvent
+    from CynanBotCommon.trivia.failedToFetchQuestionTriviaEvent import \
+        FailedToFetchQuestionTriviaEvent
+    from CynanBotCommon.trivia.gameAlreadyInProgressTriviaEvent import \
+        GameAlreadyInProgressTriviaEvent
+    from CynanBotCommon.trivia.gameNotReadyCheckAnswerTriviaEvent import \
+        GameNotReadyCheckAnswerTriviaEvent
+    from CynanBotCommon.trivia.incorrectAnswerTriviaEvent import \
+        IncorrectAnswerTriviaEvent
     from CynanBotCommon.trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
+    from CynanBotCommon.trivia.newGameTriviaEvent import NewGameTriviaEvent
+    from CynanBotCommon.trivia.outOfTimeCheckAnswerTriviaEvent import \
+        OutOfTimeCheckAnswerTriviaEvent
+    from CynanBotCommon.trivia.outOfTimeTriviaEvent import OutOfTimeTriviaEvent
     from CynanBotCommon.trivia.questionAnswerTriviaQuestion import \
         QuestionAnswerTriviaQuestion
     from CynanBotCommon.trivia.startNewGameTriviaAction import \
         StartNewGameTriviaAction
     from CynanBotCommon.trivia.triviaActionType import TriviaActionType
-    from CynanBotCommon.trivia.triviaExceptions import \
-        UnknownTriviaActionTypeException
-    from CynanBotCommon.trivia.triviaGameCheckResult import \
-        TriviaGameCheckResult
+    from CynanBotCommon.trivia.triviaExceptions import (
+        TooManyTriviaFetchAttemptsException, UnknownTriviaActionTypeException)
     from CynanBotCommon.trivia.triviaGameState import TriviaGameState
     from CynanBotCommon.trivia.triviaRepository import TriviaRepository
     from CynanBotCommon.trivia.triviaScoreRepository import \
@@ -30,26 +43,43 @@ try:
     from CynanBotCommon.trivia.triviaType import TriviaType
     from CynanBotCommon.trivia.trueFalseTriviaQuestion import \
         TrueFalseTriviaQuestion
+    from CynanBotCommon.trivia.wrongUserCheckAnswerTriviaEvent import \
+        WrongUserCheckAnswerTriviaEvent
 except:
     import utils
     from timber.timber import Timber
 
     from trivia.absTriviaAction import AbsTriviaAction
+    from trivia.absTriviaEvent import AbsTriviaEvent
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.checkAnswerTriviaAction import CheckAnswerTriviaAction
+    from trivia.correctAnswerTriviaEvent import CorrectAnswerTriviaEvent
+    from trivia.failedToFetchQuestionTriviaEvent import \
+        FailedToFetchQuestionTriviaEvent
+    from trivia.gameAlreadyInProgressTriviaEvent import \
+        GameAlreadyInProgressTriviaEvent
+    from trivia.gameNotReadyCheckAnswerTriviaEvent import \
+        GameNotReadyCheckAnswerTriviaEvent
+    from trivia.incorrectAnswerTriviaEvent import IncorrectAnswerTriviaEvent
     from trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
+    from trivia.newGameTriviaEvent import NewGameTriviaEvent
+    from trivia.outOfTimeCheckAnswerTriviaEvent import \
+        OutOfTimeCheckAnswerTriviaEvent
+    from trivia.outOfTimeTriviaEvent import OutOfTimeTriviaEvent
     from trivia.questionAnswerTriviaQuestion import \
         QuestionAnswerTriviaQuestion
     from trivia.startNewGameTriviaAction import StartNewGameTriviaAction
     from trivia.triviaActionType import TriviaActionType
-    from trivia.triviaExceptions import UnknownTriviaActionTypeException
-    from trivia.triviaGameCheckResult import TriviaGameCheckResult
+    from trivia.triviaExceptions import (TooManyTriviaFetchAttemptsException,
+                                         UnknownTriviaActionTypeException)
     from trivia.triviaGameState import TriviaGameState
     from trivia.triviaRepository import TriviaRepository
     from trivia.triviaScoreRepository import TriviaScoreRepository
     from trivia.triviaType import TriviaType
     from trivia.trueFalseTriviaQuestion import TrueFalseTriviaQuestion
+    from trivia.wrongUserCheckAnswerTriviaEvent import \
+        WrongUserCheckAnswerTriviaEvent
 
 
 class TriviaGameRepository():
@@ -83,9 +113,12 @@ class TriviaGameRepository():
         self.__states: Dict[str, TriviaGameState] = dict()
         self.__fullWordAnswerRegEx: Pattern = re.compile(r"\w+|\d+", re.IGNORECASE)
         self.__multipleChoiceAnswerRegEx: Pattern = re.compile(r"[a-z]", re.IGNORECASE)
+        self.__eventListener = None
 
         self.__actionQueue: SimpleQueue[AbsTriviaAction] = SimpleQueue()
+        self.__eventQueue: SimpleQueue[AbsTriviaEvent] = SimpleQueue()
         eventLoop.create_task(self.__startActionLoop())
+        eventLoop.create_task(self.__startEventLoop())
 
     async def __applyAnswerCleanup(self, text: str) -> str:
         if not utils.isValidStr(text):
@@ -94,40 +127,6 @@ class TriviaGameRepository():
         text = text.lower()
         regexResult = self.__fullWordAnswerRegEx.findall(text)
         return ''.join(regexResult)
-
-    async def checkAnswer(
-        self,
-        answer: str,
-        twitchChannel: str,
-        userId: str
-    ) -> TriviaGameCheckResult:
-        if not utils.isValidStr(twitchChannel):
-            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
-        elif not utils.isValidStr(userId):
-            raise ValueError(f'userId argument is malformed: \"{userId}\"')
-
-        state = self.__states.get(twitchChannel.lower())
-        if state is None:
-            return TriviaGameCheckResult.NOT_READY
-
-        triviaQuestion = state.getTriviaQuestion()
-        isAnswered = state.isAnswered()
-        userIdThatRedeemed = state.getUserIdThatRedeemed()
-        userNameThatRedeemed = state.getUserNameThatRedeemed()
-
-        if triviaQuestion is None or not utils.isValidStr(userIdThatRedeemed) or not utils.isValidStr(userNameThatRedeemed):
-            return TriviaGameCheckResult.NOT_READY
-        elif isAnswered:
-            return TriviaGameCheckResult.ALREADY_ANSWERED
-        elif userIdThatRedeemed.lower() != userId.lower():
-            return TriviaGameCheckResult.INVALID_USER
-
-        state.setAnswered()
-
-        if await self.__checkAnswer(answer, triviaQuestion):
-            return TriviaGameCheckResult.CORRECT_ANSWER
-        else:
-            return TriviaGameCheckResult.INCORRECT_ANSWER
 
     async def __checkAnswer(self, answer: str, triviaQuestion: AbsTriviaQuestion) -> bool:
         if triviaQuestion is None:
@@ -148,6 +147,8 @@ class TriviaGameRepository():
     async def __checkAnswerMultipleChoice(self, answer: str, triviaQuestion: MultipleChoiceTriviaQuestion) -> bool:
         if triviaQuestion is None:
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
+        elif triviaQuestion.getTriviaType() is not TriviaType.MULTIPLE_CHOICE:
+            raise RuntimeError(f'TriviaType is not {TriviaType.MULTIPLE_CHOICE}: \"{triviaQuestion.getTriviaType()}\"')
 
         answer = await self.__applyAnswerCleanup(answer)
 
@@ -164,6 +165,8 @@ class TriviaGameRepository():
     async def __checkAnswerQuestionAnswer(self, answer: str, triviaQuestion: QuestionAnswerTriviaQuestion) -> bool:
         if triviaQuestion is None:
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
+        elif triviaQuestion.getTriviaType() is not TriviaType.QUESTION_ANSWER:
+            raise RuntimeError(f'TriviaType is not {TriviaType.QUESTION_ANSWER}: \"{triviaQuestion.getTriviaType()}\"')
 
         cleanedAnswer = await self.__applyAnswerCleanup(answer)
         correctAnswers = triviaQuestion.getCorrectAnswers()
@@ -189,6 +192,8 @@ class TriviaGameRepository():
     ) -> bool:
         if triviaQuestion is None:
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
+        elif triviaQuestion.getTriviaType() is not TriviaType.TRUE_FALSE:
+            raise RuntimeError(f'TriviaType is not {TriviaType.TRUE_FALSE}: \"{triviaQuestion.getTriviaType()}\"')
 
         answer = await self.__applyAnswerCleanup(answer)
 
@@ -198,45 +203,6 @@ class TriviaGameRepository():
         answerBool = utils.strToBool(answer)
         return answerBool in triviaQuestion.getCorrectAnswerBools()
 
-    async def fetchTrivia(
-        self,
-        twitchChannel: str,
-        isJokeTriviaRepositoryEnabled: bool = False
-    ) -> AbsTriviaQuestion:
-        if not utils.isValidStr(twitchChannel):
-            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
-        elif not utils.isValidBool(isJokeTriviaRepositoryEnabled):
-            raise ValueError(f'isJokeTriviaRepositoryEnabled argument is malformed: \"{isJokeTriviaRepositoryEnabled}\"')
-
-        state = self.__states.get(twitchChannel.lower())
-        if state is None:
-            state = TriviaGameState(twitchChannel = twitchChannel.lower())
-            self.__states[twitchChannel.lower()] = state
-        else:
-            state.setAnswered()
-
-        triviaQuestion = await self.__triviaRepository.fetchTrivia(
-            twitchChannel = twitchChannel,
-            isJokeTriviaRepositoryEnabled = isJokeTriviaRepositoryEnabled
-        )
-
-        state.setTriviaQuestion(triviaQuestion)
-        return triviaQuestion
-
-    def getTrivia(self, twitchChannel: str) -> AbsTriviaQuestion:
-        if not utils.isValidStr(twitchChannel):
-            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
-
-        state = self.__states.get(twitchChannel.lower())
-        if state is None:
-            raise RuntimeError(f'there is no TriviaGameState available for Twitch channel \"{twitchChannel}\"!')
-
-        triviaQuestion = state.getTriviaQuestion()
-        if triviaQuestion is None:
-            raise RuntimeError(f'there is no trivia question available for Twitch channel \"{twitchChannel}\"')
-
-        return triviaQuestion
-
     async def __handleActionCheckAnswer(self, action: CheckAnswerTriviaAction):
         if action is None:
             raise ValueError(f'action argument is malformed: \"{action}\"')
@@ -245,12 +211,64 @@ class TriviaGameRepository():
 
         state = self.__states.get(action.getTwitchChannel().lower())
         if state is None:
-            
+            await self.__eventQueue.put(GameNotReadyCheckAnswerTriviaEvent(
+                answer = action.getAnswer(),
+                twitchChannel = action.getTwitchChannel(),
+                userId = action.getUserId(),
+                userName = action.getUserName()
+            ))
             return
 
-        # TODO
+        if state.getUserId() != action.getUserId():
+            await self.__eventQueue.put(WrongUserCheckAnswerTriviaEvent(
+                answer = action.getAnswer(),
+                twitchChannel = action.getTwitchChannel(),
+                userId = action.getUserId(),
+                userName = action.getUserName()
+            ))
+            return
 
-        pass
+        now = datetime.now(timezone.utc)
+
+        if state.getEndTime() < now:
+            await self.__eventQueue.put(OutOfTimeCheckAnswerTriviaEvent(
+                answer = action.getAnswer(),
+                twitchChannel = action.getTwitchChannel(),
+                userId = action.getUserId(),
+                userName = action.getUserName()
+            ))
+            return
+
+        if not await self.__checkAnswer(action.getAnswer(), state.getTriviaQuestion()):
+            triviaScoreResult = await self.__triviaScoreRepository.incrementTotalLosses(
+                twitchChannel = action.getTwitchChannel(),
+                userId = action.getUserId()
+            )
+
+            await self.__eventQueue.put(IncorrectAnswerTriviaEvent(
+                triviaQuestion = state.getTriviaQuestion(),
+                answer = action.getAnswer(),
+                twitchChannel = action.getTwitchChannel(),
+                userId = action.getUserId(),
+                userName = action.getUserName(),
+                triviaScoreResult = triviaScoreResult
+            ))
+            return
+
+        self.__states[action.getTwitchChannel().lower()] = None
+
+        triviaScoreResult = await self.__triviaScoreRepository.incrementTotalWins(
+            twitchChannel = action.getTwitchChannel(),
+            userId = action.getUserId()
+        )
+
+        await self.__eventQueue.put(CorrectAnswerTriviaEvent(
+            triviaQuestion = state.getTriviaQuestion(),
+            answer = action.getAnswer(),
+            userId = action.getUserId(),
+            userName = action.getUserName(),
+            triviaScoreResult = triviaScoreResult
+        ))
 
     async def __handleActionStartNewGame(self, action: StartNewGameTriviaAction):
         if action is None:
@@ -258,45 +276,84 @@ class TriviaGameRepository():
         elif action.getTriviaActionType() is not TriviaActionType.START_NEW_GAME:
             raise RuntimeError(f'TriviaActionType is not {TriviaActionType.START_NEW_GAME}: \"{action.getTriviaActionType()}\"')
 
-        # TODO
+        state = self.__states.get(action.getTwitchChannel().lower())
+        now = datetime.now(timezone.utc)
 
-        pass
-
-    def isAnswered(self, twitchChannel: str) -> bool:
-        if not utils.isValidStr(twitchChannel):
-            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
-
-        state = self.__states.get(twitchChannel.lower())
-        if state is None:
-            return True
-
-        return state.isAnswered()
-
-    def isWithinAnswerWindow(self, seconds: int, twitchChannel: str) -> bool:
-        if not utils.isValidNum(seconds):
-            raise ValueError(f'seconds argument is malformed: \"{seconds}\"')
-        elif not utils.isValidStr(twitchChannel):
-            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
-
-        state = self.__states.get(twitchChannel.lower())
-        if state is None:
-            return False
-
-        answerTime = state.getAnswerTime()
-        if answerTime is None:
-            return False
-
-        return answerTime + timedelta(seconds = seconds) > datetime.now(timezone.utc)
-
-    def setAnswered(self, twitchChannel: str):
-        if not utils.isValidStr(twitchChannel):
-            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
-
-        state = self.__states.get(twitchChannel.lower())
-        if state is None:
+        if state is not None and state.getEndTime() < now:
+            await self.__eventQueue.put(GameAlreadyInProgressTriviaEvent(
+                twitchChannel = action.getTwitchChannel(),
+                userId = action.getUserId(),
+                userName = action.getUserName()
+            ))
             return
 
-        state.setAnswered()
+        triviaQuestion: AbsTriviaQuestion = None
+        try:
+            triviaQuestion = await self.__triviaRepository.fetchTrivia(
+                twitchChannel = action.getTwitchChannel(),
+                isJokeTriviaRepositoryEnabled = action.isJokeTriviaRepositoryEnabled()
+            )
+        except TooManyTriviaFetchAttemptsException as e:
+            self.__timber.log('TriviaGameRepository', f'Reached limit on trivia fetch attempts without being able to successfully retrieve a question: {e}')
+
+        if triviaQuestion is None:
+            await self.__eventQueue.put(FailedToFetchQuestionTriviaEvent(
+                twitchChannel = action.getTwitchChannel(),
+                userId = action.getUserId(),
+                userName = action.getUserName()
+            ))
+            return
+
+        self.__states[action.getTwitchChannel().lower()] = TriviaGameState(
+            triviaQuestion = triviaQuestion,
+            pointsForWinning = action.getPointsForWinning(),
+            secondsToLive = action.getSecondsToLive(),
+            twitchChannel = action.getTwitchChannel(),
+            userId = action.getUserId(),
+            userName = action.getUserName()
+        )
+
+        await self.__eventQueue.put(NewGameTriviaEvent(
+            triviaQuestion = triviaQuestion,
+            pointsForWinning = action.getPointsForWinning(),
+            secondsToLive = action.getSecondsToLive(),
+            twitchChannel = action.getTwitchChannel(),
+            userId = action.getUserId(),
+            userName = action.getUserName()
+        ))
+
+    async def __refreshStatusOfLiveGames(self):
+        if not utils.hasItems(self.__states):
+            return
+
+        now = datetime.now(timezone.utc)
+        statesToRemove: List[TriviaGameState] = list()
+
+        for state in self.__states.values():
+            if state.getEndTime() < now:
+                statesToRemove.append(state)
+
+        if not utils.hasItems(statesToRemove):
+            return
+
+        for state in statesToRemove:
+            self.__states[state.getTwitchChannel().lower()] = None
+
+            triviaScoreResult = await self.__triviaScoreRepository.incrementTotalLosses(
+                twitchChannel = state.getTwitchChannel(),
+                userId = state.getUserId()
+            )
+
+            self.__eventQueue.put(OutOfTimeTriviaEvent(
+                triviaQuestion = state.getTriviaQuestion(),
+                twitchChannel = state.getTwitchChannel(),
+                userId = state.getUserId(),
+                userName = state.getUserName(),
+                triviaScoreResult = triviaScoreResult
+            ))
+
+    def setEventListener(self, listener):
+        self.__eventListener = listener
 
     async def __startActionLoop(self):
         while True:
@@ -310,33 +367,21 @@ class TriviaGameRepository():
                 else:
                     raise UnknownTriviaActionTypeException(f'Unknown TriviaActionType: \"{action.getTriviaActionType()}\"')
 
+            if utils.hasItems(self.__states):
+                await self.__refreshStatusOfLiveGames()
+
             await asyncio.sleep(self.__sleepTimeSeconds)
 
-    def startNewTriviaGame(
-        self,
-        twitchChannel: str,
-        userId: str,
-        userName: str
-    ):
-        if not utils.isValidStr(twitchChannel):
-            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
-        elif not utils.isValidStr(userId):
-            raise ValueError(f'userId argument is malformed: \"{userId}\"')
-        elif not utils.isValidStr(userName):
-            raise ValueError(f'userName argument is malformed: \"{userName}\"')
+    async def __startEventLoop(self):
+        while True:
+            eventListener = self.__eventListener
 
-        state = self.__states.get(twitchChannel.lower())
-        if state is None:
-            raise RuntimeError(f'there is no TriviaGameState available for Twitch channel \"{twitchChannel}\"')
-        elif state.getTriviaQuestion() is None:
-            raise RuntimeError(f'there is no trivia question available for Twitch channel \"{twitchChannel}\"')
+            if eventListener is not None:
+                while not self.__eventQueue.empty():
+                    event = self.__eventQueue.get()
+                    await eventListener.onNewTriviaEvent(event)
 
-        self.__timber.log('TriviaGameRepository', f'Starting new trivia game for {userName}:{userId} in {twitchChannel}...')
-
-        state.startNewTriviaGame(
-            userIdThatRedeemed = userId,
-            userNameThatRedeemed = userName
-        )
+            await asyncio.sleep(self.__sleepTimeSeconds)
 
     def submitAction(self, action: AbsTriviaAction):
         if action is None:

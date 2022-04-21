@@ -9,16 +9,15 @@ except:
     from trivia.triviaEventType import TriviaEventType
 
 
-class GameNotReadyCheckAnswerTriviaEvent(AbsTriviaEvent):
+class GameAlreadyInProgressTriviaEvent(AbsTriviaEvent):
 
     def __init__(
         self,
-        answer: str,
         twitchChannel: str,
         userId: str,
         userName: str
     ):
-        super().__init__(triviaEventType = TriviaEventType.GAME_NOT_READY)
+        super().__init__(triviaEventType = TriviaEventType.GAME_ALREADY_IN_PROGRESS)
 
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
@@ -27,13 +26,9 @@ class GameNotReadyCheckAnswerTriviaEvent(AbsTriviaEvent):
         elif not utils.isValidStr(userName):
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
 
-        self.__answer: str = answer
         self.__twitchChannel: str = twitchChannel
         self.__userId: str = userId
         self.__userName: str = userName
-
-    def getAnswer(self) -> str:
-        return self.__answer
 
     def getTwitchChannel(self) -> str:
         return self.__twitchChannel

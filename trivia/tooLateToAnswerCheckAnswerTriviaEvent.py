@@ -9,7 +9,7 @@ except:
     from trivia.triviaEventType import TriviaEventType
 
 
-class GameNotReadyCheckAnswerTriviaEvent(AbsTriviaEvent):
+class TooLateToAnswerCheckAnswerTriviaEvent(AbsTriviaEvent):
 
     def __init__(
         self,
@@ -18,9 +18,11 @@ class GameNotReadyCheckAnswerTriviaEvent(AbsTriviaEvent):
         userId: str,
         userName: str
     ):
-        super().__init__(triviaEventType = TriviaEventType.GAME_NOT_READY)
+        super().__init__(triviaEventType = TriviaEventType.TOO_LATE_TO_ANSWER)
 
-        if not utils.isValidStr(twitchChannel):
+        if not utils.isValidStr(answer):
+            raise ValueError(f'answer argument is malformed: \"{answer}\"')
+        elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
         elif not utils.isValidStr(userId):
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
