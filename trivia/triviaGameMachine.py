@@ -239,6 +239,8 @@ class TriviaGameMachine():
             ))
             return
 
+        del self.__states[action.getTwitchChannel().lower()]
+
         if not await self.__checkAnswer(action.getAnswer(), state.getTriviaQuestion()):
             triviaScoreResult = await self.__triviaScoreRepository.incrementTotalLosses(
                 twitchChannel = action.getTwitchChannel(),
@@ -254,8 +256,6 @@ class TriviaGameMachine():
                 triviaScoreResult = triviaScoreResult
             ))
             return
-
-        self.__states[action.getTwitchChannel().lower()] = None
 
         triviaScoreResult = await self.__triviaScoreRepository.incrementTotalWins(
             twitchChannel = action.getTwitchChannel(),
