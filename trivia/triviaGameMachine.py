@@ -338,7 +338,7 @@ class TriviaGameMachine():
             return
 
         for state in statesToRemove:
-            self.__states[state.getTwitchChannel().lower()] = None
+            del self.__states[state.getTwitchChannel().lower()]
 
             triviaScoreResult = await self.__triviaScoreRepository.incrementTotalLosses(
                 twitchChannel = state.getTwitchChannel(),
