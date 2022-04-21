@@ -82,7 +82,7 @@ except:
         WrongUserCheckAnswerTriviaEvent
 
 
-class TriviaGameRepository():
+class TriviaGameMachine():
 
     def __init__(
         self,
@@ -295,7 +295,7 @@ class TriviaGameRepository():
                 isJokeTriviaRepositoryEnabled = action.isJokeTriviaRepositoryEnabled()
             )
         except TooManyTriviaFetchAttemptsException as e:
-            self.__timber.log('TriviaGameRepository', f'Reached limit on trivia fetch attempts without being able to successfully retrieve a question: {e}')
+            self.__timber.log('TriviaGameMachine', f'Reached limit on trivia fetch attempts without being able to successfully retrieve a question: {e}')
 
         if triviaQuestion is None:
             await self.__eventQueue.put(FailedToFetchQuestionTriviaEvent(
