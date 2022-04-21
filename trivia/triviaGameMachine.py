@@ -380,7 +380,7 @@ class TriviaGameMachine():
             if eventListener is not None:
                 while not self.__eventQueue.empty():
                     event = self.__eventQueue.get()
-                    await eventListener.onNewTriviaEvent(event)
+                    await eventListener(event)
 
             await asyncio.sleep(self.__sleepTimeSeconds)
 
