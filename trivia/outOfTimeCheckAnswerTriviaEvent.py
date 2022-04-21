@@ -1,15 +1,17 @@
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.trivia.absTriviaEvent import AbsTriviaEvent
+    from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.triviaEventType import TriviaEventType
 except:
     import utils
 
     from trivia.absTriviaEvent import AbsTriviaEvent
+    from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.triviaEventType import TriviaEventType
 
 
-class GameNotReadyCheckAnswerTriviaEvent(AbsTriviaEvent):
+class OutOfTimeCheckAnswerTriviaEvent(AbsTriviaEvent):
 
     def __init__(
         self,
@@ -18,7 +20,7 @@ class GameNotReadyCheckAnswerTriviaEvent(AbsTriviaEvent):
         userId: str,
         userName: str
     ):
-        super().__init__(triviaEventType = TriviaEventType.GAME_NOT_READY)
+        super().__init__(triviaEventType = TriviaEventType.OUT_OF_TIME)
 
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')

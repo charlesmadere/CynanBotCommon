@@ -9,7 +9,7 @@ except:
     from trivia.triviaEventType import TriviaEventType
 
 
-class GameNotReadyCheckAnswerTriviaEvent(AbsTriviaEvent):
+class WrongUserCheckAnswerTriviaEvent(AbsTriviaEvent):
 
     def __init__(
         self,
@@ -18,7 +18,7 @@ class GameNotReadyCheckAnswerTriviaEvent(AbsTriviaEvent):
         userId: str,
         userName: str
     ):
-        super().__init__(triviaEventType = TriviaEventType.GAME_NOT_READY)
+        super().__init__(triviaEventType = TriviaEventType.WRONG_USER)
 
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')

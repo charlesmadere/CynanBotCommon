@@ -3,12 +3,14 @@ try:
     from CynanBotCommon.trivia.absTriviaEvent import AbsTriviaEvent
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.triviaEventType import TriviaEventType
+    from CynanBotCommon.trivia.triviaScoreResult import TriviaScoreResult
 except:
     import utils
 
     from trivia.absTriviaEvent import AbsTriviaEvent
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.triviaEventType import TriviaEventType
+    from trivia.triviaScoreResult import TriviaScoreResult
 
 
 class OutOfTimeTriviaEvent(AbsTriviaEvent):
@@ -18,7 +20,8 @@ class OutOfTimeTriviaEvent(AbsTriviaEvent):
         triviaQuestion: AbsTriviaQuestion,
         twitchChannel: str,
         userId: str,
-        userName: str
+        userName: str,
+        triviaScoreResult: TriviaScoreResult
     ):
         super().__init__(triviaEventType = TriviaEventType.OUT_OF_TIME)
 
@@ -30,14 +33,20 @@ class OutOfTimeTriviaEvent(AbsTriviaEvent):
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
         elif not utils.isValidStr(userName):
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
+        elif triviaScoreResult is None:
+            raise ValueError(f'triviaScoreResult argument is malformed: \"{triviaScoreResult}\"')
 
         self.__triviaQuestion: AbsTriviaQuestion = triviaQuestion
         self.__twitchChannel: str = twitchChannel
         self.__userId: str = userId
         self.__userName: str = userName
+        self.__triviaScoreResult: TriviaScoreResult = triviaScoreResult
 
     def getTriviaQuestion(self) -> AbsTriviaQuestion:
         return self.__triviaQuestion
+
+    def getTriviaScoreResult(self) -> TriviaScoreResult:
+        return self.__triviaScoreResult
 
     def getTwitchChannel(self) -> str:
         return self.__twitchChannel
