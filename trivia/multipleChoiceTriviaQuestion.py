@@ -4,6 +4,9 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
+    from CynanBotCommon.trivia.triviaExceptions import (
+        NoTriviaCorrectAnswersException,
+        NoTriviaMultipleChoiceResponsesException)
     from CynanBotCommon.trivia.triviaSource import TriviaSource
     from CynanBotCommon.trivia.triviaType import TriviaType
 except:
@@ -11,6 +14,9 @@ except:
 
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.triviaDifficulty import TriviaDifficulty
+    from trivia.triviaExceptions import (
+        NoTriviaCorrectAnswersException,
+        NoTriviaMultipleChoiceResponsesException)
     from trivia.triviaSource import TriviaSource
     from trivia.triviaType import TriviaType
 
@@ -37,9 +43,9 @@ class MultipleChoiceTriviaQuestion(AbsTriviaQuestion):
         )
 
         if not utils.areValidStrs(correctAnswers):
-            raise ValueError(f'correctAnswers argument is malformed: \"{correctAnswers}\"')
+            raise NoTriviaCorrectAnswersException(f'correctAnswers argument is malformed: \"{correctAnswers}\"')
         elif not utils.hasItems(multipleChoiceResponses):
-            raise ValueError(f'multipleChoiceResponses argument is malformed: \"{multipleChoiceResponses}\"')
+            raise NoTriviaMultipleChoiceResponsesException(f'multipleChoiceResponses argument is malformed: \"{multipleChoiceResponses}\"')
 
         self.__correctAnswers: List[str] = correctAnswers
         self.__multipleChoiceResponses: List[str] = multipleChoiceResponses
