@@ -6,8 +6,7 @@ try:
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.triviaExceptions import (
         NoTriviaCorrectAnswersException,
-        NoTriviaMultipleChoiceResponsesException,
-        TooFewTriviaMultipleChoiceResponsesException)
+        NoTriviaMultipleChoiceResponsesException)
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
 except:
@@ -16,8 +15,7 @@ except:
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.triviaExceptions import (
         NoTriviaCorrectAnswersException,
-        NoTriviaMultipleChoiceResponsesException,
-        TooFewTriviaMultipleChoiceResponsesException)
+        NoTriviaMultipleChoiceResponsesException)
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
 
 
@@ -71,17 +69,11 @@ class AbsTriviaQuestionRepository(ABC):
                 if len(filteredMultipleChoiceResponses) >= maxMultipleChoiceResponses:
                     break
 
-        if not utils.hasItems(filteredMultipleChoiceResponses):
-            raise NoTriviaMultipleChoiceResponsesException(f'This trivia question doesn\'t have any multiple choice responses: \"{filteredMultipleChoiceResponses}\"')
-
-        minMultipleChoiceResponses = await self._triviaSettingsRepository.getMinMultipleChoiceResponses()
-        if len(filteredMultipleChoiceResponses) < minMultipleChoiceResponses:
-            raise TooFewTriviaMultipleChoiceResponsesException(f'This trivia question doesn\'t have enough multiple choice responses (minimum is {minMultipleChoiceResponses}): \"{filteredMultipleChoiceResponses}\"')
-
-        if utils.areAllStrsInts(filteredMultipleChoiceResponses):
-            filteredMultipleChoiceResponses.sort(key = lambda response: int(response))
-        else:
-            filteredMultipleChoiceResponses.sort(key = lambda response: response.lower())
+        if utils.hasItems(filteredMultipleChoiceResponses):
+            if utils.areAllStrsInts(filteredMultipleChoiceResponses):
+                filteredMultipleChoiceResponses.sort(key = lambda response: int(response))
+            else:
+                filteredMultipleChoiceResponses.sort(key = lambda response: response.lower())
 
         return filteredMultipleChoiceResponses
 

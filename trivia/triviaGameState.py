@@ -1,3 +1,5 @@
+import random
+import string
 from datetime import datetime, timedelta, timezone
 
 try:
@@ -44,10 +46,18 @@ class TriviaGameState():
         self.__userId: str = userId
         self.__userName: str = userName
 
+        self.__compiledAnswer = None
         self.__endTime: datetime = datetime.now(timezone.utc) + timedelta(seconds = secondsToLive)
+        self.__gameId: str = ''.join(random.choice(string.ascii_lowercase) for _ in range(12))
+
+    def getCompiledAnswer(self):
+        return self.__compiledAnswer
 
     def getEndTime(self) -> datetime:
         return self.__endTime
+
+    def getGameId(self) -> str:
+        return self.__gameId
 
     def getPointsForWinning(self) -> int:
         return self.__pointsForWinning
@@ -66,3 +76,14 @@ class TriviaGameState():
 
     def getUserName(self) -> str:
         return self.__userName
+
+    def hasCompiledAnswer(self):
+        return self.__compiledAnswer
+
+    def setCompiledAnswer(self, compiledAnswer):
+        if self.__compiledAnswer is not None:
+            raise RuntimeError(f'compiledAnswer has already been set: \"{self.__compiledAnswer}\"')
+        elif compiledAnswer is None:
+            raise ValueError(f'compiledAnswer argument is malformed: \"{compiledAnswer}\"')
+
+        self.__compiledAnswer = compiledAnswer

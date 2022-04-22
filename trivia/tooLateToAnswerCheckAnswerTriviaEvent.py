@@ -14,6 +14,7 @@ class TooLateToAnswerCheckAnswerTriviaEvent(AbsTriviaEvent):
     def __init__(
         self,
         answer: str,
+        gameId: str,
         twitchChannel: str,
         userId: str,
         userName: str
@@ -22,6 +23,8 @@ class TooLateToAnswerCheckAnswerTriviaEvent(AbsTriviaEvent):
 
         if not utils.isValidStr(answer):
             raise ValueError(f'answer argument is malformed: \"{answer}\"')
+        elif not utils.isValidStr(gameId):
+            raise ValueError(f'gameId argument is malformed: \"{gameId}\"')
         elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
         elif not utils.isValidStr(userId):
@@ -30,12 +33,16 @@ class TooLateToAnswerCheckAnswerTriviaEvent(AbsTriviaEvent):
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
 
         self.__answer: str = answer
+        self.__gameId: str = gameId
         self.__twitchChannel: str = twitchChannel
         self.__userId: str = userId
         self.__userName: str = userName
 
     def getAnswer(self) -> str:
         return self.__answer
+
+    def getGameId(self) -> str:
+        return self.__gameId
 
     def getTwitchChannel(self) -> str:
         return self.__twitchChannel
