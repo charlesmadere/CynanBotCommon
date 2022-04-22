@@ -11,3 +11,4 @@ class TriviaContentCode(Enum):
     OK = auto()
     QUESTION_TOO_LONG = auto()
     REPEAT = auto()
+    TOO_FEW_MULTIPLE_CHOICE_RESPONSES = auto()

@@ -222,6 +222,7 @@ class TriviaGameMachine():
         if state.getUserId() != action.getUserId():
             self.__eventQueue.put(WrongUserCheckAnswerTriviaEvent(
                 answer = action.getAnswer(),
+                gameId = state.getGameId(),
                 twitchChannel = action.getTwitchChannel(),
                 userId = action.getUserId(),
                 userName = action.getUserName()
@@ -233,6 +234,7 @@ class TriviaGameMachine():
         if state.getEndTime() < now:
             self.__eventQueue.put(OutOfTimeCheckAnswerTriviaEvent(
                 answer = action.getAnswer(),
+                gameId = state.getGameId(),
                 twitchChannel = action.getTwitchChannel(),
                 userId = action.getUserId(),
                 userName = action.getUserName()
@@ -250,6 +252,7 @@ class TriviaGameMachine():
             self.__eventQueue.put(IncorrectAnswerTriviaEvent(
                 triviaQuestion = state.getTriviaQuestion(),
                 answer = action.getAnswer(),
+                gameId = state.getGameId(),
                 twitchChannel = action.getTwitchChannel(),
                 userId = action.getUserId(),
                 userName = action.getUserName(),
@@ -266,6 +269,7 @@ class TriviaGameMachine():
             triviaQuestion = state.getTriviaQuestion(),
             pointsForWinning = state.getPointsForWinning(),
             answer = action.getAnswer(),
+            gameId = state.getGameId(),
             twitchChannel = action.getTwitchChannel(),
             userId = action.getUserId(),
             userName = action.getUserName(),
@@ -283,6 +287,7 @@ class TriviaGameMachine():
 
         if state is not None and state.getEndTime() < now:
             self.__eventQueue.put(GameAlreadyInProgressTriviaEvent(
+                gameId = state.getGameId(),
                 twitchChannel = action.getTwitchChannel(),
                 userId = action.getUserId(),
                 userName = action.getUserName()
@@ -306,7 +311,7 @@ class TriviaGameMachine():
             ))
             return
 
-        self.__states[action.getTwitchChannel().lower()] = TriviaGameState(
+        state = TriviaGameState(
             triviaQuestion = triviaQuestion,
             pointsForWinning = action.getPointsForWinning(),
             secondsToLive = action.getSecondsToLive(),
@@ -315,14 +320,21 @@ class TriviaGameMachine():
             userName = action.getUserName()
         )
 
+        self.__states[action.getTwitchChannel().lower()] = state
+
         self.__eventQueue.put(NewGameTriviaEvent(
             triviaQuestion = triviaQuestion,
             pointsForWinning = action.getPointsForWinning(),
             secondsToLive = action.getSecondsToLive(),
+            gameId = state.getGameId(),
             twitchChannel = action.getTwitchChannel(),
             userId = action.getUserId(),
             userName = action.getUserName()
         ))
+
+    async def __handleActionStartNewSuperGame(self):
+        # TODO
+        pass
 
     async def __refreshStatusOfLiveGames(self):
         if not utils.hasItems(self.__states):
@@ -348,6 +360,7 @@ class TriviaGameMachine():
 
             self.__eventQueue.put(OutOfTimeTriviaEvent(
                 triviaQuestion = state.getTriviaQuestion(),
+                gameId = state.getGameId(),
                 twitchChannel = state.getTwitchChannel(),
                 userId = state.getUserId(),
                 userName = state.getUserName(),
@@ -366,6 +379,8 @@ class TriviaGameMachine():
                     await self.__handleActionCheckAnswer(action)
                 elif action.getTriviaActionType() is TriviaActionType.START_NEW_GAME:
                     await self.__handleActionStartNewGame(action)
+                elif action.getTriviaActionType() is TriviaActionType.START_NEW_SUPER_GAME:
+                    await self.__handleActionStartNewSuperGame(action)
                 else:
                     raise UnknownTriviaActionTypeException(f'Unknown TriviaActionType: \"{action.getTriviaActionType()}\"')
 

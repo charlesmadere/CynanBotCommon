@@ -20,6 +20,7 @@ class CorrectAnswerTriviaEvent(AbsTriviaEvent):
         triviaQuestion: AbsTriviaQuestion,
         pointsForWinning: int,
         answer: str,
+        gameId: str,
         twitchChannel: str,
         userId: str,
         userName: str,
@@ -33,6 +34,8 @@ class CorrectAnswerTriviaEvent(AbsTriviaEvent):
             raise ValueError(f'pointsForWinning argument is malformed: \"{pointsForWinning}\"')
         elif pointsForWinning < 1:
             raise ValueError(f'pointsForWinning argument is out of bounds: {pointsForWinning}')
+        elif not utils.isValidStr(gameId):
+            raise ValueError(f'gameId argument is malformed: \"{gameId}\"')
         elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
         elif not utils.isValidStr(answer):
@@ -47,6 +50,7 @@ class CorrectAnswerTriviaEvent(AbsTriviaEvent):
         self.__triviaQuestion: AbsTriviaQuestion = triviaQuestion
         self.__pointsForWinning: int = pointsForWinning
         self.__answer: str = answer
+        self.__gameId: str = gameId
         self.__twitchChannel: str = twitchChannel
         self.__userId: str = userId
         self.__userName: str = userName
@@ -54,6 +58,9 @@ class CorrectAnswerTriviaEvent(AbsTriviaEvent):
 
     def getAnswer(self) -> str:
         return self.__answer
+
+    def getGameId(self) -> str:
+        return self.__gameId
 
     def getPointsForWinning(self) -> int:
         return self.__pointsForWinning
