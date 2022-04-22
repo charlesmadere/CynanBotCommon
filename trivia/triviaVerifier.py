@@ -47,7 +47,7 @@ class TriviaVerifier():
 
         if question.getTriviaType() is TriviaType.MULTIPLE_CHOICE:
             responses = question.getResponses()
-            minMultipleChoiceResponses = self.__triviaSettingsRepository.getMinMultipleChoiceResponses()
+            minMultipleChoiceResponses = await self.__triviaSettingsRepository.getMinMultipleChoiceResponses()
 
             if not utils.hasItems(responses) or len(responses) < minMultipleChoiceResponses:
                 return TriviaContentCode.TOO_FEW_MULTIPLE_CHOICE_RESPONSES
