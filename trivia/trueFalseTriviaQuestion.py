@@ -4,6 +4,8 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
+    from CynanBotCommon.trivia.triviaExceptions import \
+        NoTriviaCorrectAnswersException
     from CynanBotCommon.trivia.triviaSource import TriviaSource
     from CynanBotCommon.trivia.triviaType import TriviaType
 except:
@@ -11,6 +13,7 @@ except:
 
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.triviaDifficulty import TriviaDifficulty
+    from trivia.triviaExceptions import NoTriviaCorrectAnswersException
     from trivia.triviaSource import TriviaSource
     from trivia.triviaType import TriviaType
 
@@ -36,7 +39,7 @@ class TrueFalseTriviaQuestion(AbsTriviaQuestion):
         )
 
         if not utils.areValidBools(correctAnswers):
-            raise ValueError(f'correctAnswers argument is malformed: \"{correctAnswers}\"')
+            raise NoTriviaCorrectAnswersException(f'correctAnswers argument is malformed: \"{correctAnswers}\"')
 
         self.__correctAnswers: List[bool] = correctAnswers
 

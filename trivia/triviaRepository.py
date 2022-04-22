@@ -22,8 +22,10 @@ try:
     from CynanBotCommon.trivia.quizApiTriviaQuestionRepository import \
         QuizApiTriviaQuestionRepository
     from CynanBotCommon.trivia.triviaContentCode import TriviaContentCode
-    from CynanBotCommon.trivia.triviaExceptions import \
-        TooManyTriviaFetchAttemptsException
+    from CynanBotCommon.trivia.triviaExceptions import (
+        NoTriviaCorrectAnswersException,
+        NoTriviaMultipleChoiceResponsesException,
+        TooManyTriviaFetchAttemptsException)
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
     from CynanBotCommon.trivia.triviaSource import TriviaSource
@@ -51,7 +53,10 @@ except:
     from trivia.quizApiTriviaQuestionRepository import \
         QuizApiTriviaQuestionRepository
     from trivia.triviaContentCode import TriviaContentCode
-    from trivia.triviaExceptions import TooManyTriviaFetchAttemptsException
+    from trivia.triviaExceptions import (
+        NoTriviaCorrectAnswersException,
+        NoTriviaMultipleChoiceResponsesException,
+        TooManyTriviaFetchAttemptsException)
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
     from trivia.triviaVerifier import TriviaVerifier
@@ -180,26 +185,29 @@ class TriviaRepository():
         while retryCount < maxRetryCount:
             attemptedTriviaSources.append(triviaSource)
 
-            if triviaSource is TriviaSource.BONGO:
-                triviaQuestion = await self.__bongoTriviaQuestionRepository.fetchTriviaQuestion(twitchChannel)
-            elif triviaSource is TriviaSource.JOKE_TRIVIA_REPOSITORY:
-                triviaQuestion = await self.__jokeTriviaQuestionRepository.fetchTriviaQuestion(twitchChannel)
-            elif triviaSource is TriviaSource.J_SERVICE:
-                triviaQuestion = await self.__jServiceTriviaQuestionRepository.fetchTriviaQuestion(twitchChannel)
-            elif triviaSource is TriviaSource.LORD_OF_THE_RINGS:
-                triviaQuestion = await self.__lotrTriviaQuestionsRepository.fetchTriviaQuestion(twitchChannel)
-            elif triviaSource is TriviaSource.MILLIONAIRE:
-                triviaQuestion = await self.__millionaireTriviaQuestionRepository.fetchTriviaQuestion(twitchChannel)
-            elif triviaSource is TriviaSource.OPEN_TRIVIA_DATABASE:
-                triviaQuestion = await self.__openTriviaDatabaseTriviaQuestionRepository.fetchTriviaQuestion(twitchChannel)
-            elif triviaSource is TriviaSource.QUIZ_API:
-                triviaQuestion = await self.__quizApiTriviaQuestionRepository.fetchTriviaQuestion(twitchChannel)
-            elif triviaSource is TriviaSource.WILL_FRY_TRIVIA_API:
-                triviaQuestion = await self.__willFryTriviaQuestionRepository.fetchTriviaQuestion(twitchChannel)
-            elif triviaSource is TriviaSource.WWTBAM:
-                triviaQuestion = await self.__wwtbamTriviaQuestionRepository.fetchTriviaQuestion(twitchChannel)
-            else:
-                raise ValueError(f'unknown TriviaSource: \"{triviaSource}\"')
+            try:
+                if triviaSource is TriviaSource.BONGO:
+                    triviaQuestion = await self.__bongoTriviaQuestionRepository.fetchTriviaQuestion(twitchChannel)
+                elif triviaSource is TriviaSource.JOKE_TRIVIA_REPOSITORY:
+                    triviaQuestion = await self.__jokeTriviaQuestionRepository.fetchTriviaQuestion(twitchChannel)
+                elif triviaSource is TriviaSource.J_SERVICE:
+                    triviaQuestion = await self.__jServiceTriviaQuestionRepository.fetchTriviaQuestion(twitchChannel)
+                elif triviaSource is TriviaSource.LORD_OF_THE_RINGS:
+                    triviaQuestion = await self.__lotrTriviaQuestionsRepository.fetchTriviaQuestion(twitchChannel)
+                elif triviaSource is TriviaSource.MILLIONAIRE:
+                    triviaQuestion = await self.__millionaireTriviaQuestionRepository.fetchTriviaQuestion(twitchChannel)
+                elif triviaSource is TriviaSource.OPEN_TRIVIA_DATABASE:
+                    triviaQuestion = await self.__openTriviaDatabaseTriviaQuestionRepository.fetchTriviaQuestion(twitchChannel)
+                elif triviaSource is TriviaSource.QUIZ_API:
+                    triviaQuestion = await self.__quizApiTriviaQuestionRepository.fetchTriviaQuestion(twitchChannel)
+                elif triviaSource is TriviaSource.WILL_FRY_TRIVIA_API:
+                    triviaQuestion = await self.__willFryTriviaQuestionRepository.fetchTriviaQuestion(twitchChannel)
+                elif triviaSource is TriviaSource.WWTBAM:
+                    triviaQuestion = await self.__wwtbamTriviaQuestionRepository.fetchTriviaQuestion(twitchChannel)
+                else:
+                    raise ValueError(f'unknown TriviaSource: \"{triviaSource}\"')
+            except (NoTriviaCorrectAnswersException, NoTriviaMultipleChoiceResponsesException) as e:
+                self.__timber.log('TriviaRepository', f'Failed to fetch trivia question from {triviaSource} due to malformed data: {e}')
 
             if await self.__verifyGoodTriviaQuestion(triviaQuestion, twitchChannel):
                 return triviaQuestion
