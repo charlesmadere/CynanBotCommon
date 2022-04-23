@@ -11,6 +11,7 @@ try:
         AbsTriviaQuestionRepository
     from CynanBotCommon.trivia.questionAnswerTriviaQuestion import \
         QuestionAnswerTriviaQuestion
+    from CynanBotCommon.trivia.triviaAnswerCompiler import TriviaAnswerCompiler
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
     from CynanBotCommon.trivia.triviaExceptions import \
         UnsupportedTriviaTypeException
@@ -27,6 +28,7 @@ except:
     from trivia.absTriviaQuestionRepository import AbsTriviaQuestionRepository
     from trivia.questionAnswerTriviaQuestion import \
         QuestionAnswerTriviaQuestion
+    from trivia.triviaAnswerCompiler import TriviaAnswerCompiler
     from trivia.triviaDifficulty import TriviaDifficulty
     from trivia.triviaExceptions import UnsupportedTriviaTypeException
     from trivia.triviaIdGenerator import TriviaIdGenerator
@@ -41,6 +43,7 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self,
         clientSession: aiohttp.ClientSession,
         timber: Timber,
+        triviaAnswerCompiler: TriviaAnswerCompiler,
         triviaIdGenerator: TriviaIdGenerator,
         triviaSettingsRepository: TriviaSettingsRepository
     ):
@@ -50,11 +53,14 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
             raise ValueError(f'clientSession argument is malformed: \"{clientSession}\"')
         elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
+        elif triviaAnswerCompiler is None:
+            raise ValueError(f'triviaAnswerCompiler argument is malformed: \"{triviaAnswerCompiler}\"')
         elif triviaIdGenerator is None:
             raise ValueError(f'triviaIdGenerator argument is malformed: \"{triviaIdGenerator}\"')
 
         self.__clientSession: aiohttp.ClientSession = clientSession
         self.__timber: Timber = timber
+        self.__triviaAnswerCompiler: TriviaAnswerCompiler = triviaAnswerCompiler
         self.__triviaIdGenerator: TriviaIdGenerator = triviaIdGenerator
 
     async def fetchTriviaQuestion(self, twitchChannel: Optional[str]) -> AbsTriviaQuestion:
@@ -97,6 +103,7 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
             correctAnswer = utils.getStrFromDict(triviaJson, 'answer', clean = True)
             correctAnswers: List[str] = list()
             correctAnswers.append(correctAnswer)
+            correctAnswers = await self.__triviaAnswerCompiler.compileAnswers(correctAnswers)
 
             return QuestionAnswerTriviaQuestion(
                 correctAnswers = correctAnswers,
@@ -106,5 +113,5 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
                 triviaDifficulty = TriviaDifficulty.UNKNOWN,
                 triviaSource = TriviaSource.J_SERVICE
             )
-
-        raise UnsupportedTriviaTypeException(f'triviaType \"{triviaType}\" is not supported for jService: {jsonResponse}')
+        else:
+            raise UnsupportedTriviaTypeException(f'triviaType \"{triviaType}\" is not supported for jService: {jsonResponse}')
