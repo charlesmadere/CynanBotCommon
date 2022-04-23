@@ -11,8 +11,6 @@ try:
         AbsTriviaQuestionRepository
     from CynanBotCommon.trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
-    from CynanBotCommon.trivia.questionAnswerTriviaQuestion import \
-        QuestionAnswerTriviaQuestion
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
     from CynanBotCommon.trivia.triviaExceptions import \
         UnsupportedTriviaTypeException
@@ -28,8 +26,6 @@ except:
 
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.absTriviaQuestionRepository import AbsTriviaQuestionRepository
-    from trivia.questionAnswerTriviaQuestion import \
-        QuestionAnswerTriviaQuestion
     from trivia.triviaDifficulty import TriviaDifficulty
     from trivia.triviaExceptions import UnsupportedTriviaTypeException
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
@@ -78,17 +74,6 @@ class JokeTriviaQuestionRepository(AbsTriviaQuestionRepository):
             return MultipleChoiceTriviaQuestion(
                 correctAnswers = correctAnswers,
                 multipleChoiceResponses = multipleChoiceResponses,
-                category = category,
-                triviaId = triviaId,
-                question = question,
-                triviaDifficulty = triviaDifficulty,
-                triviaSource = TriviaSource.JOKE_TRIVIA_REPOSITORY
-            )
-        elif triviaType is TriviaType.QUESTION_ANSWER:
-            correctAnswers: List[str] = triviaJson['correctAnswers']
-
-            return QuestionAnswerTriviaQuestion(
-                correctAnswers = correctAnswers,
                 category = category,
                 triviaId = triviaId,
                 question = question,
