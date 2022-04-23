@@ -57,7 +57,7 @@ class TriviaScoreRepository():
             await connection.close()
             return result
 
-        cursor.execute(
+        await cursor.execute(
             '''
                 INSERT INTO triviaScores (streak, totalLosses, totalWins, twitchChannel, userId)
                 VALUES (?, ?, ?, ?, ?)
