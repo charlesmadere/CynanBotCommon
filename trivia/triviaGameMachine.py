@@ -156,7 +156,7 @@ class TriviaGameMachine():
             return False
         elif len(cleanedAnswer) != 1:
             return False
-        elif not self.__triviaAnswerCompiler.verifyIsMultipleChoiceAnswer(cleanedAnswer):
+        elif not await self.__triviaAnswerCompiler.verifyIsMultipleChoiceAnswer(cleanedAnswer):
             return False
 
         # this converts the answer 'A' into 0, 'B' into 1, 'C' into 2, and so on...
