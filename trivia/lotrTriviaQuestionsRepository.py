@@ -10,6 +10,7 @@ try:
         AbsTriviaQuestionRepository
     from CynanBotCommon.trivia.questionAnswerTriviaQuestion import \
         QuestionAnswerTriviaQuestion
+    from CynanBotCommon.trivia.triviaAnswerCompiler import TriviaAnswerCompiler
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
@@ -22,6 +23,7 @@ except:
     from trivia.absTriviaQuestionRepository import AbsTriviaQuestionRepository
     from trivia.questionAnswerTriviaQuestion import \
         QuestionAnswerTriviaQuestion
+    from trivia.triviaAnswerCompiler import TriviaAnswerCompiler
     from trivia.triviaDifficulty import TriviaDifficulty
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
@@ -32,6 +34,7 @@ class LotrTriviaQuestionRepository(AbsTriviaQuestionRepository):
     def __init__(
         self,
         timber: Timber,
+        triviaAnswerCompiler: TriviaAnswerCompiler,
         triviaSettingsRepository: TriviaSettingsRepository,
         triviaDatabaseFile: str = 'CynanBotCommon/trivia/lotrTriviaQuestionsDatabase.sqlite'
     ):
@@ -39,10 +42,13 @@ class LotrTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         if timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
+        elif triviaAnswerCompiler is None:
+            raise ValueError(f'triviaAnswerCompiler argument is malformed: \"{triviaAnswerCompiler}\"')
         elif not utils.isValidStr(triviaDatabaseFile):
             raise ValueError(f'triviaDatabaseFile argument is malformed: \"{triviaDatabaseFile}\"')
 
         self.__timber: Timber = timber
+        self.__triviaAnswerCompiler: TriviaAnswerCompiler = triviaAnswerCompiler
         self.__triviaDatabaseFile: str = triviaDatabaseFile
 
     async def fetchTriviaQuestion(self, twitchChannel: Optional[str]) -> AbsTriviaQuestion:
@@ -56,6 +62,7 @@ class LotrTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         correctAnswers: List[str] = list()
         correctAnswers.append(correctAnswer)
+        correctAnswers = await self.__triviaAnswerCompiler.compileAnswers(correctAnswers)
 
         return QuestionAnswerTriviaQuestion(
             correctAnswers = correctAnswers,

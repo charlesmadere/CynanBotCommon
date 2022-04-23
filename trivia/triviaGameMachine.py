@@ -34,6 +34,7 @@ try:
     from CynanBotCommon.trivia.startNewGameTriviaAction import \
         StartNewGameTriviaAction
     from CynanBotCommon.trivia.triviaActionType import TriviaActionType
+    from CynanBotCommon.trivia.triviaAnswerCompiler import TriviaAnswerCompiler
     from CynanBotCommon.trivia.triviaExceptions import (
         TooManyTriviaFetchAttemptsException, UnknownTriviaActionTypeException)
     from CynanBotCommon.trivia.triviaGameState import TriviaGameState
@@ -71,6 +72,7 @@ except:
         QuestionAnswerTriviaQuestion
     from trivia.startNewGameTriviaAction import StartNewGameTriviaAction
     from trivia.triviaActionType import TriviaActionType
+    from trivia.triviaAnswerCompiler import TriviaAnswerCompiler
     from trivia.triviaExceptions import (TooManyTriviaFetchAttemptsException,
                                          UnknownTriviaActionTypeException)
     from trivia.triviaGameState import TriviaGameState
@@ -88,6 +90,7 @@ class TriviaGameMachine():
         self,
         eventLoop: AbstractEventLoop,
         timber: Timber,
+        triviaAnswerCompiler: TriviaAnswerCompiler,
         triviaRepository: TriviaRepository,
         triviaScoreRepository: TriviaScoreRepository,
         sleepTimeSeconds: float = 0.5
@@ -96,6 +99,8 @@ class TriviaGameMachine():
             raise ValueError(f'eventLoop argument is malformed: \"{eventLoop}\"')
         elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
+        elif triviaAnswerCompiler is None:
+            raise ValueError(f'triviaAnswerCompiler argument is malformed: \"{triviaAnswerCompiler}\"')
         elif triviaRepository is None:
             raise ValueError(f'triviaRepository argument is malformed: \"{triviaRepository}\"')
         elif triviaScoreRepository is None:
@@ -106,27 +111,18 @@ class TriviaGameMachine():
             raise ValueError(f'sleepTimeSeconds argument is out of bounds: {sleepTimeSeconds}')
 
         self.__timber: Timber = timber
+        self.__triviaAnswerCompiler: TriviaAnswerCompiler = triviaAnswerCompiler
         self.__triviaRepository: TriviaRepository = triviaRepository
         self.__triviaScoreRepository: TriviaScoreRepository = triviaScoreRepository
         self.__sleepTimeSeconds: float = sleepTimeSeconds
 
         self.__states: Dict[str, TriviaGameState] = dict()
-        self.__fullWordAnswerRegEx: Pattern = re.compile(r"\w+|\d+", re.IGNORECASE)
-        self.__multipleChoiceAnswerRegEx: Pattern = re.compile(r"[a-z]", re.IGNORECASE)
         self.__eventListener = None
 
         self.__actionQueue: SimpleQueue[AbsTriviaAction] = SimpleQueue()
         self.__eventQueue: SimpleQueue[AbsTriviaEvent] = SimpleQueue()
         eventLoop.create_task(self.__startActionLoop())
         eventLoop.create_task(self.__startEventLoop())
-
-    async def __applyAnswerCleanup(self, text: str) -> str:
-        if not utils.isValidStr(text):
-            return ''
-
-        text = text.lower()
-        regexResult = self.__fullWordAnswerRegEx.findall(text)
-        return ''.join(regexResult)
 
     async def __checkAnswer(self, answer: str, triviaQuestion: AbsTriviaQuestion) -> bool:
         if triviaQuestion is None:
@@ -144,43 +140,48 @@ class TriviaGameMachine():
         else:
             raise RuntimeError(f'Unsupported TriviaType: \"{triviaQuestion.getTriviaType()}\"')
 
-    async def __checkAnswerMultipleChoice(self, answer: str, triviaQuestion: MultipleChoiceTriviaQuestion) -> bool:
+    async def __checkAnswerMultipleChoice(
+        self,
+        answer: str,
+        triviaQuestion: MultipleChoiceTriviaQuestion
+    ) -> bool:
         if triviaQuestion is None:
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
         elif triviaQuestion.getTriviaType() is not TriviaType.MULTIPLE_CHOICE:
             raise RuntimeError(f'TriviaType is not {TriviaType.MULTIPLE_CHOICE}: \"{triviaQuestion.getTriviaType()}\"')
 
-        answer = await self.__applyAnswerCleanup(answer)
+        cleanedAnswer = await self.__triviaAnswerCompiler.compileAnswer(answer)
 
-        if not utils.isValidStr(answer) or len(answer) != 1:
+        if not utils.isValidStr(cleanedAnswer):
             return False
-        elif self.__multipleChoiceAnswerRegEx.fullmatch(answer) is None:
+        elif len(cleanedAnswer) != 1:
+            return False
+        elif not self.__triviaAnswerCompiler.verifyIsMultipleChoiceAnswer(cleanedAnswer):
             return False
 
         # this converts the answer 'A' into 0, 'B' into 1, 'C' into 2, and so on...
-        index = ord(answer.upper()) % 65
+        index = ord(cleanedAnswer.upper()) % 65
 
         return index in triviaQuestion.getCorrectAnswerOrdinals()
 
-    async def __checkAnswerQuestionAnswer(self, answer: str, triviaQuestion: QuestionAnswerTriviaQuestion) -> bool:
+    async def __checkAnswerQuestionAnswer(
+        self,
+        answer: str,
+        triviaQuestion: QuestionAnswerTriviaQuestion
+    ) -> bool:
         if triviaQuestion is None:
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
         elif triviaQuestion.getTriviaType() is not TriviaType.QUESTION_ANSWER:
             raise RuntimeError(f'TriviaType is not {TriviaType.QUESTION_ANSWER}: \"{triviaQuestion.getTriviaType()}\"')
 
-        cleanedAnswer = await self.__applyAnswerCleanup(answer)
+        cleanedAnswer = await self.__triviaAnswerCompiler.compileAnswer(answer)
+        if not utils.isValidStr(cleanedAnswer):
+            return False
+
         correctAnswers = triviaQuestion.getCorrectAnswers()
 
         for correctAnswer in correctAnswers:
-            cleanedCorrectAnswer = await self.__applyAnswerCleanup(correctAnswer)
-
-            # This if statement prevents a potentially really weird edge case of the correctanswer
-            # being something that is dropped completely from the string in the applyAnswerCleanup()
-            # method. So here, we have to fall back to just checking the raw answer strings, as we
-            # have nothing else to go on.
-            if utils.isValidStr(cleanedCorrectAnswer) and cleanedAnswer == cleanedCorrectAnswer:
-                return True
-            elif answer.lower() == correctAnswer.lower():
+            if correctAnswer == cleanedAnswer:
                 return True
 
         return False
@@ -195,13 +196,12 @@ class TriviaGameMachine():
         elif triviaQuestion.getTriviaType() is not TriviaType.TRUE_FALSE:
             raise RuntimeError(f'TriviaType is not {TriviaType.TRUE_FALSE}: \"{triviaQuestion.getTriviaType()}\"')
 
-        answer = await self.__applyAnswerCleanup(answer)
-
-        if not utils.isValidStr(answer):
+        cleanedAnswer = await self.__triviaAnswerCompiler.compileAnswer(answer)
+        if not utils.isValidStr(cleanedAnswer):
             return False
 
-        answerBool = utils.strToBool(answer)
-        return answerBool in triviaQuestion.getCorrectAnswerBools()
+        cleanedAnswerBool = utils.strToBool(cleanedAnswer)
+        return cleanedAnswerBool in triviaQuestion.getCorrectAnswerBools()
 
     async def __handleActionCheckAnswer(self, action: CheckAnswerTriviaAction):
         if action is None:
