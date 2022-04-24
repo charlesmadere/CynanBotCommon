@@ -1,9 +1,8 @@
 import asyncio
-import re
 from asyncio import AbstractEventLoop
 from datetime import datetime, timezone
 from queue import SimpleQueue
-from typing import Dict, List, Pattern
+from typing import Dict, List
 
 try:
     import CynanBotCommon.utils as utils
@@ -36,7 +35,8 @@ try:
     from CynanBotCommon.trivia.triviaActionType import TriviaActionType
     from CynanBotCommon.trivia.triviaAnswerCompiler import TriviaAnswerCompiler
     from CynanBotCommon.trivia.triviaExceptions import (
-        TooManyTriviaFetchAttemptsException, UnknownTriviaActionTypeException)
+        BadTriviaAnswerException, TooManyTriviaFetchAttemptsException,
+        UnknownTriviaActionTypeException, UnsupportedTriviaTypeException)
     from CynanBotCommon.trivia.triviaGameState import TriviaGameState
     from CynanBotCommon.trivia.triviaRepository import TriviaRepository
     from CynanBotCommon.trivia.triviaScoreRepository import \
@@ -73,8 +73,10 @@ except:
     from trivia.startNewGameTriviaAction import StartNewGameTriviaAction
     from trivia.triviaActionType import TriviaActionType
     from trivia.triviaAnswerCompiler import TriviaAnswerCompiler
-    from trivia.triviaExceptions import (TooManyTriviaFetchAttemptsException,
-                                         UnknownTriviaActionTypeException)
+    from trivia.triviaExceptions import (BadTriviaAnswerException,
+                                         TooManyTriviaFetchAttemptsException,
+                                         UnknownTriviaActionTypeException,
+                                         UnsupportedTriviaTypeException)
     from trivia.triviaGameState import TriviaGameState
     from trivia.triviaRepository import TriviaRepository
     from trivia.triviaScoreRepository import TriviaScoreRepository
@@ -138,7 +140,7 @@ class TriviaGameMachine():
         elif triviaQuestion.getTriviaType() is TriviaType.TRUE_FALSE:
             return await self.__checkAnswerTrueFalse(answer, triviaQuestion)
         else:
-            raise RuntimeError(f'Unsupported TriviaType: \"{triviaQuestion.getTriviaType()}\"')
+            raise UnsupportedTriviaTypeException(f'Unsupported TriviaType: \"{triviaQuestion.getTriviaType()}\"')
 
     async def __checkAnswerMultipleChoice(
         self,
@@ -150,19 +152,14 @@ class TriviaGameMachine():
         elif triviaQuestion.getTriviaType() is not TriviaType.MULTIPLE_CHOICE:
             raise RuntimeError(f'TriviaType is not {TriviaType.MULTIPLE_CHOICE}: \"{triviaQuestion.getTriviaType()}\"')
 
-        cleanedAnswer = await self.__triviaAnswerCompiler.compileAnswer(answer)
-
-        if not utils.isValidStr(cleanedAnswer):
-            return False
-        elif len(cleanedAnswer) != 1:
-            return False
-        elif not await self.__triviaAnswerCompiler.verifyIsMultipleChoiceAnswer(cleanedAnswer):
+        answerOrdinal: int = None
+        try:
+            answerOrdinal = await self.__triviaAnswerCompiler.compileTextAnswerToMultipleChoiceOrdinal(answer)
+        except BadTriviaAnswerException as e:
+            self.__timber.log('TriviaGameMachine', f'Unable to convert multiple choice answer to ordinal: \"{answer}\": {e}')
             return False
 
-        # this converts the answer 'A' into 0, 'B' into 1, 'C' into 2, and so on...
-        index = ord(cleanedAnswer.upper()) % 65
-
-        return index in triviaQuestion.getCorrectAnswerOrdinals()
+        return answerOrdinal in triviaQuestion.getCorrectAnswerOrdinals()
 
     async def __checkAnswerQuestionAnswer(
         self,
@@ -174,7 +171,7 @@ class TriviaGameMachine():
         elif triviaQuestion.getTriviaType() is not TriviaType.QUESTION_ANSWER:
             raise RuntimeError(f'TriviaType is not {TriviaType.QUESTION_ANSWER}: \"{triviaQuestion.getTriviaType()}\"')
 
-        cleanedAnswer = await self.__triviaAnswerCompiler.compileAnswer(answer)
+        cleanedAnswer = await self.__triviaAnswerCompiler.compileTextAnswer(answer)
         if not utils.isValidStr(cleanedAnswer):
             return False
 
@@ -196,12 +193,14 @@ class TriviaGameMachine():
         elif triviaQuestion.getTriviaType() is not TriviaType.TRUE_FALSE:
             raise RuntimeError(f'TriviaType is not {TriviaType.TRUE_FALSE}: \"{triviaQuestion.getTriviaType()}\"')
 
-        cleanedAnswer = await self.__triviaAnswerCompiler.compileAnswer(answer)
-        if not utils.isValidStr(cleanedAnswer):
+        answerBool: bool = None
+        try:
+            answerBool = await self.__triviaAnswerCompiler.compileBoolAnswer(answer)
+        except BadTriviaAnswerException as e:
+            self.__timber.log('TriviaGameMachine', f'Unable to convert true false answer to bool: \"{answer}\": {e}')
             return False
 
-        cleanedAnswerBool = utils.strToBool(cleanedAnswer)
-        return cleanedAnswerBool in triviaQuestion.getCorrectAnswerBools()
+        return answerBool in triviaQuestion.getCorrectAnswerBools()
 
     async def __handleActionCheckAnswer(self, action: CheckAnswerTriviaAction):
         if action is None:

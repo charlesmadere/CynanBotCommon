@@ -62,7 +62,7 @@ class LotrTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         correctAnswers: List[str] = list()
         correctAnswers.append(correctAnswer)
-        correctAnswers = await self.__triviaAnswerCompiler.compileAnswers(correctAnswers)
+        correctAnswers = await self.__triviaAnswerCompiler.compileTextAnswers(correctAnswers)
 
         return QuestionAnswerTriviaQuestion(
             correctAnswers = correctAnswers,
