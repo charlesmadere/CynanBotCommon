@@ -83,6 +83,17 @@ def containsUrl(s: str) -> bool:
 
     return False
 
+def copyList(l: List) -> List:
+    if not hasItems(l):
+        return list()
+
+    newList: List = list()
+
+    for item in l:
+        newList.append(item)
+
+    return newList
+
 def formatTime(time) -> str:
     if time is None:
         raise ValueError(f'time argument is malformed: \"{time}\"')

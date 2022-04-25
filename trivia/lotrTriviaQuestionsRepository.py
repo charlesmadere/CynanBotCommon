@@ -66,6 +66,7 @@ class LotrTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         return QuestionAnswerTriviaQuestion(
             correctAnswers = correctAnswers,
+            cleanedCorrectAnswers = await self.__triviaAnswerCompiler.compileTextAnswers(correctAnswers),
             category = 'Lord of the Rings',
             question = question,
             triviaId = triviaId,
