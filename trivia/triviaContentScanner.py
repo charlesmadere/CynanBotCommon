@@ -5,11 +5,13 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.triviaContentCode import TriviaContentCode
+    from CynanBotCommon.trivia.triviaType import TriviaType
 except:
     import utils
 
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.triviaContentCode import TriviaContentCode
+    from trivia.triviaType import TriviaType
 
 
 class TriviaContentScanner():
@@ -18,6 +20,7 @@ class TriviaContentScanner():
         self,
         maxAnswerLength: int = 80,
         maxQuestionLength: int = 350,
+        maxPhraseAnswerLength: int = 16,
         bannedWordsFile: str = 'CynanBotCommon/trivia/bannedWords.txt'
     ):
         if not utils.isValidNum(maxAnswerLength):
@@ -28,11 +31,16 @@ class TriviaContentScanner():
             raise ValueError(f'maxQuestionLength argument is malformed: \"{maxQuestionLength}\"')
         elif maxQuestionLength <= 100:
             raise ValueError(f'maxQuestionLength is too small: {maxQuestionLength}')
+        elif not utils.isValidNum(maxPhraseAnswerLength):
+            raise ValueError(f'maxPhraseAnswerLength argument is malformed: \"{maxPhraseAnswerLength}\"')
+        elif maxPhraseAnswerLength < 8:
+            raise ValueError(f'maxPhraseAnswerLength is too small: {maxPhraseAnswerLength}')
         elif not utils.isValidStr(bannedWordsFile):
             raise ValueError(f'bannedWordsFile argument is malformed: \"{bannedWordsFile}\"')
 
         self.__maxAnswerLength: int = maxAnswerLength
         self.__maxQuestionLength: int = maxQuestionLength
+        self.__maxPhraseAnswerLength: int = maxPhraseAnswerLength
         self.__bannedWordsFile: str = bannedWordsFile
 
     async def __readBannedWordsList(self) -> List[str]:
@@ -68,6 +76,11 @@ class TriviaContentScanner():
     async def __verifyQuestionContentLengths(self, question: AbsTriviaQuestion) -> TriviaContentCode:
         if len(question.getQuestion()) >= self.__maxQuestionLength:
             return TriviaContentCode.QUESTION_TOO_LONG
+
+        if question.getTriviaType() is TriviaType.QUESTION_ANSWER:
+            for correctAnswer in question.getCorrectAnswers():
+                if len(correctAnswer) >= self.__maxPhraseAnswerLength:
+                    return TriviaContentCode.ANSWER_TOO_LONG
 
         for response in question.getResponses():
             if len(response) >= self.__maxAnswerLength:
