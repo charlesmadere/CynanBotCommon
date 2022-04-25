@@ -32,6 +32,8 @@ try:
         QuestionAnswerTriviaQuestion
     from CynanBotCommon.trivia.startNewGameTriviaAction import \
         StartNewGameTriviaAction
+    from CynanBotCommon.trivia.startNewSuperGameTriviaAction import \
+        StartNewSuperGameTriviaAction
     from CynanBotCommon.trivia.triviaActionType import TriviaActionType
     from CynanBotCommon.trivia.triviaAnswerCompiler import TriviaAnswerCompiler
     from CynanBotCommon.trivia.triviaExceptions import (
@@ -71,6 +73,8 @@ except:
     from trivia.questionAnswerTriviaQuestion import \
         QuestionAnswerTriviaQuestion
     from trivia.startNewGameTriviaAction import StartNewGameTriviaAction
+    from trivia.startNewSuperGameTriviaAction import \
+        StartNewSuperGameTriviaAction
     from trivia.triviaActionType import TriviaActionType
     from trivia.triviaAnswerCompiler import TriviaAnswerCompiler
     from trivia.triviaExceptions import (BadTriviaAnswerException,
@@ -331,7 +335,12 @@ class TriviaGameMachine():
             userName = action.getUserName()
         ))
 
-    async def __handleActionStartNewSuperGame(self):
+    async def __handleActionStartNewSuperGame(self, action: StartNewSuperGameTriviaAction):
+        if action is None:
+            raise ValueError(f'action argument is malformed: \"{action}\"')
+        elif action.getTriviaActionType() is not TriviaActionType.START_NEW_SUPER_GAME:
+            raise RuntimeError(f'TriviaActionType is not {TriviaActionType.START_NEW_SUPER_GAME}: \"{action.getTriviaActionType()}\"')
+
         # TODO
         pass
 
