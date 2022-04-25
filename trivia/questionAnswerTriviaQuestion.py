@@ -23,6 +23,7 @@ class QuestionAnswerTriviaQuestion(AbsTriviaQuestion):
     def __init__(
         self,
         correctAnswers: List[str],
+        cleanedCorrectAnswers: List[str],
         category: str,
         question: str,
         triviaId: str,
@@ -40,16 +41,17 @@ class QuestionAnswerTriviaQuestion(AbsTriviaQuestion):
 
         if not utils.areValidStrs(correctAnswers):
             raise NoTriviaCorrectAnswersException(f'correctAnswers argument is malformed: \"{correctAnswers}\"')
+        elif not utils.areValidStrs(cleanedCorrectAnswers):
+            raise NoTriviaCorrectAnswersException(f'cleanedCorrectAnswers argument is malformed: \"{cleanedCorrectAnswers}\"')
 
         self.__correctAnswers: List[str] = correctAnswers
+        self.__cleanedCorrectAnswers: List[str] = cleanedCorrectAnswers
 
     def getCorrectAnswers(self) -> List[str]:
-        correctAnswers: List[str] = list()
+        return utils.copyStrList(self.__correctAnswers)
 
-        for correctAnswer in self.__correctAnswers:
-            correctAnswers.append(correctAnswer)
-
-        return correctAnswers
+    def getCleanedCorrectAnswers(self) -> List[str]:
+        return utils.copyStrList(self.__cleanedCorrectAnswers)
 
     def getPrompt(self, delimiter: str = None) -> str:
         if self.hasCategory():

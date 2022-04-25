@@ -179,10 +179,10 @@ class TriviaGameMachine():
         if not utils.isValidStr(cleanedAnswer):
             return False
 
-        correctAnswers = triviaQuestion.getCorrectAnswers()
+        cleanedCorrectAnswers = triviaQuestion.getCleanedCorrectAnswers()
 
-        for correctAnswer in correctAnswers:
-            if correctAnswer == cleanedAnswer:
+        for cleanedCorrectAnswer in cleanedCorrectAnswers:
+            if cleanedCorrectAnswer == cleanedAnswer:
                 return True
 
         return False
