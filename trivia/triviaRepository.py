@@ -30,6 +30,7 @@ try:
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
     from CynanBotCommon.trivia.triviaSource import TriviaSource
+    from CynanBotCommon.trivia.triviaType import TriviaType
     from CynanBotCommon.trivia.triviaVerifier import TriviaVerifier
     from CynanBotCommon.trivia.willFryTriviaQuestionRepository import \
         WillFryTriviaQuestionRepository
@@ -61,6 +62,7 @@ except:
     from trivia.triviaFetchOptions import TriviaFetchOptions
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
+    from trivia.triviaType import TriviaType
     from trivia.triviaVerifier import TriviaVerifier
     from trivia.wwtbamTriviaQuestionRepository import \
         WwtbamTriviaQuestionRepository
@@ -119,7 +121,7 @@ class TriviaRepository():
         self.__willFryTriviaQuestionRepository: AbsTriviaQuestionRepository = willFryTriviaQuestionRepository
         self.__wwtbamTriviaQuestionRepository: AbsTriviaQuestionRepository = wwtbamTriviaQuestionRepository
 
-    async def __chooseRandomTriviaSource(self, triviaFetchOptions: TriviaFetchOptions) -> TriviaSource:
+    async def __chooseRandomTriviaSource(self, triviaFetchOptions: TriviaFetchOptions) -> AbsTriviaQuestionRepository:
         if triviaFetchOptions is None:
             raise ValueError(f'triviaFetchOptions argument is malformed: \"{triviaFetchOptions}\"')
 
@@ -145,7 +147,40 @@ class TriviaRepository():
         if not utils.hasItems(triviaSources):
             raise RuntimeError(f'Trivia sources returned by random.choices() is malformed: \"{randomChoices}\"')
 
-        return randomChoices[0]
+        index: int = 0
+
+        while index < len(randomChoices):
+            triviaSource = randomChoices[index]
+            triviaQuestionRepository: AbsTriviaQuestionRepository = None
+
+            if triviaSource is TriviaSource.BONGO:
+                triviaQuestionRepository = self.__bongoTriviaQuestionRepository
+            elif triviaSource is TriviaSource.JOKE_TRIVIA_REPOSITORY:
+                triviaQuestionRepository = self.__jokeTriviaQuestionRepository
+            elif triviaSource is TriviaSource.J_SERVICE:
+                triviaQuestionRepository = self.__jServiceTriviaQuestionRepository
+            elif triviaSource is TriviaSource.LORD_OF_THE_RINGS:
+                triviaQuestionRepository = self.__lotrTriviaQuestionsRepository
+            elif triviaSource is TriviaSource.MILLIONAIRE:
+                triviaQuestionRepository = self.__millionaireTriviaQuestionRepository
+            elif triviaSource is TriviaSource.OPEN_TRIVIA_DATABASE:
+                triviaQuestionRepository = self.__openTriviaDatabaseTriviaQuestionRepository
+            elif triviaSource is TriviaSource.QUIZ_API:
+                triviaQuestionRepository = self.__quizApiTriviaQuestionRepository
+            elif triviaSource is TriviaSource.WILL_FRY_TRIVIA_API:
+                triviaQuestionRepository = self.__willFryTriviaQuestionRepository
+            elif triviaSource is TriviaSource.WWTBAM:
+                triviaQuestionRepository = self.__wwtbamTriviaQuestionRepository
+            else:
+                raise RuntimeError(f'Unknown TriviaSource: \"{triviaSource}\"')
+
+            if triviaFetchOptions.requireQuestionAnswerTriviaQuestion() and TriviaType.QUESTION_ANSWER not in triviaQuestionRepository.getSupportedTriviaTypes():
+                index = index + 1
+                continue
+
+            return triviaQuestionRepository
+
+        raise RuntimeError(f'Unable to find valid AbsTriviaQuestionRepository with the given TriviaFetchOptions: {triviaFetchOptions}')
 
     async def fetchTrivia(self, triviaFetchOptions: TriviaFetchOptions) -> AbsTriviaQuestion:
         if triviaFetchOptions is None:
@@ -157,43 +192,22 @@ class TriviaRepository():
         if triviaFetchOptions is None:
             raise ValueError(f'triviaFetchOptions argument is malformed: \"{triviaFetchOptions}\"')
 
-        triviaSource = await self.__chooseRandomTriviaSource(triviaFetchOptions)
         triviaQuestion: AbsTriviaQuestion = None
         retryCount: int = 0
         maxRetryCount: int = await self.__triviaSettingsRepository.getMaxRetryCount()
         attemptedTriviaSources: List[TriviaSource] = list()
 
         while retryCount < maxRetryCount:
-            attemptedTriviaSources.append(triviaSource)
+            triviaQuestionRepository = await self.__chooseRandomTriviaSource(triviaFetchOptions)
 
             try:
-                if triviaSource is TriviaSource.BONGO:
-                    triviaQuestion = await self.__bongoTriviaQuestionRepository.fetchTriviaQuestion(triviaFetchOptions.getTwitchChannel())
-                elif triviaSource is TriviaSource.JOKE_TRIVIA_REPOSITORY:
-                    triviaQuestion = await self.__jokeTriviaQuestionRepository.fetchTriviaQuestion(triviaFetchOptions.getTwitchChannel())
-                elif triviaSource is TriviaSource.J_SERVICE:
-                    triviaQuestion = await self.__jServiceTriviaQuestionRepository.fetchTriviaQuestion(triviaFetchOptions.getTwitchChannel())
-                elif triviaSource is TriviaSource.LORD_OF_THE_RINGS:
-                    triviaQuestion = await self.__lotrTriviaQuestionsRepository.fetchTriviaQuestion(triviaFetchOptions.getTwitchChannel())
-                elif triviaSource is TriviaSource.MILLIONAIRE:
-                    triviaQuestion = await self.__millionaireTriviaQuestionRepository.fetchTriviaQuestion(triviaFetchOptions.getTwitchChannel())
-                elif triviaSource is TriviaSource.OPEN_TRIVIA_DATABASE:
-                    triviaQuestion = await self.__openTriviaDatabaseTriviaQuestionRepository.fetchTriviaQuestion(triviaFetchOptions.getTwitchChannel())
-                elif triviaSource is TriviaSource.QUIZ_API:
-                    triviaQuestion = await self.__quizApiTriviaQuestionRepository.fetchTriviaQuestion(triviaFetchOptions.getTwitchChannel())
-                elif triviaSource is TriviaSource.WILL_FRY_TRIVIA_API:
-                    triviaQuestion = await self.__willFryTriviaQuestionRepository.fetchTriviaQuestion(triviaFetchOptions.getTwitchChannel())
-                elif triviaSource is TriviaSource.WWTBAM:
-                    triviaQuestion = await self.__wwtbamTriviaQuestionRepository.fetchTriviaQuestion(triviaFetchOptions.getTwitchChannel())
-                else:
-                    raise ValueError(f'unknown TriviaSource: \"{triviaSource}\"')
+                triviaQuestion = await triviaQuestionRepository.fetchTriviaQuestion(triviaFetchOptions.getTwitchChannel())
             except (NoTriviaCorrectAnswersException, NoTriviaMultipleChoiceResponsesException) as e:
-                self.__timber.log('TriviaRepository', f'Failed to fetch trivia question from {triviaSource} due to malformed data: {e}')
+                self.__timber.log('TriviaRepository', f'Failed to fetch trivia question due to malformed data: {e}')
 
             if await self.__verifyGoodTriviaQuestion(triviaQuestion, triviaFetchOptions):
                 return triviaQuestion
             else:
-                triviaSource = await self.__chooseRandomTriviaSource(triviaFetchOptions)
                 retryCount = retryCount + 1
 
         raise TooManyTriviaFetchAttemptsException(f'Unable to fetch trivia from {attemptedTriviaSources} after {retryCount} attempts (max attempts is {maxRetryCount})')

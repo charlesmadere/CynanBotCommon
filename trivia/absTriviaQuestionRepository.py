@@ -9,6 +9,7 @@ try:
         NoTriviaMultipleChoiceResponsesException)
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
+    from CynanBotCommon.trivia.triviaType import TriviaType
 except:
     import utils
 
@@ -17,6 +18,7 @@ except:
         NoTriviaCorrectAnswersException,
         NoTriviaMultipleChoiceResponsesException)
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
+    from trivia.triviaType import TriviaType
 
 
 class AbsTriviaQuestionRepository(ABC):
@@ -79,6 +81,10 @@ class AbsTriviaQuestionRepository(ABC):
 
     @abstractmethod
     async def fetchTriviaQuestion(self, twitchChannel: Optional[str]) -> AbsTriviaQuestion:
+        pass
+
+    @abstractmethod
+    def getSupportedTriviaTypes(self) -> List[TriviaType]:
         pass
 
     async def _verifyIsActuallyMultipleChoiceQuestion(

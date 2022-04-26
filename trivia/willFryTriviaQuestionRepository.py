@@ -133,3 +133,6 @@ class WillFryTriviaQuestionRepository(AbsTriviaQuestionRepository):
             )
 
         raise UnsupportedTriviaTypeException(f'triviaType \"{triviaType}\" is not supported for Will Fry Trivia: {jsonResponse}')
+
+    def getSupportedTriviaTypes(self) -> List[TriviaType]:
+        return [ TriviaType.MULTIPLE_CHOICE, TriviaType.TRUE_FALSE ]

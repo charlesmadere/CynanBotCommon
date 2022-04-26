@@ -138,3 +138,6 @@ class BongoTriviaQuestionRepository(AbsTriviaQuestionRepository):
             )
 
         raise UnsupportedTriviaTypeException(f'triviaType \"{triviaType}\" is not supported for Bongo: {jsonResponse}')
+
+    def getSupportedTriviaTypes(self) -> List[TriviaType]:
+        return [ TriviaType.MULTIPLE_CHOICE, TriviaType.TRUE_FALSE ]

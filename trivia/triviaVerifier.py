@@ -56,7 +56,11 @@ class TriviaVerifier():
 
             if not utils.hasItems(responses) or len(responses) < minMultipleChoiceResponses:
                 return TriviaContentCode.TOO_FEW_MULTIPLE_CHOICE_RESPONSES
-        elif question.getTriviaType() is TriviaType.QUESTION_ANSWER and not triviaFetchOptions.areQuestionAnswerTriviaQuestionsEnabled():
+
+        if question.getTriviaType() is TriviaType.QUESTION_ANSWER and not triviaFetchOptions.areQuestionAnswerTriviaQuestionsEnabled():
+            return TriviaContentCode.ILLEGAL_TRIVIA_TYPE
+
+        if question.getTriviaType() is not TriviaType.QUESTION_ANSWER and triviaFetchOptions.requireQuestionAnswerTriviaQuestion():
             return TriviaContentCode.ILLEGAL_TRIVIA_TYPE
 
         contentScannerCode = await self.__triviaContentScanner.verify(question)
