@@ -299,10 +299,7 @@ class TriviaGameMachine():
 
         triviaQuestion: AbsTriviaQuestion = None
         try:
-            triviaQuestion = await self.__triviaRepository.fetchTrivia(
-                twitchChannel = action.getTwitchChannel(),
-                isJokeTriviaRepositoryEnabled = action.isJokeTriviaRepositoryEnabled()
-            )
+            triviaQuestion = await self.__triviaRepository.fetchTrivia(action.getTriviaFetchOptions())
         except TooManyTriviaFetchAttemptsException as e:
             self.__timber.log('TriviaGameMachine', f'Reached limit on trivia fetch attempts without being able to successfully retrieve a question: {e}')
 

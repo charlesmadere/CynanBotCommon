@@ -4,11 +4,13 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.trivia.absTriviaAction import AbsTriviaAction
     from CynanBotCommon.trivia.triviaActionType import TriviaActionType
+    from CynanBotCommon.trivia.triviaFetchOptions import TriviaFetchOptions
 except:
     import utils
 
     from trivia.absTriviaAction import AbsTriviaAction
     from trivia.triviaActionType import TriviaActionType
+    from trivia.triviaFetchOptions import TriviaFetchOptions
 
 
 class StartNewSuperGameTriviaAction(AbsTriviaAction):
@@ -19,7 +21,8 @@ class StartNewSuperGameTriviaAction(AbsTriviaAction):
         secondsToLive: int,
         twitchChannel: str,
         userId: str,
-        userName: str
+        userName: str,
+        triviaFetchOptions: TriviaFetchOptions
     ):
         super().__init__(triviaActionType = TriviaActionType.START_NEW_SUPER_GAME)
 
@@ -37,12 +40,15 @@ class StartNewSuperGameTriviaAction(AbsTriviaAction):
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
         elif not utils.isValidStr(userName):
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
+        elif triviaFetchOptions is None:
+            raise ValueError(f'triviaFetchOptions argument is malformed: \"{triviaFetchOptions}\"')
 
         self.__pointsForWinning: int = pointsForWinning
         self.__secondsToLive: int = secondsToLive
         self.__twitchChannel: str = twitchChannel
         self.__userId: str = userId
         self.__userName: str = userName
+        self.__triviaFetchOptions: TriviaFetchOptions = triviaFetchOptions
 
     def getPointsForWinning(self) -> int:
         return self.__pointsForWinning
@@ -55,6 +61,9 @@ class StartNewSuperGameTriviaAction(AbsTriviaAction):
 
     def getSecondsToLiveStr(self) -> str:
         return locale.format_string("%d", self.__secondsToLive, grouping = True)
+
+    def getTriviaFetchOptions(self) -> TriviaFetchOptions:
+        return self.__triviaFetchOptions
 
     def getTwitchChannel(self) -> str:
         return self.__twitchChannel
