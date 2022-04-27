@@ -13,7 +13,7 @@ except:
     from trivia.triviaFetchOptions import TriviaFetchOptions
 
 
-class StartNewSuperGameTriviaAction(AbsTriviaAction):
+class StartNewTriviaGameAction(AbsTriviaAction):
 
     def __init__(
         self,
@@ -24,7 +24,7 @@ class StartNewSuperGameTriviaAction(AbsTriviaAction):
         userName: str,
         triviaFetchOptions: TriviaFetchOptions
     ):
-        super().__init__(triviaActionType = TriviaActionType.START_NEW_SUPER_GAME)
+        super().__init__(triviaActionType = TriviaActionType.START_NEW_GAME)
 
         if not utils.isValidNum(pointsForWinning):
             raise ValueError(f'pointsForWinning argument is malformed: \"{pointsForWinning}\"')

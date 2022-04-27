@@ -142,3 +142,9 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
             )
 
         raise UnsupportedTriviaTypeException(f'triviaType \"{triviaType}\" is not supported for Open Trivia Database: {jsonResponse}')
+
+    def getSupportedTriviaTypes(self) -> List[TriviaType]:
+        return [ TriviaType.MULTIPLE_CHOICE, TriviaType.TRUE_FALSE ]
+
+    def getTriviaSource(self) -> TriviaSource:
+        return TriviaSource.OPEN_TRIVIA_DATABASE
