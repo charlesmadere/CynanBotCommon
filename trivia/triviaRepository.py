@@ -199,6 +199,7 @@ class TriviaRepository():
 
         while retryCount < maxRetryCount:
             triviaQuestionRepository = await self.__chooseRandomTriviaSource(triviaFetchOptions)
+            attemptedTriviaSources.append(triviaQuestionRepository.getTriviaSource())
 
             try:
                 triviaQuestion = await triviaQuestionRepository.fetchTriviaQuestion(triviaFetchOptions.getTwitchChannel())

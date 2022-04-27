@@ -136,3 +136,6 @@ class WillFryTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
     def getSupportedTriviaTypes(self) -> List[TriviaType]:
         return [ TriviaType.MULTIPLE_CHOICE, TriviaType.TRUE_FALSE ]
+
+    def getTriviaSource(self) -> TriviaSource:
+        return TriviaSource.WILL_FRY_TRIVIA_API

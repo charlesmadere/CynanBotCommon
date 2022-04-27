@@ -115,3 +115,9 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
             )
         else:
             raise UnsupportedTriviaTypeException(f'triviaType \"{triviaType}\" is not supported for jService: {jsonResponse}')
+
+    def getSupportedTriviaTypes(self) -> List[TriviaType]:
+        return [ TriviaType.QUESTION_ANSWER ]
+
+    def getTriviaSource(self) -> TriviaSource:
+        return TriviaSource.J_SERVICE

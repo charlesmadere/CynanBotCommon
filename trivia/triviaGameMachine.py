@@ -24,16 +24,18 @@ try:
         IncorrectAnswerTriviaEvent
     from CynanBotCommon.trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
-    from CynanBotCommon.trivia.newGameTriviaEvent import NewGameTriviaEvent
+    from CynanBotCommon.trivia.newTriviaGameEvent import NewTriviaGameEvent
     from CynanBotCommon.trivia.outOfTimeCheckAnswerTriviaEvent import \
         OutOfTimeCheckAnswerTriviaEvent
+    from CynanBotCommon.trivia.outOfTimeSuperTriviaEvent import \
+        OutOfTimeSuperTriviaEvent
     from CynanBotCommon.trivia.outOfTimeTriviaEvent import OutOfTimeTriviaEvent
     from CynanBotCommon.trivia.questionAnswerTriviaQuestion import \
         QuestionAnswerTriviaQuestion
-    from CynanBotCommon.trivia.startNewGameTriviaAction import \
-        StartNewGameTriviaAction
-    from CynanBotCommon.trivia.startNewSuperGameTriviaAction import \
-        StartNewSuperGameTriviaAction
+    from CynanBotCommon.trivia.startNewSuperTriviaGameAction import \
+        StartNewSuperTriviaGameAction
+    from CynanBotCommon.trivia.startNewTriviaGameAction import \
+        StartNewTriviaGameAction
     from CynanBotCommon.trivia.triviaActionType import TriviaActionType
     from CynanBotCommon.trivia.triviaAnswerCompiler import TriviaAnswerCompiler
     from CynanBotCommon.trivia.triviaExceptions import (
@@ -66,15 +68,16 @@ except:
     from trivia.incorrectAnswerTriviaEvent import IncorrectAnswerTriviaEvent
     from trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
-    from trivia.newGameTriviaEvent import NewGameTriviaEvent
+    from trivia.newTriviaGameEvent import NewTriviaGameEvent
     from trivia.outOfTimeCheckAnswerTriviaEvent import \
         OutOfTimeCheckAnswerTriviaEvent
+    from trivia.outOfTimeSuperTriviaEvent import OutOfTimeSuperTriviaEvent
     from trivia.outOfTimeTriviaEvent import OutOfTimeTriviaEvent
     from trivia.questionAnswerTriviaQuestion import \
         QuestionAnswerTriviaQuestion
-    from trivia.startNewGameTriviaAction import StartNewGameTriviaAction
-    from trivia.startNewSuperGameTriviaAction import \
-        StartNewSuperGameTriviaAction
+    from trivia.startNewSuperTriviaGameAction import \
+        StartNewSuperTriviaGameAction
+    from trivia.startNewTriviaGameAction import StartNewTriviaGameAction
     from trivia.triviaActionType import TriviaActionType
     from trivia.triviaAnswerCompiler import TriviaAnswerCompiler
     from trivia.triviaExceptions import (BadTriviaAnswerException,
@@ -122,7 +125,7 @@ class TriviaGameMachine():
         self.__triviaScoreRepository: TriviaScoreRepository = triviaScoreRepository
         self.__sleepTimeSeconds: float = sleepTimeSeconds
 
-        self.__states: Dict[str, TriviaGameState] = dict()
+        self.__gameStates: Dict[str, TriviaGameState] = dict()
         self.__eventListener = None
 
         self.__actionQueue: SimpleQueue[AbsTriviaAction] = SimpleQueue()
@@ -212,7 +215,7 @@ class TriviaGameMachine():
         elif action.getTriviaActionType() is not TriviaActionType.CHECK_ANSWER:
             raise RuntimeError(f'TriviaActionType is not {TriviaActionType.CHECK_ANSWER}: \"{action.getTriviaActionType()}\"')
 
-        state = self.__states.get(action.getTwitchChannel().lower())
+        state = self.__gameStates.get(action.getTwitchChannel().lower())
         if state is None:
             self.__eventQueue.put(GameNotReadyCheckAnswerTriviaEvent(
                 answer = action.getAnswer(),
@@ -244,7 +247,7 @@ class TriviaGameMachine():
             ))
             return
 
-        del self.__states[action.getTwitchChannel().lower()]
+        del self.__gameStates[action.getTwitchChannel().lower()]
 
         if not await self.__checkAnswer(action.getAnswer(), state.getTriviaQuestion()):
             triviaScoreResult = await self.__triviaScoreRepository.incrementTotalLosses(
@@ -279,13 +282,13 @@ class TriviaGameMachine():
             triviaScoreResult = triviaScoreResult
         ))
 
-    async def __handleActionStartNewGame(self, action: StartNewGameTriviaAction):
+    async def __handleActionStartNewTriviaGame(self, action: StartNewTriviaGameAction):
         if action is None:
             raise ValueError(f'action argument is malformed: \"{action}\"')
         elif action.getTriviaActionType() is not TriviaActionType.START_NEW_GAME:
             raise RuntimeError(f'TriviaActionType is not {TriviaActionType.START_NEW_GAME}: \"{action.getTriviaActionType()}\"')
 
-        state = self.__states.get(action.getTwitchChannel().lower())
+        state = self.__gameStates.get(action.getTwitchChannel().lower())
         now = datetime.now(timezone.utc)
 
         if state is not None and state.getEndTime() < now:
@@ -320,9 +323,9 @@ class TriviaGameMachine():
             userName = action.getUserName()
         )
 
-        self.__states[action.getTwitchChannel().lower()] = state
+        self.__gameStates[action.getTwitchChannel().lower()] = state
 
-        self.__eventQueue.put(NewGameTriviaEvent(
+        self.__eventQueue.put(NewTriviaGameEvent(
             triviaQuestion = triviaQuestion,
             pointsForWinning = action.getPointsForWinning(),
             secondsToLive = action.getSecondsToLive(),
@@ -332,7 +335,7 @@ class TriviaGameMachine():
             userName = action.getUserName()
         ))
 
-    async def __handleActionStartNewSuperGame(self, action: StartNewSuperGameTriviaAction):
+    async def __handleActionStartNewSuperTriviaGame(self, action: StartNewSuperTriviaGameAction):
         if action is None:
             raise ValueError(f'action argument is malformed: \"{action}\"')
         elif action.getTriviaActionType() is not TriviaActionType.START_NEW_SUPER_GAME:
@@ -341,22 +344,22 @@ class TriviaGameMachine():
         # TODO
         pass
 
-    async def __refreshStatusOfLiveGames(self):
-        if not utils.hasItems(self.__states):
+    async def __refreshStatusOfGames(self):
+        if not utils.hasItems(self.__gameStates):
             return
 
         now = datetime.now(timezone.utc)
-        statesToRemove: List[TriviaGameState] = list()
+        gameStatesToRemove: List[TriviaGameState] = list()
 
-        for state in self.__states.values():
+        for state in self.__gameStates.values():
             if state is not None and state.getEndTime() < now:
-                statesToRemove.append(state)
+                gameStatesToRemove.append(state)
 
-        if not utils.hasItems(statesToRemove):
+        if not utils.hasItems(gameStatesToRemove):
             return
 
-        for state in statesToRemove:
-            del self.__states[state.getTwitchChannel().lower()]
+        for state in gameStatesToRemove:
+            del self.__gameStates[state.getTwitchChannel().lower()]
 
             triviaScoreResult = await self.__triviaScoreRepository.incrementTotalLosses(
                 twitchChannel = state.getTwitchChannel(),
@@ -383,14 +386,14 @@ class TriviaGameMachine():
                 if action.getTriviaActionType() is TriviaActionType.CHECK_ANSWER:
                     await self.__handleActionCheckAnswer(action)
                 elif action.getTriviaActionType() is TriviaActionType.START_NEW_GAME:
-                    await self.__handleActionStartNewGame(action)
+                    await self.__handleActionStartNewTriviaGame(action)
                 elif action.getTriviaActionType() is TriviaActionType.START_NEW_SUPER_GAME:
-                    await self.__handleActionStartNewSuperGame(action)
+                    await self.__handleActionStartNewSuperTriviaGame(action)
                 else:
                     raise UnknownTriviaActionTypeException(f'Unknown TriviaActionType: \"{action.getTriviaActionType()}\"')
 
-            if utils.hasItems(self.__states):
-                await self.__refreshStatusOfLiveGames()
+            if utils.hasItems(self.__gameStates):
+                await self.__refreshStatusOfGames()
 
             await asyncio.sleep(self.__sleepTimeSeconds)
 

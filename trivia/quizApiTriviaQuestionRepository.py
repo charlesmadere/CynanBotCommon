@@ -167,3 +167,9 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
             )
 
         raise UnsupportedTriviaTypeException(f'triviaType \"{triviaType}\" is not supported for Quiz API: {jsonResponse}')
+
+    def getSupportedTriviaTypes(self) -> List[TriviaType]:
+        return [ TriviaType.MULTIPLE_CHOICE, TriviaType.TRUE_FALSE ]
+
+    def getTriviaSource(self) -> TriviaSource:
+        return TriviaSource.QUIZ_API

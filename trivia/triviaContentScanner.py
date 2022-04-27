@@ -5,12 +5,15 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.triviaContentCode import TriviaContentCode
+    from CynanBotCommon.trivia.triviaSettingsRepository import \
+        TriviaSettingsRepository
     from CynanBotCommon.trivia.triviaType import TriviaType
 except:
     import utils
 
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.triviaContentCode import TriviaContentCode
+    from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaType import TriviaType
 
 
@@ -18,12 +21,15 @@ class TriviaContentScanner():
 
     def __init__(
         self,
+        triviaSettingsRepository: TriviaSettingsRepository,
         maxAnswerLength: int = 80,
         maxQuestionLength: int = 350,
         maxPhraseAnswerLength: int = 16,
         bannedWordsFile: str = 'CynanBotCommon/trivia/bannedWords.txt'
     ):
-        if not utils.isValidNum(maxAnswerLength):
+        if triviaSettingsRepository is None:
+            raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
+        elif not utils.isValidNum(maxAnswerLength):
             raise ValueError(f'maxAnswerLength argument is malformed: \"{maxAnswerLength}\"')
         elif maxAnswerLength <= 25:
             raise ValueError(f'maxAnswerLength is too small: {maxAnswerLength}')
@@ -38,6 +44,7 @@ class TriviaContentScanner():
         elif not utils.isValidStr(bannedWordsFile):
             raise ValueError(f'bannedWordsFile argument is malformed: \"{bannedWordsFile}\"')
 
+        self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
         self.__maxAnswerLength: int = maxAnswerLength
         self.__maxQuestionLength: int = maxQuestionLength
         self.__maxPhraseAnswerLength: int = maxPhraseAnswerLength
@@ -67,11 +74,19 @@ class TriviaContentScanner():
         if question is None:
             return TriviaContentCode.IS_NONE
 
+        responsesContentCode = await self.__verifyQuestionResponseCount(question)
+        if responsesContentCode is not TriviaContentCode.OK:
+            return responsesContentCode
+
         lengthsContentCode = await self.__verifyQuestionContentLengths(question)
         if lengthsContentCode is not TriviaContentCode.OK:
             return lengthsContentCode
 
-        return await self.__verifyQuestionContentSanity(question)
+        contentSanityCode = await self.__verifyQuestionContentSanity(question)
+        if contentSanityCode is not TriviaContentCode.OK:
+            return contentSanityCode
+
+        return TriviaContentCode.OK
 
     async def __verifyQuestionContentLengths(self, question: AbsTriviaQuestion) -> TriviaContentCode:
         if len(question.getQuestion()) >= self.__maxQuestionLength:
@@ -107,5 +122,17 @@ class TriviaContentScanner():
                 for bannedWord in bannedWords:
                     if bannedWord in string:
                         return TriviaContentCode.CONTAINS_BANNED_WORD
+
+        return TriviaContentCode.OK
+
+    async def __verifyQuestionResponseCount(self, question: AbsTriviaQuestion) -> TriviaContentCode:
+        if question.getTriviaType() is not TriviaType.MULTIPLE_CHOICE:
+            return TriviaContentCode.OK
+
+        responses = question.getResponses()
+        minMultipleChoiceResponses = await self.__triviaSettingsRepository.getMinMultipleChoiceResponses()
+
+        if not utils.hasItems(responses) or len(responses) < minMultipleChoiceResponses:
+            return TriviaContentCode.TOO_FEW_MULTIPLE_CHOICE_RESPONSES
 
         return TriviaContentCode.OK

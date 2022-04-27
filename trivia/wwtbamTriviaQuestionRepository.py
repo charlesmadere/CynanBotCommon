@@ -14,6 +14,7 @@ try:
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
     from CynanBotCommon.trivia.triviaSource import TriviaSource
+    from CynanBotCommon.trivia.triviaType import TriviaType
 except:
     import utils
     from timber.timber import Timber
@@ -25,6 +26,7 @@ except:
     from trivia.triviaDifficulty import TriviaDifficulty
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
+    from trivia.triviaType import TriviaType
 
 
 class WwtbamTriviaQuestionRepository(AbsTriviaQuestionRepository):
@@ -119,3 +121,9 @@ class WwtbamTriviaQuestionRepository(AbsTriviaQuestionRepository):
         await cursor.close()
         await connection.close()
         return triviaQuestionDict
+
+    def getSupportedTriviaTypes(self) -> List[TriviaType]:
+        return [ TriviaType.MULTIPLE_CHOICE ]
+
+    def getTriviaSource(self) -> TriviaSource:
+        return TriviaSource.WWTBAM

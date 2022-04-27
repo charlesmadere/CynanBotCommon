@@ -9,6 +9,7 @@ try:
         NoTriviaMultipleChoiceResponsesException)
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
+    from CynanBotCommon.trivia.triviaSource import TriviaSource
     from CynanBotCommon.trivia.triviaType import TriviaType
 except:
     import utils
@@ -18,6 +19,7 @@ except:
         NoTriviaCorrectAnswersException,
         NoTriviaMultipleChoiceResponsesException)
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
+    from trivia.triviaSource import TriviaSource
     from trivia.triviaType import TriviaType
 
 
@@ -85,6 +87,10 @@ class AbsTriviaQuestionRepository(ABC):
 
     @abstractmethod
     def getSupportedTriviaTypes(self) -> List[TriviaType]:
+        pass
+
+    @abstractmethod
+    def getTriviaSource(self) -> TriviaSource:
         pass
 
     async def _verifyIsActuallyMultipleChoiceQuestion(

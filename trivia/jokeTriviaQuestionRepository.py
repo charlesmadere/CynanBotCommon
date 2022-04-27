@@ -120,6 +120,12 @@ class JokeTriviaQuestionRepository(AbsTriviaQuestionRepository):
         else:
             return None
 
+    def getSupportedTriviaTypes(self) -> List[TriviaType]:
+        return [ TriviaType.MULTIPLE_CHOICE, TriviaType.TRUE_FALSE ]
+
+    def getTriviaSource(self) -> TriviaSource:
+        return TriviaSource.JOKE_TRIVIA_REPOSITORY
+
     async def __readAllJson(self) -> Dict[str, object]:
         if not path.exists(self.__jokeTriviaQuestionFile):
             raise FileNotFoundError(f'Joke trivia question file not found: \"{self.__jokeTriviaQuestionFile}\"')
