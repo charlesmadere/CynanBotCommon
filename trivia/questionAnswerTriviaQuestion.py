@@ -48,10 +48,10 @@ class QuestionAnswerTriviaQuestion(AbsTriviaQuestion):
         self.__cleanedCorrectAnswers: List[str] = cleanedCorrectAnswers
 
     def getCorrectAnswers(self) -> List[str]:
-        return utils.copyStrList(self.__correctAnswers)
+        return utils.copyList(self.__correctAnswers)
 
     def getCleanedCorrectAnswers(self) -> List[str]:
-        return utils.copyStrList(self.__cleanedCorrectAnswers)
+        return utils.copyList(self.__cleanedCorrectAnswers)
 
     def getPrompt(self, delimiter: str = None) -> str:
         if self.hasCategory():
