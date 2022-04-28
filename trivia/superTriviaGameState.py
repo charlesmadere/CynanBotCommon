@@ -1,3 +1,6 @@
+from collections import defaultdict
+from typing import Dict
+
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.trivia.absTriviaGameState import AbsTriviaGameState
@@ -36,5 +39,19 @@ class SuperTriviaGameState(AbsTriviaGameState):
 
         self.__pointsMultiplier: int = pointsMultiplier
 
+        self.__answeredUserNames: Dict[str, bool] = defaultdict(lambda: False)
+
+    def hasAnswered(self, userName: str) -> bool:
+        if not utils.isValidStr(userName):
+            raise ValueError(f'userName argument is malformed: \"{userName}\"')
+
+        return self.__answeredUserNames[userName.lower()]
+
     def getPointsMultiplier(self) -> int:
         return self.__pointsMultiplier
+
+    def setHasAnswered(self, userName: str):
+        if not utils.isValidStr(userName):
+            raise ValueError(f'userName argument is malformed: \"{userName}\"')
+
+        self.__answeredUserNames[userName.lower()] = True
