@@ -265,6 +265,17 @@ class TriviaGameMachine():
             ))
             return
 
+        if state.getUserId() != action.getUserId():
+            self.__eventQueue.put(WrongUserCheckAnswerTriviaEvent(
+                triviaQuestion = state.getTriviaQuestion(),
+                answer = action.getAnswer(),
+                gameId = state.getGameId(),
+                twitchChannel = action.getTwitchChannel(),
+                userId = action.getUserId(),
+                userName = action.getUserName()
+            ))
+            return
+
         if state.getEndTime() < now:
             self.__eventQueue.put(OutOfTimeCheckAnswerTriviaEvent(
                 triviaQuestion = state.getTriviaQuestion(),
