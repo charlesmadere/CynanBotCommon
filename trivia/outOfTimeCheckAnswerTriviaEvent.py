@@ -15,15 +15,18 @@ class OutOfTimeCheckAnswerTriviaEvent(AbsTriviaEvent):
 
     def __init__(
         self,
+        triviaQuestion: AbsTriviaQuestion,
         answer: str,
         gameId: str,
         twitchChannel: str,
         userId: str,
         userName: str
     ):
-        super().__init__(triviaEventType = TriviaEventType.OUT_OF_TIME)
+        super().__init__(triviaEventType = TriviaEventType.GAME_OUT_OF_TIME)
 
-        if not utils.isValidStr(gameId):
+        if triviaQuestion is None:
+            raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
+        elif not utils.isValidStr(gameId):
             raise ValueError(f'gameId argument is malformed: \"{gameId}\"')
         elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
@@ -32,6 +35,7 @@ class OutOfTimeCheckAnswerTriviaEvent(AbsTriviaEvent):
         elif not utils.isValidStr(userName):
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
 
+        self.__triviaQuestion: AbsTriviaQuestion = triviaQuestion
         self.__answer: str = answer
         self.__gameId: str = gameId
         self.__twitchChannel: str = twitchChannel
@@ -43,6 +47,9 @@ class OutOfTimeCheckAnswerTriviaEvent(AbsTriviaEvent):
 
     def getGameId(self) -> str:
         return self.__gameId
+
+    def getTriviaQuestion(self) -> AbsTriviaQuestion:
+        return self.__triviaQuestion
 
     def getTwitchChannel(self) -> str:
         return self.__twitchChannel
