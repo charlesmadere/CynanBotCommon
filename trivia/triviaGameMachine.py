@@ -266,6 +266,7 @@ class TriviaGameMachine():
 
         if state.getEndTime() < now:
             self.__eventQueue.put(OutOfTimeCheckAnswerTriviaEvent(
+                triviaQuestion = state.getTriviaQuestion(),
                 answer = action.getAnswer(),
                 gameId = state.getGameId(),
                 twitchChannel = action.getTwitchChannel(),

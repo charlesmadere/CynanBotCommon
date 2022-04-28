@@ -7,7 +7,7 @@ class TriviaEventType(Enum):
     FAILED_TO_FETCH_QUESTION = auto()
     GAME_ALREADY_IN_PROGRESS = auto()
     GAME_NOT_READY = auto()
-    OUT_OF_TIME = auto()
+    GAME_OUT_OF_TIME = auto()
     INCORRECT_ANSWER = auto()
     NEW_GAME = auto()
     NEW_SUPER_GAME = auto()
