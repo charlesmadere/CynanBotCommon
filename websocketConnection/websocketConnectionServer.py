@@ -1,5 +1,6 @@
 import asyncio
 import json
+import queue
 from asyncio import AbstractEventLoop
 from datetime import datetime, timedelta, timezone
 from queue import SimpleQueue
@@ -27,7 +28,6 @@ class WebsocketConnectionServer():
         timber: Timber,
         isDebugLoggingEnabled: bool = False,
         sleepTimeSeconds: float = 5,
-        eventQueueBlockTimeoutSeconds: int = 3,
         port: int = 8765,
         host: str = '0.0.0.0',
         eventTimeToLive: timedelta = timedelta(seconds = 30)
@@ -38,14 +38,10 @@ class WebsocketConnectionServer():
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not utils.isValidBool(isDebugLoggingEnabled):
             raise ValueError(f'isDebugLoggingEnabled argument is malformed: \"{isDebugLoggingEnabled}\"')
-        elif not utils.isValidNum(eventQueueBlockTimeoutSeconds):
-            raise ValueError(f'eventQueueBlockTimeoutSeconds argument is malformed: \"{eventQueueBlockTimeoutSeconds}\"')
         elif not utils.isValidNum(sleepTimeSeconds):
             raise ValueError(f'sleepTimeSeconds argument is malformed: \"{sleepTimeSeconds}\"')
         elif sleepTimeSeconds < 3:
             raise ValueError(f'sleepTimeSeconds argument is too aggressive: {sleepTimeSeconds}')
-        elif eventQueueBlockTimeoutSeconds < 1:
-            raise ValueError(f'eventQueueBlockTimeoutSeconds is out of bounds: \"{eventQueueBlockTimeoutSeconds}\"')
         elif not utils.isValidNum(port):
             raise ValueError(f'port argument is malformed: \"{port}\"')
         elif port <= 0:
@@ -57,7 +53,6 @@ class WebsocketConnectionServer():
 
         self.__timber: Timber = timber
         self.__isDebugLoggingEnabled: bool = isDebugLoggingEnabled
-        self.__eventQueueBlockTimeoutSeconds: int = eventQueueBlockTimeoutSeconds
         self.__port: int = port
         self.__sleepTimeSeconds: int = sleepTimeSeconds
         self.__host: str = host
@@ -123,24 +118,24 @@ class WebsocketConnectionServer():
 
         while websocket.open:
             while not self.__eventQueue.empty():
-                event = self.__eventQueue.get(
-                    block = True,
-                    timeout = self.__eventQueueBlockTimeoutSeconds
-                )
+                try:
+                    event = self.__eventQueue.get(block = False)
 
-                if event.getEventTime() + self.__eventTimeToLive >= datetime.now(timezone.utc):
-                    eventJson = json.dumps(event.getEventData())
-                    await websocket.send(eventJson)
+                    if event.getEventTime() + self.__eventTimeToLive >= datetime.now(timezone.utc):
+                        eventJson = json.dumps(event.getEventData())
+                        await websocket.send(eventJson)
 
-                    if self.__isDebugLoggingEnabled:
-                        self.__timber.log('WebsocketConnectionServer', f'Sent event to \"{path}\": {event.getEventData()}')
+                        if self.__isDebugLoggingEnabled:
+                            self.__timber.log('WebsocketConnectionServer', f'Sent event to \"{path}\": {event.getEventData()}')
+                        else:
+                            self.__timber.log('WebsocketConnectionServer', f'Sent event to \"{path}\"')
                     else:
-                        self.__timber.log('WebsocketConnectionServer', f'Sent event to \"{path}\"')
-                else:
-                    if self.__isDebugLoggingEnabled:
-                        self.__timber.log('WebsocketConnectionServer', f'Discarded an event meant for \"{path}\": {event.getEventData()}')
-                    else:
-                        self.__timber.log('WebsocketConnectionServer', f'Discarded an event meant for \"{path}\"')
+                        if self.__isDebugLoggingEnabled:
+                            self.__timber.log('WebsocketConnectionServer', f'Discarded an event meant for \"{path}\": {event.getEventData()}')
+                        else:
+                            self.__timber.log('WebsocketConnectionServer', f'Discarded an event meant for \"{path}\"')
+                except queue.Empty as e:
+                    self.__timber.log('WebsocketConnectionServer', f'Encountered queue.Empty error when looping through events (queue size: {self.__eventQueue.qsize()}): {e}')
 
             await asyncio.sleep(self.__sleepTimeSeconds)
 
