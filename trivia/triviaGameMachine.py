@@ -16,6 +16,8 @@ try:
         CheckAnswerTriviaAction
     from CynanBotCommon.trivia.correctAnswerTriviaEvent import \
         CorrectAnswerTriviaEvent
+    from CynanBotCommon.trivia.correctSuperAnswerTriviaEvent import \
+        CorrectSuperAnswerTriviaEvent
     from CynanBotCommon.trivia.failedToFetchQuestionTriviaEvent import \
         FailedToFetchQuestionTriviaEvent
     from CynanBotCommon.trivia.gameAlreadyInProgressTriviaEvent import \
@@ -24,11 +26,15 @@ try:
         GameNotReadyCheckAnswerTriviaEvent
     from CynanBotCommon.trivia.incorrectAnswerTriviaEvent import \
         IncorrectAnswerTriviaEvent
+    from CynanBotCommon.trivia.incorrectSuperAnswerTriviaEvent import \
+        IncorrectSuperAnswerTriviaEvent
     from CynanBotCommon.trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
     from CynanBotCommon.trivia.newTriviaGameEvent import NewTriviaGameEvent
     from CynanBotCommon.trivia.outOfTimeCheckAnswerTriviaEvent import \
         OutOfTimeCheckAnswerTriviaEvent
+    from CynanBotCommon.trivia.outOfTimeCheckSuperAnswerTriviaEvent import \
+        OutOfTimeCheckSuperAnswerTriviaEvent
     from CynanBotCommon.trivia.outOfTimeSuperTriviaEvent import \
         OutOfTimeSuperTriviaEvent
     from CynanBotCommon.trivia.outOfTimeTriviaEvent import OutOfTimeTriviaEvent
@@ -38,6 +44,8 @@ try:
         StartNewSuperTriviaGameAction
     from CynanBotCommon.trivia.startNewTriviaGameAction import \
         StartNewTriviaGameAction
+    from CynanBotCommon.trivia.superGameNotReadyCheckAnswerTriviaEvent import \
+        SuperGameNotReadyCheckAnswerTriviaEvent
     from CynanBotCommon.trivia.superTriviaGameState import SuperTriviaGameState
     from CynanBotCommon.trivia.triviaActionType import TriviaActionType
     from CynanBotCommon.trivia.triviaAnswerCompiler import TriviaAnswerCompiler
@@ -65,6 +73,8 @@ except:
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.checkAnswerTriviaAction import CheckAnswerTriviaAction
     from trivia.correctAnswerTriviaEvent import CorrectAnswerTriviaEvent
+    from trivia.correctSuperAnswerTriviaEvent import \
+        CorrectSuperAnswerTriviaEvent
     from trivia.failedToFetchQuestionTriviaEvent import \
         FailedToFetchQuestionTriviaEvent
     from trivia.gameAlreadyInProgressTriviaEvent import \
@@ -72,11 +82,15 @@ except:
     from trivia.gameNotReadyCheckAnswerTriviaEvent import \
         GameNotReadyCheckAnswerTriviaEvent
     from trivia.incorrectAnswerTriviaEvent import IncorrectAnswerTriviaEvent
+    from trivia.incorrectSuperAnswerTriviaEvent import \
+        IncorrectSuperAnswerTriviaEvent
     from trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
     from trivia.newTriviaGameEvent import NewTriviaGameEvent
     from trivia.outOfTimeCheckAnswerTriviaEvent import \
         OutOfTimeCheckAnswerTriviaEvent
+    from trivia.outOfTimeCheckSuperAnswerTriviaEvent import \
+        OutOfTimeCheckSuperAnswerTriviaEvent
     from trivia.outOfTimeSuperTriviaEvent import OutOfTimeSuperTriviaEvent
     from trivia.outOfTimeTriviaEvent import OutOfTimeTriviaEvent
     from trivia.questionAnswerTriviaQuestion import \
@@ -84,6 +98,8 @@ except:
     from trivia.startNewSuperTriviaGameAction import \
         StartNewSuperTriviaGameAction
     from trivia.startNewTriviaGameAction import StartNewTriviaGameAction
+    from trivia.superGameNotReadyCheckAnswerTriviaEvent import \
+        SuperGameNotReadyCheckAnswerTriviaEvent
     from trivia.superTriviaGameState import SuperTriviaGameState
     from trivia.triviaActionType import TriviaActionType
     from trivia.triviaAnswerCompiler import TriviaAnswerCompiler
@@ -328,7 +344,63 @@ class TriviaGameMachine():
         elif action.getTriviaActionType() is not TriviaActionType.CHECK_SUPER_ANSWER:
             raise RuntimeError(f'TriviaActionType is not {TriviaActionType.CHECK_SUPER_ANSWER}: \"{action.getTriviaActionType()}\"')
 
-        # TODO
+        state = await self.__getSuperGameState(action.getTwitchChannel())
+        now = datetime.now(timezone.utc)
+
+        if state is None:
+            self.__eventQueue.put(SuperGameNotReadyCheckAnswerTriviaEvent(
+                answer = action.getAnswer(),
+                twitchChannel = action.getTwitchChannel(),
+                userId = action.getUserId(),
+                userName = action.getUserName()
+            ))
+            return
+
+        if state.getEndTime() < now:
+            self.__eventQueue.put(OutOfTimeCheckSuperAnswerTriviaEvent(
+                triviaQuestion = state.getTriviaQuestion(),
+                answer = action.getAnswer(),
+                gameId = state.getGameId(),
+                twitchChannel = action.getTwitchChannel(),
+                userId = action.getUserId(),
+                userName = action.getUserName()
+            ))
+            return
+
+        if state.hasAnswered(action.getUserName()):
+            return
+
+        state.setHasAnswered(action.getUserName())
+
+        if not await self.__checkAnswer(action.getAnswer(), state.getTriviaQuestion()):
+            self.__eventQueue.put(IncorrectSuperAnswerTriviaEvent(
+                triviaQuestion = state.getTriviaQuestion(),
+                answer = action.getAnswer(),
+                gameId = state.getGameId(),
+                twitchChannel = action.getTwitchChannel(),
+                userId = action.getUserId(),
+                userName = action.getUserName()
+            ))
+            return
+
+        await self.__removeSuperGameState(action.getTwitchChannel())
+
+        triviaScoreResult = await self.__triviaScoreRepository.incrementTotalWins(
+            twitchChannel = action.getTwitchChannel(),
+            userId = action.getUserId()
+        )
+
+        self.__eventQueue.put(CorrectSuperAnswerTriviaEvent(
+            triviaQuestion = state.getTriviaQuestion(),
+            pointsForWinning = state.getPointsForWinning(),
+            pointsMultiplier = state.getPointsMultiplier(),
+            answer = action.getAnswer(),
+            gameId = state.getGameId(),
+            twitchChannel = action.getTwitchChannel(),
+            userId = action.getUserId(),
+            userName = action.getUserName(),
+            triviaScoreResult = triviaScoreResult
+        ))
 
     async def __handleActionStartNewTriviaGame(self, action: StartNewTriviaGameAction):
         if action is None:

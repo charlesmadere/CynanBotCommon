@@ -3,15 +3,17 @@ try:
     from CynanBotCommon.trivia.absTriviaEvent import AbsTriviaEvent
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.triviaEventType import TriviaEventType
+    from CynanBotCommon.trivia.triviaScoreResult import TriviaScoreResult
 except:
     import utils
 
     from trivia.absTriviaEvent import AbsTriviaEvent
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.triviaEventType import TriviaEventType
+    from trivia.triviaScoreResult import TriviaScoreResult
 
 
-class WrongUserCheckAnswerTriviaEvent(AbsTriviaEvent):
+class IncorrectSuperAnswerTriviaEvent(AbsTriviaEvent):
 
     def __init__(
         self,
@@ -22,7 +24,7 @@ class WrongUserCheckAnswerTriviaEvent(AbsTriviaEvent):
         userId: str,
         userName: str
     ):
-        super().__init__(triviaEventType = TriviaEventType.WRONG_USER)
+        super().__init__(triviaEventType = TriviaEventType.INCORRECT_SUPER_ANSWER)
 
         if triviaQuestion is None:
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
@@ -50,6 +52,9 @@ class WrongUserCheckAnswerTriviaEvent(AbsTriviaEvent):
 
     def getTriviaQuestion(self) -> AbsTriviaQuestion:
         return self.__triviaQuestion
+
+    def getTriviaScoreResult(self) -> TriviaScoreResult:
+        return self.__triviaScoreResult
 
     def getTwitchChannel(self) -> str:
         return self.__twitchChannel

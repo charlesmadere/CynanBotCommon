@@ -11,7 +11,7 @@ except:
     from trivia.triviaEventType import TriviaEventType
 
 
-class WrongUserCheckAnswerTriviaEvent(AbsTriviaEvent):
+class OutOfTimeCheckSuperAnswerTriviaEvent(AbsTriviaEvent):
 
     def __init__(
         self,
@@ -22,7 +22,7 @@ class WrongUserCheckAnswerTriviaEvent(AbsTriviaEvent):
         userId: str,
         userName: str
     ):
-        super().__init__(triviaEventType = TriviaEventType.WRONG_USER)
+        super().__init__(triviaEventType = TriviaEventType.SUPER_GAME_OUT_OF_TIME)
 
         if triviaQuestion is None:
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
