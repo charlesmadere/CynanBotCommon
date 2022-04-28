@@ -11,35 +11,30 @@ except:
     from trivia.triviaGameType import TriviaGameType
 
 
-class TriviaGameState(AbsTriviaGameState):
+class SuperTriviaGameState(AbsTriviaGameState):
 
     def __init__(
         self,
         triviaQuestion: AbsTriviaQuestion,
         pointsForWinning: int,
+        pointsMultiplier: int,
         secondsToLive: int,
-        twitchChannel: str,
-        userId: str,
-        userName: str
+        twitchChannel: str
     ):
         super().__init__(
             triviaQuestion = triviaQuestion,
             pointsForWinning = pointsForWinning,
             secondsToLive = secondsToLive,
             twitchChannel = twitchChannel,
-            triviaGameType = TriviaGameType.NORMAL
+            triviaGameType = TriviaGameType.SUPER
         )
 
-        if not utils.isValidStr(userId):
-            raise ValueError(f'userId argument is malformed: \"{userId}\"')
-        elif not utils.isValidStr(userName):
-            raise ValueError(f'userName argument is malformed: \"{userName}\"')
+        if not utils.isValidNum(pointsMultiplier):
+            raise ValueError(f'pointsMultiplier argument is malformed: \"{pointsMultiplier}\"')
+        elif pointsMultiplier < 1:
+            raise ValueError(f'pointsMultiplier argument is out of bounds: {pointsMultiplier}')
 
-        self.__userId: str = userId
-        self.__userName: str = userName
+        self.__pointsMultiplier: int = pointsMultiplier
 
-    def getUserId(self) -> str:
-        return self.__userId
-
-    def getUserName(self) -> str:
-        return self.__userName
+    def getPointsMultiplier(self) -> int:
+        return self.__pointsMultiplier

@@ -84,10 +84,10 @@ def containsUrl(s: str) -> bool:
     return False
 
 def copyList(l: List) -> List:
-    if not hasItems(l):
-        return list()
+    newList = list()
 
-    newList: List = list()
+    if not hasItems(l):
+        return newList
 
     for item in l:
         newList.append(item)
