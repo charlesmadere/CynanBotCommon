@@ -1,4 +1,5 @@
 import asyncio
+import queue
 from asyncio import AbstractEventLoop
 from datetime import datetime, timezone
 from queue import SimpleQueue
@@ -310,6 +311,14 @@ class TriviaGameMachine():
             triviaScoreResult = triviaScoreResult
         ))
 
+    async def __handleActionCheckSuperAnswer(self, action: CheckAnswerTriviaAction):
+        if action is None:
+            raise ValueError(f'action argument is malformed: \"{action}\"')
+        elif action.getTriviaActionType() is not TriviaActionType.CHECK_SUPER_ANSWER:
+            raise RuntimeError(f'TriviaActionType is not {TriviaActionType.CHECK_SUPER_ANSWER}: \"{action.getTriviaActionType()}\"')
+
+        # TODO
+
     async def __handleActionStartNewTriviaGame(self, action: StartNewTriviaGameAction):
         if action is None:
             raise ValueError(f'action argument is malformed: \"{action}\"')
@@ -444,17 +453,22 @@ class TriviaGameMachine():
 
     async def __startActionLoop(self):
         while True:
-            while not self.__actionQueue.empty():
-                action = self.__actionQueue.get()
+            try:
+                while not self.__actionQueue.empty():
+                    action = self.__actionQueue.get(block = False)
 
-                if action.getTriviaActionType() is TriviaActionType.CHECK_ANSWER:
-                    await self.__handleActionCheckAnswer(action)
-                elif action.getTriviaActionType() is TriviaActionType.START_NEW_GAME:
-                    await self.__handleActionStartNewTriviaGame(action)
-                elif action.getTriviaActionType() is TriviaActionType.START_NEW_SUPER_GAME:
-                    await self.__handleActionStartNewSuperTriviaGame(action)
-                else:
-                    raise UnknownTriviaActionTypeException(f'Unknown TriviaActionType: \"{action.getTriviaActionType()}\"')
+                    if action.getTriviaActionType() is TriviaActionType.CHECK_ANSWER:
+                        await self.__handleActionCheckAnswer(action)
+                    elif action.getTriviaActionType() is TriviaActionType.CHECK_SUPER_ANSWER:
+                        await self.__handleActionCheckSuperAnswer(action)
+                    elif action.getTriviaActionType() is TriviaActionType.START_NEW_GAME:
+                        await self.__handleActionStartNewTriviaGame(action)
+                    elif action.getTriviaActionType() is TriviaActionType.START_NEW_SUPER_GAME:
+                        await self.__handleActionStartNewSuperTriviaGame(action)
+                    else:
+                        raise UnknownTriviaActionTypeException(f'Unknown TriviaActionType: \"{action.getTriviaActionType()}\"')
+            except queue.Empty as e:
+                self.__timber.log('TriviaGameMachine', f'Encountered queue.Empty error when looping through actions (queue size: {self.__actionQueue.qsize()}): {e}')
 
             await self.__refreshStatusOfGames()
             await asyncio.sleep(self.__sleepTimeSeconds)
@@ -464,9 +478,12 @@ class TriviaGameMachine():
             eventListener = self.__eventListener
 
             if eventListener is not None:
-                while not self.__eventQueue.empty():
-                    event = self.__eventQueue.get()
-                    await eventListener(event)
+                try:
+                    while not self.__eventQueue.empty():
+                        event = self.__eventQueue.get()
+                        await eventListener(event)
+                except queue.Empty as e:
+                    self.__timber.log('TriviaGameMachine', f'Encountered queue.Empty error when looping through events (queue size: {self.__eventQueue.qsize()}): {e}')
 
             await asyncio.sleep(self.__sleepTimeSeconds)
 
