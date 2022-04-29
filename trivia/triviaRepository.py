@@ -1,5 +1,5 @@
 import random
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Set
 
 try:
     import CynanBotCommon.utils as utils
@@ -121,20 +121,38 @@ class TriviaRepository():
         self.__willFryTriviaQuestionRepository: AbsTriviaQuestionRepository = willFryTriviaQuestionRepository
         self.__wwtbamTriviaQuestionRepository: AbsTriviaQuestionRepository = wwtbamTriviaQuestionRepository
 
+        self.__triviaSourceToRepositoryMap: Dict[TriviaSource, AbsTriviaQuestionRepository] = self.__createTriviaSourceToRepositoryMap()
+
     async def __chooseRandomTriviaSource(self, triviaFetchOptions: TriviaFetchOptions) -> AbsTriviaQuestionRepository:
         if triviaFetchOptions is None:
             raise ValueError(f'triviaFetchOptions argument is malformed: \"{triviaFetchOptions}\"')
 
         triviaSourcesAndWeights: Dict[TriviaSource, int] = await self.__triviaSettingsRepository.getAvailableTriviaSourcesAndWeights()
+        triviaSourcesToRemove: Set[TriviaSource] = set()
 
-        if not triviaFetchOptions.isJokeTriviaRepositoryEnabled() and TriviaSource.JOKE_TRIVIA_REPOSITORY in triviaSourcesAndWeights:
-            del triviaSourcesAndWeights[TriviaSource.JOKE_TRIVIA_REPOSITORY]
+        if not triviaFetchOptions.areQuestionAnswerTriviaQuestionsEnabled():
+            for triviaSource, triviaQuestionRepository in self.__triviaSourceToRepositoryMap.items():
+                if TriviaType.QUESTION_ANSWER in triviaQuestionRepository.getSupportedTriviaTypes():
+                    triviaSourcesToRemove.add(triviaSource)
 
-        if not await self.__isQuizApiAvailable() and TriviaSource.QUIZ_API in triviaSourcesAndWeights:
-            del triviaSourcesAndWeights[TriviaSource.QUIZ_API]
+        if not triviaFetchOptions.isJokeTriviaRepositoryEnabled():
+            triviaSourcesToRemove.add(TriviaSource.JOKE_TRIVIA_REPOSITORY)
+
+        if triviaFetchOptions.requireQuestionAnswerTriviaQuestion():
+            for triviaSource, triviaQuestionRepository in self.__triviaSourceToRepositoryMap.items():
+                if TriviaType.QUESTION_ANSWER not in triviaQuestionRepository.getSupportedTriviaTypes():
+                    triviaSourcesToRemove.add(triviaSource)
+
+        if not await self.__isQuizApiAvailable():
+            triviaSourcesToRemove.add(TriviaSource.QUIZ_API)
+
+        if utils.hasItems(triviaSourcesToRemove):
+            for triviaSourceToRemove in triviaSourcesToRemove:
+                if triviaSourceToRemove in triviaSourcesAndWeights:
+                    del triviaSourcesAndWeights[triviaSourceToRemove]
 
         if not utils.hasItems(triviaSourcesAndWeights):
-            raise RuntimeError(f'There are no trivia sources available to be fetched from!')
+            raise RuntimeError(f'There are no trivia sources available to be fetched from! TriviaFetchOptions are: {triviaFetchOptions}')
 
         triviaSources: List[TriviaSource] = list()
         triviaWeights: List[int] = list()
@@ -143,50 +161,40 @@ class TriviaRepository():
             triviaSources.append(triviaSource)
             triviaWeights.append(triviaSourcesAndWeights[triviaSource])
 
-        randomChoices = random.choices(triviaSources, triviaWeights)
-        if not utils.hasItems(triviaSources):
-            raise RuntimeError(f'Trivia sources returned by random.choices() is malformed: \"{randomChoices}\"')
+        randomChoices = random.choices(
+            population = triviaSources,
+            weights = triviaWeights
+        )
 
-        index: int = 0
+        if not utils.hasItems(randomChoices):
+            raise RuntimeError(f'TriviaSource list returned by random.choices() is malformed: \"{randomChoices}\"')
 
-        while index < len(randomChoices):
-            triviaSource = randomChoices[index]
-            triviaQuestionRepository: AbsTriviaQuestionRepository = None
+        randomlyChosenTriviaSource = randomChoices[0]
+        return self.__triviaSourceToRepositoryMap[randomlyChosenTriviaSource]
 
-            if triviaSource is TriviaSource.BONGO:
-                triviaQuestionRepository = self.__bongoTriviaQuestionRepository
-            elif triviaSource is TriviaSource.JOKE_TRIVIA_REPOSITORY:
-                triviaQuestionRepository = self.__jokeTriviaQuestionRepository
-            elif triviaSource is TriviaSource.J_SERVICE:
-                triviaQuestionRepository = self.__jServiceTriviaQuestionRepository
-            elif triviaSource is TriviaSource.LORD_OF_THE_RINGS:
-                triviaQuestionRepository = self.__lotrTriviaQuestionsRepository
-            elif triviaSource is TriviaSource.MILLIONAIRE:
-                triviaQuestionRepository = self.__millionaireTriviaQuestionRepository
-            elif triviaSource is TriviaSource.OPEN_TRIVIA_DATABASE:
-                triviaQuestionRepository = self.__openTriviaDatabaseTriviaQuestionRepository
-            elif triviaSource is TriviaSource.QUIZ_API:
-                triviaQuestionRepository = self.__quizApiTriviaQuestionRepository
-            elif triviaSource is TriviaSource.WILL_FRY_TRIVIA_API:
-                triviaQuestionRepository = self.__willFryTriviaQuestionRepository
-            elif triviaSource is TriviaSource.WWTBAM:
-                triviaQuestionRepository = self.__wwtbamTriviaQuestionRepository
-            else:
-                raise RuntimeError(f'Unknown TriviaSource: \"{triviaSource}\"')
+    def __createTriviaSourceToRepositoryMap(self) -> Dict[TriviaSource, AbsTriviaQuestionRepository]:
+        triviaSourceToRepositoryMap: Dict[TriviaSource, AbsTriviaQuestionRepository] = {
+            TriviaSource.BONGO: self.__bongoTriviaQuestionRepository,
+            TriviaSource.JOKE_TRIVIA_REPOSITORY: self.__jokeTriviaQuestionRepository,
+            TriviaSource.J_SERVICE: self.__jServiceTriviaQuestionRepository,
+            TriviaSource.LORD_OF_THE_RINGS: self.__lotrTriviaQuestionsRepository,
+            TriviaSource.MILLIONAIRE: self.__millionaireTriviaQuestionRepository,
+            TriviaSource.OPEN_TRIVIA_DATABASE: self.__openTriviaDatabaseTriviaQuestionRepository,
+            TriviaSource.QUIZ_API: self.__quizApiTriviaQuestionRepository,
+            TriviaSource.WILL_FRY_TRIVIA_API: self.__willFryTriviaQuestionRepository,
+            TriviaSource.WWTBAM: self.__wwtbamTriviaQuestionRepository
+        }
 
-            if triviaFetchOptions.requireQuestionAnswerTriviaQuestion() and TriviaType.QUESTION_ANSWER not in triviaQuestionRepository.getSupportedTriviaTypes():
-                index = index + 1
-                continue
+        if len(triviaSourceToRepositoryMap.keys()) != len(TriviaSource):
+            raise RuntimeError(f'triviaSourceToRepositoryMap is missing some members of TriviaSource!')
 
-            return triviaQuestionRepository
-
-        raise RuntimeError(f'Unable to find valid AbsTriviaQuestionRepository with the given TriviaFetchOptions: {triviaFetchOptions}')
+        return triviaSourceToRepositoryMap
 
     async def fetchTrivia(self, triviaFetchOptions: TriviaFetchOptions) -> AbsTriviaQuestion:
         if triviaFetchOptions is None:
             raise ValueError(f'triviaFetchOptions argument is malformed: \"{triviaFetchOptions}\"')
 
-        return await self.__fetchTrivia(triviaFetchOptions = triviaFetchOptions)
+        return await self.__fetchTrivia(triviaFetchOptions)
 
     async def __fetchTrivia(self, triviaFetchOptions: TriviaFetchOptions) -> AbsTriviaQuestion:
         if triviaFetchOptions is None:
