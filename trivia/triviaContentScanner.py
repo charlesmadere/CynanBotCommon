@@ -3,6 +3,7 @@ from typing import List
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.triviaContentCode import TriviaContentCode
     from CynanBotCommon.trivia.triviaSettingsRepository import \
@@ -10,6 +11,7 @@ try:
     from CynanBotCommon.trivia.triviaType import TriviaType
 except:
     import utils
+    from timber.timber import Timber
 
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.triviaContentCode import TriviaContentCode
@@ -21,13 +23,16 @@ class TriviaContentScanner():
 
     def __init__(
         self,
+        timber: Timber,
         triviaSettingsRepository: TriviaSettingsRepository,
         maxAnswerLength: int = 80,
         maxQuestionLength: int = 350,
-        maxPhraseAnswerLength: int = 16,
+        maxPhraseAnswerLength: int = 20,
         bannedWordsFile: str = 'CynanBotCommon/trivia/bannedWords.txt'
     ):
-        if triviaSettingsRepository is None:
+        if timber is None:
+            raise ValueError(f'timber argument is malformed: \"{timber}\"')
+        elif triviaSettingsRepository is None:
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
         elif not utils.isValidNum(maxAnswerLength):
             raise ValueError(f'maxAnswerLength argument is malformed: \"{maxAnswerLength}\"')
@@ -44,6 +49,7 @@ class TriviaContentScanner():
         elif not utils.isValidStr(bannedWordsFile):
             raise ValueError(f'bannedWordsFile argument is malformed: \"{bannedWordsFile}\"')
 
+        self.__timber: Timber = timber
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
         self.__maxAnswerLength: int = maxAnswerLength
         self.__maxQuestionLength: int = maxQuestionLength
@@ -65,10 +71,7 @@ class TriviaContentScanner():
                     line = line.strip().lower()
                     bannedWords.append(line)
 
-        if utils.hasItems(bannedWords):
-            return bannedWords
-        else:
-            return None
+        return bannedWords
 
     async def verify(self, question: AbsTriviaQuestion) -> TriviaContentCode:
         if question is None:
@@ -90,15 +93,18 @@ class TriviaContentScanner():
 
     async def __verifyQuestionContentLengths(self, question: AbsTriviaQuestion) -> TriviaContentCode:
         if len(question.getQuestion()) >= self.__maxQuestionLength:
+            self.__timber.log('TriviaContentScanner', f'Trivia question is too long (max is {self.__maxQuestionLength}): {question.getQuestion()}')
             return TriviaContentCode.QUESTION_TOO_LONG
 
         if question.getTriviaType() is TriviaType.QUESTION_ANSWER:
             for correctAnswer in question.getCorrectAnswers():
                 if len(correctAnswer) >= self.__maxPhraseAnswerLength:
+                    self.__timber.log('TriviaContentScanner', f'Trivia answer is too long (max is {self.__maxPhraseAnswerLength}): {question.getCorrectAnswers()}')
                     return TriviaContentCode.ANSWER_TOO_LONG
 
         for response in question.getResponses():
             if len(response) >= self.__maxAnswerLength:
+                self.__timber.log('TriviaContentScanner', f'Trivia response is too long (max is {self.__maxAnswerLength}): {question.getResponses()}')
                 return TriviaContentCode.ANSWER_TOO_LONG
 
         return TriviaContentCode.OK
@@ -117,10 +123,12 @@ class TriviaContentScanner():
             if not utils.isValidStr(string):
                 return TriviaContentCode.CONTAINS_EMPTY_STR
             elif utils.containsUrl(string):
+                self.__timber.log('TriviaContentScanner', f'Trivia content contains a URL: \"{string}\"')
                 return TriviaContentCode.CONTAINS_URL
             elif utils.hasItems(bannedWords):
                 for bannedWord in bannedWords:
                     if bannedWord in string:
+                        self.__timber.log('TriviaContentScanner', f'Trivia content contains a banned word: \"{string}\"')
                         return TriviaContentCode.CONTAINS_BANNED_WORD
 
         return TriviaContentCode.OK
@@ -133,6 +141,7 @@ class TriviaContentScanner():
         minMultipleChoiceResponses = await self.__triviaSettingsRepository.getMinMultipleChoiceResponses()
 
         if not utils.hasItems(responses) or len(responses) < minMultipleChoiceResponses:
+            self.__timber.log('TriviaContentScanner', f'Trivia question has too few multiple choice responses (min is {minMultipleChoiceResponses}): {responses}')
             return TriviaContentCode.TOO_FEW_MULTIPLE_CHOICE_RESPONSES
 
         return TriviaContentCode.OK

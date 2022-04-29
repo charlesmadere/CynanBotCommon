@@ -1,4 +1,5 @@
 try:
+    from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.triviaContentCode import TriviaContentCode
     from CynanBotCommon.trivia.triviaContentScanner import TriviaContentScanner
@@ -7,6 +8,8 @@ try:
         TriviaHistoryRepository
     from CynanBotCommon.trivia.triviaType import TriviaType
 except:
+    from timber.timber import Timber
+
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.triviaContentCode import TriviaContentCode
     from trivia.triviaContentScanner import TriviaContentScanner
@@ -19,14 +22,18 @@ class TriviaVerifier():
 
     def __init__(
         self,
+        timber: Timber,
         triviaContentScanner: TriviaContentScanner,
         triviaHistoryRepository: TriviaHistoryRepository
     ):
-        if triviaContentScanner is None:
+        if timber is None:
+            raise ValueError(f'timber argument is malformed: \"{timber}\"')
+        elif triviaContentScanner is None:
             raise ValueError(f'triviaContentScanner argument is malformed: \"{triviaContentScanner}\"')
         elif triviaHistoryRepository is None:
             raise ValueError(f'triviaHistoryRepository argument is malformed: \"{triviaHistoryRepository}\"')
 
+        self.__timber: Timber = timber
         self.__triviaContentScanner: TriviaContentScanner = triviaContentScanner
         self.__triviaHistoryRepository: TriviaHistoryRepository = triviaHistoryRepository
 
@@ -42,8 +49,10 @@ class TriviaVerifier():
             return TriviaContentCode.IS_NONE
 
         if not triviaFetchOptions.areQuestionAnswerTriviaQuestionsEnabled() and question.getTriviaType() is TriviaType.QUESTION_ANSWER:
+            self.__timber.log('TriviaVerifier', f'The given TriviaType is illegal: {question.getTriviaType()}')
             return TriviaContentCode.ILLEGAL_TRIVIA_TYPE
         elif triviaFetchOptions.requireQuestionAnswerTriviaQuestion() and question.getTriviaType() is not TriviaType.QUESTION_ANSWER:
+            self.__timber.log('TriviaVerifier', f'The given TriviaType is illegal: {question.getTriviaType()}')
             return TriviaContentCode.ILLEGAL_TRIVIA_TYPE
 
         contentScannerCode = await self.__triviaContentScanner.verify(question)
