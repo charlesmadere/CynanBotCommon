@@ -1,5 +1,6 @@
 import asyncio
 import os
+import queue
 from asyncio import AbstractEventLoop
 from queue import SimpleQueue
 
@@ -77,9 +78,12 @@ class Timber():
 
     async def __startEventLoop(self):
         while True:
-            while not self.__entryQueue.empty():
-                timberEntry = self.__entryQueue.get()
-                self.__log(timberEntry)
+            try:
+                while not self.__entryQueue.empty():
+                    timberEntry = self.__entryQueue.get(block = False)
+                    self.__log(timberEntry)
+            except queue.Empty:
+                pass
 
             await asyncio.sleep(self.__sleepTimeSeconds)
 
