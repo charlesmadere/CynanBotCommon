@@ -1,3 +1,5 @@
+import locale
+
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.trivia.absTriviaEvent import AbsTriviaEvent
@@ -27,7 +29,7 @@ class CorrectSuperAnswerTriviaEvent(AbsTriviaEvent):
         userName: str,
         triviaScoreResult: TriviaScoreResult
     ):
-        super().__init__(triviaEventType = TriviaEventType.CORRECT_SUPER_ANSWER)
+        super().__init__(triviaEventType = TriviaEventType.SUPER_GAME_CORRECT_ANSWER)
 
         if triviaQuestion is None:
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
@@ -54,7 +56,7 @@ class CorrectSuperAnswerTriviaEvent(AbsTriviaEvent):
 
         self.__triviaQuestion: AbsTriviaQuestion = triviaQuestion
         self.__pointsForWinning: int = pointsForWinning
-        self.__pointsMultipler: int = pointsMultiplier
+        self.__pointsMultiplier: int = pointsMultiplier
         self.__answer: str = answer
         self.__gameId: str = gameId
         self.__twitchChannel: str = twitchChannel
@@ -71,8 +73,14 @@ class CorrectSuperAnswerTriviaEvent(AbsTriviaEvent):
     def getPointsForWinning(self) -> int:
         return self.__pointsForWinning
 
+    def getPointsForWinningStr(self) -> str:
+        return locale.format_string("%d", self.__pointsForWinning, grouping = True)
+
     def getPointsMultiplier(self) -> int:
-        return self.__pointsMultipler
+        return self.__pointsMultiplier
+
+    def getPointsMultiplierStr(self) -> str:
+        return locale.format_string("%d", self.__pointsMultiplier, grouping = True)
 
     def getTriviaQuestion(self) -> AbsTriviaQuestion:
         return self.__triviaQuestion

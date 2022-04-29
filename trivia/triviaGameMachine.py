@@ -18,6 +18,8 @@ try:
         CorrectAnswerTriviaEvent
     from CynanBotCommon.trivia.correctSuperAnswerTriviaEvent import \
         CorrectSuperAnswerTriviaEvent
+    from CynanBotCommon.trivia.failedToFetchQuestionSuperTriviaEvent import \
+        FailedToFetchQuestionSuperTriviaEvent
     from CynanBotCommon.trivia.failedToFetchQuestionTriviaEvent import \
         FailedToFetchQuestionTriviaEvent
     from CynanBotCommon.trivia.gameAlreadyInProgressTriviaEvent import \
@@ -30,6 +32,8 @@ try:
         IncorrectSuperAnswerTriviaEvent
     from CynanBotCommon.trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
+    from CynanBotCommon.trivia.newSuperTriviaGameEvent import \
+        NewSuperTriviaGameEvent
     from CynanBotCommon.trivia.newTriviaGameEvent import NewTriviaGameEvent
     from CynanBotCommon.trivia.outOfTimeCheckAnswerTriviaEvent import \
         OutOfTimeCheckAnswerTriviaEvent
@@ -44,6 +48,8 @@ try:
         StartNewSuperTriviaGameAction
     from CynanBotCommon.trivia.startNewTriviaGameAction import \
         StartNewTriviaGameAction
+    from CynanBotCommon.trivia.superGameAlreadyInProgressTriviaEvent import \
+        SuperGameAlreadyInProgressTriviaEvent
     from CynanBotCommon.trivia.superGameNotReadyCheckAnswerTriviaEvent import \
         SuperGameNotReadyCheckAnswerTriviaEvent
     from CynanBotCommon.trivia.superTriviaGameState import SuperTriviaGameState
@@ -75,6 +81,8 @@ except:
     from trivia.correctAnswerTriviaEvent import CorrectAnswerTriviaEvent
     from trivia.correctSuperAnswerTriviaEvent import \
         CorrectSuperAnswerTriviaEvent
+    from trivia.failedToFetchQuestionSuperTriviaEvent import \
+        FailedToFetchQuestionSuperTriviaEvent
     from trivia.failedToFetchQuestionTriviaEvent import \
         FailedToFetchQuestionTriviaEvent
     from trivia.gameAlreadyInProgressTriviaEvent import \
@@ -86,6 +94,7 @@ except:
         IncorrectSuperAnswerTriviaEvent
     from trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
+    from trivia.newSuperTriviaGameEvent import NewSuperTriviaGameEvent
     from trivia.newTriviaGameEvent import NewTriviaGameEvent
     from trivia.outOfTimeCheckAnswerTriviaEvent import \
         OutOfTimeCheckAnswerTriviaEvent
@@ -98,6 +107,8 @@ except:
     from trivia.startNewSuperTriviaGameAction import \
         StartNewSuperTriviaGameAction
     from trivia.startNewTriviaGameAction import StartNewTriviaGameAction
+    from trivia.superGameAlreadyInProgressTriviaEvent import \
+        SuperGameAlreadyInProgressTriviaEvent
     from trivia.superGameNotReadyCheckAnswerTriviaEvent import \
         SuperGameNotReadyCheckAnswerTriviaEvent
     from trivia.superTriviaGameState import SuperTriviaGameState
@@ -465,10 +476,42 @@ class TriviaGameMachine():
         now = datetime.now(timezone.utc)
 
         if state is not None and state.getEndTime() < now:
-            # TODO
-            pass
+            self.__eventQueue.put(SuperGameAlreadyInProgressTriviaEvent(
+                gameId = state.getGameId(),
+                twitchChannel = action.getTwitchChannel()
+            ))
+            return
 
-        # TODO
+        triviaQuestion: AbsTriviaQuestion = None
+        try:
+            triviaQuestion = await self.__triviaRepository.fetchTrivia(action.getTriviaFetchOptions())
+        except TooManyTriviaFetchAttemptsException as e:
+            self.__timber.log('TriviaGameMachine', f'Reached limit on trivia fetch attempts without being able to successfully retrieve a question: {e}')
+
+        if triviaQuestion is None:
+            self.__eventQueue.put(FailedToFetchQuestionSuperTriviaEvent(
+                twitchChannel = action.getTwitchChannel()
+            ))
+            return
+
+        state = SuperTriviaGameState(
+            triviaQuestion = triviaQuestion,
+            pointsForWinning = action.getPointsForWinning(),
+            pointsMultiplier = action.getPointsMultiplier(),
+            secondsToLive = action.getSecondsToLive(),
+            twitchChannel = action.getTwitchChannel()
+        )
+
+        await self.__addGameState(state)
+
+        self.__eventQueue.put(NewSuperTriviaGameEvent(
+            triviaQuestion = triviaQuestion,
+            pointsForWinning = action.getPointsForWinning(),
+            pointsMultiplier = action.getPointsMultiplier(),
+            secondsToLive = action.getSecondsToLive(),
+            gameId = state.getGameId(),
+            twitchChannel = action.getTwitchChannel(),
+        ))
 
     async def __refreshStatusOfGames(self):
         gameStates = await self.__getAllGameStates()
@@ -510,6 +553,8 @@ class TriviaGameMachine():
 
                 self.__eventQueue.put(OutOfTimeSuperTriviaEvent(
                     triviaQuestion = superGameState.getTriviaQuestion(),
+                    pointsForWinning = superGameState.getPointsForWinning(),
+                    pointsMultiplier = superGameState.getPointsMultiplier(),
                     gameId = superGameState.getGameId(),
                     twitchChannel = superGameState.getTwitchChannel()
                 ))
@@ -563,7 +608,7 @@ class TriviaGameMachine():
             if eventListener is not None:
                 try:
                     while not self.__eventQueue.empty():
-                        event = self.__eventQueue.get()
+                        event = self.__eventQueue.get(block = False)
                         await eventListener(event)
                 except queue.Empty as e:
                     self.__timber.log('TriviaGameMachine', f'Encountered queue.Empty error when looping through events (queue size: {self.__eventQueue.qsize()}): {e}')

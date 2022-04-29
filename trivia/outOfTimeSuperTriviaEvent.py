@@ -1,3 +1,5 @@
+import locale
+
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.trivia.absTriviaEvent import AbsTriviaEvent
@@ -16,6 +18,8 @@ class OutOfTimeSuperTriviaEvent(AbsTriviaEvent):
     def __init__(
         self,
         triviaQuestion: AbsTriviaQuestion,
+        pointsForWinning: int,
+        pointsMultiplier: int,
         gameId: str,
         twitchChannel: str
     ):
@@ -23,17 +27,39 @@ class OutOfTimeSuperTriviaEvent(AbsTriviaEvent):
 
         if triviaQuestion is None:
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
+        elif not utils.isValidNum(pointsForWinning):
+            raise ValueError(f'pointsForWinning argument is malformed: \"{pointsForWinning}\"')
+        elif pointsForWinning < 1:
+            raise ValueError(f'pointsForWinning argument is out of bounds: {pointsForWinning}')
+        elif not utils.isValidNum(pointsMultiplier):
+            raise ValueError(f'pointsMultiplier argument is malformed: \"{pointsMultiplier}\"')
+        elif pointsMultiplier < 1:
+            raise ValueError(f'pointsMultiplier argument is out of bounds: {pointsMultiplier}')
         elif not utils.isValidStr(gameId):
             raise ValueError(f'gameId argument is malformed: \"{gameId}\"')
         elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
         self.__triviaQuestion: AbsTriviaQuestion = triviaQuestion
+        self.__pointsForWinning: int = pointsForWinning
+        self.__pointsMultiplier: int = pointsMultiplier
         self.__gameId: str = gameId
         self.__twitchChannel: str = twitchChannel
 
     def getGameId(self) -> str:
         return self.__gameId
+
+    def getPointsForWinning(self) -> int:
+        return self.__pointsForWinning
+
+    def getPointsForWinningStr(self) -> str:
+        return locale.format_string("%d", self.__pointsForWinning, grouping = True)
+
+    def getPointsMultiplier(self) -> int:
+        return self.__pointsMultiplier
+
+    def getPointsMultiplierStr(self) -> str:
+        return locale.format_string("%d", self.__pointsMultiplier, grouping = True)
 
     def getTriviaQuestion(self) -> AbsTriviaQuestion:
         return self.__triviaQuestion
