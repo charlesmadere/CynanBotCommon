@@ -22,7 +22,7 @@ class OutOfTimeCheckSuperAnswerTriviaEvent(AbsTriviaEvent):
         userId: str,
         userName: str
     ):
-        super().__init__(triviaEventType = TriviaEventType.SUPER_GAME_OUT_OF_TIME)
+        super().__init__(triviaEventType = TriviaEventType.SUPER_GAME_TOO_LATE_TO_ANSWER)
 
         if triviaQuestion is None:
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
