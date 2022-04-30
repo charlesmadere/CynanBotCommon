@@ -1,6 +1,7 @@
 import json
 import random
 from asyncio import TimeoutError
+from json.decoder import JSONDecodeError
 from os import path
 from typing import Dict
 
@@ -146,10 +147,16 @@ class TranslationHelper():
         if not path.exists(self.__googleServiceAccountFile):
             return False
 
-        with open(self.__googleServiceAccountFile, 'r') as file:
-            jsonContents = json.load(file)
+        jsonContents: Dict[str, object] = None
+        exception: JSONDecodeError = None
 
-        return utils.hasItems(jsonContents)
+        with open(self.__googleServiceAccountFile, 'r') as file:
+            try:
+                jsonContents = json.load(file)
+            except JSONDecodeError as e:
+                exception = e
+
+        return utils.hasItems(jsonContents) and exception is None
 
     async def translate(
         self,
