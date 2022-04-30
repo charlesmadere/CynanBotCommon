@@ -22,14 +22,14 @@ class StarWarsQuotesRepository():
         self.__quotesFile: str = quotesFile
         self.__quoteInputRegEx = re.compile('\$\((.*)\)')
 
-    def fetchRandomQuote(self, trilogy: str = None) -> str:
-        jsonContents = self.__getQuotes(trilogy)
+    async def fetchRandomQuote(self, trilogy: str = None) -> str:
+        jsonContents = await self.__getQuotes(trilogy)
         quote = random.choice(jsonContents)
         return self.__processQuote(quote)
 
-    def __getQuotes(self, trilogy: str = None) -> List[str]:
+    async def __getQuotes(self, trilogy: str = None) -> List[str]:
         trilogy = utils.cleanStr(trilogy)
-        jsonContents = self.__readJson()
+        jsonContents = await self.__readJson()
 
         quotes = jsonContents.get('quotes')
         if not utils.hasItems(quotes):
@@ -53,7 +53,7 @@ class StarWarsQuotesRepository():
 
         return quote.replace(result.group(0), value)
 
-    def __readJson(self) -> Dict[str, object]:
+    async def __readJson(self) -> Dict[str, object]:
         if not path.exists(self.__quotesFile):
             raise FileNotFoundError(f'quotes file not found: \"{self.__quotesFile}\"')
 
@@ -67,12 +67,12 @@ class StarWarsQuotesRepository():
 
         return jsonContents
 
-    def searchQuote(self, query: str, input: str = None) -> str:
+    async def searchQuote(self, query: str, input: str = None) -> str:
         if not utils.isValidStr(query):
             raise ValueError(f'query argument is malformed: \"{query}\"')
 
         query = utils.cleanStr(query)
-        jsonContents = self.__getQuotes()
+        jsonContents = await self.__getQuotes()
 
         for quote in jsonContents:
             if self.__processQuote(quote).lower().find(query.lower()) >= 0:
