@@ -29,8 +29,10 @@ class TriviaAnswerCompiler():
             return ''
 
         regExResult = self.__answerRegEx.findall(answer)
-        compiledString = ''.join(regExResult).lower()
+        if not utils.hasItems(regExResult):
+            return ''
 
+        compiledString = ''.join(regExResult).lower()
         if compiledString.startswith('the') and len(compiledString) > len('the'):
             compiledString = compiledString[len('the'):]
 
