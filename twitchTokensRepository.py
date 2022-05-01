@@ -32,6 +32,18 @@ class TwitchExpiresInOverlyAggressiveException(Exception):
         super().__init__(message)
 
 
+class TwitchJsonException(Exception):
+
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
+class TwitchNetworkException(Exception):
+
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
 class TwitchRefreshTokenMissingException(Exception):
 
     def __init__(self, message: str):
@@ -161,18 +173,18 @@ class TwitchTokensRepository():
             )
         except (aiohttp.ClientError, TimeoutError) as e:
             self.__timber.log('TwitchTokensRepository', f'Encountered network error when requesting new Twitch tokens for \"{twitchHandle}\": {e}')
-            raise RuntimeError(f'Encountered network error when requesting new Twitch tokens for \"{twitchHandle}\": {e}')
+            raise TwitchNetworkException(f'Encountered network error when requesting new Twitch tokens for \"{twitchHandle}\": {e}')
 
         if response.status != 200:
             self.__timber.log('TwitchTokensRepository', f'Encountered non-200 HTTP status code when requesting new Twitch tokens for \"{twitchHandle}\": {response.status}')
-            raise RuntimeError(f'Encountered non-200 HTTP status code when requesting new Twitch tokens for \"{twitchHandle}\": {response.status}')
+            raise TwitchNetworkException(f'Encountered non-200 HTTP status code when requesting new Twitch tokens for \"{twitchHandle}\": {response.status}')
 
         jsonResponse: Dict[str, object] = await response.json()
         response.close()
 
         if not utils.hasItems(jsonResponse):
             self.__timber.log('TwitchTokensRepository', f'Received malformed JSON response when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
-            raise ValueError(f'Received malformed JSON response when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
+            raise TwitchJsonException(f'Received malformed JSON response when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
 
         accessToken = utils.getStrFromDict(jsonResponse, 'access_token', fallback = '')
         refreshToken = utils.getStrFromDict(jsonResponse, 'refresh_token', fallback = '')
@@ -262,7 +274,7 @@ class TwitchTokensRepository():
             )
         except (aiohttp.ClientError, TimeoutError) as e:
             self.__timber.log('TwitchTokensRepository', f'Encountered network error when validating Twitch access token for \"{twitchHandle}\": {e}')
-            return
+            raise TwitchNetworkException(f'Encountered network error when validating Twitch access token for \"{twitchHandle}\": {e}')
 
         responseStatus = response.status
         jsonResponse: Dict[str, object] = await response.json()
