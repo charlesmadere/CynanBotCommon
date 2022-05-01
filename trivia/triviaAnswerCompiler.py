@@ -29,7 +29,12 @@ class TriviaAnswerCompiler():
             return ''
 
         regExResult = self.__answerRegEx.findall(answer)
-        return ''.join(regExResult).lower()
+        compiledString = ''.join(regExResult).lower()
+
+        if compiledString.startswith('the') and len(compiledString) > len('the'):
+            compiledString = compiledString[len('the'):]
+
+        return compiledString
 
     async def compileTextAnswerToMultipleChoiceOrdinal(self, answer: str) -> int:
         cleanedAnswer = await self.compileTextAnswer(answer)
