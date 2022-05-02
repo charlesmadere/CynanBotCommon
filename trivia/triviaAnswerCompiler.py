@@ -16,7 +16,7 @@ class TriviaAnswerCompiler():
         self.__prefixStringsToRemove: List[str] = [ 'a ', 'an ', 'the ' ]
         self.__multipleChoiceAnswerRegEx: Pattern = re.compile(r"[a-z]", re.IGNORECASE)
         self.__parenGroupRegEx: Pattern = re.compile(r'(\(.*?\))', re.IGNORECASE)
-        self.__phraseAnswerRegEx: Pattern = re.compile(r"\w+|\d+", re.IGNORECASE)
+        self.__phraseAnswerRegEx: Pattern = re.compile(r"\W", re.IGNORECASE)
         self.__tagRemovalRegEx: Pattern = re.compile(r"<\/?\w+>", re.IGNORECASE)
         self.__whiteSpaceRegEx: Pattern = re.compile(r'\s\s*', re.IGNORECASE)
 
@@ -41,11 +41,7 @@ class TriviaAnswerCompiler():
                 answer = answer[len(prefixString):]
                 break
 
-        regExResult = self.__phraseAnswerRegEx.findall(answer)
-        if not utils.hasItems(regExResult):
-            return ''
-
-        return ''.join(regExResult).lower()
+        return self.__phraseAnswerRegEx.sub('', answer)
 
     async def compileTextAnswerToMultipleChoiceOrdinal(self, answer: str) -> int:
         cleanedAnswer = await self.compileTextAnswer(answer)
