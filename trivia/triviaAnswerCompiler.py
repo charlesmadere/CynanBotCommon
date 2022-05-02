@@ -29,6 +29,12 @@ class TriviaAnswerCompiler():
         if not utils.isValidStr(answer):
             return ''
 
+        if answer.lower().startswith('<i>'):
+            answer = answer[len('<i>'):]
+
+        if answer.lower().endswith('</i>'):
+            answer = answer[0:len(answer) - len('</i>')]
+
         regExResult = self.__answerRegEx.findall(answer)
         if not utils.hasItems(regExResult):
             return ''
