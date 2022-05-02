@@ -13,6 +13,7 @@ except:
 class TriviaAnswerCompiler():
 
     def __init__(self):
+        self.__prefixStringsToRemove: List[str] = [ 'a', 'an', 'the' ]
         self.__answerRegEx: Pattern = re.compile(r"\w+|\d+", re.IGNORECASE)
         self.__multipleChoiceAnswerRegEx: Pattern = re.compile(r"[a-z]", re.IGNORECASE)
 
@@ -33,8 +34,11 @@ class TriviaAnswerCompiler():
             return ''
 
         compiledString = ''.join(regExResult).lower()
-        if compiledString.startswith('the') and len(compiledString) > len('the'):
-            compiledString = compiledString[len('the'):]
+
+        for prefixString in self.__prefixStringsToRemove:
+            if compiledString.startswith(prefixString) and len(compiledString) > len(prefixString):
+                compiledString = compiledString[len(prefixString):]
+                break
 
         return compiledString
 
