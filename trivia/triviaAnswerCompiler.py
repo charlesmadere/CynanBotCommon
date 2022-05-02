@@ -35,6 +35,8 @@ class TriviaAnswerCompiler():
         if answer.lower().endswith('</i>'):
             answer = answer[0:len(answer) - len('</i>')]
 
+        answer = answer.replace('&', 'and')
+
         regExResult = self.__answerRegEx.findall(answer)
         if not utils.hasItems(regExResult):
             return ''
