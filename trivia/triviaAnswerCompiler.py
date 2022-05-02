@@ -1,5 +1,5 @@
 import re
-from typing import List, Pattern
+from typing import List, Pattern, Set
 
 try:
     import CynanBotCommon.utils as utils
@@ -57,10 +57,10 @@ class TriviaAnswerCompiler():
         return ord(cleanedAnswer.upper()) % 65
 
     async def compileTextAnswers(self, answers: List[str]) -> List[str]:
-        cleanedAnswers: List[str] = list()
+        cleanedAnswers: Set[str] = set()
 
         if not utils.hasItems(answers):
-            return cleanedAnswers
+            return list()
 
         for answer in answers:
             possibilities = await self.__getPossibilities(answer)
@@ -69,9 +69,9 @@ class TriviaAnswerCompiler():
                 cleanedAnswer = await self.compileTextAnswer(possibility)
 
                 if utils.isValidStr(cleanedAnswer):
-                    cleanedAnswers.append(cleanedAnswer)
+                    cleanedAnswers.add(cleanedAnswer)
 
-        return cleanedAnswers
+        return list(cleanedAnswers)
 
     # Returns all possibilities with parenthesized phrases both included and excluded
     async def __getPossibilities(self, answer: str) -> List[str]:
