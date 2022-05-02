@@ -14,6 +14,7 @@ class TriviaAnswerCompiler():
 
     def __init__(self):
         self.__prefixStringsToRemove: List[str] = [ 'a', 'an', 'the' ]
+        self.__tagsToRemove: List[str] = [ 'b', 'i', 'u' ]
         self.__answerRegEx: Pattern = re.compile(r"\w+|\d+", re.IGNORECASE)
         self.__multipleChoiceAnswerRegEx: Pattern = re.compile(r"[a-z]", re.IGNORECASE)
 
@@ -29,11 +30,19 @@ class TriviaAnswerCompiler():
         if not utils.isValidStr(answer):
             return ''
 
-        if answer.lower().startswith('<i>'):
-            answer = answer[len('<i>'):]
+        answer = answer.strip().lower()
 
-        if answer.lower().endswith('</i>'):
-            answer = answer[0:len(answer) - len('</i>')]
+        for tagToRemove in self.__tagsToRemove:
+            removed = False
+
+            if answer.startswith(f'<{tagToRemove}>'):
+                answer = answer[len(f'<{tagToRemove}>'):]
+
+            if answer.endswith(f'</{tagToRemove}>'):
+                answer = answer[0:len(answer) - len(f'</{tagToRemove}>')]
+
+            if removed:
+                break
 
         answer = answer.replace('&', 'and')
 
