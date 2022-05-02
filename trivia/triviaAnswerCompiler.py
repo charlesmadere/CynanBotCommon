@@ -15,8 +15,10 @@ class TriviaAnswerCompiler():
     def __init__(self):
         self.__prefixStringsToRemove: List[str] = [ 'a ', 'an ', 'the ' ]
         self.__multipleChoiceAnswerRegEx: Pattern = re.compile(r"[a-z]", re.IGNORECASE)
+        self.__parenGroupRegEx: Pattern = re.compile(r'(\(.*?\))', re.IGNORECASE)
         self.__phraseAnswerRegEx: Pattern = re.compile(r"\w+|\d+", re.IGNORECASE)
         self.__tagRemovalRegEx: Pattern = re.compile(r"<\/?\w+>", re.IGNORECASE)
+        self.__whiteSpaceRegEx: Pattern = re.compile(r'\s\s*', re.IGNORECASE)
 
     async def compileBoolAnswer(self, answer: str) -> str:
         cleanedAnswer = await self.compileTextAnswer(answer)
@@ -34,18 +36,16 @@ class TriviaAnswerCompiler():
         answer = self.__tagRemovalRegEx.sub('', answer)
         answer = answer.replace('&', 'and')
 
-        regExResult = self.__phraseAnswerRegEx.findall(answer)
-        if not utils.hasItems(regExResult):
-            return ''
-
-        answer = ''.join(regExResult).lower()
-
         for prefixString in self.__prefixStringsToRemove:
             if answer.startswith(prefixString) and len(answer) > len(prefixString):
                 answer = answer[len(prefixString):]
                 break
 
-        return answer
+        regExResult = self.__phraseAnswerRegEx.findall(answer)
+        if not utils.hasItems(regExResult):
+            return ''
+
+        return ''.join(regExResult).lower()
 
     async def compileTextAnswerToMultipleChoiceOrdinal(self, answer: str) -> int:
         cleanedAnswer = await self.compileTextAnswer(answer)
@@ -63,9 +63,45 @@ class TriviaAnswerCompiler():
             return cleanedAnswers
 
         for answer in answers:
-            cleanedAnswer = await self.compileTextAnswer(answer)
+            possibilities = await self.__getPossibilities(answer)
 
-            if utils.isValidStr(cleanedAnswer):
-                cleanedAnswers.append(cleanedAnswer)
+            for possibility in possibilities:
+                cleanedAnswer = await self.compileTextAnswer(possibility)
+
+                if utils.isValidStr(cleanedAnswer):
+                    cleanedAnswers.append(cleanedAnswer)
 
         return cleanedAnswers
+
+    # Returns all possibilities with parenthesized phrases both included and excluded
+    async def __getPossibilities(self, answer: str) -> List[str]:
+        # Split the uncleaned answer with this regex to find all parentheticals
+        splitPossibilities = self.__parenGroupRegEx.split(answer)
+
+        # join the split possibilities back to strings and substitute multiple whitespaces back to a single space.
+        return [ self.__whiteSpaceRegEx.sub(' ', ''.join(p).strip()) for p in await self.__getSubPossibilities(splitPossibilities) ]
+
+    # Recursively resolves the possibilities for each word in the answer.
+    async def __getSubPossibilities(self, splitAnswer: str) -> List[str]:
+        # early exit on trivial cases
+        if not len(splitAnswer):
+            return [ ]
+        if len(splitAnswer) == 1:
+            return [ splitAnswer ]
+
+        # get all "future" possible variants starting with the next word
+        futurePossible = await self.__getSubPossibilities(splitAnswer[1:])
+
+        # switch on open paren
+        if splitAnswer[0].startswith('('):
+            res = [ ]
+            for possible in futurePossible:
+                # add a version including this word but without the parentheses
+                res.append([ splitAnswer[0][1:-1], *possible ])
+                # also keep the version not including this word at all
+                res.append(possible)
+            # return all possibilities, with and without this word
+            return res
+        else:
+            # return all future possibilities with this current word mapped onto it as well.
+            return [ [ splitAnswer[0], *possible ] for possible in futurePossible ]
