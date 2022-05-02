@@ -13,7 +13,7 @@ except:
 class TriviaAnswerCompiler():
 
     def __init__(self):
-        self.__prefixStringsToRemove: List[str] = [ 'a', 'an', 'the' ]
+        self.__prefixStringsToRemove: List[str] = [ 'a ', 'an ', 'the ' ]
         self.__tagsToRemove: List[str] = [ 'b', 'i', 'u' ]
         self.__answerRegEx: Pattern = re.compile(r"\w+|\d+", re.IGNORECASE)
         self.__multipleChoiceAnswerRegEx: Pattern = re.compile(r"[a-z]", re.IGNORECASE)
