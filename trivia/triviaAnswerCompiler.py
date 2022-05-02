@@ -33,14 +33,14 @@ class TriviaAnswerCompiler():
         if not utils.hasItems(regExResult):
             return ''
 
-        compiledString = ''.join(regExResult).lower()
+        cleanedAnswer = ''.join(regExResult).lower()
 
         for prefixString in self.__prefixStringsToRemove:
-            if compiledString.startswith(prefixString) and len(compiledString) > len(prefixString):
-                compiledString = compiledString[len(prefixString):]
+            if cleanedAnswer.startswith(prefixString) and len(cleanedAnswer) > len(prefixString):
+                cleanedAnswer = cleanedAnswer[len(prefixString):]
                 break
 
-        return compiledString
+        return cleanedAnswer
 
     async def compileTextAnswerToMultipleChoiceOrdinal(self, answer: str) -> int:
         cleanedAnswer = await self.compileTextAnswer(answer)
