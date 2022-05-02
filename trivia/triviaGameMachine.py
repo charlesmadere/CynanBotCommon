@@ -5,6 +5,8 @@ from datetime import datetime, timezone
 from queue import SimpleQueue
 from typing import List
 
+import polyleven
+
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.timber.timber import Timber
@@ -138,6 +140,7 @@ class TriviaGameMachine():
         triviaAnswerCompiler: TriviaAnswerCompiler,
         triviaRepository: TriviaRepository,
         triviaScoreRepository: TriviaScoreRepository,
+        levenshteinThreshold: float = 0.3,
         sleepTimeSeconds: float = 0.5
     ):
         if eventLoop is None:
@@ -150,6 +153,8 @@ class TriviaGameMachine():
             raise ValueError(f'triviaRepository argument is malformed: \"{triviaRepository}\"')
         elif triviaScoreRepository is None:
             raise ValueError(f'triviaScoreRepository argument is malformed: \"{triviaScoreRepository}\"')
+        elif not utils.isValidNum(levenshteinThreshold):
+            raise ValueError(f'levenshteinThreshold argument is malformed: \"{levenshteinThreshold}\"')
         elif not utils.isValidNum(sleepTimeSeconds):
             raise ValueError(f'sleepTimeSeconds argument is malformed: \"{sleepTimeSeconds}\"')
         elif sleepTimeSeconds < 0.1 or sleepTimeSeconds > 5:
@@ -159,6 +164,7 @@ class TriviaGameMachine():
         self.__triviaAnswerCompiler: TriviaAnswerCompiler = triviaAnswerCompiler
         self.__triviaRepository: TriviaRepository = triviaRepository
         self.__triviaScoreRepository: TriviaScoreRepository = triviaScoreRepository
+        self.__levenshteinThreshold: float = levenshteinThreshold
         self.__sleepTimeSeconds: float = sleepTimeSeconds
 
         self.__gameStates: List[AbsTriviaGameState] = list()
@@ -227,7 +233,8 @@ class TriviaGameMachine():
         cleanedCorrectAnswers = triviaQuestion.getCleanedCorrectAnswers()
 
         for cleanedCorrectAnswer in cleanedCorrectAnswers:
-            if cleanedCorrectAnswer == cleanedAnswer:
+            threshold = int(min(len(answer), len(cleanedCorrectAnswer)) * self.__levenshteinThreshold)
+            if polyleven.levenshtein(answer, cleanedCorrectAnswer, threshold) <= self.__levenshteinThreshold:
                 return True
 
         return False
