@@ -14,9 +14,9 @@ class TriviaAnswerCompiler():
 
     def __init__(self):
         self.__prefixStringsToRemove: List[str] = [ 'a ', 'an ', 'the ' ]
-        self.__tagsToRemove: List[str] = [ 'b', 'i', 'u' ]
-        self.__answerRegEx: Pattern = re.compile(r"\w+|\d+", re.IGNORECASE)
         self.__multipleChoiceAnswerRegEx: Pattern = re.compile(r"[a-z]", re.IGNORECASE)
+        self.__phraseAnswerRegEx: Pattern = re.compile(r"\w+|\d+", re.IGNORECASE)
+        self.__tagRemovalRegEx: Pattern = re.compile(r"<\/?\w+>", re.IGNORECASE)
 
     async def compileBoolAnswer(self, answer: str) -> str:
         cleanedAnswer = await self.compileTextAnswer(answer)
@@ -31,22 +31,10 @@ class TriviaAnswerCompiler():
             return ''
 
         answer = answer.strip().lower()
-
-        for tagToRemove in self.__tagsToRemove:
-            removed = False
-
-            if answer.startswith(f'<{tagToRemove}>'):
-                answer = answer[len(f'<{tagToRemove}>'):]
-
-            if answer.endswith(f'</{tagToRemove}>'):
-                answer = answer[0:len(answer) - len(f'</{tagToRemove}>')]
-
-            if removed:
-                break
-
+        answer = self.__tagRemovalRegEx.sub('', answer)
         answer = answer.replace('&', 'and')
 
-        regExResult = self.__answerRegEx.findall(answer)
+        regExResult = self.__phraseAnswerRegEx.findall(answer)
         if not utils.hasItems(regExResult):
             return ''
 
