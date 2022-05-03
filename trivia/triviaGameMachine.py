@@ -233,8 +233,8 @@ class TriviaGameMachine():
         cleanedCorrectAnswers = triviaQuestion.getCleanedCorrectAnswers()
 
         for cleanedCorrectAnswer in cleanedCorrectAnswers:
-            threshold = int(min(len(answer), len(cleanedCorrectAnswer)) * self.__levenshteinThreshold)
-            if polyleven.levenshtein(answer, cleanedCorrectAnswer, threshold) <= self.__levenshteinThreshold:
+            threshold = int(min(len(cleanedAnswer), len(cleanedCorrectAnswer)) * self.__levenshteinThreshold)
+            if polyleven.levenshtein(cleanedAnswer, cleanedCorrectAnswer, threshold) <= self.__levenshteinThreshold:
                 return True
 
         return False
