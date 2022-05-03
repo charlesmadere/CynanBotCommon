@@ -84,6 +84,8 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
             self.__timber.log('JServiceTriviaQuestionRepository', f'Rejecting jService\'s JSON data due to null/empty contents: {jsonResponse}')
             raise ValueError(f'Rejecting jService\'s JSON data due to null/empty contents: {jsonResponse}')
 
+        self.__timber.log('JServiceTriviaQuestionRepository', f'{jsonResponse}')
+
         triviaJson: Dict[str, object] = jsonResponse[0]
         if not utils.hasItems(triviaJson):
             self.__timber.log('JServiceTriviaQuestionRepository', f'Rejecting jService\'s JSON data due to null/empty contents: {jsonResponse}')

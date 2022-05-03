@@ -230,13 +230,14 @@ class TriviaGameMachine():
         if not utils.isValidStr(cleanedAnswer):
             return False
 
+        correctAnswers = triviaQuestion.getCorrectAnswers()
         cleanedCorrectAnswers = triviaQuestion.getCleanedCorrectAnswers()
 
         for cleanedCorrectAnswer in cleanedCorrectAnswers:
             threshold = int(min(len(cleanedAnswer), len(cleanedCorrectAnswer)) * self.__levenshteinThreshold)
             distance = polyleven.levenshtein(cleanedAnswer, cleanedCorrectAnswer, threshold)
 
-            self.__timber.log('TriviaGameMachine', f'answer:\"{answer}\", cleanedAnswer:\"{cleanedAnswer}\", cleanedCorrectAnswers:\"{cleanedCorrectAnswers}\", threshold:\"{threshold}\", distance:\"{distance}\"')
+            self.__timber.log('TriviaGameMachine', f'answer:\"{answer}\", cleanedAnswer:\"{cleanedAnswer}\", correctAnswers:\"{correctAnswers}\", cleanedCorrectAnswers:\"{cleanedCorrectAnswers}\", threshold:\"{threshold}\", distance:\"{distance}\"')
 
             if distance <= threshold:
                 return True
