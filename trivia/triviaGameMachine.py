@@ -236,6 +236,8 @@ class TriviaGameMachine():
             threshold = int(min(len(cleanedAnswer), len(cleanedCorrectAnswer)) * self.__levenshteinThreshold)
             distance = polyleven.levenshtein(cleanedAnswer, cleanedCorrectAnswer, threshold)
 
+            self.__timber.log('TriviaGameMachine', f'answer:\"{answer}\", cleanedAnswer:\"{cleanedAnswer}\", cleanedCorrectAnswers:\"{cleanedCorrectAnswers}\", threshold:\"{threshold}\", distance:\"{distance}\"')
+
             if distance <= threshold:
                 return True
 
