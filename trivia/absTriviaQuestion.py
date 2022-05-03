@@ -4,12 +4,15 @@ from typing import List
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
+    from CynanBotCommon.trivia.triviaExceptions import \
+        NoTriviaQuestionException
     from CynanBotCommon.trivia.triviaSource import TriviaSource
     from CynanBotCommon.trivia.triviaType import TriviaType
 except:
     import utils
 
     from trivia.triviaDifficulty import TriviaDifficulty
+    from trivia.triviaExceptions import NoTriviaQuestionException
     from trivia.triviaSource import TriviaSource
     from trivia.triviaType import TriviaType
 
@@ -26,7 +29,7 @@ class AbsTriviaQuestion(ABC):
         triviaType: TriviaType
     ):
         if not utils.isValidStr(question):
-            raise ValueError(f'question argument is malformed: \"{question}\"')
+            raise NoTriviaQuestionException(f'question argument is malformed: \"{question}\"')
         elif not utils.isValidStr(triviaId):
             raise ValueError(f'triviaId argument is malformed: \"{triviaId}\"')
         elif triviaDifficulty is None:

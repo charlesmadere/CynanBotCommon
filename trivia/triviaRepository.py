@@ -24,7 +24,7 @@ try:
     from CynanBotCommon.trivia.triviaContentCode import TriviaContentCode
     from CynanBotCommon.trivia.triviaExceptions import (
         NoTriviaCorrectAnswersException,
-        NoTriviaMultipleChoiceResponsesException,
+        NoTriviaMultipleChoiceResponsesException, NoTriviaQuestionException,
         TooManyTriviaFetchAttemptsException)
     from CynanBotCommon.trivia.triviaFetchOptions import TriviaFetchOptions
     from CynanBotCommon.trivia.triviaSettingsRepository import \
@@ -57,7 +57,7 @@ except:
     from trivia.triviaContentCode import TriviaContentCode
     from trivia.triviaExceptions import (
         NoTriviaCorrectAnswersException,
-        NoTriviaMultipleChoiceResponsesException,
+        NoTriviaMultipleChoiceResponsesException, NoTriviaQuestionException,
         TooManyTriviaFetchAttemptsException)
     from trivia.triviaFetchOptions import TriviaFetchOptions
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
@@ -211,7 +211,7 @@ class TriviaRepository():
 
             try:
                 triviaQuestion = await triviaQuestionRepository.fetchTriviaQuestion(triviaFetchOptions.getTwitchChannel())
-            except (NoTriviaCorrectAnswersException, NoTriviaMultipleChoiceResponsesException) as e:
+            except (NoTriviaCorrectAnswersException, NoTriviaMultipleChoiceResponsesException, NoTriviaQuestionException) as e:
                 self.__timber.log('TriviaRepository', f'Failed to fetch trivia question due to malformed data: {e}')
 
             if await self.__verifyGoodTriviaQuestion(triviaQuestion, triviaFetchOptions):
