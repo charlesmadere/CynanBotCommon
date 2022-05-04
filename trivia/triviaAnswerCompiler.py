@@ -14,10 +14,10 @@ class TriviaAnswerCompiler():
 
     def __init__(self):
         self.__prefixStringsToRemove: List[str] = [ 'a ', 'an ', 'and ', 'or ', 'the ' ]
-        self.__multipleChoiceAnswerRegEx: Pattern = re.compile(r"[a-z]", re.IGNORECASE)
+        self.__multipleChoiceAnswerRegEx: Pattern = re.compile(r'[a-z]', re.IGNORECASE)
         self.__parenGroupRegEx: Pattern = re.compile(r'(\(.*?\))', re.IGNORECASE)
-        self.__phraseAnswerRegEx: Pattern = re.compile(r"\W", re.IGNORECASE)
-        self.__tagRemovalRegEx: Pattern = re.compile(r"<\/?\w+>", re.IGNORECASE)
+        self.__phraseAnswerRegEx: Pattern = re.compile(r'[^A-Za-z0-9 ]|(?<=\s)\s+', re.IGNORECASE)
+        self.__tagRemovalRegEx: Pattern = re.compile(r'<\/?\w+>', re.IGNORECASE)
         self.__whiteSpaceRegEx: Pattern = re.compile(r'\s\s*', re.IGNORECASE)
 
     async def compileBoolAnswer(self, answer: str) -> str:
@@ -34,7 +34,7 @@ class TriviaAnswerCompiler():
 
         answer = answer.strip().lower()
         answer = self.__tagRemovalRegEx.sub('', answer)
-        answer = answer.replace('&', 'and')
+        answer = answer.replace(' & ', ' and ')
 
         for prefixString in self.__prefixStringsToRemove:
             if answer.startswith(prefixString) and len(answer) > len(prefixString):
