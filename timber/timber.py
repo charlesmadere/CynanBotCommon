@@ -67,11 +67,11 @@ class Timber():
         timberEntry = TimberEntry(tag, msg)
         self.__entryQueue.put(timberEntry)
 
-    def __log(self, timberEntry: TimberEntry):
+    async def __log(self, timberEntry: TimberEntry):
         if timberEntry is None:
             raise ValueError(f'timberEntry argument is malformed: \"{timberEntry}\"')
 
-        self.__writeToLogFile(timberEntry)
+        await self.__writeToLogFile(timberEntry)
 
         if self.__alsoPrintToStandardOut:
             print(self.__getLogStatement(False, timberEntry))
@@ -81,13 +81,13 @@ class Timber():
             try:
                 while not self.__entryQueue.empty():
                     timberEntry = self.__entryQueue.get(block = False)
-                    self.__log(timberEntry)
+                    await self.__log(timberEntry)
             except queue.Empty:
                 pass
 
             await asyncio.sleep(self.__sleepTimeSeconds)
 
-    def __writeToLogFile(self, timberEntry: TimberEntry):
+    async def __writeToLogFile(self, timberEntry: TimberEntry):
         if timberEntry is None:
             raise ValueError(f'timberEntry argument is malformed: \"{timberEntry}\"')
 
