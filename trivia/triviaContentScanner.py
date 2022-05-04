@@ -25,35 +25,17 @@ class TriviaContentScanner():
         self,
         timber: Timber,
         triviaSettingsRepository: TriviaSettingsRepository,
-        maxAnswerLength: int = 80,
-        maxQuestionLength: int = 350,
-        maxPhraseAnswerLength: int = 20,
         bannedWordsFile: str = 'CynanBotCommon/trivia/bannedWords.txt'
     ):
         if timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif triviaSettingsRepository is None:
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
-        elif not utils.isValidNum(maxAnswerLength):
-            raise ValueError(f'maxAnswerLength argument is malformed: \"{maxAnswerLength}\"')
-        elif maxAnswerLength <= 25:
-            raise ValueError(f'maxAnswerLength is too small: {maxAnswerLength}')
-        elif not utils.isValidNum(maxQuestionLength):
-            raise ValueError(f'maxQuestionLength argument is malformed: \"{maxQuestionLength}\"')
-        elif maxQuestionLength <= 100:
-            raise ValueError(f'maxQuestionLength is too small: {maxQuestionLength}')
-        elif not utils.isValidNum(maxPhraseAnswerLength):
-            raise ValueError(f'maxPhraseAnswerLength argument is malformed: \"{maxPhraseAnswerLength}\"')
-        elif maxPhraseAnswerLength < 8:
-            raise ValueError(f'maxPhraseAnswerLength is too small: {maxPhraseAnswerLength}')
         elif not utils.isValidStr(bannedWordsFile):
             raise ValueError(f'bannedWordsFile argument is malformed: \"{bannedWordsFile}\"')
 
         self.__timber: Timber = timber
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
-        self.__maxAnswerLength: int = maxAnswerLength
-        self.__maxQuestionLength: int = maxQuestionLength
-        self.__maxPhraseAnswerLength: int = maxPhraseAnswerLength
         self.__bannedWordsFile: str = bannedWordsFile
 
     async def __readBannedWordsList(self) -> List[str]:
@@ -92,19 +74,25 @@ class TriviaContentScanner():
         return TriviaContentCode.OK
 
     async def __verifyQuestionContentLengths(self, question: AbsTriviaQuestion) -> TriviaContentCode:
-        if len(question.getQuestion()) >= self.__maxQuestionLength:
-            self.__timber.log('TriviaContentScanner', f'Trivia question is too long (max is {self.__maxQuestionLength}): {question.getQuestion()}')
+        maxQuestionLength = await self.__triviaSettingsRepository.getMaxQuestionLength()
+
+        if len(question.getQuestion()) >= maxQuestionLength:
+            self.__timber.log('TriviaContentScanner', f'Trivia question is too long (max is {maxQuestionLength}): {question.getQuestion()}')
             return TriviaContentCode.QUESTION_TOO_LONG
+
+        maxPhraseAnswerLength = await self.__triviaSettingsRepository.getMaxPhraseAnswerLength()
 
         if question.getTriviaType() is TriviaType.QUESTION_ANSWER:
             for correctAnswer in question.getCorrectAnswers():
-                if len(correctAnswer) >= self.__maxPhraseAnswerLength:
-                    self.__timber.log('TriviaContentScanner', f'Trivia answer is too long (max is {self.__maxPhraseAnswerLength}): {question.getCorrectAnswers()}')
+                if len(correctAnswer) >= maxPhraseAnswerLength:
+                    self.__timber.log('TriviaContentScanner', f'Trivia answer is too long (max is {maxPhraseAnswerLength}): {question.getCorrectAnswers()}')
                     return TriviaContentCode.ANSWER_TOO_LONG
 
+        maxAnswerLength = await self.__triviaSettingsRepository.getMaxAnswerLength()
+
         for response in question.getResponses():
-            if len(response) >= self.__maxAnswerLength:
-                self.__timber.log('TriviaContentScanner', f'Trivia response is too long (max is {self.__maxAnswerLength}): {question.getResponses()}')
+            if len(response) >= maxAnswerLength:
+                self.__timber.log('TriviaContentScanner', f'Trivia response is too long (max is {maxAnswerLength}): {question.getResponses()}')
                 return TriviaContentCode.ANSWER_TOO_LONG
 
         return TriviaContentCode.OK
