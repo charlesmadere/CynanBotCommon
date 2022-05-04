@@ -1,5 +1,8 @@
 {
+    "max_answer_length": 80,
     "max_multiple_choice_responses": 5,
+    "max_question_length": 350,
+    "max_phrase_answer_length": 22,
     "max_retry_count": 8,
     "min_multiple_choice_responses": 2,
     "trivia_sources": {

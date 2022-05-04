@@ -2,6 +2,8 @@ import json
 import os
 from typing import Dict
 
+import aiofile
+
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.trivia.triviaSource import TriviaSource
@@ -50,6 +52,10 @@ class TriviaSettingsRepository():
 
         return triviaSources
 
+    async def getMaxAnswerLength(self) -> int:
+        jsonContents = await self.__readJson()
+        return utils.getIntFromDict(jsonContents, 'max_answer_length', 80)
+
     async def getMaxMultipleChoiceResponses(self) -> int:
         jsonContents = await self.__readJson()
 
@@ -63,9 +69,17 @@ class TriviaSettingsRepository():
 
         return maxMultipleChoiceResponses
 
+    async def getMaxQuestionLength(self) -> int:
+        jsonContents = await self.__readJson()
+        return utils.getIntFromDict(jsonContents, 'max_question_length', 350)
+
+    async def getMaxPhraseAnswerLength(self) -> int:
+        jsonContents = await self.__readJson()
+        return utils.getIntFromDict(jsonContents, 'max_phrase_answer_length', 22)
+
     async def getMaxRetryCount(self) -> int:
         jsonContents = await self.__readJson()
-        maxRetryCount = utils.getIntFromDict(jsonContents, 'max_retry_count', 3)
+        maxRetryCount = utils.getIntFromDict(jsonContents, 'max_retry_count', 5)
 
         if maxRetryCount < 2:
             raise ValueError(f'maxRetryCount is too small: \"{maxRetryCount}\"')
