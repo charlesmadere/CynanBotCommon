@@ -114,7 +114,7 @@ class TranslationHelper():
     async def __googleTranslate(self, text: str, targetLanguageEntry: LanguageEntry) -> TranslationResponse:
         self.__timber.log('TranslationHelper', f'Fetching translation from Google Translate...')
 
-        translationResult = self.__getGoogleTranslateClient().translate(
+        translationResult = await self.__getGoogleTranslateClient().translate(
             text,
             target_language = targetLanguageEntry.getIso6391Code()
         )
