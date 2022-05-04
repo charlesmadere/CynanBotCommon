@@ -155,6 +155,8 @@ class TriviaGameMachine():
             raise ValueError(f'triviaScoreRepository argument is malformed: \"{triviaScoreRepository}\"')
         elif not utils.isValidNum(levenshteinThreshold):
             raise ValueError(f'levenshteinThreshold argument is malformed: \"{levenshteinThreshold}\"')
+        elif levenshteinThreshold < 0 or levenshteinThreshold > 1:
+            raise ValueError(f'levenshteinThreshold argument is out of bounds: {levenshteinThreshold}')
         elif not utils.isValidNum(sleepTimeSeconds):
             raise ValueError(f'sleepTimeSeconds argument is malformed: \"{sleepTimeSeconds}\"')
         elif sleepTimeSeconds < 0.1 or sleepTimeSeconds > 5:
