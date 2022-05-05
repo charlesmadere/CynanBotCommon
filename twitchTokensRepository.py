@@ -1,4 +1,5 @@
 import json
+import locale
 import os
 from asyncio import TimeoutError
 from datetime import datetime, timedelta, timezone
@@ -219,7 +220,6 @@ class TwitchTokensRepository():
             await file.write(jsonString)
 
         await self.__saveUserTokenExpirationTime(twitchHandle, expiresInSeconds)
-        self.__timber.log('TwitchTokensRepository', f'Saved new Twitch tokens for \"{twitchHandle}\" (expiration is in {expiresInSeconds} seconds)')
 
     async def requireAccessToken(self, twitchHandle: str) -> str:
         if not utils.isValidStr(twitchHandle):
@@ -250,7 +250,12 @@ class TwitchTokensRepository():
             raise ValueError(f'expiresInSeconds can\'t be <= 0: {expiresInSeconds}')
 
         nowDateTime = datetime.now(timezone.utc)
-        self.__tokenExpirations[twitchHandle] = nowDateTime + timedelta(seconds = expiresInSeconds)
+        expiresInTimeDelta = timedelta(seconds = expiresInSeconds)
+        expirationTime = nowDateTime + expiresInTimeDelta
+        self.__tokenExpirations[twitchHandle] = expirationTime
+
+        expiresInSecondsStr = locale.format_string("%d", expiresInSeconds, grouping = True)
+        self.__timber.log('TwitchTokensRepository', f'Set Twitch tokens for \"{twitchHandle}\" (expiration is in {expiresInSecondsStr} seconds, at {expirationTime})')
 
     async def validateAndRefreshAccessToken(
         self,
@@ -299,4 +304,3 @@ class TwitchTokensRepository():
             )
         else:
             await self.__saveUserTokenExpirationTime(twitchHandle, expiresInSeconds)
-            self.__timber.log('TwitchTokensRepository', f'No need yet to request new Twitch tokens for \"{twitchHandle}\" (expiration is in {expiresInSeconds} seconds)')
