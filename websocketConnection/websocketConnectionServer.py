@@ -122,7 +122,7 @@ class WebsocketConnectionServer():
                     event = self.__eventQueue.get(block = False)
 
                     if event.getEventTime() + self.__eventTimeToLive >= datetime.now(timezone.utc):
-                        eventJson = json.dumps(event.getEventData())
+                        eventJson = json.dumps(event.getEventData(), sort_keys = True)
                         await websocket.send(eventJson)
 
                         if self.__isDebugLoggingEnabled:
