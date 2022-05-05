@@ -86,6 +86,10 @@ class TriviaSettingsRepository():
 
         return maxRetryCount
 
+    async def getMinDaysBeforeRepeatQuestion(self) -> int:
+        jsonContents = await self.__readJson()
+        return utils.getIntFromDict(jsonContents, 'min_days_before_repeat_question', 10)
+
     async def getMinMultipleChoiceResponses(self) -> int:
         jsonContents = await self.__readJson()
         maxMultipleChoiceResponses = utils.getIntFromDict(jsonContents, 'max_multiple_choice_responses', 5)
