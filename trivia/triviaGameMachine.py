@@ -62,6 +62,7 @@ try:
         UnknownTriviaActionTypeException, UnknownTriviaGameTypeException,
         UnsupportedTriviaTypeException)
     from CynanBotCommon.trivia.triviaGameState import TriviaGameState
+    from CynanBotCommon.trivia.triviaGameStore import TriviaGameStore
     from CynanBotCommon.trivia.triviaGameType import TriviaGameType
     from CynanBotCommon.trivia.triviaRepository import TriviaRepository
     from CynanBotCommon.trivia.triviaScoreRepository import \
@@ -122,6 +123,7 @@ except:
                                          UnknownTriviaGameTypeException,
                                          UnsupportedTriviaTypeException)
     from trivia.triviaGameState import TriviaGameState
+    from trivia.triviaGameStore import TriviaGameStore
     from trivia.triviaGameType import TriviaGameType
     from trivia.triviaRepository import TriviaRepository
     from trivia.triviaScoreRepository import TriviaScoreRepository
@@ -138,6 +140,7 @@ class TriviaGameMachine():
         eventLoop: AbstractEventLoop,
         timber: Timber,
         triviaAnswerCompiler: TriviaAnswerCompiler,
+        triviaGameStore: TriviaGameStore,
         triviaRepository: TriviaRepository,
         triviaScoreRepository: TriviaScoreRepository,
         levenshteinThreshold: float = 0.3,
@@ -149,6 +152,8 @@ class TriviaGameMachine():
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif triviaAnswerCompiler is None:
             raise ValueError(f'triviaAnswerCompiler argument is malformed: \"{triviaAnswerCompiler}\"')
+        elif triviaGameStore is None:
+            raise ValueError(f'triviaGameStore argument is malformed: \"{triviaGameStore}\"')
         elif triviaRepository is None:
             raise ValueError(f'triviaRepository argument is malformed: \"{triviaRepository}\"')
         elif triviaScoreRepository is None:
@@ -164,24 +169,17 @@ class TriviaGameMachine():
 
         self.__timber: Timber = timber
         self.__triviaAnswerCompiler: TriviaAnswerCompiler = triviaAnswerCompiler
+        self.__triviaGameStore: TriviaGameStore = triviaGameStore
         self.__triviaRepository: TriviaRepository = triviaRepository
         self.__triviaScoreRepository: TriviaScoreRepository = triviaScoreRepository
         self.__levenshteinThreshold: float = levenshteinThreshold
         self.__sleepTimeSeconds: float = sleepTimeSeconds
 
-        self.__gameStates: List[AbsTriviaGameState] = list()
         self.__eventListener = None
-
         self.__actionQueue: SimpleQueue[AbsTriviaAction] = SimpleQueue()
         self.__eventQueue: SimpleQueue[AbsTriviaEvent] = SimpleQueue()
         eventLoop.create_task(self.__startActionLoop())
         eventLoop.create_task(self.__startEventLoop())
-
-    async def __addGameState(self, state: AbsTriviaGameState):
-        if state is None:
-            raise ValueError(f'state argument is malformed: \"{state}\"')
-
-        self.__gameStates.append(state)
 
     async def __checkAnswer(self, answer: str, triviaQuestion: AbsTriviaQuestion) -> bool:
         if triviaQuestion is None:
@@ -265,36 +263,13 @@ class TriviaGameMachine():
 
         return answerBool in triviaQuestion.getCorrectAnswerBools()
 
-    async def __getAllGameStates(self) -> List[AbsTriviaGameState]:
-        return utils.copyList(self.__gameStates)
-
-    async def __getGameState(self, twitchChannel: str, gameType: TriviaGameType) -> AbsTriviaGameState:
-        if not utils.isValidStr(twitchChannel):
-            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
-        elif gameType is None:
-            raise ValueError(f'gameType argument is malformed: \"{gameType}\"')
-
-        gameStates = await self.__getAllGameStates()
-
-        for state in gameStates:
-            if twitchChannel.lower() == state.getTwitchChannel().lower() and gameType is state.getTriviaGameType():
-                return state
-
-        return None
-
-    async def __getNormalGameState(self, twitchChannel: str) -> TriviaGameState:
-        return await self.__getGameState(twitchChannel, TriviaGameType.NORMAL)
-
-    async def __getSuperGameState(self, twitchChannel: str) -> SuperTriviaGameState:
-        return await self.__getGameState(twitchChannel, TriviaGameType.SUPER)
-
     async def __handleActionCheckAnswer(self, action: CheckAnswerTriviaAction):
         if action is None:
             raise ValueError(f'action argument is malformed: \"{action}\"')
         elif action.getTriviaActionType() is not TriviaActionType.CHECK_ANSWER:
             raise RuntimeError(f'TriviaActionType is not {TriviaActionType.CHECK_ANSWER}: \"{action.getTriviaActionType()}\"')
 
-        state = await self.__getNormalGameState(action.getTwitchChannel())
+        state = await self.__triviaGameStore.getNormalGame(action.getTwitchChannel())
         now = datetime.now(timezone.utc)
 
         if state is None:
@@ -328,7 +303,7 @@ class TriviaGameMachine():
             ))
             return
 
-        await self.__removeNormalGameState(action.getTwitchChannel())
+        await self.__triviaGameStore.removeNormalGame(action.getTwitchChannel())
 
         if not await self.__checkAnswer(action.getAnswer(), state.getTriviaQuestion()):
             triviaScoreResult = await self.__triviaScoreRepository.incrementTotalLosses(
@@ -369,7 +344,7 @@ class TriviaGameMachine():
         elif action.getTriviaActionType() is not TriviaActionType.CHECK_SUPER_ANSWER:
             raise RuntimeError(f'TriviaActionType is not {TriviaActionType.CHECK_SUPER_ANSWER}: \"{action.getTriviaActionType()}\"')
 
-        state = await self.__getSuperGameState(action.getTwitchChannel())
+        state = await self.__triviaGameStore.getSuperGame(action.getTwitchChannel())
         now = datetime.now(timezone.utc)
 
         if state is None:
@@ -408,7 +383,7 @@ class TriviaGameMachine():
             ))
             return
 
-        await self.__removeSuperGameState(action.getTwitchChannel())
+        await self.__triviaGameStore.removeSuperGame(action.getTwitchChannel())
 
         triviaScoreResult = await self.__triviaScoreRepository.incrementTotalWins(
             twitchChannel = action.getTwitchChannel(),
@@ -433,7 +408,7 @@ class TriviaGameMachine():
         elif action.getTriviaActionType() is not TriviaActionType.START_NEW_GAME:
             raise RuntimeError(f'TriviaActionType is not {TriviaActionType.START_NEW_GAME}: \"{action.getTriviaActionType()}\"')
 
-        state = await self.__getNormalGameState(action.getTwitchChannel())
+        state = await self.__triviaGameStore.getNormalGame(action.getTwitchChannel())
         now = datetime.now(timezone.utc)
 
         if state is not None and state.getEndTime() < now:
@@ -468,7 +443,7 @@ class TriviaGameMachine():
             userName = action.getUserName()
         )
 
-        await self.__addGameState(state)
+        await self.__triviaGameStore.add(state)
 
         self.__eventQueue.put(NewTriviaGameEvent(
             triviaQuestion = triviaQuestion,
@@ -486,7 +461,7 @@ class TriviaGameMachine():
         elif action.getTriviaActionType() is not TriviaActionType.START_NEW_SUPER_GAME:
             raise RuntimeError(f'TriviaActionType is not {TriviaActionType.START_NEW_SUPER_GAME}: \"{action.getTriviaActionType()}\"')
 
-        state = await self.__getSuperGameState(action.getTwitchChannel())
+        state = await self.__triviaGameStore.getSuperGame(action.getTwitchChannel())
         now = datetime.now(timezone.utc)
 
         if state is not None and state.getEndTime() < now:
@@ -516,7 +491,7 @@ class TriviaGameMachine():
             twitchChannel = action.getTwitchChannel()
         )
 
-        await self.__addGameState(state)
+        await self.__triviaGameStore.add(state)
 
         self.__eventQueue.put(NewSuperTriviaGameEvent(
             triviaQuestion = triviaQuestion,
@@ -528,7 +503,7 @@ class TriviaGameMachine():
         ))
 
     async def __refreshStatusOfGames(self):
-        gameStates = await self.__getAllGameStates()
+        gameStates = await self.__triviaGameStore.getAll()
 
         if not utils.hasItems(gameStates):
             return
@@ -546,7 +521,7 @@ class TriviaGameMachine():
         for state in gameStatesToRemove:
             if state.getTriviaGameType() is TriviaGameType.NORMAL:
                 normalGameState: TriviaGameState = state
-                await self.__removeNormalGameState(normalGameState.getTwitchChannel())
+                await self.__triviaGameStore.removeNormalGame(state.getTwitchChannel())
 
                 triviaScoreResult = await self.__triviaScoreRepository.incrementTotalLosses(
                     twitchChannel = normalGameState.getTwitchChannel(),
@@ -563,7 +538,7 @@ class TriviaGameMachine():
                 ))
             elif state.getTriviaGameType() is TriviaGameType.SUPER:
                 superGameState: SuperTriviaGameState = state
-                await self.__removeSuperGameState(superGameState.getTwitchChannel())
+                await self.__triviaGameStore.removeSuperGame(superGameState.getTwitchChannel())
 
                 self.__eventQueue.put(OutOfTimeSuperTriviaEvent(
                     triviaQuestion = superGameState.getTriviaQuestion(),
@@ -574,21 +549,6 @@ class TriviaGameMachine():
                 ))
             else:
                 raise UnknownTriviaGameTypeException(f'Unknown TriviaGameType: \"{state.getTriviaGameType()}\"')
-
-    async def __removeGameState(self, twitchChannel: str, gameType: TriviaGameType):
-        if not utils.isValidStr(twitchChannel):
-            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
-
-        for state in self.__gameStates:
-            if twitchChannel.lower() == state.getTwitchChannel().lower() and gameType is state.getTriviaGameType():
-                self.__gameStates.remove(state)
-                break
-
-    async def __removeNormalGameState(self, twitchChannel: str):
-        await self.__removeGameState(twitchChannel, TriviaGameType.NORMAL)
-
-    async def __removeSuperGameState(self, twitchChannel: str):
-        await self.__removeGameState(twitchChannel, TriviaGameType.SUPER)
 
     def setEventListener(self, listener):
         self.__eventListener = listener
