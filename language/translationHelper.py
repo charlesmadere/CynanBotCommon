@@ -5,6 +5,7 @@ from json.decoder import JSONDecodeError
 from os import path
 from typing import Dict
 
+import aiofile
 import aiohttp
 from google.cloud import translate_v2 as translate
 
@@ -151,9 +152,11 @@ class TranslationHelper():
         jsonContents: Dict[str, object] = None
         exception: JSONDecodeError = None
 
-        with open(self.__googleServiceAccountFile, 'r') as file:
+        async with aiofile.async_open(self.__googleServiceAccountFile, 'r') as file:
+            data = await file.read()
+
             try:
-                jsonContents = json.load(file)
+                jsonContents = json.loads(data)
             except JSONDecodeError as e:
                 exception = e
 
