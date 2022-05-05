@@ -67,6 +67,8 @@ try:
     from CynanBotCommon.trivia.triviaRepository import TriviaRepository
     from CynanBotCommon.trivia.triviaScoreRepository import \
         TriviaScoreRepository
+    from CynanBotCommon.trivia.triviaSettingsRepository import \
+        TriviaSettingsRepository
     from CynanBotCommon.trivia.triviaType import TriviaType
     from CynanBotCommon.trivia.trueFalseTriviaQuestion import \
         TrueFalseTriviaQuestion
@@ -127,6 +129,7 @@ except:
     from trivia.triviaGameType import TriviaGameType
     from trivia.triviaRepository import TriviaRepository
     from trivia.triviaScoreRepository import TriviaScoreRepository
+    from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaType import TriviaType
     from trivia.trueFalseTriviaQuestion import TrueFalseTriviaQuestion
     from trivia.wrongUserCheckAnswerTriviaEvent import \
@@ -143,7 +146,7 @@ class TriviaGameMachine():
         triviaGameStore: TriviaGameStore,
         triviaRepository: TriviaRepository,
         triviaScoreRepository: TriviaScoreRepository,
-        levenshteinThreshold: float = 0.3,
+        triviaSettingsRepository: TriviaSettingsRepository,
         sleepTimeSeconds: float = 0.5
     ):
         if eventLoop is None:
@@ -158,10 +161,8 @@ class TriviaGameMachine():
             raise ValueError(f'triviaRepository argument is malformed: \"{triviaRepository}\"')
         elif triviaScoreRepository is None:
             raise ValueError(f'triviaScoreRepository argument is malformed: \"{triviaScoreRepository}\"')
-        elif not utils.isValidNum(levenshteinThreshold):
-            raise ValueError(f'levenshteinThreshold argument is malformed: \"{levenshteinThreshold}\"')
-        elif levenshteinThreshold < 0 or levenshteinThreshold > 1:
-            raise ValueError(f'levenshteinThreshold argument is out of bounds: {levenshteinThreshold}')
+        elif triviaSettingsRepository is None:
+            raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
         elif not utils.isValidNum(sleepTimeSeconds):
             raise ValueError(f'sleepTimeSeconds argument is malformed: \"{sleepTimeSeconds}\"')
         elif sleepTimeSeconds < 0.1 or sleepTimeSeconds > 5:
@@ -172,7 +173,7 @@ class TriviaGameMachine():
         self.__triviaGameStore: TriviaGameStore = triviaGameStore
         self.__triviaRepository: TriviaRepository = triviaRepository
         self.__triviaScoreRepository: TriviaScoreRepository = triviaScoreRepository
-        self.__levenshteinThreshold: float = levenshteinThreshold
+        self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
         self.__sleepTimeSeconds: float = sleepTimeSeconds
 
         self.__eventListener = None
@@ -232,12 +233,13 @@ class TriviaGameMachine():
 
         correctAnswers = triviaQuestion.getCorrectAnswers()
         cleanedCorrectAnswers = triviaQuestion.getCleanedCorrectAnswers()
+        levenshteinThreshold = await self.__triviaSettingsRepository.getLevenshteinThreshold()
 
         for cleanedCorrectAnswer in cleanedCorrectAnswers:
-            threshold = int(min(len(cleanedAnswer), len(cleanedCorrectAnswer)) * self.__levenshteinThreshold)
+            threshold = int(min(len(cleanedAnswer), len(cleanedCorrectAnswer)) * levenshteinThreshold)
             distance = polyleven.levenshtein(cleanedAnswer, cleanedCorrectAnswer, threshold)
 
-            self.__timber.log('TriviaGameMachine', f'answer:\"{answer}\", cleanedAnswer:\"{cleanedAnswer}\", correctAnswers:\"{correctAnswers}\", cleanedCorrectAnswers:\"{cleanedCorrectAnswers}\", threshold:\"{threshold}\", distance:\"{distance}\"')
+            self.__timber.log('TriviaGameMachine', f'answer:\"{answer}\", cleanedAnswer:\"{cleanedAnswer}\", correctAnswers:\"{correctAnswers}\", cleanedCorrectAnswers:\"{cleanedCorrectAnswers}\", threshold:\"{threshold}\", distance:\"{distance}\", levenshteinThreshold:\"{levenshteinThreshold}\"')
 
             if distance <= threshold:
                 return True
