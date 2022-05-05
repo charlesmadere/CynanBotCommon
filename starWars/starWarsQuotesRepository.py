@@ -4,6 +4,8 @@ import re
 from os import path
 from typing import Dict, List
 
+import aiofile
+
 try:
     import CynanBotCommon.utils as utils
 except:
@@ -57,8 +59,9 @@ class StarWarsQuotesRepository():
         if not path.exists(self.__quotesFile):
             raise FileNotFoundError(f'quotes file not found: \"{self.__quotesFile}\"')
 
-        with open(self.__quotesFile, 'r') as file:
-            jsonContents = json.load(file)
+        async with aiofile.async_open(self.__quotesFile, 'r') as file:
+            data = await file.read()
+            jsonContents = json.loads(data)
 
         if jsonContents is None:
             raise IOError(f'Error reading from quotes file: \"{self.__quotesFile}\"')

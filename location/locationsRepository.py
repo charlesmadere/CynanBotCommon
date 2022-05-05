@@ -2,6 +2,8 @@ import json
 from os import path
 from typing import Dict
 
+from aiofile import async_open
+
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.location.location import Location
@@ -33,13 +35,15 @@ class LocationsRepository():
         if not utils.isValidStr(locationId):
             raise ValueError(f'locationId argument is malformed: \"{locationId}\"')
 
-        if locationId.lower() in self.__locationsCache:
-            return self.__locationsCache[locationId.lower()]
+        locationId = locationId.lower()
+
+        if locationId in self.__locationsCache:
+            return self.__locationsCache[locationId]
 
         jsonContents = await self.__readAllJson()
 
         for _id in jsonContents:
-            if _id.lower() == locationId.lower():
+            if _id.lower() == locationId:
                 timeZoneStr = jsonContents[_id]['timeZone']
                 timeZone = self.__timeZoneRepository.getTimeZone(timeZoneStr)
 
@@ -60,8 +64,9 @@ class LocationsRepository():
         if not path.exists(self.__locationsFile):
             raise FileNotFoundError(f'Locations file not found: \"{self.__locationsFile}\"')
 
-        with open(self.__locationsFile, 'r') as file:
-            jsonContents = json.load(file)
+        async with async_open(self.__locationsFile, 'r') as file:
+            data = await file.read()
+            jsonContents = json.loads(data)
 
         if jsonContents is None:
             raise IOError(f'Error reading from locations file: \"{self.__locationsFile}\"')
