@@ -4,6 +4,7 @@ from asyncio import TimeoutError
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List
 
+import aiofile
 import aiohttp
 
 try:
@@ -118,8 +119,9 @@ class TwitchTokensRepository():
         if not os.path.exists(self.__twitchTokensFile):
             raise FileNotFoundError(f'Twitch tokens file not found: \"{self.__twitchTokensFile}\"')
 
-        with open(self.__twitchTokensFile, 'r') as file:
-            jsonContents = json.load(file)
+        async with aiofile.async_open(self.__twitchTokensFile, 'r') as file:
+            data = await file.read()
+            jsonContents = json.loads(data)
 
         if jsonContents is None:
             raise IOError(f'Error reading from Twitch tokens file: \"{self.__twitchTokensFile}\"')
@@ -212,8 +214,9 @@ class TwitchTokensRepository():
             'refreshToken': refreshToken
         }
 
-        with open(self.__twitchTokensFile, 'w') as file:
-            json.dump(jsonContents, file, indent = 4, sort_keys = True)
+        async with aiofile.async_open(self.__twitchTokensFile, 'w') as file:
+            jsonString = json.dumps(jsonContents, indent = 4, sort_keys = True)
+            await file.write(jsonString)
 
         await self.__saveUserTokenExpirationTime(twitchHandle, expiresInSeconds)
         self.__timber.log('TwitchTokensRepository', f'Saved new Twitch tokens for \"{twitchHandle}\" (expiration is in {expiresInSeconds} seconds)')
