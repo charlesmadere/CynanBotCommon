@@ -8,6 +8,8 @@ try:
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.triviaContentCode import TriviaContentCode
+    from CynanBotCommon.trivia.triviaSettingsRepository import \
+        TriviaSettingsRepository
 except:
     import utils
     from backingDatabase import BackingDatabase
@@ -15,6 +17,7 @@ except:
 
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.triviaContentCode import TriviaContentCode
+    from trivia.triviaSettingsRepository import TriviaSettingsRepository
 
 
 class TriviaHistoryRepository():
@@ -23,18 +26,18 @@ class TriviaHistoryRepository():
         self,
         backingDatabase: BackingDatabase,
         timber: Timber,
-        minimumTimeDelta: timedelta = timedelta(weeks = 1)
+        triviaSettingsRepository: TriviaSettingsRepository
     ):
         if backingDatabase is None:
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
         elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif minimumTimeDelta is None:
-            raise ValueError(f'minimumTimeDelta argument is malformed: \"{minimumTimeDelta}\"')
+        elif triviaSettingsRepository is None:
+            raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
 
         self.__backingDatabase: BackingDatabase = backingDatabase
         self.__timber: Timber = timber
-        self.__minimumTimeDelta: timedelta = minimumTimeDelta
+        self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
 
         self.__isDatabaseReady: bool = False
 
@@ -104,8 +107,9 @@ class TriviaHistoryRepository():
 
         questionDateTimeStr: str = row[0]
         questionDateTime = datetime.fromisoformat(questionDateTimeStr)
+        minimumTimeDelta = timedelta(days = await self.__triviaSettingsRepository.getMinDaysBeforeRepeatQuestion())
 
-        if questionDateTime + self.__minimumTimeDelta >= nowDateTime:
+        if questionDateTime + minimumTimeDelta >= nowDateTime:
             await cursor.close()
             await connection.close()
             self.__timber.log('TriviaHistoryRepository', f'Encountered duplicate triviaHistory entry for triviaId:{triviaId} triviaSource:{triviaSource} twitchChannel:{twitchChannel} that is within the window of being a repeat (now:{nowDateTimeStr}) (db:{questionDateTimeStr})')
@@ -123,6 +127,5 @@ class TriviaHistoryRepository():
         await connection.commit()
         await cursor.close()
         await connection.close()
-
         self.__timber.log('TriviaHistoryRepository', f'Updated triviaHistory entry for triviaId:{triviaId} triviaSource:{triviaSource} twitchChannel:{twitchChannel} to {nowDateTimeStr} from {questionDateTimeStr}')
         return TriviaContentCode.OK
