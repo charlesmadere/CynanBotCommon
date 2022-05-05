@@ -140,8 +140,10 @@ class TwitchTokensRepository():
         if not utils.hasItems(twitchHandlesJson):
             raise ValueError(f'\"twitchHandles\" JSON contents of Twitch tokens file \"{self.__twitchTokensFile}\" is missing/empty')
 
+        twitchHandle = twitchHandle.lower()
+
         for key in twitchHandlesJson:
-            if key.lower() == twitchHandle.lower():
+            if key.lower() == twitchHandle:
                 return twitchHandlesJson[key]
 
         # Return an empty dictionary if the given user isn't found in the Twitch tokens file. This
