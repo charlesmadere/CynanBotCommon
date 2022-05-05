@@ -3,6 +3,8 @@ from datetime import timedelta
 from os import path
 from typing import Dict, Optional
 
+from aiofile import async_open
+
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.chatBand.chatBandInstrument import ChatBandInstrument
@@ -156,8 +158,9 @@ class ChatBandManager():
         if not path.exists(self.__chatBandFile):
             raise FileNotFoundError(f'Chat Band file not found: \"{self.__chatBandFile}\"')
 
-        with open(self.__chatBandFile, 'r') as file:
-            jsonContents = json.load(file)
+        async with async_open(self.__chatBandFile, 'r') as file:
+            data = await file.read()
+            jsonContents = json.loads(data)
 
         if jsonContents is None:
             raise IOError(f'Error reading from Chat Band file: \"{self.__chatBandFile}\"')
@@ -175,8 +178,10 @@ class ChatBandManager():
         if not utils.hasItems(twitchChannelsJson):
             raise ValueError(f'\"twitchChannels\" JSON contents of Chat Band file \"{self.__chatBandFile}\" is missing/empty')
 
+        twitchChannel = twitchChannel.lower()
+
         for key in twitchChannelsJson:
-            if key.lower() == twitchChannel.lower():
+            if key.lower() == twitchChannel:
                 return twitchChannelsJson[key]
 
         return None

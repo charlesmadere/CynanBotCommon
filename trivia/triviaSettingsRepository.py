@@ -102,8 +102,9 @@ class TriviaSettingsRepository():
         if not os.path.exists(self.__settingsFile):
             raise FileNotFoundError(f'Trivia settings file not found: \"{self.__settingsFile}\"')
 
-        with open(self.__settingsFile, 'r') as file:
-            jsonContents = json.load(file)
+        async with aiofile.async_open(self.__settingsFile, 'r') as file:
+            data = await file.read()
+            jsonContents = json.loads(data)
 
         if jsonContents is None:
             raise IOError(f'Error reading from trivia settings file: \"{self.__settingsFile}\"')

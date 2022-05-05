@@ -3,6 +3,8 @@ import random
 from os import path
 from typing import Dict, List, Optional
 
+import aiofile
+
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.timber.timber import Timber
@@ -130,8 +132,9 @@ class JokeTriviaQuestionRepository(AbsTriviaQuestionRepository):
         if not path.exists(self.__jokeTriviaQuestionFile):
             raise FileNotFoundError(f'Joke trivia question file not found: \"{self.__jokeTriviaQuestionFile}\"')
 
-        with open(self.__jokeTriviaQuestionFile, 'r') as file:
-            jsonContents = json.load(file)
+        async with aiofile.async_open(self.__jokeTriviaQuestionFile, 'r') as file:
+            data = await file.read()
+            jsonContents = json.loads(data)
 
         if jsonContents is None:
             raise IOError(f'Error reading from joke trivia file: \"{self.__jokeTriviaQuestionFile}\"')

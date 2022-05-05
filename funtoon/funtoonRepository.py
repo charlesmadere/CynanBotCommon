@@ -4,6 +4,7 @@ from asyncio import TimeoutError
 from typing import Dict
 
 import aiohttp
+from aiofile import async_open
 
 try:
     import CynanBotCommon.utils as utils
@@ -209,8 +210,9 @@ class FuntoonRepository():
         if not os.path.exists(self.__funtoonRepositoryFile):
             raise FileNotFoundError(f'Funtoon repository file not found: \"{self.__funtoonRepositoryFile}\"')
 
-        with open(self.__funtoonRepositoryFile, 'r') as file:
-            jsonContents = json.load(file)
+        async with async_open(self.__funtoonRepositoryFile, 'r') as file:
+            data = await file.read()
+            jsonContents = json.loads(data)
 
         if jsonContents is None:
             raise IOError(f'Error reading from Funtoon repository file: \"{self.__funtoonRepositoryFile}\"')
@@ -228,8 +230,10 @@ class FuntoonRepository():
         if not utils.hasItems(twitchChannelsJson):
             raise ValueError(f'\"twitchChannels\" JSON contents of Funtoon repository file \"{self.__funtoonRepositoryFile}\" is missing/empty')
 
+        twitchChannel = twitchChannel.lower()
+
         for key in twitchChannelsJson:
-            if key.lower() == twitchChannel.lower():
+            if key.lower() == twitchChannel:
                 return twitchChannelsJson[key]
 
         return None

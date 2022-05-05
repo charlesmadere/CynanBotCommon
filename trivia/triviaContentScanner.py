@@ -1,6 +1,8 @@
 from os import path
 from typing import List
 
+import aiofile
+
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.timber.timber import Timber
@@ -42,16 +44,15 @@ class TriviaContentScanner():
         if not path.exists(self.__bannedWordsFile):
             raise FileNotFoundError(f'Banned Words file not found: \"{self.__bannedWordsFile}\"')
 
-        with open(self.__bannedWordsFile, 'r') as file:
-            lines = file.readlines()
-
         bannedWords: List[str] = list()
 
-        if utils.hasItems(lines):
-            for line in lines:
+        async with aiofile.AIOFile(self.__bannedWordsFile, 'r') as file:
+            async for line in aiofile.LineReader(file):
                 if utils.isValidStr(line):
                     line = line.strip().lower()
-                    bannedWords.append(line)
+
+                    if utils.isValidStr(line):
+                        bannedWords.append(line)
 
         return bannedWords
 
