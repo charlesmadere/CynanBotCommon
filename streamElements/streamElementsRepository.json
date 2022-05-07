@@ -1,0 +1,8 @@
+{
+    "bearerToken": "",
+    "twitchChannels": {
+        "exampleChannel": {
+            "channelGuuid": ""
+        }
+    }
+}
