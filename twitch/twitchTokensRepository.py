@@ -60,7 +60,7 @@ class TwitchTokensRepository():
         timber: Timber,
         oauth2TokenUrl: str = 'https://id.twitch.tv/oauth2/token',
         oauth2ValidateUrl: str = 'https://id.twitch.tv/oauth2/validate',
-        twitchTokensFile: str = 'CynanBotCommon/twitchTokensRepository.json',
+        twitchTokensFile: str = 'CynanBotCommon/twitch/twitchTokensRepository.json',
         tokensExpirationBuffer: timedelta = timedelta(minutes = 30)
     ):
         if clientSession is None:
