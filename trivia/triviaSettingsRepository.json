@@ -1,5 +1,5 @@
 {
-    "levenshtein_threshold": 0.25,
+    "levenshtein_threshold": 0.10,
     "max_answer_length": 80,
     "max_multiple_choice_responses": 5,
     "max_question_length": 350,
