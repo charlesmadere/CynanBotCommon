@@ -5,8 +5,6 @@ from datetime import datetime, timezone
 from queue import SimpleQueue
 from typing import List
 
-import polyleven
-
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.timber.timber import Timber
@@ -32,8 +30,6 @@ try:
         IncorrectAnswerTriviaEvent
     from CynanBotCommon.trivia.incorrectSuperAnswerTriviaEvent import \
         IncorrectSuperAnswerTriviaEvent
-    from CynanBotCommon.trivia.multipleChoiceTriviaQuestion import \
-        MultipleChoiceTriviaQuestion
     from CynanBotCommon.trivia.newSuperTriviaGameEvent import \
         NewSuperTriviaGameEvent
     from CynanBotCommon.trivia.newTriviaGameEvent import NewTriviaGameEvent
@@ -44,8 +40,6 @@ try:
     from CynanBotCommon.trivia.outOfTimeSuperTriviaEvent import \
         OutOfTimeSuperTriviaEvent
     from CynanBotCommon.trivia.outOfTimeTriviaEvent import OutOfTimeTriviaEvent
-    from CynanBotCommon.trivia.questionAnswerTriviaQuestion import \
-        QuestionAnswerTriviaQuestion
     from CynanBotCommon.trivia.startNewSuperTriviaGameAction import \
         StartNewSuperTriviaGameAction
     from CynanBotCommon.trivia.startNewTriviaGameAction import \
@@ -56,22 +50,16 @@ try:
         SuperGameNotReadyCheckAnswerTriviaEvent
     from CynanBotCommon.trivia.superTriviaGameState import SuperTriviaGameState
     from CynanBotCommon.trivia.triviaActionType import TriviaActionType
-    from CynanBotCommon.trivia.triviaAnswerCompiler import TriviaAnswerCompiler
+    from CynanBotCommon.trivia.triviaAnswerChecker import TriviaAnswerChecker
     from CynanBotCommon.trivia.triviaExceptions import (
-        BadTriviaAnswerException, TooManyTriviaFetchAttemptsException,
-        UnknownTriviaActionTypeException, UnknownTriviaGameTypeException,
-        UnsupportedTriviaTypeException)
+        TooManyTriviaFetchAttemptsException, UnknownTriviaActionTypeException,
+        UnknownTriviaGameTypeException)
     from CynanBotCommon.trivia.triviaGameState import TriviaGameState
     from CynanBotCommon.trivia.triviaGameStore import TriviaGameStore
     from CynanBotCommon.trivia.triviaGameType import TriviaGameType
     from CynanBotCommon.trivia.triviaRepository import TriviaRepository
     from CynanBotCommon.trivia.triviaScoreRepository import \
         TriviaScoreRepository
-    from CynanBotCommon.trivia.triviaSettingsRepository import \
-        TriviaSettingsRepository
-    from CynanBotCommon.trivia.triviaType import TriviaType
-    from CynanBotCommon.trivia.trueFalseTriviaQuestion import \
-        TrueFalseTriviaQuestion
     from CynanBotCommon.trivia.wrongUserCheckAnswerTriviaEvent import \
         WrongUserCheckAnswerTriviaEvent
 except:
@@ -97,8 +85,6 @@ except:
     from trivia.incorrectAnswerTriviaEvent import IncorrectAnswerTriviaEvent
     from trivia.incorrectSuperAnswerTriviaEvent import \
         IncorrectSuperAnswerTriviaEvent
-    from trivia.multipleChoiceTriviaQuestion import \
-        MultipleChoiceTriviaQuestion
     from trivia.newSuperTriviaGameEvent import NewSuperTriviaGameEvent
     from trivia.newTriviaGameEvent import NewTriviaGameEvent
     from trivia.outOfTimeCheckAnswerTriviaEvent import \
@@ -107,8 +93,6 @@ except:
         OutOfTimeCheckSuperAnswerTriviaEvent
     from trivia.outOfTimeSuperTriviaEvent import OutOfTimeSuperTriviaEvent
     from trivia.outOfTimeTriviaEvent import OutOfTimeTriviaEvent
-    from trivia.questionAnswerTriviaQuestion import \
-        QuestionAnswerTriviaQuestion
     from trivia.startNewSuperTriviaGameAction import \
         StartNewSuperTriviaGameAction
     from trivia.startNewTriviaGameAction import StartNewTriviaGameAction
@@ -118,20 +102,15 @@ except:
         SuperGameNotReadyCheckAnswerTriviaEvent
     from trivia.superTriviaGameState import SuperTriviaGameState
     from trivia.triviaActionType import TriviaActionType
-    from trivia.triviaAnswerCompiler import TriviaAnswerCompiler
-    from trivia.triviaExceptions import (BadTriviaAnswerException,
-                                         TooManyTriviaFetchAttemptsException,
+    from trivia.triviaAnswerChecker import TriviaAnswerChecker
+    from trivia.triviaExceptions import (TooManyTriviaFetchAttemptsException,
                                          UnknownTriviaActionTypeException,
-                                         UnknownTriviaGameTypeException,
-                                         UnsupportedTriviaTypeException)
+                                         UnknownTriviaGameTypeException)
     from trivia.triviaGameState import TriviaGameState
     from trivia.triviaGameStore import TriviaGameStore
     from trivia.triviaGameType import TriviaGameType
     from trivia.triviaRepository import TriviaRepository
     from trivia.triviaScoreRepository import TriviaScoreRepository
-    from trivia.triviaSettingsRepository import TriviaSettingsRepository
-    from trivia.triviaType import TriviaType
-    from trivia.trueFalseTriviaQuestion import TrueFalseTriviaQuestion
     from trivia.wrongUserCheckAnswerTriviaEvent import \
         WrongUserCheckAnswerTriviaEvent
 
@@ -142,38 +121,34 @@ class TriviaGameMachine():
         self,
         eventLoop: AbstractEventLoop,
         timber: Timber,
-        triviaAnswerCompiler: TriviaAnswerCompiler,
+        triviaAnswerChecker: TriviaAnswerChecker,
         triviaGameStore: TriviaGameStore,
         triviaRepository: TriviaRepository,
         triviaScoreRepository: TriviaScoreRepository,
-        triviaSettingsRepository: TriviaSettingsRepository,
         sleepTimeSeconds: float = 0.5
     ):
         if eventLoop is None:
             raise ValueError(f'eventLoop argument is malformed: \"{eventLoop}\"')
         elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif triviaAnswerCompiler is None:
-            raise ValueError(f'triviaAnswerCompiler argument is malformed: \"{triviaAnswerCompiler}\"')
+        elif triviaAnswerChecker is None:
+            raise ValueError(f'triviaAnswerChecker argument is malformed: \"{triviaAnswerChecker}\"')
         elif triviaGameStore is None:
             raise ValueError(f'triviaGameStore argument is malformed: \"{triviaGameStore}\"')
         elif triviaRepository is None:
             raise ValueError(f'triviaRepository argument is malformed: \"{triviaRepository}\"')
         elif triviaScoreRepository is None:
             raise ValueError(f'triviaScoreRepository argument is malformed: \"{triviaScoreRepository}\"')
-        elif triviaSettingsRepository is None:
-            raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
         elif not utils.isValidNum(sleepTimeSeconds):
             raise ValueError(f'sleepTimeSeconds argument is malformed: \"{sleepTimeSeconds}\"')
         elif sleepTimeSeconds < 0.1 or sleepTimeSeconds > 5:
             raise ValueError(f'sleepTimeSeconds argument is out of bounds: {sleepTimeSeconds}')
 
         self.__timber: Timber = timber
-        self.__triviaAnswerCompiler: TriviaAnswerCompiler = triviaAnswerCompiler
+        self.__triviaAnswerChecker: TriviaAnswerChecker = triviaAnswerChecker
         self.__triviaGameStore: TriviaGameStore = triviaGameStore
         self.__triviaRepository: TriviaRepository = triviaRepository
         self.__triviaScoreRepository: TriviaScoreRepository = triviaScoreRepository
-        self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
         self.__sleepTimeSeconds: float = sleepTimeSeconds
 
         self.__eventListener = None
@@ -186,84 +161,7 @@ class TriviaGameMachine():
         if triviaQuestion is None:
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
 
-        if not utils.isValidStr(answer):
-            return False
-
-        if triviaQuestion.getTriviaType() is TriviaType.MULTIPLE_CHOICE:
-            return await self.__checkAnswerMultipleChoice(answer, triviaQuestion)
-        elif triviaQuestion.getTriviaType() is TriviaType.QUESTION_ANSWER:
-            return await self.__checkAnswerQuestionAnswer(answer, triviaQuestion)
-        elif triviaQuestion.getTriviaType() is TriviaType.TRUE_FALSE:
-            return await self.__checkAnswerTrueFalse(answer, triviaQuestion)
-        else:
-            raise UnsupportedTriviaTypeException(f'Unsupported TriviaType: \"{triviaQuestion.getTriviaType()}\"')
-
-    async def __checkAnswerMultipleChoice(
-        self,
-        answer: str,
-        triviaQuestion: MultipleChoiceTriviaQuestion
-    ) -> bool:
-        if triviaQuestion is None:
-            raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
-        elif triviaQuestion.getTriviaType() is not TriviaType.MULTIPLE_CHOICE:
-            raise RuntimeError(f'TriviaType is not {TriviaType.MULTIPLE_CHOICE}: \"{triviaQuestion.getTriviaType()}\"')
-
-        answerOrdinal: int = None
-        try:
-            answerOrdinal = await self.__triviaAnswerCompiler.compileTextAnswerToMultipleChoiceOrdinal(answer)
-        except BadTriviaAnswerException as e:
-            self.__timber.log('TriviaGameMachine', f'Unable to convert multiple choice answer to ordinal: \"{answer}\": {e}')
-            return False
-
-        return answerOrdinal in triviaQuestion.getCorrectAnswerOrdinals()
-
-    async def __checkAnswerQuestionAnswer(
-        self,
-        answer: str,
-        triviaQuestion: QuestionAnswerTriviaQuestion
-    ) -> bool:
-        if triviaQuestion is None:
-            raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
-        elif triviaQuestion.getTriviaType() is not TriviaType.QUESTION_ANSWER:
-            raise RuntimeError(f'TriviaType is not {TriviaType.QUESTION_ANSWER}: \"{triviaQuestion.getTriviaType()}\"')
-
-        cleanedAnswer = await self.__triviaAnswerCompiler.compileTextAnswer(answer)
-        if not utils.isValidStr(cleanedAnswer):
-            return False
-
-        correctAnswers = triviaQuestion.getCorrectAnswers()
-        cleanedCorrectAnswers = triviaQuestion.getCleanedCorrectAnswers()
-        levenshteinThreshold = await self.__triviaSettingsRepository.getLevenshteinThreshold()
-
-        for cleanedCorrectAnswer in cleanedCorrectAnswers:
-            threshold = int(min(len(cleanedAnswer), len(cleanedCorrectAnswer)) * levenshteinThreshold)
-            distance = polyleven.levenshtein(cleanedAnswer, cleanedCorrectAnswer, threshold)
-
-            self.__timber.log('TriviaGameMachine', f'answer:\"{answer}\", cleanedAnswer:\"{cleanedAnswer}\", correctAnswers:\"{correctAnswers}\", cleanedCorrectAnswers:\"{cleanedCorrectAnswers}\", threshold:\"{threshold}\", distance:\"{distance}\", levenshteinThreshold:\"{levenshteinThreshold}\"')
-
-            if distance <= threshold:
-                return True
-
-        return False
-
-    async def __checkAnswerTrueFalse(
-        self,
-        answer: str,
-        triviaQuestion: TrueFalseTriviaQuestion
-    ) -> bool:
-        if triviaQuestion is None:
-            raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
-        elif triviaQuestion.getTriviaType() is not TriviaType.TRUE_FALSE:
-            raise RuntimeError(f'TriviaType is not {TriviaType.TRUE_FALSE}: \"{triviaQuestion.getTriviaType()}\"')
-
-        answerBool: bool = None
-        try:
-            answerBool = await self.__triviaAnswerCompiler.compileBoolAnswer(answer)
-        except BadTriviaAnswerException as e:
-            self.__timber.log('TriviaGameMachine', f'Unable to convert true false answer to bool: \"{answer}\": {e}')
-            return False
-
-        return answerBool in triviaQuestion.getCorrectAnswerBools()
+        return await self.__triviaAnswerChecker.checkAnswer(answer, triviaQuestion)
 
     async def __handleActionCheckAnswer(self, action: CheckAnswerTriviaAction):
         if action is None:
