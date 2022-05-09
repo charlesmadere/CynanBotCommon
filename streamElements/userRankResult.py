@@ -4,7 +4,7 @@ except:
     import utils
 
 
-class UserPointsResult():
+class UserRankResult():
 
     def __init__(
         self,
