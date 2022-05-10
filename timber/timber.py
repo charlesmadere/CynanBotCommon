@@ -51,7 +51,7 @@ class Timber():
             raise ValueError(f'timberEntry argument is malformed: \"{timberEntry}\"')
 
         logStatement = f'{timberEntry.getSimpleDateTime().getDateAndTimeStr()} — {timberEntry.getTag()} — {timberEntry.getMsg()}'
-        logStatement.strip()
+        logStatement = logStatement.strip()
 
         if ensureNewLine:
             logStatement = f'{logStatement}\n'
