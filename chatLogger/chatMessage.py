@@ -21,7 +21,7 @@ class ChatMessage():
         self.__twitchChannel: str = twitchChannel
         self.__userId: str = userId
         self.__userName: str = userName
-        self.__msg: str = msg.strip()
+        self.__msg: str = msg
 
         self.__sdt: SimpleDateTime = SimpleDateTime()
 
