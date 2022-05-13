@@ -28,12 +28,6 @@ class TwitchExpiresInMissingException(Exception):
         super().__init__(message)
 
 
-class TwitchExpiresInOverlyAggressiveException(Exception):
-
-    def __init__(self, message: str):
-        super().__init__(message)
-
-
 class TwitchJsonException(Exception):
 
     def __init__(self, message: str):
@@ -204,9 +198,6 @@ class TwitchTokensRepository():
         elif not utils.isValidNum(expiresInSeconds):
             self.__timber.log('TwitchTokensRepository', f'Received malformed \"expires_in\" ({expiresInSeconds}) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
             raise TwitchExpiresInMissingException(f'Received malformed \"expires_in\" ({expiresInSeconds}) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
-        elif expiresInSeconds < 900: # 900 seconds = 15 minutes
-            self.__timber.log('TwitchTokensRepository', f'Received overly aggressive \"expires_in\" ({expiresInSeconds} seconds) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
-            raise TwitchExpiresInOverlyAggressiveException(f'Received overly aggressive \"expires_in\" ({expiresInSeconds} seconds) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
 
         if await self.__isDebugLoggingEnabled():
             self.__timber.log('TwitchTokensRepository', f'JSON response for \"{twitchHandle}\" Twitch tokens refresh: {jsonResponse}')
@@ -221,7 +212,10 @@ class TwitchTokensRepository():
             jsonString = json.dumps(jsonContents, indent = 4, sort_keys = True)
             await file.write(jsonString)
 
-        await self.__saveUserTokenExpirationTime(twitchHandle, expiresInSeconds)
+        await self.__saveUserTokenExpirationTime(
+            twitchHandle = twitchHandle,
+            expiresInSeconds = expiresInSeconds
+        )
 
     async def requireAccessToken(self, twitchHandle: str) -> str:
         if not utils.isValidStr(twitchHandle):
@@ -298,11 +292,14 @@ class TwitchTokensRepository():
         if jsonResponse is not None and utils.isValidNum(jsonResponse.get('expires_in')):
             expiresInSeconds = utils.getIntFromDict(jsonResponse, 'expires_in')
 
-        if responseStatus != 200 or not utils.isValidStr(clientId) or expiresInSeconds < 900: # 900 seconds = 15 minutes
+        if responseStatus != 200 or not utils.isValidStr(clientId) or expiresInSeconds < self.__tokensExpirationBuffer.total_seconds():
             await self.__refreshTokens(
                 twitchClientId = twitchClientId,
                 twitchClientSecret = twitchClientSecret,
                 twitchHandle = twitchHandle
             )
         else:
-            await self.__saveUserTokenExpirationTime(twitchHandle, expiresInSeconds)
+            await self.__saveUserTokenExpirationTime(
+                twitchHandle = twitchHandle,
+                expiresInSeconds = expiresInSeconds
+            )
