@@ -208,9 +208,13 @@ class TwitchTokensRepository():
             'refreshToken': refreshToken
         }
 
+        jsonString: str = ''
         async with aiofile.async_open(self.__twitchTokensFile, 'w') as file:
             jsonString = json.dumps(jsonContents, indent = 4, sort_keys = True)
             await file.write(jsonString)
+
+        if await self.__isDebugLoggingEnabled():
+            self.__timber.log('TwitchTokensRepository', f'{self.__twitchTokensFile} contents: {jsonString}')
 
         await self.__saveUserTokenExpirationTime(
             twitchHandle = twitchHandle,
@@ -252,6 +256,9 @@ class TwitchTokensRepository():
 
         expiresInSecondsStr = locale.format_string("%d", expiresInSeconds, grouping = True)
         self.__timber.log('TwitchTokensRepository', f'Set Twitch tokens for \"{twitchHandle}\" (expiration is in {expiresInSecondsStr} seconds, at {expirationTime})')
+
+        if await self.__isDebugLoggingEnabled():
+            self.__timber.log('TwitchTokensRepository', f'tokenExpirations contents: {self.__tokenExpirations}')
 
     async def validateAndRefreshAccessToken(
         self,
