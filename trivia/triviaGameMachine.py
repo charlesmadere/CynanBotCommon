@@ -169,7 +169,11 @@ class TriviaGameMachine():
         elif action.getTriviaActionType() is not TriviaActionType.CHECK_ANSWER:
             raise RuntimeError(f'TriviaActionType is not {TriviaActionType.CHECK_ANSWER}: \"{action.getTriviaActionType()}\"')
 
-        state = await self.__triviaGameStore.getNormalGame(action.getTwitchChannel())
+        state = await self.__triviaGameStore.getNormalGame(
+            twitchChannel = action.getTwitchChannel(),
+            userName = action.getUserName()
+        )
+
         now = datetime.now(timezone.utc)
 
         if state is None:
@@ -203,7 +207,10 @@ class TriviaGameMachine():
             ))
             return
 
-        await self.__triviaGameStore.removeNormalGame(action.getTwitchChannel())
+        await self.__triviaGameStore.removeNormalGame(
+            twitchChannel = action.getTwitchChannel(),
+            userName = action.getUserName()
+        )
 
         if not await self.__checkAnswer(action.getAnswer(), state.getTriviaQuestion()):
             triviaScoreResult = await self.__triviaScoreRepository.incrementTotalLosses(
@@ -308,7 +315,11 @@ class TriviaGameMachine():
         elif action.getTriviaActionType() is not TriviaActionType.START_NEW_GAME:
             raise RuntimeError(f'TriviaActionType is not {TriviaActionType.START_NEW_GAME}: \"{action.getTriviaActionType()}\"')
 
-        state = await self.__triviaGameStore.getNormalGame(action.getTwitchChannel())
+        state = await self.__triviaGameStore.getNormalGame(
+            twitchChannel = action.getTwitchChannel(),
+            userName = action.getUserName()
+        )
+
         now = datetime.now(timezone.utc)
 
         if state is not None and state.getEndTime() < now:
@@ -421,7 +432,11 @@ class TriviaGameMachine():
         for state in gameStatesToRemove:
             if state.getTriviaGameType() is TriviaGameType.NORMAL:
                 normalGameState: TriviaGameState = state
-                await self.__triviaGameStore.removeNormalGame(state.getTwitchChannel())
+
+                await self.__triviaGameStore.removeNormalGame(
+                    twitchChannel = normalGameState.getTwitchChannel(),
+                    userName = normalGameState.getUserName()
+                )
 
                 triviaScoreResult = await self.__triviaScoreRepository.incrementTotalLosses(
                     twitchChannel = normalGameState.getTwitchChannel(),
@@ -448,7 +463,7 @@ class TriviaGameMachine():
                     twitchChannel = superGameState.getTwitchChannel()
                 ))
             else:
-                raise UnknownTriviaGameTypeException(f'Unknown TriviaGameType: \"{state.getTriviaGameType()}\"')
+                raise UnknownTriviaGameTypeException(f'Unknown TriviaGameType (gameId=\"{state.getGameId()}\") (twitchChannel=\"{state.getTwitchChannel()}\"): \"{state.getTriviaGameType()}\"')
 
     def setEventListener(self, listener):
         self.__eventListener = listener
