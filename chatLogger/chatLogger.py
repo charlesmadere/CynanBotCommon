@@ -41,8 +41,9 @@ class ChatLogger():
             raise ValueError(f'chatMessage argument is malformed: \"{chatMessage}\"')
 
         logStatement = f'{chatMessage.getSimpleDateTime().getDateAndTimeStr()} — {chatMessage.getUserName()} ({chatMessage.getUserId()}) — {chatMessage.getMsg()}'
+        logStatement = logStatement.strip()
 
-        return logStatement.strip()
+        return f'{logStatement}\n'
 
     def log(self, twitchChannel: str, userId: str, userName: str, msg: str):
         if not utils.isValidStr(twitchChannel):
