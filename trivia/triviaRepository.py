@@ -1,3 +1,4 @@
+import asyncio
 import random
 from typing import Dict, List, Optional, Set
 
@@ -83,7 +84,8 @@ class TriviaRepository():
         triviaSettingsRepository: TriviaSettingsRepository,
         triviaVerifier: TriviaVerifier,
         willFryTriviaQuestionRepository: WillFryTriviaQuestionRepository,
-        wwtbamTriviaQuestionRepository: WwtbamTriviaQuestionRepository
+        wwtbamTriviaQuestionRepository: WwtbamTriviaQuestionRepository,
+        sleepTimeSeconds: float = 0.25
     ):
         if bongoTriviaQuestionRepository is None:
             raise ValueError(f'bongoTriviaQuestionRepository argument is malformed: \"{bongoTriviaQuestionRepository}\"')
@@ -107,6 +109,10 @@ class TriviaRepository():
             raise ValueError(f'willFryTriviaQuestionRepository argument is malformed: \"{willFryTriviaQuestionRepository}\"')
         elif wwtbamTriviaQuestionRepository is None:
             raise ValueError(f'wwtbamTriviaQuestionRepository argument is malformed: \"{wwtbamTriviaQuestionRepository}\"')
+        elif not utils.isValidNum(sleepTimeSeconds):
+            raise ValueError(f'sleepTimeSeconds argument is malformed: \"{sleepTimeSeconds}\"')
+        elif sleepTimeSeconds < 0.1 or sleepTimeSeconds > 3:
+            raise ValueError(f'sleepTimeSeconds argument is out of bounds: {sleepTimeSeconds}')
 
         self.__bongoTriviaQuestionRepository: AbsTriviaQuestionRepository = bongoTriviaQuestionRepository
         self.__jokeTriviaQuestionRepository: AbsTriviaQuestionRepository = jokeTriviaQuestionRepository
@@ -120,6 +126,7 @@ class TriviaRepository():
         self.__triviaVerifier: TriviaVerifier = triviaVerifier
         self.__willFryTriviaQuestionRepository: AbsTriviaQuestionRepository = willFryTriviaQuestionRepository
         self.__wwtbamTriviaQuestionRepository: AbsTriviaQuestionRepository = wwtbamTriviaQuestionRepository
+        self.__sleepTimeSeconds: float = sleepTimeSeconds
 
         self.__triviaSourceToRepositoryMap: Dict[TriviaSource, AbsTriviaQuestionRepository] = self.__createTriviaSourceToRepositoryMap()
 
@@ -218,8 +225,9 @@ class TriviaRepository():
 
             if await self.__verifyGoodTriviaQuestion(triviaQuestion, triviaFetchOptions):
                 return triviaQuestion
-            else:
-                retryCount = retryCount + 1
+
+            retryCount = retryCount + 1
+            await asyncio.sleep(self.__sleepTimeSeconds * float(retryCount))
 
         raise TooManyTriviaFetchAttemptsException(f'Unable to fetch trivia from {attemptedTriviaSources} after {retryCount} attempts (max attempts is {maxRetryCount})')
 
