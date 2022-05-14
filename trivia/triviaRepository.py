@@ -213,6 +213,8 @@ class TriviaRepository():
                 triviaQuestion = await triviaQuestionRepository.fetchTriviaQuestion(triviaFetchOptions.getTwitchChannel())
             except (NoTriviaCorrectAnswersException, NoTriviaMultipleChoiceResponsesException, NoTriviaQuestionException) as e:
                 self.__timber.log('TriviaRepository', f'Failed to fetch trivia question due to malformed data: {e}')
+            except Exception as e:
+                self.__timber.log('TriviaRepository', f'Encountered unknown Exception when fetching trivia question: {e}')
 
             if await self.__verifyGoodTriviaQuestion(triviaQuestion, triviaFetchOptions):
                 return triviaQuestion
