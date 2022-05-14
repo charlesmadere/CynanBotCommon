@@ -485,7 +485,9 @@ class TriviaGameMachine():
                     else:
                         raise UnknownTriviaActionTypeException(f'Unknown TriviaActionType: \"{action.getTriviaActionType()}\"')
             except queue.Empty as e:
-                self.__timber.log('TriviaGameMachine', f'Encountered queue.Empty error when looping through actions (queue size: {self.__actionQueue.qsize()}): {e}')
+                self.__timber.log('TriviaGameMachine', f'Encountered queue.Empty when looping through actions (queue size: {self.__actionQueue.qsize()}): {e}')
+            except Exception as e:
+                self.__timber.log('TriviaGameMachine', f'Encountered unknown Exception when looping through actions (queue size: {self.__actionQueue.qsize()}): {e}')
 
             await self.__refreshStatusOfGames()
             await asyncio.sleep(self.__sleepTimeSeconds)
@@ -500,7 +502,9 @@ class TriviaGameMachine():
                         event = self.__eventQueue.get(block = False)
                         await eventListener(event)
                 except queue.Empty as e:
-                    self.__timber.log('TriviaGameMachine', f'Encountered queue.Empty error when looping through events (queue size: {self.__eventQueue.qsize()}): {e}')
+                    self.__timber.log('TriviaGameMachine', f'Encountered queue.Empty when looping through events (queue size: {self.__eventQueue.qsize()}): {e}')
+                except Exception as e:
+                    self.__timber.log('TriviaGameMachine', f'Encountered unknown Exception when looping through events (queue size: {self.__eventQueue.qsize()}): {e}')
 
             await asyncio.sleep(self.__sleepTimeSeconds)
 
