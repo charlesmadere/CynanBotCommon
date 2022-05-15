@@ -157,6 +157,7 @@ class TwitchTokensRepository():
         elif not utils.isValidStr(twitchHandle):
             raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
 
+        twitchHandle = twitchHandle.lower()
         self.__timber.log('TwitchTokensRepository', f'Refreshing Twitch tokens for \"{twitchHandle}\"...')
 
         response = None
@@ -249,6 +250,7 @@ class TwitchTokensRepository():
         elif expiresInSeconds <= 0:
             raise ValueError(f'expiresInSeconds can\'t be <= 0: {expiresInSeconds}')
 
+        twitchHandle = twitchHandle.lower()
         nowDateTime = datetime.now(timezone.utc)
         expiresInTimeDelta = timedelta(seconds = expiresInSeconds)
         expirationTime = nowDateTime + expiresInTimeDelta
@@ -273,6 +275,7 @@ class TwitchTokensRepository():
         elif not utils.isValidStr(twitchHandle):
             raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
 
+        twitchHandle = twitchHandle.lower()
         self.__timber.log('TwitchTokensRepository', f'Validating Twitch access token for \"{twitchHandle}\"...')
 
         response = None
