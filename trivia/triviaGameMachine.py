@@ -274,10 +274,10 @@ class TriviaGameMachine():
             ))
             return
 
-        if state.hasAnswered(action.getUserName()):
+        if not state.isEligibleToAnswer(action.getUserName()):
             return
 
-        state.setHasAnswered(action.getUserName())
+        state.incrementAnswerCount(action.getUserName())
 
         if not await self.__checkAnswer(action.getAnswer(), state.getTriviaQuestion()):
             self.__eventQueue.put(IncorrectSuperAnswerTriviaEvent(
@@ -396,6 +396,7 @@ class TriviaGameMachine():
 
         state = SuperTriviaGameState(
             triviaQuestion = triviaQuestion,
+            perUserAttempts = action.getPerUserAttempts(),
             pointsForWinning = action.getPointsForWinning(),
             pointsMultiplier = action.getPointsMultiplier(),
             secondsToLive = action.getSecondsToLive(),
