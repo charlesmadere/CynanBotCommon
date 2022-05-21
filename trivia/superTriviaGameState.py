@@ -19,6 +19,7 @@ class SuperTriviaGameState(AbsTriviaGameState):
     def __init__(
         self,
         triviaQuestion: AbsTriviaQuestion,
+        perUserAttempts: int,
         pointsForWinning: int,
         pointsMultiplier: int,
         secondsToLive: int,
@@ -32,26 +33,36 @@ class SuperTriviaGameState(AbsTriviaGameState):
             triviaGameType = TriviaGameType.SUPER
         )
 
-        if not utils.isValidNum(pointsMultiplier):
+        if not utils.isValidNum(perUserAttempts):
+            raise ValueError(f'perUserAttempts argument is malformed: \"{perUserAttempts}\"')
+        elif perUserAttempts < 1 or perUserAttempts > 5:
+            raise ValueError(f'perUserAttempts argument is out of bounds: {perUserAttempts}')
+        elif not utils.isValidNum(pointsMultiplier):
             raise ValueError(f'pointsMultiplier argument is malformed: \"{pointsMultiplier}\"')
         elif pointsMultiplier < 1:
             raise ValueError(f'pointsMultiplier argument is out of bounds: {pointsMultiplier}')
 
+        self.__perUserAttempts: int = perUserAttempts
         self.__pointsMultiplier: int = pointsMultiplier
 
-        self.__answeredUserNames: Dict[str, bool] = defaultdict(lambda: False)
+        self.__answeredUserNames: Dict[str, int] = defaultdict(lambda: 0)
 
-    def hasAnswered(self, userName: str) -> bool:
+    def isEligibleToAnswer(self, userName: str) -> bool:
         if not utils.isValidStr(userName):
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
 
-        return self.__answeredUserNames[userName.lower()]
+        userName = userName.lower()
+        return self.__answeredUserNames[userName] < self.__perUserAttempts
+
+    def getPerUserAttempts(self) -> int:
+        return self.__perUserAttempts
 
     def getPointsMultiplier(self) -> int:
         return self.__pointsMultiplier
 
-    def setHasAnswered(self, userName: str):
+    def incrementAnswerCount(self, userName: str):
         if not utils.isValidStr(userName):
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
 
-        self.__answeredUserNames[userName.lower()] = True
+        userName = userName.lower()
+        self.__answeredUserNames[userName] = self.__answeredUserNames[userName] + 1
