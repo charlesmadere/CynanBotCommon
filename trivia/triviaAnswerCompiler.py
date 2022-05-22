@@ -61,6 +61,9 @@ class TriviaAnswerCompiler():
         cleanedAnswers: Set[str] = set()
 
         for answer in answers:
+            if not utils.isValidStr(answer):
+                continue
+
             possibilities = await self.__getPossibilities(answer)
 
             for possibility in possibilities:
