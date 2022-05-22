@@ -1,5 +1,5 @@
 import re
-from typing import List, Pattern, Set
+from typing import Dict, List, Pattern, Set
 
 try:
     import CynanBotCommon.utils as utils
@@ -13,6 +13,8 @@ except:
 class TriviaAnswerCompiler():
 
     def __init__(self):
+        self.__numberToWordMap: Dict[str, str] = self.__getNumberToWordMap()
+        self.__wordToNumberMap: Dict[str, str] = self.__getWordToNumberMap()
         self.__prefixStringsToRemove: List[str] = [ 'a ', 'an ', 'and ', 'or ', 'the ' ]
         self.__multipleChoiceAnswerRegEx: Pattern = re.compile(r'[a-z]', re.IGNORECASE)
         self.__parenGroupRegEx: Pattern = re.compile(r'(\(.*?\))', re.IGNORECASE)
@@ -68,6 +70,42 @@ class TriviaAnswerCompiler():
                     cleanedAnswers.add(cleanedAnswer)
 
         return list(cleanedAnswers)
+
+    async def __getDigitPossibilities(self, answer: str) -> List[str]:
+        # TODO
+        return list()
+
+    def __getNumberToWordMap(self) -> Dict[str, str]:
+        numbers: Dict[str, str] = dict()
+        numbers['0'] = 'zero'
+        numbers['1'] = 'one'
+        numbers['2'] = 'two'
+        numbers['3'] = 'three'
+        numbers['4'] = 'four'
+        numbers['5'] = 'five'
+        numbers['6'] = 'six'
+        numbers['7'] = 'seven'
+        numbers['8'] = 'eight'
+        numbers['9'] = 'nine'
+        numbers['10'] = 'ten'
+
+        return numbers
+
+    def __getWordToNumberMap(self) -> Dict[str, str]:
+        words: Dict[str, str] = dict()
+        words['zero'] = '0'
+        words['one'] = '1'
+        words['two'] = '2'
+        words['three'] = '3'
+        words['four'] = '4'
+        words['five'] = '5'
+        words['six'] = '6'
+        words['seven'] = '7'
+        words['eight'] = '8'
+        words['nine'] = '9'
+        words['ten'] = '10'
+
+        return words
 
     # Returns all possibilities with parenthesized phrases both included and excluded
     async def __getPossibilities(self, answer: str) -> List[str]:
