@@ -168,10 +168,11 @@ class LanguagesRepository():
 
         wotdApiCodes: List[str] = list()
         validEntries = self.__getLanguageEntries(hasWotdApiCode = True)
+
         for entry in validEntries:
             wotdApiCodes.append(entry.getPrimaryCommandName())
 
-        wotdApiCodes.sort()
+        wotdApiCodes.sort(key = lambda commandName: commandName.lower())
         return delimiter.join(wotdApiCodes)
 
     def getExampleLanguageEntry(
