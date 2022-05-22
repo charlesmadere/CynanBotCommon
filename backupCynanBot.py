@@ -3,7 +3,7 @@ import re
 import shutil
 import sys
 from shutil import SameFileError
-from typing import List, Pattern
+from typing import List, Pattern, Set
 
 jsonFileRegex: Pattern = re.compile(r'^\S+\.json\d*$', re.IGNORECASE)
 logFileRegex: Pattern = re.compile(r'^\S+\.log\d*$', re.IGNORECASE)
@@ -18,12 +18,12 @@ def findFiles(src) -> List[str]:
         if '.vscode' in root:
             continue
 
-        filesToAdd: List[str] = list()
+        filesToAdd: Set[str] = set()
 
         for file in files:
             for regex in allRegex:
                 if regex.fullmatch(file) is not None:
-                    filesToAdd.append(os.path.join(root, file))
+                    filesToAdd.add(os.path.join(root, file))
 
         if len(filesToAdd) >= 1:
             relevantFiles.extend(filesToAdd)
