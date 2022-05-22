@@ -313,8 +313,8 @@ def strIncludesDigit(s: str) -> bool:
 
     return False
 
-trueRegEx: Pattern = re.compile(r"t(rue)?|y(es)?", re.IGNORECASE)
-falseRegEx: Pattern = re.compile(r"f(alse)?|n(o)?", re.IGNORECASE)
+trueRegEx: Pattern = re.compile(r't(rue)?|y(es)?', re.IGNORECASE)
+falseRegEx: Pattern = re.compile(r'f(alse)?|n(o)?', re.IGNORECASE)
 
 def strToBool(s: str) -> bool:
     if not isValidStr(s):
