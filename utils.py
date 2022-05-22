@@ -303,6 +303,16 @@ def removePreceedingAt(s: str) -> str:
     else:
         return s[1:len(s)]
 
+def strIncludesDigit(s: str) -> bool:
+    if not isValidStr(s):
+        return False
+
+    for character in s:
+        if character.isdigit():
+            return True
+
+    return False
+
 trueRegEx: Pattern = re.compile(r"t(rue)?|y(es)?", re.IGNORECASE)
 falseRegEx: Pattern = re.compile(r"f(alse)?|n(o)?", re.IGNORECASE)
 
