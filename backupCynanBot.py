@@ -1,9 +1,15 @@
 import os
+import re
 import shutil
 import sys
 from shutil import SameFileError
-from typing import List
+from typing import List, Pattern
 
+jsonFileRegex: Pattern = re.compile(r'^\S+\.json\d*$', re.IGNORECASE)
+logFileRegex: Pattern = re.compile(r'^\S+\.log\d*$', re.IGNORECASE)
+oldFileRegex: Pattern = re.compile(r'^\S+\.old\d*$', re.IGNORECASE)
+sqliteFileRegex: Pattern = re.compile(r'^\S+\.sqlite\d*$', re.IGNORECASE)
+allRegex: List[Pattern] = [ jsonFileRegex, logFileRegex, oldFileRegex, sqliteFileRegex ]
 
 def findFiles(src) -> List[str]:
     relevantFiles: List[str] = list()
@@ -15,8 +21,9 @@ def findFiles(src) -> List[str]:
         filesToAdd: List[str] = list()
 
         for file in files:
-            if file.endswith('.json') or file.endswith('.log') or file.endswith('.old') or file.endswith('.sqlite'):
-                filesToAdd.append(os.path.join(root, file))
+            for regex in allRegex:
+                if regex.fullmatch(file) is not None:
+                    filesToAdd.append(os.path.join(root, file))
 
         if len(filesToAdd) >= 1:
             relevantFiles.extend(filesToAdd)
