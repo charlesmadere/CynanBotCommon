@@ -80,14 +80,14 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
         jsonResponse: List[Dict[str, object]] = await response.json()
         response.close()
 
+        self.__timber.log('JServiceTriviaQuestionRepository', f'{jsonResponse}')
+
         if not utils.hasItems(jsonResponse):
             self.__timber.log('JServiceTriviaQuestionRepository', f'Rejecting jService\'s JSON data due to null/empty contents: {jsonResponse}')
             raise ValueError(f'Rejecting jService\'s JSON data due to null/empty contents: {jsonResponse}')
 
-        self.__timber.log('JServiceTriviaQuestionRepository', f'{jsonResponse}')
-
         triviaJson: Dict[str, object] = jsonResponse[0]
-        if not utils.hasItems(triviaJson):
+        if not utils.hasItems(triviaJson) or 'category' not in triviaJson:
             self.__timber.log('JServiceTriviaQuestionRepository', f'Rejecting jService\'s JSON data due to null/empty contents: {jsonResponse}')
             raise ValueError(f'Rejecting jService\'s JSON data due to null/empty contents: {jsonResponse}')
 
@@ -102,7 +102,7 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
             triviaId = await self.__triviaIdGenerator.generate(category = category, question = question)
 
         if triviaType is TriviaType.QUESTION_ANSWER:
-            correctAnswer = utils.getStrFromDict(triviaJson, 'answer', clean = True)
+            correctAnswer = utils.getStrFromDict(triviaJson, 'answer', clean = True, removeCarrots = True)
             correctAnswers: List[str] = list()
             correctAnswers.append(correctAnswer)
 
