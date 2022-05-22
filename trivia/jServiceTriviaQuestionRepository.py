@@ -94,7 +94,7 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
         category = utils.getStrFromDict(triviaJson['category'], 'title', fallback = '', clean = True, removeCarrots = True)
         question = utils.getStrFromDict(triviaJson, 'question', clean = True, removeCarrots = True)
 
-        # this API seems to only ever give question and answer, so for now, we're just hardcoding this
+        # this API looks to only ever give question and answer, so for now, we're just hardcoding this
         triviaType = TriviaType.QUESTION_ANSWER
 
         triviaId = utils.getStrFromDict(triviaJson, 'id', fallback = '')
@@ -115,8 +115,8 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
                 triviaDifficulty = TriviaDifficulty.UNKNOWN,
                 triviaSource = TriviaSource.J_SERVICE
             )
-        else:
-            raise UnsupportedTriviaTypeException(f'triviaType \"{triviaType}\" is not supported for jService: {jsonResponse}')
+
+        raise UnsupportedTriviaTypeException(f'triviaType \"{triviaType}\" is not supported for jService: {jsonResponse}')
 
     def getSupportedTriviaTypes(self) -> List[TriviaType]:
         return [ TriviaType.QUESTION_ANSWER ]
