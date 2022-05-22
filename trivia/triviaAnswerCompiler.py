@@ -13,8 +13,8 @@ except:
 class TriviaAnswerCompiler():
 
     def __init__(self):
-        self.__numberToWordMap: Dict[str, str] = self.__getNumberToWordMap()
-        self.__wordToNumberMap: Dict[str, str] = self.__getWordToNumberMap()
+        self.__numberToWordMap: Dict[str, str] = self.__createNumberToWordMap()
+        self.__wordToNumberMap: Dict[str, str] = self.__createWordToNumberMap()
         self.__prefixStringsToRemove: List[str] = [ 'a ', 'an ', 'and ', 'or ', 'the ' ]
         self.__multipleChoiceAnswerRegEx: Pattern = re.compile(r'[a-z]', re.IGNORECASE)
         self.__parenGroupRegEx: Pattern = re.compile(r'(\(.*?\))', re.IGNORECASE)
@@ -74,11 +74,7 @@ class TriviaAnswerCompiler():
 
         return list(cleanedAnswers)
 
-    async def __getDigitPossibilities(self, answer: str) -> List[str]:
-        # TODO
-        return list()
-
-    def __getNumberToWordMap(self) -> Dict[str, str]:
+    def __createNumberToWordMap(self) -> Dict[str, str]:
         numbers: Dict[str, str] = dict()
         numbers['0'] = 'zero'
         numbers['1'] = 'one'
@@ -94,7 +90,7 @@ class TriviaAnswerCompiler():
 
         return numbers
 
-    def __getWordToNumberMap(self) -> Dict[str, str]:
+    def __createWordToNumberMap(self) -> Dict[str, str]:
         words: Dict[str, str] = dict()
         words['zero'] = '0'
         words['one'] = '1'
@@ -109,6 +105,10 @@ class TriviaAnswerCompiler():
         words['ten'] = '10'
 
         return words
+
+    async def __getDigitPossibilities(self, answer: str) -> List[str]:
+        # TODO
+        return list()
 
     # Returns all possibilities with parenthesized phrases both included and excluded
     async def __getPossibilities(self, answer: str) -> List[str]:
