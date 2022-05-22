@@ -64,13 +64,22 @@ class TriviaAnswerCompiler():
             if not utils.isValidStr(answer):
                 continue
 
-            possibilities = await self.__getPossibilities(answer)
+            loweredAnswer = answer.lower()
 
-            for possibility in possibilities:
-                cleanedAnswer = await self.compileTextAnswer(possibility)
+            if loweredAnswer in self.__numberToWordMap:
+                cleanedAnswers.add(loweredAnswer)
+                cleanedAnswers.add(self.__numberToWordMap[loweredAnswer])
+            elif loweredAnswer in self.__wordToNumberMap:
+                cleanedAnswers.add(loweredAnswer)
+                cleanedAnswers.add(self.__wordToNumberMap[loweredAnswer])
+            else:
+                possibilities = await self.__getPossibilities(answer)
 
-                if utils.isValidStr(cleanedAnswer):
-                    cleanedAnswers.add(cleanedAnswer)
+                for possibility in possibilities:
+                    cleanedAnswer = await self.compileTextAnswer(possibility)
+
+                    if utils.isValidStr(cleanedAnswer):
+                        cleanedAnswers.add(cleanedAnswer)
 
         return list(cleanedAnswers)
 
