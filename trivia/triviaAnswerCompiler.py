@@ -55,10 +55,10 @@ class TriviaAnswerCompiler():
         return ord(cleanedAnswer.upper()) % 65
 
     async def compileTextAnswers(self, answers: List[str]) -> List[str]:
-        cleanedAnswers: Set[str] = set()
-
         if not utils.hasItems(answers):
             return list()
+
+        cleanedAnswers: Set[str] = set()
 
         for answer in answers:
             possibilities = await self.__getPossibilities(answer)
