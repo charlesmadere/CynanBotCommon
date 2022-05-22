@@ -49,11 +49,15 @@ def cToF(celsius: float) -> float:
 
     return (celsius * (9 / 5)) + 32
 
-def cleanStr(s: str, replacement: str = ' ', htmlUnescape: bool = False) -> str:
+carrotRemovalRegEx: Pattern = re.compile(r'<\/?\w+>', re.IGNORECASE)
+
+def cleanStr(s: str, replacement: str = ' ', htmlUnescape: bool = False, removeCarrots: bool = False) -> str:
     if replacement is None:
         raise ValueError(f'replacement argument is malformed: \"{replacement}\"')
     elif not isValidBool(htmlUnescape):
         raise ValueError(f'htmlUnescape argument is malformed: \"{htmlUnescape}\"')
+    elif not isValidBool(removeCarrots):
+        raise ValueError(f'removeCarrots argument is malformed: \"{removeCarrots}\"')
 
     if s is None:
         return ''
@@ -65,6 +69,9 @@ def cleanStr(s: str, replacement: str = ' ', htmlUnescape: bool = False) -> str:
 
     if htmlUnescape:
         s = html.unescape(s)
+
+    if removeCarrots:
+        s = carrotRemovalRegEx.sub('', s)
 
     return s
 
@@ -242,7 +249,7 @@ def getStrFromDateTime(dt: datetime) -> str:
     else:
         return dt.isoformat()
 
-def getStrFromDict(d: dict, key: str, fallback: str = None, clean: bool = False, htmlUnescape: bool = False) -> str:
+def getStrFromDict(d: dict, key: str, fallback: str = None, clean: bool = False, htmlUnescape: bool = False, removeCarrots: bool = False) -> str:
     if d is None:
         raise ValueError(f'd argument is malformed: \"{d}\"')
     elif not isValidStr(key):
@@ -251,6 +258,8 @@ def getStrFromDict(d: dict, key: str, fallback: str = None, clean: bool = False,
         raise ValueError(f'clean argument is malformed: \"{clean}\"')
     elif not isValidBool(htmlUnescape):
         raise ValueError(f'htmlUnescape argument is malformed: \"{htmlUnescape}\"')
+    elif not isValidBool(removeCarrots):
+        raise ValueError(f'removeCarrots argument is malformed: \"{removeCarrots}\"')
 
     value = None
 
@@ -265,7 +274,7 @@ def getStrFromDict(d: dict, key: str, fallback: str = None, clean: bool = False,
         value = str(value)
 
     if clean:
-        value = cleanStr(value, htmlUnescape = htmlUnescape)
+        value = cleanStr(value, htmlUnescape = htmlUnescape, removeCarrots = removeCarrots)
 
     return value
 
