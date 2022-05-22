@@ -115,10 +115,6 @@ class TriviaAnswerCompiler():
 
         return words
 
-    async def __getDigitPossibilities(self, answer: str) -> List[str]:
-        # TODO
-        return list()
-
     # Returns all possibilities with parenthesized phrases both included and excluded
     async def __getPossibilities(self, answer: str) -> List[str]:
         # Split the uncleaned answer with this regex to find all parentheticals
