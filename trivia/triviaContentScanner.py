@@ -1,5 +1,5 @@
 from os import path
-from typing import List
+from typing import List, Set
 
 import aiofile
 
@@ -42,9 +42,10 @@ class TriviaContentScanner():
 
     async def __readBannedWordsList(self) -> List[str]:
         if not path.exists(self.__bannedWordsFile):
-            raise FileNotFoundError(f'Banned Words file not found: \"{self.__bannedWordsFile}\"')
+            self.__timber.log('TriviaContentScanner', 'Not attempting to read in any banned words due to the file missing: \"{self.__bannedWordsFile}\"')
+            return None
 
-        bannedWords: List[str] = list()
+        bannedWords: Set[str] = set()
 
         async with aiofile.AIOFile(self.__bannedWordsFile, 'r') as file:
             async for line in aiofile.LineReader(file):
@@ -52,9 +53,12 @@ class TriviaContentScanner():
                     line = line.strip().lower()
 
                     if utils.isValidStr(line):
-                        bannedWords.append(line)
+                        bannedWords.add(line)
 
-        return bannedWords
+        if utils.hasItems(bannedWords):
+            return list(bannedWords)
+        else:
+            return None
 
     async def verify(self, question: AbsTriviaQuestion) -> TriviaContentCode:
         if question is None:
@@ -110,6 +114,7 @@ class TriviaContentScanner():
 
         for string in strings:
             if not utils.isValidStr(string):
+                self.__timber.log('TriviaContentScanner', f'Trivia content contains an empty string: \"{string}\"')
                 return TriviaContentCode.CONTAINS_EMPTY_STR
             elif utils.containsUrl(string):
                 self.__timber.log('TriviaContentScanner', f'Trivia content contains a URL: \"{string}\"')
@@ -117,7 +122,7 @@ class TriviaContentScanner():
             elif utils.hasItems(bannedWords):
                 for bannedWord in bannedWords:
                     if bannedWord in string:
-                        self.__timber.log('TriviaContentScanner', f'Trivia content contains a banned word: \"{string}\"')
+                        self.__timber.log('TriviaContentScanner', f'Trivia content contains a banned word ({bannedWord}): \"{string}\"')
                         return TriviaContentCode.CONTAINS_BANNED_WORD
 
         return TriviaContentCode.OK
