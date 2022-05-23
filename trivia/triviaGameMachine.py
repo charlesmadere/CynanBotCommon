@@ -473,7 +473,7 @@ class TriviaGameMachine():
         while True:
             try:
                 while not self.__actionQueue.empty():
-                    action = self.__actionQueue.get(block = False)
+                    action = self.__actionQueue.get_nowait()
 
                     if action.getTriviaActionType() is TriviaActionType.CHECK_ANSWER:
                         await self.__handleActionCheckAnswer(action)
@@ -500,7 +500,7 @@ class TriviaGameMachine():
             if eventListener is not None:
                 try:
                     while not self.__eventQueue.empty():
-                        event = self.__eventQueue.get(block = False)
+                        event = self.__eventQueue.get_nowait()
                         await eventListener(event)
                 except queue.Empty as e:
                     self.__timber.log('TriviaGameMachine', f'Encountered queue.Empty when looping through events (queue size: {self.__eventQueue.qsize()}): {repr(e)}')
