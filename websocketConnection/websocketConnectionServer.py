@@ -119,7 +119,7 @@ class WebsocketConnectionServer():
         while websocket.open:
             while not self.__eventQueue.empty():
                 try:
-                    event = self.__eventQueue.get(block = False)
+                    event = self.__eventQueue.get_nowait()
 
                     if event.getEventTime() + self.__eventTimeToLive >= datetime.now(timezone.utc):
                         eventJson = json.dumps(event.getEventData(), sort_keys = True)

@@ -62,7 +62,7 @@ class ChatLogger():
         while True:
             try:
                 while not self.__messageQueue.empty():
-                    chatMessage = self.__messageQueue.get(block = False)
+                    chatMessage = self.__messageQueue.get_nowait()
                     await self.__writeToLogFile(chatMessage)
             except queue.Empty:
                 pass
