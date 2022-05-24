@@ -98,6 +98,7 @@ class TriviaAnswerChecker():
             raise RuntimeError(f'TriviaType is not {TriviaType.QUESTION_ANSWER}: \"{triviaQuestion.getTriviaType()}\"')
 
         cleanedAnswer = await self.__triviaAnswerCompiler.compileTextAnswer(answer)
+
         if not utils.isValidStr(cleanedAnswer):
             return False
 
@@ -106,13 +107,20 @@ class TriviaAnswerChecker():
         levenshteinThreshold = await self.__triviaSettingsRepository.getLevenshteinThreshold()
 
         for cleanedCorrectAnswer in cleanedCorrectAnswers:
-            threshold = int(min(len(cleanedAnswer), len(cleanedCorrectAnswer)) * levenshteinThreshold)
-            distance = polyleven.levenshtein(cleanedAnswer, cleanedCorrectAnswer, threshold)
+            # Check the answer for a digit character. We do this to prevent there being any
+            # flexibility on answers that are digit-based. This prevents issues that can occur
+            # where the correct answer is "19th century" but the user guesses "18th century."
+            if utils.containsDigit(cleanedCorrectAnswer):
+                if cleanedAnswer == cleanedCorrectAnswer:
+                    return True
+            else:
+                threshold = int(min(len(cleanedAnswer), len(cleanedCorrectAnswer)) * levenshteinThreshold)
+                distance = polyleven.levenshtein(cleanedAnswer, cleanedCorrectAnswer, threshold)
 
-            self.__timber.log('TriviaAnswerChecker', f'answer:\"{answer}\", cleanedAnswer:\"{cleanedAnswer}\", correctAnswers:\"{correctAnswers}\", cleanedCorrectAnswers:\"{cleanedCorrectAnswers}\", threshold:\"{threshold}\", distance:\"{distance}\", levenshteinThreshold:\"{levenshteinThreshold}\"')
+                self.__timber.log('TriviaAnswerChecker', f'answer:\"{answer}\", cleanedAnswer:\"{cleanedAnswer}\", correctAnswers:\"{correctAnswers}\", cleanedCorrectAnswers:\"{cleanedCorrectAnswers}\", threshold:\"{threshold}\", distance:\"{distance}\", levenshteinThreshold:\"{levenshteinThreshold}\"')
 
-            if distance <= threshold:
-                return True
+                if distance <= threshold:
+                    return True
 
         return False
 
