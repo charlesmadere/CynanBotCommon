@@ -80,7 +80,7 @@ class Timber():
         while True:
             try:
                 while not self.__entryQueue.empty():
-                    timberEntry = self.__entryQueue.get(block = False)
+                    timberEntry = self.__entryQueue.get_nowait()
                     await self.__log(timberEntry)
             except queue.Empty:
                 pass

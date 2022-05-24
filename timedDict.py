@@ -23,9 +23,9 @@ class TimedDict():
         if key not in self.__times or key not in self.__values:
             return None
 
-        now = datetime.now(timezone.utc)
+        nowDateTime = datetime.now(timezone.utc)
 
-        if now > self.__times[key]:
+        if nowDateTime > self.__times[key]:
             return None
 
         return self.__values[key]
