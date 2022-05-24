@@ -75,6 +75,16 @@ def cleanStr(s: str, replacement: str = ' ', htmlUnescape: bool = False, removeC
 
     return s
 
+def containsDigit(s: str) -> bool:
+    if not isValidStr(s):
+        return False
+
+    for character in s:
+        if character.isdigit():
+            return True
+
+    return False
+
 def containsUrl(s: str) -> bool:
     if not isValidStr(s):
         return False
@@ -311,16 +321,6 @@ def removePreceedingAt(s: str) -> str:
         return s
     else:
         return s[1:len(s)]
-
-def strIncludesDigit(s: str) -> bool:
-    if not isValidStr(s):
-        return False
-
-    for character in s:
-        if character.isdigit():
-            return True
-
-    return False
 
 trueRegEx: Pattern = re.compile(r't(rue)?|y(es)?', re.IGNORECASE)
 falseRegEx: Pattern = re.compile(r'f(alse)?|n(o)?', re.IGNORECASE)
