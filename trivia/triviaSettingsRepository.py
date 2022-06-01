@@ -106,6 +106,10 @@ class TriviaSettingsRepository():
 
         return minMultipleChoiceResponses
 
+    async def isDebugLoggingEnabled(self) -> bool:
+        jsonContents = await self.__readJson()
+        return utils.getBoolFromDict(jsonContents, 'debug_logging_enabled', False)
+
     async def __readJson(self) -> Dict[str, object]:
         if not os.path.exists(self.__settingsFile):
             raise FileNotFoundError(f'Trivia settings file not found: \"{self.__settingsFile}\"')
