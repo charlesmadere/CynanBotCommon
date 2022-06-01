@@ -106,6 +106,10 @@ class TriviaSettingsRepository():
 
         return minMultipleChoiceResponses
 
+    async def isAdditionalPluralCheckingEnabled(self) -> bool:
+        jsonContents = await self.__readJson()
+        return utils.getBoolFromDict(jsonContents, 'additional_plural_checking_enabled', False)
+
     async def isDebugLoggingEnabled(self) -> bool:
         jsonContents = await self.__readJson()
         return utils.getBoolFromDict(jsonContents, 'debug_logging_enabled', False)
