@@ -105,6 +105,7 @@ class TriviaAnswerChecker():
         correctAnswers = triviaQuestion.getCorrectAnswers()
         cleanedCorrectAnswers = triviaQuestion.getCleanedCorrectAnswers()
         levenshteinThreshold = await self.__triviaSettingsRepository.getLevenshteinThreshold()
+        isDebugLoggingEnabled = await self.__triviaSettingsRepository.isDebugLoggingEnabled()
 
         for cleanedCorrectAnswer in cleanedCorrectAnswers:
             # Check the answer for a digit character. We do this to prevent there being any
@@ -117,7 +118,8 @@ class TriviaAnswerChecker():
                 threshold = int(min(len(cleanedAnswer), len(cleanedCorrectAnswer)) * levenshteinThreshold)
                 distance = polyleven.levenshtein(cleanedAnswer, cleanedCorrectAnswer, threshold)
 
-                self.__timber.log('TriviaAnswerChecker', f'answer:\"{answer}\", cleanedAnswer:\"{cleanedAnswer}\", correctAnswers:\"{correctAnswers}\", cleanedCorrectAnswers:\"{cleanedCorrectAnswers}\", threshold:\"{threshold}\", distance:\"{distance}\", levenshteinThreshold:\"{levenshteinThreshold}\"')
+                if isDebugLoggingEnabled:
+                    self.__timber.log('TriviaAnswerChecker', f'answer:\"{answer}\", cleanedAnswer:\"{cleanedAnswer}\", correctAnswers:\"{correctAnswers}\", cleanedCorrectAnswers:\"{cleanedCorrectAnswers}\", threshold:\"{threshold}\", distance:\"{distance}\", levenshteinThreshold:\"{levenshteinThreshold}\"')
 
                 if distance <= threshold:
                     return True
