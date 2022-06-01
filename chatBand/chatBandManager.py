@@ -143,13 +143,15 @@ class ChatBandManager():
         elif not self.__lastChatBandMessageTimes.isReadyAndUpdate(self.__getCooldownKey(twitchChannel, author)):
             return False
 
+        eventData = self.__toEventData(chatBandMember)
+
         if await self.__isDebugLoggingEnabled():
-            self.__timber.log('ChatBandManager', f'New \"{twitchChannel}\" Chat Band event: {self.__toEventData(chatBandMember)}')
+            self.__timber.log('ChatBandManager', f'New \"{twitchChannel}\" Chat Band event: {eventData}')
 
         await self.__websocketConnectionServer.sendEvent(
             twitchChannel = twitchChannel,
             eventType = self.__eventType,
-            eventData = self.__toEventData(chatBandMember)
+            eventData = eventData
         )
 
         return True
