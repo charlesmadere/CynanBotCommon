@@ -105,6 +105,7 @@ class TriviaAnswerChecker():
         correctAnswers = triviaQuestion.getCorrectAnswers()
         cleanedCorrectAnswers = triviaQuestion.getCleanedCorrectAnswers()
         levenshteinThreshold = await self.__triviaSettingsRepository.getLevenshteinThreshold()
+        isAdditionalPluralCheckingEnabled = await self.__triviaSettingsRepository.isAdditionalPluralCheckingEnabled()
         isDebugLoggingEnabled = await self.__triviaSettingsRepository.isDebugLoggingEnabled()
 
         for cleanedCorrectAnswer in cleanedCorrectAnswers:
@@ -123,6 +124,9 @@ class TriviaAnswerChecker():
 
                 if distance <= threshold:
                     return True
+                elif isAdditionalPluralCheckingEnabled:
+                    # TODO
+                    pass
 
         return False
 
