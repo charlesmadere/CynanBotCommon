@@ -108,11 +108,15 @@ class TriviaHistoryRepository():
         questionDateTimeStr: str = row[0]
         questionDateTime = datetime.fromisoformat(questionDateTimeStr)
         minimumTimeDelta = timedelta(days = await self.__triviaSettingsRepository.getMinDaysBeforeRepeatQuestion())
+        isDebugLoggingEnabled = await self.__triviaSettingsRepository.isDebugLoggingEnabled()
 
         if questionDateTime + minimumTimeDelta >= nowDateTime:
             await cursor.close()
             await connection.close()
-            self.__timber.log('TriviaHistoryRepository', f'Encountered duplicate triviaHistory entry for triviaId:{triviaId} triviaSource:{triviaSource} twitchChannel:{twitchChannel} that is within the window of being a repeat (now:{nowDateTimeStr}) (db:{questionDateTimeStr})')
+
+            if isDebugLoggingEnabled:
+                self.__timber.log('TriviaHistoryRepository', f'Encountered duplicate triviaHistory entry for triviaId:{triviaId} triviaSource:{triviaSource} twitchChannel:{twitchChannel} that is within the window of being a repeat (now:{nowDateTimeStr}) (db:{questionDateTimeStr})')
+
             return TriviaContentCode.REPEAT
 
         await cursor.execute(
@@ -127,5 +131,8 @@ class TriviaHistoryRepository():
         await connection.commit()
         await cursor.close()
         await connection.close()
-        self.__timber.log('TriviaHistoryRepository', f'Updated triviaHistory entry for triviaId:{triviaId} triviaSource:{triviaSource} twitchChannel:{twitchChannel} to {nowDateTimeStr} from {questionDateTimeStr}')
+
+        if isDebugLoggingEnabled:
+            self.__timber.log('TriviaHistoryRepository', f'Updated triviaHistory entry for triviaId:{triviaId} triviaSource:{triviaSource} twitchChannel:{twitchChannel} to {nowDateTimeStr} from {questionDateTimeStr}')
+
         return TriviaContentCode.OK
