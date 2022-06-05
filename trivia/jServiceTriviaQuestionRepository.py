@@ -80,7 +80,8 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
         jsonResponse: List[Dict[str, object]] = await response.json()
         response.close()
 
-        self.__timber.log('JServiceTriviaQuestionRepository', f'{jsonResponse}')
+        if await self._triviaSettingsRepository.isDebugLoggingEnabled():
+            self.__timber.log('JServiceTriviaQuestionRepository', f'{jsonResponse}')
 
         if not utils.hasItems(jsonResponse):
             self.__timber.log('JServiceTriviaQuestionRepository', f'Rejecting jService\'s JSON data due to null/empty contents: {jsonResponse}')

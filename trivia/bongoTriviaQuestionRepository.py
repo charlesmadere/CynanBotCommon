@@ -77,6 +77,9 @@ class BongoTriviaQuestionRepository(AbsTriviaQuestionRepository):
         jsonResponse: List[Dict[str, object]] = await response.json()
         response.close()
 
+        if await self._triviaSettingsRepository.isDebugLoggingEnabled():
+            self.__timber.log('BongoTriviaQuestionRepository', f'{jsonResponse}')
+
         if not utils.hasItems(jsonResponse):
             self.__timber.log('BongoTriviaQuestionRepository', f'Rejecting JSON data due to null/empty contents: {jsonResponse}')
             raise ValueError(f'Rejecting Bongo\'s JSON data due to null/empty contents: {jsonResponse}')
