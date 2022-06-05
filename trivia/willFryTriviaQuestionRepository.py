@@ -77,6 +77,9 @@ class WillFryTriviaQuestionRepository(AbsTriviaQuestionRepository):
         jsonResponse: Dict[str, object] = await response.json()
         response.close()
 
+        if await self._triviaSettingsRepository.isDebugLoggingEnabled():
+            self.__timber.log('WillFryTriviaQuestionRepository', f'{jsonResponse}')
+
         if not utils.hasItems(jsonResponse):
             self.__timber.log('WillFryTriviaQuestionRepository', f'Rejecting Will Fry Trivia\'s JSON data due to null/empty contents: {jsonResponse}')
             raise ValueError(f'Rejecting Will Fry Trivia\'s JSON data due to null/empty contents: {jsonResponse}')

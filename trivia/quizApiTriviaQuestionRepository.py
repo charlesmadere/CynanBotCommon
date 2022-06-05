@@ -87,6 +87,9 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
         jsonResponse: Dict[str, object] = await response.json()
         response.close()
 
+        if await self._triviaSettingsRepository.isDebugLoggingEnabled():
+            self.__timber.log('QuizApiTriviaQuestionRepository', f'{jsonResponse}')
+
         if not utils.hasItems(jsonResponse):
             self.__timber.log('QuizApiTriviaQuestionRepository', f'Rejecting Quiz API\'s JSON data due to null/empty contents: {jsonResponse}')
             raise ValueError(f'Rejecting Quiz API JSON data due to null/empty contents: {jsonResponse}')
