@@ -109,24 +109,34 @@ class TriviaAnswerChecker():
         isDebugLoggingEnabled = await self.__triviaSettingsRepository.isDebugLoggingEnabled()
 
         for cleanedCorrectAnswer in cleanedCorrectAnswers:
+            if cleanedAnswer == cleanedCorrectAnswer:
+                return True
+
             # Check the answer for a digit character. We do this to prevent there being any
             # flexibility on answers that are digit-based. This prevents issues that can occur
-            # where the correct answer is "19th century" but the user guesses "18th century."
+            # where the correct answer is "19th century" but the user guessed "18th century."
             if utils.containsDigit(cleanedCorrectAnswer):
+                continue
+
+            threshold = int(min(len(cleanedAnswer), len(cleanedCorrectAnswer)) * levenshteinThreshold)
+            distance = polyleven.levenshtein(cleanedAnswer, cleanedCorrectAnswer, threshold)
+
+            if isDebugLoggingEnabled:
+                self.__timber.log('TriviaAnswerChecker', f'answer:\"{answer}\", cleanedAnswer:\"{cleanedAnswer}\", correctAnswers:\"{correctAnswers}\", cleanedCorrectAnswers:\"{cleanedCorrectAnswers}\", threshold:\"{threshold}\", distance:\"{distance}\", levenshteinThreshold:\"{levenshteinThreshold}\"')
+
+            if distance <= threshold:
+                return True
+
+            if isAdditionalPluralCheckingEnabled:
+                if cleanedCorrectAnswer.endswith('s'):
+                    continue
+                elif cleanedCorrectAnswer.endswith('y'):
+                    cleanedCorrectAnswer = f'{cleanedCorrectAnswer[0:len(cleanedCorrectAnswer) - 1]}ies'
+                else:
+                    cleanedCorrectAnswer = f'{cleanedCorrectAnswer}s'
+
                 if cleanedAnswer == cleanedCorrectAnswer:
                     return True
-            else:
-                threshold = int(min(len(cleanedAnswer), len(cleanedCorrectAnswer)) * levenshteinThreshold)
-                distance = polyleven.levenshtein(cleanedAnswer, cleanedCorrectAnswer, threshold)
-
-                if isDebugLoggingEnabled:
-                    self.__timber.log('TriviaAnswerChecker', f'answer:\"{answer}\", cleanedAnswer:\"{cleanedAnswer}\", correctAnswers:\"{correctAnswers}\", cleanedCorrectAnswers:\"{cleanedCorrectAnswers}\", threshold:\"{threshold}\", distance:\"{distance}\", levenshteinThreshold:\"{levenshteinThreshold}\"')
-
-                if distance <= threshold:
-                    return True
-                elif isAdditionalPluralCheckingEnabled:
-                    # TODO
-                    pass
 
         return False
 
