@@ -112,9 +112,9 @@ class TriviaAnswerChecker():
             if cleanedAnswer == cleanedCorrectAnswer:
                 return True
 
-            # Check the answer for a digit character. We do this to prevent there being any
-            # flexibility on answers that are digit-based. This prevents issues that can occur
-            # where the correct answer is "19th century" but the user guessed "18th century."
+            # Check the answer for any digits. We do this to prevent there being any flexibility
+            # on answers that are number-based. This prevents issues that could occur where the
+            # correct answer is "19th century" but the user guessed "18th century."
             if utils.containsDigit(cleanedCorrectAnswer):
                 continue
 
