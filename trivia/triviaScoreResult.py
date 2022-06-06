@@ -11,6 +11,7 @@ class TriviaScoreResult():
     def __init__(
         self,
         streak: int,
+        superTriviaWins: int,
         totalLosses: int,
         totalWins: int,
         twitchChannel: str,
@@ -18,6 +19,8 @@ class TriviaScoreResult():
     ):
         if not utils.isValidNum(streak):
             raise ValueError(f'streak argument is malformed: \"{streak}\"')
+        elif not utils.isValidNum(superTriviaWins):
+            raise ValueError(f'superTriviaWins argument is malformed: \"{superTriviaWins}\"')
         elif not utils.isValidNum(totalLosses):
             raise ValueError(f'totalLosses argument is malformed: \"{totalLosses}\"')
         elif not utils.isValidNum(totalWins):
@@ -28,6 +31,7 @@ class TriviaScoreResult():
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
 
         self.__streak: int = streak
+        self.__superTriviaWins: int = superTriviaWins
         self.__totalLosses: int = totalLosses
         self.__totalWins: int = totalWins
         self.__twitchChannel: str = twitchChannel
@@ -44,6 +48,12 @@ class TriviaScoreResult():
 
     def getStreakStr(self) -> str:
         return locale.format_string("%d", self.__streak, grouping = True)
+
+    def getSuperTriviaWins(self) -> int:
+        return self.__superTriviaWins
+
+    def getSuperTriviaWinsStr(self) -> str:
+        return locale.format_string("%d", self.__superTriviaWins, grouping = True)
 
     def getTotal(self) -> int:
         return self.__totalLosses + self.__totalWins
