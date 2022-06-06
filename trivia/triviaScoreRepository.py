@@ -18,7 +18,6 @@ class TriviaScoreRepository():
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
 
         self.__backingDatabase: BackingDatabase = backingDatabase
-
         self.__isDatabaseReady: bool = False
 
     async def fetchTriviaScore(
@@ -36,7 +35,7 @@ class TriviaScoreRepository():
         connection = await self.__getDatabaseConnection()
         cursor = await connection.execute(
             '''
-                SELECT streak, totalLosses, totalWins, twitchChannel, userId FROM triviaScores
+                SELECT streak, superTriviaWins, totalLosses, totalWins, twitchChannel, userId FROM triviaScores
                 WHERE twitchChannel = ? AND userId = ?
             ''',
             ( twitchChannel, userId )
@@ -47,10 +46,11 @@ class TriviaScoreRepository():
         if row is not None:
             result = TriviaScoreResult(
                 streak = row[0],
-                totalLosses = row[1],
-                totalWins = row[2],
-                twitchChannel = row[3],
-                userId = row[4]
+                superTriviaWins = row[1],
+                totalLosses = row[2],
+                totalWins = row[3],
+                twitchChannel = row[4],
+                userId = row[5]
             )
 
             await cursor.close()
@@ -59,10 +59,10 @@ class TriviaScoreRepository():
 
         await cursor.execute(
             '''
-                INSERT INTO triviaScores (streak, totalLosses, totalWins, twitchChannel, userId)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO triviaScores (streak, superTriviaWins, totalLosses, totalWins, twitchChannel, userId)
+                VALUES (?, ?, ?, ?, ?, ?)
             ''',
-            ( 0, 0, 0, twitchChannel, userId )
+            ( 0, 0, 0, 0, twitchChannel, userId )
         )
 
         await connection.commit()
@@ -71,11 +71,51 @@ class TriviaScoreRepository():
 
         return TriviaScoreResult(
             streak = 0,
+            superTriviaWins = 0,
             totalLosses = 0,
             totalWins = 0,
             twitchChannel = twitchChannel,
             userId = userId
         )
+
+    async def incrementSuperTriviaWins(
+        self,
+        twitchChannel: str,
+        userId: str
+    ) -> TriviaScoreResult:
+        if not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+        elif not utils.isValidStr(userId):
+            raise ValueError(f'userId argument is malformed: \"{userId}\"')
+        elif userId == '0':
+            raise ValueError(f'userId argument is an illegal value: \"{userId}\"')
+
+        result = await self.fetchTriviaScore(
+            twitchChannel = twitchChannel,
+            userId = userId
+        )
+
+        newSuperTriviaWins: int = result.getSuperTriviaWins() + 1
+
+        newResult = TriviaScoreResult(
+            streak = result.getStreak(),
+            superTriviaWins = newSuperTriviaWins,
+            totalLosses = result.getTotalLosses(),
+            totalWins = result.getTotalWins(),
+            twitchChannel = result.getTwitchChannel(),
+            userId = result.getUserId()
+        )
+
+        await self.__updateTriviaScore(
+            newStreak = newResult.getStreak(),
+            newSuperTriviaWins = newResult.getSuperTriviaWins(),
+            newTotalLosses = newResult.getTotalLosses(),
+            newTotalWins = newResult.getTotalWins(),
+            twitchChannel = newResult.getTwitchChannel(),
+            userId = newResult.getUserId()
+        )
+
+        return newResult
 
     async def incrementTotalLosses(
         self,
@@ -104,6 +144,7 @@ class TriviaScoreRepository():
 
         newResult = TriviaScoreResult(
             streak = newStreak,
+            superTriviaWins = result.getSuperTriviaWins(),
             totalLosses = newTotalLosses,
             totalWins = result.getTotalWins(),
             twitchChannel = result.getTwitchChannel(),
@@ -112,6 +153,7 @@ class TriviaScoreRepository():
 
         await self.__updateTriviaScore(
             newStreak = newResult.getStreak(),
+            newSuperTriviaWins = newResult.getSuperTriviaWins(),
             newTotalLosses = newResult.getTotalLosses(),
             newTotalWins = newResult.getTotalWins(),
             twitchChannel = newResult.getTwitchChannel(),
@@ -147,6 +189,7 @@ class TriviaScoreRepository():
 
         newResult = TriviaScoreResult(
             streak = newStreak,
+            superTriviaWins = result.getSuperTriviaWins(),
             totalLosses = result.getTotalLosses(),
             totalWins = newTotalWins,
             twitchChannel = result.getTwitchChannel(),
@@ -155,6 +198,7 @@ class TriviaScoreRepository():
 
         await self.__updateTriviaScore(
             newStreak = newResult.getStreak(),
+            newSuperTriviaWins = newResult.getSuperTriviaWins(),
             newTotalLosses = newResult.getTotalLosses(),
             newTotalWins = newResult.getTotalWins(),
             twitchChannel = newResult.getTwitchChannel(),
@@ -178,6 +222,7 @@ class TriviaScoreRepository():
             '''
                 CREATE TABLE IF NOT EXISTS triviaScores (
                     streak INTEGER NOT NULL DEFAULT 0,
+                    superTriviaWins INTEGER NOT NULL DEFAULT 0,
                     totalLosses INTEGER NOT NULL DEFAULT 0,
                     totalWins INTEGER NOT NULL DEFAULT 0,
                     twitchChannel TEXT NOT NULL COLLATE NOCASE,
@@ -194,6 +239,7 @@ class TriviaScoreRepository():
     async def __updateTriviaScore(
         self,
         newStreak: int,
+        newSuperTriviaWins: int,
         newTotalLosses: int,
         newTotalWins: int,
         twitchChannel: str,
@@ -201,6 +247,8 @@ class TriviaScoreRepository():
     ):
         if not utils.isValidNum(newStreak):
             raise ValueError(f'newStreak argument is malformed: \"{newStreak}\"')
+        elif not utils.isValidNum(newSuperTriviaWins):
+            raise ValueError(f'newSuperTriviaWins argument is malformed: \"{newSuperTriviaWins}\"')
         elif not utils.isValidNum(newTotalLosses):
             raise ValueError(f'newTotalLosses argument is malformed: \"{newTotalLosses}\"')
         elif not utils.isValidNum(newTotalWins):
@@ -215,11 +263,11 @@ class TriviaScoreRepository():
         connection = await self.__backingDatabase.getConnection()
         cursor = await connection.execute(
             '''
-                INSERT INTO triviaScores (streak, totalLosses, totalWins, twitchChannel, userId)
+                INSERT INTO triviaScores (streak, superTriviaWins, totalLosses, totalWins, twitchChannel, userId)
                 VALUES (?, ?, ?, ?, ?)
-                ON CONFLICT (twitchChannel, userId) DO UPDATE SET streak = excluded.streak, totalLosses = excluded.totalLosses, totalWins = excluded.totalWins
+                ON CONFLICT (twitchChannel, userId) DO UPDATE SET streak = excluded.streak, superTriviaWins = excluded.superTriviaWins, totalLosses = excluded.totalLosses, totalWins = excluded.totalWins
             ''',
-            ( newStreak, newTotalLosses, newTotalWins, twitchChannel, userId )
+            ( newStreak, newSuperTriviaWins, newTotalLosses, newTotalWins, twitchChannel, userId )
         )
 
         await connection.commit()
