@@ -271,7 +271,7 @@ class TriviaScoreRepository():
         cursor = await connection.execute(
             '''
                 INSERT INTO triviaScores (streak, superTriviaWins, totalLosses, totalWins, twitchChannel, userId)
-                VALUES (?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?)
                 ON CONFLICT (twitchChannel, userId) DO UPDATE SET streak = excluded.streak, superTriviaWins = excluded.superTriviaWins, totalLosses = excluded.totalLosses, totalWins = excluded.totalWins
             ''',
             ( newStreak, newSuperTriviaWins, newTotalLosses, newTotalWins, twitchChannel, userId )
