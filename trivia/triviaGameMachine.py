@@ -230,6 +230,7 @@ class TriviaGameMachine():
             return
 
         triviaScoreResult = await self.__triviaScoreRepository.incrementTotalWins(
+            alsoIncrementSuperTriviaWins = False,
             twitchChannel = action.getTwitchChannel(),
             userId = action.getUserId()
         )
@@ -293,6 +294,7 @@ class TriviaGameMachine():
         await self.__triviaGameStore.removeSuperGame(action.getTwitchChannel())
 
         triviaScoreResult = await self.__triviaScoreRepository.incrementTotalWins(
+            alsoIncrementSuperTriviaWins = True,
             twitchChannel = action.getTwitchChannel(),
             userId = action.getUserId()
         )

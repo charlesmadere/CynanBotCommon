@@ -164,10 +164,13 @@ class TriviaScoreRepository():
 
     async def incrementTotalWins(
         self,
+        alsoIncrementSuperTriviaWins: bool,
         twitchChannel: str,
         userId: str
     ) -> TriviaScoreResult:
-        if not utils.isValidStr(twitchChannel):
+        if not utils.isValidBool(alsoIncrementSuperTriviaWins):
+            raise ValueError(f'alsoIncrementSuperTriviaWins argument is malformed: \"{alsoIncrementSuperTriviaWins}\"')
+        elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
         elif not utils.isValidStr(userId):
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
@@ -185,11 +188,15 @@ class TriviaScoreRepository():
         else:
             newStreak = 1
 
+        newSuperTriviaWins: int = result.getSuperTriviaWins()
+        if alsoIncrementSuperTriviaWins:
+            newSuperTriviaWins = newSuperTriviaWins + 1
+
         newTotalWins: int = result.getTotalWins() + 1
 
         newResult = TriviaScoreResult(
             streak = newStreak,
-            superTriviaWins = result.getSuperTriviaWins(),
+            superTriviaWins = newSuperTriviaWins,
             totalLosses = result.getTotalLosses(),
             totalWins = newTotalWins,
             twitchChannel = result.getTwitchChannel(),
