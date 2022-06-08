@@ -291,7 +291,7 @@ class CutenessRepository():
         cursor = await connection.execute(
             '''
                 SELECT SUM(cuteness) FROM cuteness
-                WHERE twitchChannel = ? AND userId = ?
+                WHERE twitchChannel = ? AND userId = ? AND cuteness IS NOT NULL AND cuteness >= 1
                 LIMIT 1
             ''',
             ( twitchChannel, userId )
@@ -308,12 +308,9 @@ class CutenessRepository():
 
         cursor = await connection.execute(
             '''
-                SELECT a.cuteness, a.utcYearAndMonth FROM cuteness a
-                INNER JOIN (
-                    SELECT MAX(cuteness) cuteness, utcYearAndMonth FROM cuteness
-                    GROUP BY userId
-                )
-                WHERE twitchChannel = ? AND userId = ?
+                SELECT cuteness, utcYearAndMonth FROM cuteness
+                WHERE twitchChannel = ? AND userId = ? AND cuteness IS NOT NULL AND cuteness >= 1
+                ORDER BY cuteness DESC
                 LIMIT 1
             ''',
             ( twitchChannel, userId )
