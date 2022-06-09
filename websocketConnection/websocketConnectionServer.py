@@ -1,11 +1,13 @@
 import asyncio
 import json
+import os
 import queue
 from asyncio import AbstractEventLoop
 from datetime import datetime, timedelta, timezone
 from queue import SimpleQueue
 from typing import Dict
 
+import aiofile
 import websockets
 
 try:
@@ -26,18 +28,16 @@ class WebsocketConnectionServer():
         self,
         eventLoop: AbstractEventLoop,
         timber: Timber,
-        isDebugLoggingEnabled: bool = False,
         sleepTimeSeconds: float = 5,
         port: int = 8765,
         host: str = '0.0.0.0',
+        websocketSettingsFile: str = 'CynanBotCommon/websocketConnection/websocketSettings.json',
         eventTimeToLive: timedelta = timedelta(seconds = 30)
     ):
         if eventLoop is None:
             raise ValueError(f'eventLoop argument is malformed: \"{eventLoop}\"')
         elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif not utils.isValidBool(isDebugLoggingEnabled):
-            raise ValueError(f'isDebugLoggingEnabled argument is malformed: \"{isDebugLoggingEnabled}\"')
         elif not utils.isValidNum(sleepTimeSeconds):
             raise ValueError(f'sleepTimeSeconds argument is malformed: \"{sleepTimeSeconds}\"')
         elif sleepTimeSeconds < 3:
@@ -48,18 +48,39 @@ class WebsocketConnectionServer():
             raise ValueError(f'port argument is out of bounds: \"{port}\"')
         elif not utils.isValidStr(host):
             raise ValueError(f'host argument is malformed: \"{host}\"')
+        elif not utils.isValidStr(websocketSettingsFile):
+            raise ValueError(f'websocketSettingsFile argument is malformed: \"{websocketSettingsFile}\"')
         elif eventTimeToLive is None:
             raise ValueError(f'eventTimeToLive argument is malformed: \"{eventTimeToLive}\"')
 
         self.__timber: Timber = timber
-        self.__isDebugLoggingEnabled: bool = isDebugLoggingEnabled
         self.__port: int = port
         self.__sleepTimeSeconds: int = sleepTimeSeconds
         self.__host: str = host
+        self.__websocketSettingsFile: str = websocketSettingsFile
         self.__eventTimeToLive: timedelta = eventTimeToLive
 
         self.__eventQueue: SimpleQueue[WebsocketEvent] = SimpleQueue()
         eventLoop.create_task(self.__startEventLoop())
+
+    async def __isDebugLoggingEnabled(self) -> bool:
+        jsonContents = await self.__readJson()
+        return utils.getBoolFromDict(jsonContents, 'debugLoggingEnabled', False)
+
+    async def __readJson(self) -> Dict[str, object]:
+        if not os.path.exists(self.__websocketSettingsFile):
+            raise FileNotFoundError(f'Websocket settings file not found: \"{self.__websocketSettingsFile}\"')
+
+        async with aiofile.async_open(self.__websocketSettingsFile, 'r') as file:
+            data = await file.read()
+            jsonContents = json.loads(data)
+
+        if jsonContents is None:
+            raise IOError(f'Error reading from Websocket settings file: \"{self.__websocketSettingsFile}\"')
+        elif len(jsonContents) == 0:
+            raise ValueError(f'JSON contents of Websocket settings file \"{self.__websocketSettingsFile}\" is empty')
+
+        return jsonContents
 
     async def sendEvent(
         self,
@@ -74,15 +95,15 @@ class WebsocketConnectionServer():
         elif not utils.hasItems(eventData):
             raise ValueError(f'eventData argument for eventType \"{eventType}\" and twitchChannel \"{twitchChannel}\" is malformed: \"{eventData}\"')
 
-        event = {
+        event: Dict[str, object] = {
             'twitchChannel': twitchChannel,
             'eventType': eventType,
             'eventData': eventData
         }
 
-        if self.__isDebugLoggingEnabled:
+        if await self.__isDebugLoggingEnabled():
             currentSize = self.__eventQueue.qsize()
-            self.__timber.log('WebsocketConnectionServer', f'Adding event to queue (current size is {currentSize}, new size will be {currentSize + 1}): {event}')
+            self.__timber.log('WebsocketConnectionServer', f'Adding event to queue (current qsize is {currentSize}): {event}')
 
         self.__eventQueue.put(WebsocketEvent(eventData = event))
 
@@ -94,7 +115,7 @@ class WebsocketConnectionServer():
                     host = self.__host,
                     port = self.__port
                 ) as websocket:
-                    if self.__isDebugLoggingEnabled:
+                    if self.__isDebugLoggingEnabled():
                         self.__timber.log('WebsocketConnectionServer', f'Looping within `__start()`')
 
                     await websocket.wait_closed()
@@ -107,14 +128,14 @@ class WebsocketConnectionServer():
                     self.__timber.log('WebsocketConnectionServer', f'Breaking from `__start()` loop')
                     break
 
-            if self.__isDebugLoggingEnabled:
+            if self.__isDebugLoggingEnabled():
                 self.__timber.log('WebsocketConnectionServer', f'Sleeping within `__start()`')
 
             await asyncio.sleep(self.__sleepTimeSeconds)
 
     async def __websocketConnectionReceived(self, websocket, path):
-        if self.__isDebugLoggingEnabled:
-            self.__timber.log('WebsocketConnectionServer', f'Entered `__websocketConnectionReceived()` (path: \"{path}\") (queue size: {self.__eventQueue.qsize()})')
+        if self.__isDebugLoggingEnabled():
+            self.__timber.log('WebsocketConnectionServer', f'Entered `__websocketConnectionReceived()` (path: \"{path}\") (qsize: {self.__eventQueue.qsize()})')
 
         while websocket.open:
             while not self.__eventQueue.empty():
@@ -125,19 +146,19 @@ class WebsocketConnectionServer():
                         eventJson = json.dumps(event.getEventData(), sort_keys = True)
                         await websocket.send(eventJson)
 
-                        if self.__isDebugLoggingEnabled:
+                        if self.__isDebugLoggingEnabled():
                             self.__timber.log('WebsocketConnectionServer', f'Sent event to \"{path}\": {event.getEventData()}')
                         else:
                             self.__timber.log('WebsocketConnectionServer', f'Sent event to \"{path}\"')
                     else:
-                        if self.__isDebugLoggingEnabled:
+                        if self.__isDebugLoggingEnabled():
                             self.__timber.log('WebsocketConnectionServer', f'Discarded an event meant for \"{path}\": {event.getEventData()}')
                         else:
                             self.__timber.log('WebsocketConnectionServer', f'Discarded an event meant for \"{path}\"')
                 except queue.Empty as e:
-                    self.__timber.log('WebsocketConnectionServer', f'Encountered queue.Empty error when looping through events (queue size: {self.__eventQueue.qsize()}): {e}')
+                    self.__timber.log('WebsocketConnectionServer', f'Encountered queue.Empty error when looping through events (qsize: {self.__eventQueue.qsize()}): {e}')
 
             await asyncio.sleep(self.__sleepTimeSeconds)
 
-        if self.__isDebugLoggingEnabled:
+        if self.__isDebugLoggingEnabled():
             self.__timber.log('WebsocketConnectionServer', f'Exiting `__websocketConnectionReceived()`')
