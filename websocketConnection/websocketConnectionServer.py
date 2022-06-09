@@ -115,7 +115,7 @@ class WebsocketConnectionServer():
                     host = self.__host,
                     port = self.__port
                 ) as websocket:
-                    if self.__isDebugLoggingEnabled():
+                    if await self.__isDebugLoggingEnabled():
                         self.__timber.log('WebsocketConnectionServer', f'Looping within `__start()`')
 
                     await websocket.wait_closed()
@@ -128,17 +128,19 @@ class WebsocketConnectionServer():
                     self.__timber.log('WebsocketConnectionServer', f'Breaking from `__start()` loop')
                     break
 
-            if self.__isDebugLoggingEnabled():
+            if await self.__isDebugLoggingEnabled():
                 self.__timber.log('WebsocketConnectionServer', f'Sleeping within `__start()`')
 
             await asyncio.sleep(self.__sleepTimeSeconds)
 
     async def __websocketConnectionReceived(self, websocket, path):
-        if self.__isDebugLoggingEnabled():
+        if await self.__isDebugLoggingEnabled():
             self.__timber.log('WebsocketConnectionServer', f'Entered `__websocketConnectionReceived()` (path: \"{path}\") (qsize: {self.__eventQueue.qsize()})')
 
         while websocket.open:
             while not self.__eventQueue.empty():
+                isDebugLoggingEnabled = await self.__isDebugLoggingEnabled()
+
                 try:
                     event = self.__eventQueue.get_nowait()
 
@@ -146,12 +148,12 @@ class WebsocketConnectionServer():
                         eventJson = json.dumps(event.getEventData(), sort_keys = True)
                         await websocket.send(eventJson)
 
-                        if self.__isDebugLoggingEnabled():
+                        if isDebugLoggingEnabled:
                             self.__timber.log('WebsocketConnectionServer', f'Sent event to \"{path}\": {event.getEventData()}')
                         else:
                             self.__timber.log('WebsocketConnectionServer', f'Sent event to \"{path}\"')
                     else:
-                        if self.__isDebugLoggingEnabled():
+                        if isDebugLoggingEnabled:
                             self.__timber.log('WebsocketConnectionServer', f'Discarded an event meant for \"{path}\": {event.getEventData()}')
                         else:
                             self.__timber.log('WebsocketConnectionServer', f'Discarded an event meant for \"{path}\"')
@@ -160,5 +162,5 @@ class WebsocketConnectionServer():
 
             await asyncio.sleep(self.__sleepTimeSeconds)
 
-        if self.__isDebugLoggingEnabled():
+        if isDebugLoggingEnabled:
             self.__timber.log('WebsocketConnectionServer', f'Exiting `__websocketConnectionReceived()`')
