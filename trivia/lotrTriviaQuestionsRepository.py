@@ -59,16 +59,14 @@ class LotrTriviaQuestionRepository(AbsTriviaQuestionRepository):
         triviaDict = await self.__fetchTriviaQuestionDict()
 
         triviaId = utils.getStrFromDict(triviaDict, 'triviaId')
-        correctAnswer = utils.getStrFromDict(triviaDict, 'correctAnswer', clean = True)
         question = utils.getStrFromDict(triviaDict, 'question', clean = True)
 
-        correctAnswers: List[str] = list()
-        correctAnswers.append(correctAnswer)
-        correctAnswers = await self.__triviaAnswerCompiler.compileTextAnswers(correctAnswers)
+        correctAnswers: List[str] = triviaDict['correctAnswers']
+        cleanedCorrectAnswers = await self.__triviaAnswerCompiler.compileTextAnswers(correctAnswers)
 
         return QuestionAnswerTriviaQuestion(
             correctAnswers = correctAnswers,
-            cleanedCorrectAnswers = await self.__triviaAnswerCompiler.compileTextAnswers(correctAnswers),
+            cleanedCorrectAnswers = cleanedCorrectAnswers,
             category = 'Lord of the Rings',
             question = question,
             triviaId = triviaId,
@@ -80,20 +78,29 @@ class LotrTriviaQuestionRepository(AbsTriviaQuestionRepository):
         connection = await aiosqlite.connect(self.__triviaDatabaseFile)
         cursor = await connection.execute(
             '''
-                SELECT answer, question, triviaId FROM lotrQuestions
+                SELECT answerA, answerB, answerC, answerD, question, triviaId FROM lotrQuestions
                 ORDER BY RANDOM()
                 LIMIT 1
             '''
         )
 
         row = await cursor.fetchone()
-        if not utils.hasItems(row) or len(row) != 3:
+        if not utils.hasItems(row) or len(row) != 6:
             raise RuntimeError(f'Received malformed data from LOTR database: {row}')
 
+        correctAnswers: List[str] = list()
+        self.__selectiveAppend(correctAnswers, row[0])
+        self.__selectiveAppend(correctAnswers, row[1])
+        self.__selectiveAppend(correctAnswers, row[2])
+        self.__selectiveAppend(correctAnswers, row[3])
+
+        if not utils.hasItems(correctAnswers):
+            raise RuntimeError(f'Received malformed correct answer data from LOTR database: {row}')
+
         triviaQuestionDict: Dict[str, object] = {
-            'correctAnswer': row[0],
-            'question': row[1],
-            'triviaId': row[2]
+            'correctAnswers': correctAnswers,
+            'question': row[4],
+            'triviaId': row[5]
         }
 
         await cursor.close()
@@ -105,3 +112,10 @@ class LotrTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
     def getTriviaSource(self) -> TriviaSource:
         return TriviaSource.LORD_OF_THE_RINGS
+
+    def __selectiveAppend(self, correctAnswers: List[str], correctAnswer: str):
+        if correctAnswers is None:
+            raise ValueError(f'correctAnswers argument is malformed: \"{correctAnswers}\"')
+
+        if utils.isValidStr(correctAnswer):
+            correctAnswers.append(correctAnswer)
