@@ -324,7 +324,7 @@ class TriviaGameMachine():
 
         now = datetime.now(timezone.utc)
 
-        if state is not None and state.getEndTime() < now:
+        if state is not None and state.getEndTime() >= now:
             self.__eventQueue.put(GameAlreadyInProgressTriviaEvent(
                 gameId = state.getGameId(),
                 twitchChannel = action.getTwitchChannel(),
@@ -377,7 +377,7 @@ class TriviaGameMachine():
         state = await self.__triviaGameStore.getSuperGame(action.getTwitchChannel())
         now = datetime.now(timezone.utc)
 
-        if state is not None and state.getEndTime() < now:
+        if state is not None and state.getEndTime() >= now:
             self.__eventQueue.put(SuperGameAlreadyInProgressTriviaEvent(
                 gameId = state.getGameId(),
                 twitchChannel = action.getTwitchChannel()
