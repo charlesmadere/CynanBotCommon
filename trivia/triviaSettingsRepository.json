@@ -42,7 +42,7 @@
         },
         "wwtbam": {
             "is_enabled": true,
-            "weight": 600
+            "weight": 500
         }
     }
 }
