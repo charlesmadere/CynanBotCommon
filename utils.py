@@ -4,7 +4,7 @@ import random
 import re
 from datetime import datetime
 from numbers import Number
-from typing import List, Pattern
+from typing import Dict, List, Pattern
 from urllib.parse import urlparse
 
 
@@ -101,11 +101,8 @@ def containsUrl(s: str) -> bool:
 def copyList(l: List) -> List:
     newList = list()
 
-    if not hasItems(l):
-        return newList
-
-    for item in l:
-        newList.append(item)
+    if hasItems(l):
+        newList.extend(l)
 
     return newList
 
@@ -126,7 +123,7 @@ def formatTimeShort(time, includeSeconds: bool = False) -> str:
     else:
         return time.strftime("%b %d %I:%M%p")
 
-def getBoolFromDict(d: dict, key: str, fallback: bool = None) -> bool:
+def getBoolFromDict(d: Dict, key: str, fallback: bool = None) -> bool:
     if d is None:
         raise ValueError(f'd argument is malformed: \"{d}\"')
     elif not isValidStr(key):
@@ -179,7 +176,7 @@ def getDateTimeFromStr(text: str) -> datetime:
 def getDefaultTimeout() -> int:
     return 10 # seconds
 
-def getFloatFromDict(d: dict, key: str, fallback: float = None) -> float:
+def getFloatFromDict(d: Dict, key: str, fallback: float = None) -> float:
     if d is None:
         raise ValueError(f'd argument is malformed: \"{d}\"')
     elif not isValidStr(key):
@@ -202,7 +199,7 @@ def getFloatFromDict(d: dict, key: str, fallback: float = None) -> float:
 
     return value
 
-def getIntFromDict(d: dict, key: str, fallback: int = None) -> int:
+def getIntFromDict(d: Dict, key: str, fallback: int = None) -> int:
     if d is None:
         raise ValueError(f'd argument is malformed: \"{d}\"')
     elif not isValidStr(key):
@@ -257,7 +254,7 @@ def getStrFromDateTime(dt: datetime) -> str:
     else:
         return dt.isoformat()
 
-def getStrFromDict(d: dict, key: str, fallback: str = None, clean: bool = False, htmlUnescape: bool = False, removeCarrots: bool = False) -> str:
+def getStrFromDict(d: Dict, key: str, fallback: str = None, clean: bool = False, htmlUnescape: bool = False, removeCarrots: bool = False) -> str:
     if d is None:
         raise ValueError(f'd argument is malformed: \"{d}\"')
     elif not isValidStr(key):
