@@ -23,6 +23,8 @@ try:
     from CynanBotCommon.trivia.quizApiTriviaQuestionRepository import \
         QuizApiTriviaQuestionRepository
     from CynanBotCommon.trivia.triviaContentCode import TriviaContentCode
+    from CynanBotCommon.trivia.triviaDatabaseTriviaQuestionRepository import \
+        TriviaDatabaseTriviaQuestionRepository
     from CynanBotCommon.trivia.triviaExceptions import (
         NoTriviaCorrectAnswersException,
         NoTriviaMultipleChoiceResponsesException, NoTriviaQuestionException,
@@ -56,6 +58,8 @@ except:
     from trivia.quizApiTriviaQuestionRepository import \
         QuizApiTriviaQuestionRepository
     from trivia.triviaContentCode import TriviaContentCode
+    from trivia.triviaDatabaseTriviaQuestionRepository import \
+        TriviaDatabaseTriviaQuestionRepository
     from trivia.triviaExceptions import (
         NoTriviaCorrectAnswersException,
         NoTriviaMultipleChoiceResponsesException, NoTriviaQuestionException,
@@ -81,6 +85,7 @@ class TriviaRepository():
         millionaireTriviaQuestionRepository: MillionaireTriviaQuestionRepository,
         quizApiTriviaQuestionRepository: Optional[QuizApiTriviaQuestionRepository],
         timber: Timber,
+        triviaDatabaseTriviaQuestionRepository: TriviaDatabaseTriviaQuestionRepository,
         triviaSettingsRepository: TriviaSettingsRepository,
         triviaVerifier: TriviaVerifier,
         willFryTriviaQuestionRepository: WillFryTriviaQuestionRepository,
@@ -101,6 +106,8 @@ class TriviaRepository():
             raise ValueError(f'openTriviaDatabaseTriviaQuestionRepository argument is malformed: \"{openTriviaDatabaseTriviaQuestionRepository}\"')
         elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
+        elif triviaDatabaseTriviaQuestionRepository is None:
+            raise ValueError(f'triviaDatabaseTriviaQuestionRepository argument is malformed: \"{triviaDatabaseTriviaQuestionRepository}\"')
         elif triviaSettingsRepository is None:
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
         elif triviaVerifier is None:
@@ -122,6 +129,7 @@ class TriviaRepository():
         self.__openTriviaDatabaseTriviaQuestionRepository: AbsTriviaQuestionRepository = openTriviaDatabaseTriviaQuestionRepository
         self.__quizApiTriviaQuestionRepository: AbsTriviaQuestionRepository = quizApiTriviaQuestionRepository
         self.__timber: Timber = timber
+        self.__triviaDatabaseTriviaQuestionRepository: AbsTriviaQuestionRepository = triviaDatabaseTriviaQuestionRepository
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
         self.__triviaVerifier: TriviaVerifier = triviaVerifier
         self.__willFryTriviaQuestionRepository: AbsTriviaQuestionRepository = willFryTriviaQuestionRepository
@@ -188,6 +196,7 @@ class TriviaRepository():
             TriviaSource.MILLIONAIRE: self.__millionaireTriviaQuestionRepository,
             TriviaSource.OPEN_TRIVIA_DATABASE: self.__openTriviaDatabaseTriviaQuestionRepository,
             TriviaSource.QUIZ_API: self.__quizApiTriviaQuestionRepository,
+            TriviaSource.TRIVIA_DATABASE: self.__triviaDatabaseTriviaQuestionRepository,
             TriviaSource.WILL_FRY_TRIVIA_API: self.__willFryTriviaQuestionRepository,
             TriviaSource.WWTBAM: self.__wwtbamTriviaQuestionRepository
         }
@@ -213,7 +222,7 @@ class TriviaRepository():
         attemptedTriviaSources: List[TriviaSource] = list()
 
         while retryCount < maxRetryCount:
-            triviaQuestionRepository = await self.__chooseRandomTriviaSource(triviaFetchOptions)
+            triviaQuestionRepository: AbsTriviaQuestionRepository = await self.__chooseRandomTriviaSource(triviaFetchOptions)
             attemptedTriviaSources.append(triviaQuestionRepository.getTriviaSource())
 
             try:
