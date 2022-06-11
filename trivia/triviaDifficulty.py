@@ -14,6 +14,20 @@ class TriviaDifficulty(Enum):
     UNKNOWN = auto()
 
     @classmethod
+    def fromInt(cls, number: int):
+        if not utils.isValidNum(number):
+            return TriviaDifficulty.UNKNOWN
+
+        if number == 1:
+            return TriviaDifficulty.EASY
+        elif number == 2:
+            return TriviaDifficulty.MEDIUM
+        elif number == 3:
+            return TriviaDifficulty.HARD
+        else:
+            return TriviaDifficulty.UNKNOWN
+
+    @classmethod
     def fromStr(cls, text: str):
         if not utils.isValidStr(text):
             return TriviaDifficulty.UNKNOWN
