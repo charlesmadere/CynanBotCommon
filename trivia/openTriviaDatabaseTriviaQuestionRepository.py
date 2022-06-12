@@ -136,7 +136,7 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
             raise ValueError(f'Rejecting Open Trivia Database\'s JSON data due to null/empty JSON contents: {jsonResponse}')
         elif utils.getIntFromDict(jsonResponse, 'response_code', fallback = -1) != 0:
             if utils.isValidStr(sessionToken):
-                self.__removeSessionToken(twitchChannel)
+                await self.__removeSessionToken(twitchChannel)
             self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Rejecting Open Trivia Database\'s JSON data due to bad \"response_code\" value: {jsonResponse}')
             raise ValueError(f'Rejecting Open Trivia Database\'s JSON data due to bad \"response_code\" value: {jsonResponse}')
         elif not utils.hasItems(jsonResponse.get('results')):
