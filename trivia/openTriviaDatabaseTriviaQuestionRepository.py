@@ -60,18 +60,64 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self.__timber: Timber = timber
         self.__triviaIdGenerator: TriviaIdGenerator = triviaIdGenerator
 
+        self.__sessionToken: str = None
+
+    async def __fetchSessionToken(self) -> str:
+        sessionToken: str = self.__sessionToken
+
+        if not utils.isValidStr(sessionToken):
+            self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Fetching session token...')
+
+            response = None
+            try:
+                response = await self.__clientSession.get('https://opentdb.com/api_token.php?command=request')
+            except (aiohttp.ClientError, TimeoutError) as e:
+                self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Encountered network error when fetching session token: {e}')
+                return None
+
+            if response.status != 200:
+                self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Encountered non-200 HTTP status code when fetching session token: \"{response.status}\"')
+                return None
+
+            jsonResponse: Dict[str, object] = await response.json()
+            response.close()
+
+            if await self._triviaSettingsRepository.isDebugLoggingEnabled():
+                self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'{jsonResponse}')
+
+            if not utils.hasItems(jsonResponse):
+                self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Rejecting Open Trivia Database\'s session token JSON data due to null/empty JSON contents: {jsonResponse}')
+                raise ValueError(f'Rejecting Open Trivia Database\'s session token JSON data due to null/empty JSON contents: {jsonResponse}')
+            elif utils.getIntFromDict(jsonResponse, 'response_code', fallback = -1) != 0:
+                self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Rejecting Open Trivia Database\'s session token JSON data due to bad \"response_code\" value: {jsonResponse}')
+                raise ValueError(f'Rejecting Open Trivia Database\'s session token JSON data due to bad \"response_code\" value: {jsonResponse}')
+            elif not utils.isValidStr(jsonResponse.get('token')):
+                self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Rejecting Open Trivia Database\'s session token JSON data due to bad \"token\" value: {jsonResponse}')
+                raise ValueError(f'Rejecting Open Trivia Database\'s session token JSON data due to bad \"token\" value: {jsonResponse}')
+
+            sessionToken = utils.getStrFromDict(jsonResponse, 'token')
+            self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Fetched session token: \"{sessionToken}\"')
+            self.__sessionToken = sessionToken
+
+        return sessionToken
+
     async def fetchTriviaQuestion(self, twitchChannel: Optional[str]) -> AbsTriviaQuestion:
         self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', 'Fetching trivia question...')
 
+        sessionToken = await self.__fetchSessionToken()
+
         response = None
         try:
-            response = await self.__clientSession.get('https://opentdb.com/api.php?amount=1')
+            if utils.isValidStr(sessionToken):
+                response = await self.__clientSession.get(f'https://opentdb.com/api.php?amount=1&token={sessionToken}')
+            else:
+                response = await self.__clientSession.get('https://opentdb.com/api.php?amount=1')
         except (aiohttp.ClientError, TimeoutError) as e:
-            self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Encountered network error: {e}')
+            self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Encountered network error when fetching trivia question: {e}')
             return None
 
         if response.status != 200:
-            self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Encountered non-200 HTTP status code: \"{response.status}\"')
+            self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Encountered non-200 HTTP status code when fetching trivia question: \"{response.status}\"')
             return None
 
         jsonResponse: Dict[str, object] = await response.json()
