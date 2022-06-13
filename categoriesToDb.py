@@ -1,10 +1,14 @@
 import hashlib
 import json
 import sqlite3
-from typing import List
+from typing import Dict, List
 
-
-import utils
+try:
+    import CynanBotCommon.utils as utils
+    from CynanBotCommon.trivia.triviaType import TriviaType
+except:
+    import utils
+    from trivia.triviaType import TriviaType
 
 
 class Entry():
@@ -16,7 +20,6 @@ prefixDir: str = 'CynanBotCommon/categories'
 
 entries: List[Entry] = [
     Entry(f'{prefixDir}/animals.json', 'Animals'),
-    Entry(f'{prefixDir}/brain-teasers.json', 'Brain Teasers'),
     Entry(f'{prefixDir}/celebrities.json', 'Celebrities'),
     Entry(f'{prefixDir}/entertainment.json', 'Entertainment'),
     Entry(f'{prefixDir}/for-kids.json', 'For Kids'),
@@ -39,41 +42,77 @@ entries: List[Entry] = [
     Entry(f'{prefixDir}/world.json', 'World')
 ]
 
-connection = sqlite3.connect('openTriviaQaTriviaQuestionDatabase.sqlite')
+connection = sqlite3.connect('CynanBotCommon/trivia/openTriviaQaTriviaQuestionDatabase.sqlite')
 cursor = connection.cursor()
 
 for entry in entries:
     with open(entry.fileName, 'r') as file:
         jsonContents = json.load(file)
 
-        if jsonContents is None or len(jsonContents) == 0:
+        if not utils.hasItems(jsonContents):
             raise RuntimeError(f'bad jsonContents for \"{entry.fileName}\": {jsonContents}')
 
         for questionJson in jsonContents:
-            question = utils.getStrFromDict(questionJson, 'question', clean = True)
-            answer = utils.getStrFromDict(questionJson, 'answer', clean = True)
-
-            try:
-                response1: str = utils.cleanStr(questionJson['choices'][0])
-                response2: str = utils.cleanStr(questionJson['choices'][1])
-                response3: str = utils.cleanStr(questionJson['choices'][2])
-                response4: str = utils.cleanStr(questionJson['choices'][3])
-            except:
+            if not isinstance(questionJson, Dict) or len(questionJson) == 0:
                 raise ValueError(f'bad data: {questionJson}')
 
+            question = utils.getStrFromDict(questionJson, 'question', clean = True)
+            answer = utils.getStrFromDict(questionJson, 'answer', clean = True)
+            choices: List[str] = questionJson.get('choices')
+
+            if not utils.hasItems(choices):
+                raise ValueError(f'bad data: {questionJson}')
+            elif len(choices) != 2 and len(choices) != 4 or not utils.areValidStrs(choices):
+                raise ValueError(f'weird \"choices\" field: {questionJson}')
+
+            response1: str = utils.cleanStr(choices[0])
+            response2: str = utils.cleanStr(choices[1])
+            response3: str = None
+            response4: str = None
+
+            questionType: TriviaType = None
+
+            if len(choices) == 2 and (answer.lower() == 'true' or answer.lower() == 'false') and ((response1.lower() == 'true' or response1.lower() == 'false') and (response2.lower() == 'true' or response2.lower() == 'false')):
+                if question.endswith('?'):
+                    raise ValueError(f'bad data: {questionJson}')
+
+                response1 = None
+                response2 = None
+                questionType = TriviaType.TRUE_FALSE
+            else:
+                try:
+                    response3 = utils.cleanStr(choices[2])
+                    response4 = utils.cleanStr(choices[3])
+                    questionType = TriviaType.MULTIPLE_CHOICE
+                except IndexError:
+                    print(questionJson)
+                    newQuestion = utils.cleanStr(input('question: '))
+                    if utils.isValidStr(newQuestion):
+                        question = newQuestion
+                    newAnswer = utils.cleanStr(input('answer: '))
+                    if utils.isValidStr(newAnswer):
+                        answer = newAnswer
+                    response1 = utils.cleanStr(input('response1: '))
+                    response2 = utils.cleanStr(input('response2: '))
+                    questionType = TriviaType.TRUE_FALSE
+
             hashAlg = hashlib.new('md4')
-            hashAlg.update(f'{entry.fileName}:{entry.category}:{question}:{answer}:{response1}:{response2}:{response3}:{response4}'.encode('utf-8'))
+            hashAlg.update(f'{entry.fileName}:{entry.category}:{question}:{questionType.toStr()}:{answer}:{response1}:{response2}:{response3}:{response4}'.encode('utf-8'))
             questionId: str = hashAlg.hexdigest()
 
-            if not utils.isValidStr(question) or not utils.isValidStr(answer) or not utils.isValidStr(response1) or not utils.isValidStr(response2) or not utils.isValidStr(response3) or not utils.isValidStr(response4) or not utils.isValidStr(questionId):
+            if questionType is TriviaType.TRUE_FALSE and (not utils.isValidStr(question) or not utils.isValidStr(answer) or not utils.isValidStr(questionId)):
+                raise ValueError(f'bad data: {questionJson}')
+            elif questionType is TriviaType.MULTIPLE_CHOICE and (not utils.isValidStr(question) or not utils.isValidStr(answer) or not utils.isValidStr(response1) or not utils.isValidStr(response2) or not utils.isValidStr(response3) or not utils.isValidStr(response4) or not utils.isValidStr(questionId)):
+                raise ValueError(f'bad data: {questionJson}')
+            elif questionType is None:
                 raise ValueError(f'bad data: {questionJson}')
 
             cursor.execute(
                 '''
-                    INSERT INTO triviaQuestions (category, correctAnswer, question, response1, response2, response3, response4, triviaId)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO triviaQuestions (category, correctAnswer, question, questionId, questionType, response1, response2, response3, response4)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ''',
-                ( entry.category, answer, question, response1, response2, response3, response4, questionId )
+                ( entry.category, answer, question, questionId, questionType.toStr(), response1, response2, response3, response4 )
             )
 
 cursor.close()
