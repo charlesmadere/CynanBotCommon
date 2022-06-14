@@ -42,8 +42,8 @@ entries: List[Entry] = [
     Entry(f'{prefixDir}/world.json', 'World')
 ]
 
-connection = sqlite3.connect('CynanBotCommon/trivia/openTriviaQaTriviaQuestionDatabase.sqlite')
-cursor = connection.cursor()
+outputJson: Dict[str, object] = dict()
+outputFile: str = f'{prefixDir}/output.json'
 
 for entry in entries:
     with open(entry.fileName, 'r') as file:
@@ -96,8 +96,7 @@ for entry in entries:
                     response2 = utils.cleanStr(input('response2: '))
                     questionType = TriviaType.TRUE_FALSE
 
-            hashAlg = hashlib.new('md4')
-            hashAlg.update(f'{entry.fileName}:{entry.category}:{question}:{questionType.toStr()}:{answer}:{response1}:{response2}:{response3}:{response4}'.encode('utf-8'))
+            hashAlg = hashlib.sha1(f'{entry.fileName}:{entry.category}:{question}:{questionType.toStr()}:{answer}:{response1}:{response2}:{response3}:{response4}'.encode('utf-8'))
             questionId: str = hashAlg.hexdigest()
 
             if questionType is TriviaType.TRUE_FALSE and (not utils.isValidStr(question) or not utils.isValidStr(answer) or not utils.isValidStr(questionId)):
@@ -107,13 +106,22 @@ for entry in entries:
             elif questionType is None:
                 raise ValueError(f'bad data: {questionJson}')
 
-            cursor.execute(
-                '''
-                    INSERT INTO triviaQuestions (category, correctAnswer, question, questionId, questionType, response1, response2, response3, response4)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ''',
-                ( entry.category, answer, question, questionId, questionType.toStr(), response1, response2, response3, response4 )
-            )
+            outputJson[questionId] = {
+                'questionId': questionId
+            }
+
+connection = sqlite3.connect('CynanBotCommon/trivia/openTriviaQaTriviaQuestionDatabase.sqlite')
+cursor = connection.cursor()
+
+with open(outputFile, 'r') as file:
+    pass
+    # cursor.execute(
+    #     '''
+    #         INSERT INTO triviaQuestions (category, correctAnswer, question, questionId, questionType, response1, response2, response3, response4)
+    #         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    #     ''',
+    #     ( entry.category, answer, question, questionId, questionType.toStr(), response1, response2, response3, response4 )
+    # )
 
 cursor.close()
 connection.commit()
