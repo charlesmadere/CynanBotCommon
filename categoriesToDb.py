@@ -24,9 +24,9 @@ def fixString(s: str):
     try:
         s = s.encode('latin1').decode('utf-8')
     except UnicodeDecodeError as e:
-        raise RuntimeError(f'UnicodeDecodeError when encoding/decoding \"{s}\": {e}')
+        print(f'UnicodeDecodeError when encoding/decoding \"{s}\": {e}')
     except UnicodeEncodeError as e:
-        raise RuntimeError(f'UnicodeEncodeError when encoding/decoding \"{s}\": {e}')
+        print(f'UnicodeEncodeError when encoding/decoding \"{s}\": {e}')
 
     return utils.cleanStr(s)
 
@@ -56,7 +56,7 @@ entries: List[Entry] = [
     Entry(f'{prefixDir}/world.json', 'World')
 ]
 
-questionIds: Set[str] = set()
+finalOutput: Dict[str, object] = dict()
 
 for entry in entries:
     askedForUserInput: bool = False
@@ -76,11 +76,11 @@ for entry in entries:
             questionId = fixString(utils.getStrFromDict(questionJson, 'questionId', fallback = ''))
             questionTypeStr = fixString(utils.getStrFromDict(questionJson, 'questionType', fallback = ''))
 
-            if questionId in questionIds:
+            if questionId in finalOutput:
                 raise RuntimeError(f'duplicate questionId (\"{questionId}\"): {questionJson}')
 
             if utils.isValidStr(newCategory) and utils.isValidStr(questionId) and utils.isValidStr(questionTypeStr):
-                questionIds.add(questionId)
+                finalOutput[questionId] = questionJson
                 continue
 
             question = fixString(utils.getStrFromDict(questionJson, 'question'))
@@ -137,10 +137,8 @@ for entry in entries:
 
             if not utils.isValidStr(questionId):
                 raise RuntimeError(f'malformed questionId (\"{questionId}\"): {questionJson}')
-            elif questionId in questionIds:
+            elif questionId in finalOutput:
                 raise RuntimeError(f'duplicate questionId (\"{questionId}\"): {questionJson}')
-            else:
-                questionIds.add(questionId)
 
             if questionType is TriviaType.TRUE_FALSE and (not utils.isValidStr(question) or not utils.isValidStr(answer) or not utils.isValidStr(questionId) or not (answer.lower() != 'true' or answer.lower() != 'false')):
                 raise ValueError(f'bad data: {questionJson}')
@@ -164,6 +162,7 @@ for entry in entries:
             else:
                 raise ValueError(f'bad data: {questionJson}')
 
+            finalOutput[questionId ] = questionJson
             jsonContents[index] = questionJson
 
             with open(entry.fileName, 'w') as file:
@@ -173,6 +172,27 @@ for entry in entries:
 
     if askedForUserInput:
         exit()
+
+bannedWords: List[str] = [ 'potter', 'harry potter', 'hermione granger', 'rowling', 'albus', 'dumbledore', 'severus snape', 'snape', 'hogwarts', 'weasley', 'buckbeak', 'granger', 'muggle', 'sirius black', 'james potter', 'Remus Lupin', 'azkaban', 'hagrid' ]
+bannedQuestionIds: Set[str] = set()
+
+for questionJson in finalOutput:
+    allStrs: List[str] = list()
+    allStrs.append(questionJson['answer'].lower())
+    allStrs.append(questionJson['question'].lower())
+
+    questionType = TriviaType.fromStr(questionJson['questionType'])
+    if questionType is TriviaType.MULTIPLE_CHOICE:
+        for choice in questionJson['choices']:
+            allStrs.append(choice.lower())
+
+    for s in allStrs:
+        for bannedWord in bannedWords:
+            if bannedWord.lower() in s.lower():
+                bannedQuestionIds.add(questionJson['questionId'])
+
+for questionToRemove in bannedQuestionIds:
+    del finalOutput[questionToRemove]
 
 # connection = sqlite3.connect('CynanBotCommon/trivia/openTriviaQaTriviaQuestionDatabase.sqlite')
 # cursor = connection.cursor()
