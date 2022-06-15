@@ -1,7 +1,7 @@
 import hashlib
 import json
 import sqlite3
-from typing import Dict, List
+from typing import Dict, List, Set
 
 try:
     import CynanBotCommon.utils as utils
@@ -16,11 +16,25 @@ class Entry():
         self.fileName: str = fileName
         self.category: str = category
 
+
+def fixString(s: str):
+    if not utils.isValidStr(s):
+        return ''
+
+    try:
+        s = s.encode('latin1').decode('utf-8')
+    except UnicodeDecodeError as e:
+        raise RuntimeError(f'UnicodeDecodeError when encoding/decoding \"{s}\": {e}')
+    except UnicodeEncodeError as e:
+        raise RuntimeError(f'UnicodeEncodeError when encoding/decoding \"{s}\": {e}')
+
+    return utils.cleanStr(s)
+
+
 prefixDir: str = 'CynanBotCommon/categories'
 
 entries: List[Entry] = [
     Entry(f'{prefixDir}/animals.json', 'Animals'),
-    Entry(f'{prefixDir}/celebrities.json', 'Celebrities'),
     Entry(f'{prefixDir}/entertainment.json', 'Entertainment'),
     Entry(f'{prefixDir}/for-kids.json', 'For Kids'),
     Entry(f'{prefixDir}/general.json', 'General'),
@@ -42,79 +56,129 @@ entries: List[Entry] = [
     Entry(f'{prefixDir}/world.json', 'World')
 ]
 
-outputJson: Dict[str, object] = dict()
-outputFile: str = f'{prefixDir}/output.json'
+questionIds: Set[str] = set()
 
 for entry in entries:
+    askedForUserInput: bool = False
+
     with open(entry.fileName, 'r') as file:
-        jsonContents = json.load(file)
+        jsonContents: List[Dict[str, object]] = json.load(file)
+        file.close()
 
         if not utils.hasItems(jsonContents):
             raise RuntimeError(f'bad jsonContents for \"{entry.fileName}\": {jsonContents}')
 
-        for questionJson in jsonContents:
-            if not isinstance(questionJson, Dict) or len(questionJson) == 0:
+        for index, questionJson in enumerate(jsonContents):
+            if not isinstance(questionJson, Dict) or not utils.hasItems(questionJson):
                 raise ValueError(f'bad data: {questionJson}')
 
-            question = utils.getStrFromDict(questionJson, 'question', clean = True)
-            answer = utils.getStrFromDict(questionJson, 'answer', clean = True)
+            newCategory = fixString(utils.getStrFromDict(questionJson, 'newCategory', fallback = ''))
+            questionId = fixString(utils.getStrFromDict(questionJson, 'questionId', fallback = ''))
+            questionTypeStr = fixString(utils.getStrFromDict(questionJson, 'questionType', fallback = ''))
+
+            if questionId in questionIds:
+                raise RuntimeError(f'duplicate questionId (\"{questionId}\"): {questionJson}')
+
+            if utils.isValidStr(newCategory) and utils.isValidStr(questionId) and utils.isValidStr(questionTypeStr):
+                questionIds.add(questionId)
+                continue
+
+            question = fixString(utils.getStrFromDict(questionJson, 'question'))
+            answer = fixString(utils.getStrFromDict(questionJson, 'answer'))
+            category = fixString(utils.getStrFromDict(questionJson, 'category'))
             choices: List[str] = questionJson.get('choices')
 
-            if not utils.hasItems(choices):
+            if len(choices) != 2 and len(choices) != 4:
                 raise ValueError(f'bad data: {questionJson}')
-            elif len(choices) != 2 and len(choices) != 4 or not utils.areValidStrs(choices):
-                raise ValueError(f'weird \"choices\" field: {questionJson}')
 
-            response1: str = utils.cleanStr(choices[0])
-            response2: str = utils.cleanStr(choices[1])
+            response1: str = fixString(choices[0])
+            response2: str = fixString(choices[1])
             response3: str = None
             response4: str = None
-
             questionType: TriviaType = None
 
-            if len(choices) == 2 and (answer.lower() == 'true' or answer.lower() == 'false') and ((response1.lower() == 'true' or response1.lower() == 'false') and (response2.lower() == 'true' or response2.lower() == 'false')):
-                if question.endswith('?'):
+            if answer.lower() == 'yes' or answer.lower() == 'no' or answer.lower() == 'true' or answer.lower() == 'false':
+                questionType = TriviaType.TRUE_FALSE
+
+                if (response1.lower() != 'yes' and response1.lower() != 'no' and response1.lower() != 'true' and response1.lower() != 'false') or (response2.lower() != 'yes' and response2.lower() != 'no' and response2.lower() != 'true' and response2.lower() != 'false'):
                     raise ValueError(f'bad data: {questionJson}')
 
-                response1 = None
-                response2 = None
-                questionType = TriviaType.TRUE_FALSE
-            else:
-                try:
-                    response3 = utils.cleanStr(choices[2])
-                    response4 = utils.cleanStr(choices[3])
-                    questionType = TriviaType.MULTIPLE_CHOICE
-                except IndexError:
-                    print(questionJson)
-                    newQuestion = utils.cleanStr(input('question: '))
+                if question.endswith('?'):
+                    askedForUserInput = True
+                    print(f'======\n{questionJson}')
+                    newQuestion = input('question: ')
+
                     if utils.isValidStr(newQuestion):
                         question = newQuestion
-                    newAnswer = utils.cleanStr(input('answer: '))
-                    if utils.isValidStr(newAnswer):
-                        answer = newAnswer
-                    response1 = utils.cleanStr(input('response1: '))
-                    response2 = utils.cleanStr(input('response2: '))
-                    questionType = TriviaType.TRUE_FALSE
 
-            hashAlg = hashlib.sha1(f'{entry.fileName}:{entry.category}:{question}:{questionType.toStr()}:{answer}:{response1}:{response2}:{response3}:{response4}'.encode('utf-8'))
+                if answer.lower() == 'yes':
+                    answer = str(True).lower()
+                elif answer.lower() == 'no':
+                    answer = str(False).lower()
+
+                if answer.lower() != 'true' and answer.lower() != 'false':
+                    raise ValueError(f'bad data: {questionJson}')
+            elif len(choices) == 4:
+                questionType = TriviaType.MULTIPLE_CHOICE
+
+                try:
+                    response3 = fixString(choices[2])
+                except UnicodeDecodeError as e:
+                    raise ValueError(f'bad data (index 2): {questionJson} ({e})')
+                try:
+                    response4 = fixString(choices[3])
+                except UnicodeDecodeError as e:
+                    raise ValueError(f'bad data (index 3): {questionJson} ({e})')
+            else:
+                raise ValueError(f'bad data: {questionJson}')
+
+            hashAlg = hashlib.md5(f'{entry.fileName}:{entry.category}:{question}:{questionType.toStr()}:{answer}:{response1}:{response2}:{response3}:{response4}'.encode('utf-8'))
             questionId: str = hashAlg.hexdigest()
 
-            if questionType is TriviaType.TRUE_FALSE and (not utils.isValidStr(question) or not utils.isValidStr(answer) or not utils.isValidStr(questionId)):
+            if not utils.isValidStr(questionId):
+                raise RuntimeError(f'malformed questionId (\"{questionId}\"): {questionJson}')
+            elif questionId in questionIds:
+                raise RuntimeError(f'duplicate questionId (\"{questionId}\"): {questionJson}')
+            else:
+                questionIds.add(questionId)
+
+            if questionType is TriviaType.TRUE_FALSE and (not utils.isValidStr(question) or not utils.isValidStr(answer) or not utils.isValidStr(questionId) or not (answer.lower() != 'true' or answer.lower() != 'false')):
                 raise ValueError(f'bad data: {questionJson}')
             elif questionType is TriviaType.MULTIPLE_CHOICE and (not utils.isValidStr(question) or not utils.isValidStr(answer) or not utils.isValidStr(response1) or not utils.isValidStr(response2) or not utils.isValidStr(response3) or not utils.isValidStr(response4) or not utils.isValidStr(questionId)):
                 raise ValueError(f'bad data: {questionJson}')
             elif questionType is None:
                 raise ValueError(f'bad data: {questionJson}')
 
-            outputJson[questionId] = {
-                'questionId': questionId
-            }
+            questionJson['answer'] = answer
+            questionJson['category'] = category
+            questionJson['newCategory'] = entry.category
+            questionJson['question'] = question
+            questionJson['questionId'] = questionId
+            questionJson['questionType'] = questionType.toStr()
 
-connection = sqlite3.connect('CynanBotCommon/trivia/openTriviaQaTriviaQuestionDatabase.sqlite')
-cursor = connection.cursor()
+            if questionType is TriviaType.MULTIPLE_CHOICE:
+                questionJson['choices'] = [ response1, response2, response3, response4 ]
+            elif questionType is TriviaType.TRUE_FALSE:
+                if 'choices' in questionJson:
+                    del questionJson['choices']
+            else:
+                raise ValueError(f'bad data: {questionJson}')
 
-with open(outputFile, 'r') as file:
-    pass
+            jsonContents[index] = questionJson
+
+            with open(entry.fileName, 'w') as file:
+                json.dump(jsonContents, file, indent = 2, sort_keys = True)
+
+            print(f'Updated \"{entry.fileName}\": {questionJson}')
+
+    if askedForUserInput:
+        exit()
+
+# connection = sqlite3.connect('CynanBotCommon/trivia/openTriviaQaTriviaQuestionDatabase.sqlite')
+# cursor = connection.cursor()
+
+# with open(outputFile, 'r') as file:
+#     pass
     # cursor.execute(
     #     '''
     #         INSERT INTO triviaQuestions (category, correctAnswer, question, questionId, questionType, response1, response2, response3, response4)
@@ -123,6 +187,6 @@ with open(outputFile, 'r') as file:
     #     ( entry.category, answer, question, questionId, questionType.toStr(), response1, response2, response3, response4 )
     # )
 
-cursor.close()
-connection.commit()
-connection.close()
+# cursor.close()
+# connection.commit()
+# connection.close()
