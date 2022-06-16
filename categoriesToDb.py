@@ -173,7 +173,7 @@ for entry in entries:
     if askedForUserInput:
         exit()
 
-bannedWords: List[str] = [ 'potter', 'harry potter', 'hermione granger', 'rowling', 'albus', 'dumbledore', 'severus snape', 'snape', 'hogwarts', 'weasley', 'buckbeak', 'granger', 'muggle', 'sirius black', 'james potter', 'Remus Lupin', 'azkaban', 'hagrid' ]
+bannedWords: List[str] = [ 'potter', 'harry potter', 'hermione granger', 'rowling', 'albus', 'dumbledore', 'severus snape', 'snape', 'hogwarts', 'weasley', 'buckbeak', 'granger', 'muggle', 'sirius black', 'james potter', 'Remus Lupin', 'azkaban', 'hagrid', 'granger', 'lefty', 'leftist', 'male', 'female', 'gender', 'lacoste', 'trump' ]
 bannedQuestionIds: Set[str] = set()
 
 for questionJson in finalOutput:
