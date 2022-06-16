@@ -420,7 +420,7 @@
     "questionType": "multiple-choice"
   },
   {
-    "answer": "True",
+    "answer": "true",
     "category": "animals",
     "newCategory": "Animals",
     "question": "The endangered Komodo dragon is the largest living lizard in the world, growing to an average length of 2-3 meters (10 feet).",
@@ -456,7 +456,7 @@
     "questionType": "multiple-choice"
   },
   {
-    "answer": "False",
+    "answer": "false",
     "category": "animals",
     "newCategory": "Animals",
     "question": "The Asian Elephant, the only living species of the genus Elephas, is the bigger relative of the African Elephant.",
