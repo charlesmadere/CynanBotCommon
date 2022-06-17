@@ -106,7 +106,7 @@ for entry in entries:
                 if question.endswith('?'):
                     askedForUserInput = True
                     print(f'======\n{questionJson}')
-                    newQuestion = input('question: ')
+                    newQuestion = fixString(input('question: '))
 
                     if utils.isValidStr(newQuestion):
                         question = newQuestion
@@ -173,26 +173,39 @@ for entry in entries:
     if askedForUserInput:
         exit()
 
-bannedWords: List[str] = [ 'potter', 'harry potter', 'hermione granger', 'rowling', 'albus', 'dumbledore', 'severus snape', 'snape', 'hogwarts', 'weasley', 'buckbeak', 'granger', 'muggle', 'sirius black', 'james potter', 'Remus Lupin', 'azkaban', 'hagrid', 'granger', 'lefty', 'leftist', 'male', 'female', 'gender', 'lacoste', 'trump' ]
+bannedWords: List[str] = [ 'potter', 'harry potter', 'hermione granger', 'rowling', 'albus', 'dumbledore', 'severus snape', 'snape', 'hogwarts', 'weasley', 'buckbeak', 'granger', 'muggle', 'sirius black', 'james potter', 'remus lupin', 'azkaban', 'hagrid', 'granger', 'lefty', 'leftist', 'male', 'female', 'gender', 'lacoste', 'trump', 'peeves', 'biden', 'obama', 'magic', 'liberal' ]
 bannedQuestionIds: Set[str] = set()
 
 for questionJson in finalOutput:
     allStrs: List[str] = list()
-    allStrs.append(questionJson['answer'].lower())
+    answer = questionJson['question']
+    questionId = questionJson['questionId']
+    allStrs.append(answer.lower())
     allStrs.append(questionJson['question'].lower())
 
     questionType = TriviaType.fromStr(questionJson['questionType'])
     if questionType is TriviaType.MULTIPLE_CHOICE:
+        answerInChoices = False
         for choice in questionJson['choices']:
             allStrs.append(choice.lower())
 
+            if answer == choice:
+                answerInChoices = True
+
+            if len(choice) >= 50:
+                bannedQuestionIds.add(questionId)
+
+        if not answerInChoices:
+            bannedQuestionIds.add(questionId)
+
     for s in allStrs:
         for bannedWord in bannedWords:
-            if bannedWord.lower() in s.lower():
-                bannedQuestionIds.add(questionJson['questionId'])
+            if bannedWord in s or len(s) >= 250:
+                bannedQuestionIds.add(questionId)
 
-for questionToRemove in bannedQuestionIds:
-    del finalOutput[questionToRemove]
+for questionIdToRemove in bannedQuestionIds:
+    print(f'Removing question: {finalOutput[questionIdToRemove]}')
+    del finalOutput[questionIdToRemove]
 
 # connection = sqlite3.connect('CynanBotCommon/trivia/openTriviaQaTriviaQuestionDatabase.sqlite')
 # cursor = connection.cursor()
