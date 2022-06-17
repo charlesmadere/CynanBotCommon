@@ -28,7 +28,7 @@ def fixString(s: str):
     except UnicodeEncodeError as e:
         print(f'UnicodeEncodeError when encoding/decoding \"{s}\": {e}')
 
-    return utils.cleanStr(s)
+    return ' '.join(utils.getCleanedSplits(s))
 
 
 prefixDir: str = 'CynanBotCommon/categories'
@@ -173,7 +173,7 @@ for entry in entries:
     if askedForUserInput:
         exit()
 
-bannedWords: List[str] = [ 'potter', 'harry potter', 'hermione granger', 'rowling', 'albus', 'dumbledore', 'severus snape', 'snape', 'hogwarts', 'weasley', 'buckbeak', 'granger', 'muggle', 'sirius black', 'james potter', 'remus lupin', 'azkaban', 'hagrid', 'granger', 'lefty', 'leftist', 'male', 'female', 'gender', 'lacoste', 'trump', 'peeves', 'biden', 'obama', 'magic', 'liberal' ]
+bannedWords: List[str] = [ 'potter', 'harry potter', 'hermione granger', 'rowling', 'albus', 'dumbledore', 'severus snape', 'snape', 'hogwarts', 'weasley', 'buckbeak', 'granger', 'muggle', 'sirius black', 'james potter', 'remus lupin', 'azkaban', 'hagrid', 'granger', 'lefty', 'leftist', 'male', 'female', 'gender', 'lacoste', 'trump', 'peeves', 'biden', 'obama', 'magic', 'liberal', 'blazing', 'blah' ]
 bannedQuestionIds: Set[str] = set()
 
 for questionJson in finalOutput:
@@ -209,6 +209,9 @@ for questionIdToRemove in bannedQuestionIds:
 
 # connection = sqlite3.connect('CynanBotCommon/trivia/openTriviaQaTriviaQuestionDatabase.sqlite')
 # cursor = connection.cursor()
+
+for questionJson in finalOutput:
+    pass
 
 # with open(outputFile, 'r') as file:
 #     pass
