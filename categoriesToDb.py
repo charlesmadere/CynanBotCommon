@@ -59,8 +59,6 @@ entries: List[Entry] = [
 finalOutput: Dict[str, object] = dict()
 
 for entry in entries:
-    askedForUserInput: bool = False
-
     with open(entry.fileName, 'r') as file:
         jsonContents: List[Dict[str, object]] = json.load(file)
         file.close()
@@ -104,9 +102,8 @@ for entry in entries:
                     raise ValueError(f'bad data: {questionJson}')
 
                 if question.endswith('?'):
-                    askedForUserInput = True
                     print(f'======\n{questionJson}')
-                    newQuestion = fixString(input('question: '))
+                    newQuestion = f'{question}:removeme'
 
                     if utils.isValidStr(newQuestion):
                         question = newQuestion
@@ -170,18 +167,17 @@ for entry in entries:
 
             print(f'Updated \"{entry.fileName}\": {questionJson}')
 
-    if askedForUserInput:
-        exit()
-
-bannedWords: List[str] = [ 'potter', 'harry potter', 'hermione granger', 'rowling', 'albus', 'dumbledore', 'severus snape', 'snape', 'hogwarts', 'weasley', 'buckbeak', 'granger', 'muggle', 'sirius black', 'james potter', 'remus lupin', 'azkaban', 'hagrid', 'granger', 'lefty', 'leftist', 'male', 'female', 'gender', 'lacoste', 'trump', 'peeves', 'biden', 'obama', 'magic', 'liberal', 'blazing', 'blah' ]
+bannedWords: List[str] = [ 'potter', 'harry potter', 'hermione granger', 'rowling', 'albus', 'dumbledore', 'severus snape', 'snape', 'hogwarts', 'weasley', 'buckbeak', 'granger', 'muggle', 'sirius black', 'james potter', 'remus lupin', 'azkaban', 'hagrid', 'granger', 'lefty', 'leftist', 'male', 'female', 'gender', 'lacoste', 'trump', 'peeves', 'biden', 'obama', 'magic', 'liberal', 'blazing', 'blah', 'hitler', 'gryffindor', 'slytherin', 'hufflepuff', 'ravenclaw', 'sex', 'chris brown', 'gamer', 'vacc', 'vaxx', 'cauldron', 'diagon', 'removeme', 'cosby', 'muslim', 'islam', 'fuck', 'pussy', 'indian', 'genre:', 'toby keith', 'mcgraw' ]
 bannedQuestionIds: Set[str] = set()
 
-for questionJson in finalOutput:
+for questionJson in finalOutput.values():
+    answer: str = questionJson['answer']
+    questionId: str = questionJson['questionId']
+    question: str = questionJson['question']
+
     allStrs: List[str] = list()
-    answer = questionJson['question']
-    questionId = questionJson['questionId']
     allStrs.append(answer.lower())
-    allStrs.append(questionJson['question'].lower())
+    allStrs.append(question.lower())
 
     questionType = TriviaType.fromStr(questionJson['questionType'])
     if questionType is TriviaType.MULTIPLE_CHOICE:
@@ -192,7 +188,7 @@ for questionJson in finalOutput:
             if answer == choice:
                 answerInChoices = True
 
-            if len(choice) >= 50:
+            if len(choice) >= 40:
                 bannedQuestionIds.add(questionId)
 
         if not answerInChoices:
@@ -204,24 +200,24 @@ for questionJson in finalOutput:
                 bannedQuestionIds.add(questionId)
 
 for questionIdToRemove in bannedQuestionIds:
-    print(f'Removing question: {finalOutput[questionIdToRemove]}')
+    question = finalOutput[questionIdToRemove]["question"]
+    print(f'Removing question: \"{question}\"')
     del finalOutput[questionIdToRemove]
+
+print(f'Proceeding with {len(finalOutput)} question(s) (removed {len(bannedQuestionIds)})')
 
 # connection = sqlite3.connect('CynanBotCommon/trivia/openTriviaQaTriviaQuestionDatabase.sqlite')
 # cursor = connection.cursor()
 
 for questionJson in finalOutput:
-    pass
-
-# with open(outputFile, 'r') as file:
-#     pass
     # cursor.execute(
     #     '''
-    #         INSERT INTO triviaQuestions (category, correctAnswer, question, questionId, questionType, response1, response2, response3, response4)
+    #         INSERT INTO triviaQuestions (category, correctAnswer, newCategory, question, questionId, questionType, response1, response2, response3, response4)
     #         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     #     ''',
-    #     ( entry.category, answer, question, questionId, questionType.toStr(), response1, response2, response3, response4 )
+    #     ( category, answer, newCategory, question, questionId, questionType.toStr(), response1, response2, response3, response4 )
     # )
+    pass
 
 # cursor.close()
 # connection.commit()
