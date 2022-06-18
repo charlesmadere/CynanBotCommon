@@ -14,6 +14,7 @@ class TriviaSource(Enum):
     LORD_OF_THE_RINGS = auto()
     MILLIONAIRE = auto()
     OPEN_TRIVIA_DATABASE = auto()
+    OPEN_TRIVIA_QA = auto()
     QUIZ_API = auto()
     TRIVIA_DATABASE = auto()
     WILL_FRY_TRIVIA_API = auto()
@@ -38,6 +39,8 @@ class TriviaSource(Enum):
             return TriviaSource.LORD_OF_THE_RINGS
         elif text == 'millionaire':
             return TriviaSource.MILLIONAIRE
+        elif text == 'open_trivia_qa':
+            return TriviaSource.OPEN_TRIVIA_QA
         elif text == 'quiz_api':
             return TriviaSource.QUIZ_API
         elif text == 'trivia_database':
@@ -62,6 +65,8 @@ class TriviaSource(Enum):
             return 'MILLIONAIRE'
         elif self is TriviaSource.OPEN_TRIVIA_DATABASE:
             return 'OPEN_TRIVIA_DATABASE'
+        elif self is TriviaSource.OPEN_TRIVIA_QA:
+            return 'OPEN_TRIVIA_QA'
         elif self is TriviaSource.QUIZ_API:
             return 'QUIZ_API'
         elif self is TriviaSource.TRIVIA_DATABASE:

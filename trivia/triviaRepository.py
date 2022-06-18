@@ -20,6 +20,8 @@ try:
         MillionaireTriviaQuestionRepository
     from CynanBotCommon.trivia.openTriviaDatabaseTriviaQuestionRepository import \
         OpenTriviaDatabaseTriviaQuestionRepository
+    from CynanBotCommon.trivia.openTriviaQaTriviaQuestionRepository import \
+        OpenTriviaQaTriviaQuestionRepository
     from CynanBotCommon.trivia.quizApiTriviaQuestionRepository import \
         QuizApiTriviaQuestionRepository
     from CynanBotCommon.trivia.triviaContentCode import TriviaContentCode
@@ -55,6 +57,8 @@ except:
         MillionaireTriviaQuestionRepository
     from trivia.openTriviaDatabaseTriviaQuestionRepository import \
         OpenTriviaDatabaseTriviaQuestionRepository
+    from trivia.openTriviaQaTriviaQuestionRepository import \
+        OpenTriviaQaTriviaQuestionRepository
     from trivia.quizApiTriviaQuestionRepository import \
         QuizApiTriviaQuestionRepository
     from trivia.triviaContentCode import TriviaContentCode
@@ -80,10 +84,11 @@ class TriviaRepository():
         bongoTriviaQuestionRepository: BongoTriviaQuestionRepository,
         jokeTriviaQuestionRepository: JokeTriviaQuestionRepository,
         jServiceTriviaQuestionRepository: JServiceTriviaQuestionRepository,
-        openTriviaDatabaseTriviaQuestionRepository: OpenTriviaDatabaseTriviaQuestionRepository,
         lotrTriviaQuestionsRepository: LotrTriviaQuestionRepository,
         millionaireTriviaQuestionRepository: MillionaireTriviaQuestionRepository,
         quizApiTriviaQuestionRepository: Optional[QuizApiTriviaQuestionRepository],
+        openTriviaDatabaseTriviaQuestionRepository: OpenTriviaDatabaseTriviaQuestionRepository,
+        openTriviaQaTriviaQuestionRepository: OpenTriviaQaTriviaQuestionRepository,
         timber: Timber,
         triviaDatabaseTriviaQuestionRepository: TriviaDatabaseTriviaQuestionRepository,
         triviaSettingsRepository: TriviaSettingsRepository,
@@ -104,6 +109,8 @@ class TriviaRepository():
             raise ValueError(f'millionaireTriviaQuestionRepository argument is malformed: \"{millionaireTriviaQuestionRepository}\"')
         elif openTriviaDatabaseTriviaQuestionRepository is None:
             raise ValueError(f'openTriviaDatabaseTriviaQuestionRepository argument is malformed: \"{openTriviaDatabaseTriviaQuestionRepository}\"')
+        elif openTriviaQaTriviaQuestionRepository is None:
+            raise ValueError(f'openTriviaQaTriviaQuestionRepository argument is malformed: \"{openTriviaQaTriviaQuestionRepository}\"')
         elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif triviaDatabaseTriviaQuestionRepository is None:
@@ -127,6 +134,7 @@ class TriviaRepository():
         self.__lotrTriviaQuestionsRepository: AbsTriviaQuestionRepository = lotrTriviaQuestionsRepository
         self.__millionaireTriviaQuestionRepository: AbsTriviaQuestionRepository = millionaireTriviaQuestionRepository
         self.__openTriviaDatabaseTriviaQuestionRepository: AbsTriviaQuestionRepository = openTriviaDatabaseTriviaQuestionRepository
+        self.__openTriviaQaTriviaQuestionRepository: OpenTriviaQaTriviaQuestionRepository = openTriviaQaTriviaQuestionRepository
         self.__quizApiTriviaQuestionRepository: AbsTriviaQuestionRepository = quizApiTriviaQuestionRepository
         self.__timber: Timber = timber
         self.__triviaDatabaseTriviaQuestionRepository: AbsTriviaQuestionRepository = triviaDatabaseTriviaQuestionRepository
@@ -195,6 +203,7 @@ class TriviaRepository():
             TriviaSource.LORD_OF_THE_RINGS: self.__lotrTriviaQuestionsRepository,
             TriviaSource.MILLIONAIRE: self.__millionaireTriviaQuestionRepository,
             TriviaSource.OPEN_TRIVIA_DATABASE: self.__openTriviaDatabaseTriviaQuestionRepository,
+            TriviaSource.OPEN_TRIVIA_QA: self.__openTriviaQaTriviaQuestionRepository,
             TriviaSource.QUIZ_API: self.__quizApiTriviaQuestionRepository,
             TriviaSource.TRIVIA_DATABASE: self.__triviaDatabaseTriviaQuestionRepository,
             TriviaSource.WILL_FRY_TRIVIA_API: self.__willFryTriviaQuestionRepository,

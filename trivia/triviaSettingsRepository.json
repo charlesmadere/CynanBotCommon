@@ -32,6 +32,10 @@
             "is_enabled": true,
             "weight": 1000
         },
+        "open_trivia_qa": {
+            "is_enabled": true,
+            "weight": 500
+        },
         "quiz_api": {
             "is_enabled": true,
             "weight": 5
