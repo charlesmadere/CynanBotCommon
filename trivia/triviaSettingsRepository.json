@@ -10,7 +10,7 @@
     "trivia_sources": {
         "bongo": {
             "is_enabled": true,
-            "weight": 900
+            "weight": 600
         },
         "joke_trivia_repository": {
             "is_enabled": true,
