@@ -98,20 +98,6 @@
     "questionType": "multiple-choice"
   },
   {
-    "answer": "Parseltounge",
-    "category": "literature",
-    "choices": [
-      "Goblin",
-      "English",
-      "Mermish",
-      "Parseltounge"
-    ],
-    "newCategory": "Literature",
-    "question": "What language can Harry Potter speak?",
-    "questionId": "be116dbee4f60ec5c05293550bbcbb5e",
-    "questionType": "multiple-choice"
-  },
-  {
     "answer": "False",
     "category": "literature",
     "newCategory": "Literature",
