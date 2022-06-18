@@ -18,16 +18,6 @@ class Entry():
 
 
 def fixString(s: str):
-    if not utils.isValidStr(s):
-        return ''
-
-    try:
-        s = s.encode('latin1').decode('utf-8')
-    except UnicodeDecodeError as e:
-        print(f'UnicodeDecodeError when encoding/decoding \"{s}\": {e}')
-    except UnicodeEncodeError as e:
-        print(f'UnicodeEncodeError when encoding/decoding \"{s}\": {e}')
-
     return ' '.join(utils.getCleanedSplits(s))
 
 
@@ -167,7 +157,7 @@ for entry in entries:
 
             print(f'Updated \"{entry.fileName}\": {questionJson}')
 
-bannedWords: List[str] = [ 'potter', 'harry potter', 'hermione granger', 'rowling', 'albus', 'dumbledore', 'severus snape', 'snape', 'hogwarts', 'weasley', 'buckbeak', 'granger', 'muggle', 'sirius black', 'james potter', 'remus lupin', 'azkaban', 'hagrid', 'granger', 'lefty', 'leftist', 'male', 'female', 'gender', 'lacoste', 'trump', 'peeves', 'biden', 'obama', 'magic', 'liberal', 'blazing', 'blah', 'hitler', 'gryffindor', 'slytherin', 'hufflepuff', 'ravenclaw', 'sex', 'chris brown', 'gamer', 'vacc', 'vaxx', 'cauldron', 'diagon', 'removeme', 'cosby', 'muslim', 'islam', 'fuck', 'pussy', 'indian', 'genre:', 'toby keith', 'mcgraw' ]
+bannedWords: List[str] = [ 'potter', 'harry potter', 'hermione granger', 'rowling', 'albus', 'dumbledore', 'severus snape', 'snape', 'hogwarts', 'weasley', 'buckbeak', 'granger', 'muggle', 'sirius black', 'james potter', 'remus lupin', 'azkaban', 'hagrid', 'granger', 'lefty', 'leftist', 'male', 'female', 'gender', 'lacoste', 'trump', 'peeves', 'biden', 'obama', 'magic', 'liberal', 'blazing', 'blah', 'hitler', 'gryffindor', 'slytherin', 'hufflepuff', 'ravenclaw', 'sex', 'chris brown', 'gamer', 'vacc', 'vaxx', 'cauldron', 'diagon', 'removeme', 'cosby', 'muslim', 'islam', 'fuck', 'pussy', 'indian', 'genre:', 'toby keith', 'mcgraw', 'nigger' ]
 bannedQuestionIds: Set[str] = set()
 
 for questionJson in finalOutput.values():
@@ -206,19 +196,54 @@ for questionIdToRemove in bannedQuestionIds:
 
 print(f'Proceeding with {len(finalOutput)} question(s) (removed {len(bannedQuestionIds)})')
 
-# connection = sqlite3.connect('CynanBotCommon/trivia/openTriviaQaTriviaQuestionDatabase.sqlite')
-# cursor = connection.cursor()
+connection = sqlite3.connect('CynanBotCommon/trivia/openTriviaQaTriviaQuestionDatabase.sqlite')
+cursor = connection.cursor()
 
-for questionJson in finalOutput:
-    # cursor.execute(
-    #     '''
-    #         INSERT INTO triviaQuestions (category, correctAnswer, newCategory, question, questionId, questionType, response1, response2, response3, response4)
-    #         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    #     ''',
-    #     ( category, answer, newCategory, question, questionId, questionType.toStr(), response1, response2, response3, response4 )
-    # )
-    pass
+for questionJson in finalOutput.values():
+    category: str = fixString(questionJson['category'])
+    answer: str = fixString(questionJson['answer'])
+    newCategory: str = fixString(questionJson['newCategory'])
+    question: str = fixString(questionJson['question'])
+    questionId: str = fixString(questionJson['questionId'])
+    questionTypeStr: str = fixString(questionJson['questionType'])
+    response1: str = None
+    response2: str = None
+    response3: str = None
+    response4: str = None
 
-# cursor.close()
-# connection.commit()
-# connection.close()
+    questionType: TriviaType = TriviaType.fromStr(questionTypeStr)
+    if questionType is TriviaType.MULTIPLE_CHOICE:
+        choices: List[str] = questionJson['choices']
+
+        if not utils.areValidStrs(choices):
+            raise ValueError(f'bad data: {questionJson}')
+
+        choices.sort(key = lambda r: r.lower())
+
+        try:
+            response1 = fixString(choices[0])
+            response2 = fixString(choices[1])
+            response3 = fixString(choices[2])
+            response4 = fixString(choices[3])
+        except IndexError as e:
+            raise e
+
+        if not utils.isValidStr(response1) or not utils.isValidStr(response2) or not utils.isValidStr(response3) or not utils.isValidStr(response4):
+            raise ValueError(f'bad data: {questionJson}')
+        elif answer != response1 and answer != response2 and answer != response3 and answer != response4:
+            raise ValueError(f'bad data: {questionJson}')
+    elif questionType is TriviaType.TRUE_FALSE:
+        if answer.lower() != 'true' and answer.lower() != 'false':
+            raise ValueError(f'bad data: {questionJson}')
+
+    cursor.execute(
+        '''
+            INSERT INTO triviaQuestions (category, correctAnswer, newCategory, question, questionId, questionType, response1, response2, response3, response4)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''',
+        ( category, answer, newCategory, question, questionId, questionType.toStr(), response1, response2, response3, response4 )
+    )
+
+cursor.close()
+connection.commit()
+connection.close()
