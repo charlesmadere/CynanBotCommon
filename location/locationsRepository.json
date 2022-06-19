@@ -65,6 +65,12 @@
         "name": "Republic of Chile",
         "timeZone": "Chile/Continental"
     },
+    "4140963": {
+        "lat": 38.9072,
+        "lon": -77.0369,
+        "name": "Washington, D.C.",
+        "timeZone": "America/New_York"
+    },
     "4164138": {
         "lat": 25.774269,
         "lon": -80.193657,
@@ -82,6 +88,12 @@
         "lon": -90.075073,
         "name": "New Orleans",
         "timeZone": "US/Central"
+    },
+    "4641239": {
+        "lat": 35.1495,
+        "lon": -90.0490,
+        "name": "Memphis",
+        "timeZone": "America/Chicago"
     },
     "4671654": {
         "lat": 30.267151,
