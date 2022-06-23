@@ -20,6 +20,7 @@ class TriviaAnswerCompiler():
         self.__parenGroupRegEx: Pattern = re.compile(r'(\(.*?\))', re.IGNORECASE)
         self.__phraseAnswerRegEx: Pattern = re.compile(r'[^A-Za-z0-9 ]|(?<=\s)\s+', re.IGNORECASE)
         self.__tagRemovalRegEx: Pattern = re.compile(r'<\/?\w+>', re.IGNORECASE)
+        self.__underscoreRegEx: Pattern = re.compile(r'_{3,}', re.IGNORECASE)
         self.__whiteSpaceRegEx: Pattern = re.compile(r'\s\s*', re.IGNORECASE)
 
     async def compileBoolAnswer(self, answer: str) -> str:
@@ -36,6 +37,7 @@ class TriviaAnswerCompiler():
 
         answer = answer.strip().lower()
         answer = self.__tagRemovalRegEx.sub('', answer)
+        answer = self.__underscoreRegEx.sub('___', answer)
         answer = answer.replace(' & ', ' and ')
 
         for prefixString in self.__prefixStringsToRemove:
