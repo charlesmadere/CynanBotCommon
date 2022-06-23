@@ -45,15 +45,6 @@ class TriviaAnswerCompiler():
 
         return self.__phraseAnswerRegEx.sub('', answer)
 
-    async def compileTextAnswerToMultipleChoiceOrdinal(self, answer: str) -> int:
-        cleanedAnswer = await self.compileTextAnswer(answer)
-
-        if not utils.isValidStr(cleanedAnswer) or len(cleanedAnswer) != 1 or self.__multipleChoiceAnswerRegEx.fullmatch(cleanedAnswer) is None:
-            raise BadTriviaAnswerException(f'answer can\'t be compiled to multiple choice ordinal (answer:{answer}) (cleanedAnswer:{cleanedAnswer})')
-
-        # this converts the answer 'A' into 0, 'B' into 1, 'C' into 2, and so on...
-        return ord(cleanedAnswer.upper()) % 65
-
     async def compileTextAnswers(self, answers: List[str]) -> List[str]:
         if not utils.hasItems(answers):
             return list()
@@ -82,6 +73,15 @@ class TriviaAnswerCompiler():
                         cleanedAnswers.add(cleanedAnswer)
 
         return list(cleanedAnswers)
+
+    async def compileTextAnswerToMultipleChoiceOrdinal(self, answer: str) -> int:
+        cleanedAnswer = await self.compileTextAnswer(answer)
+
+        if not utils.isValidStr(cleanedAnswer) or len(cleanedAnswer) != 1 or self.__multipleChoiceAnswerRegEx.fullmatch(cleanedAnswer) is None:
+            raise BadTriviaAnswerException(f'answer can\'t be compiled to multiple choice ordinal (answer:{answer}) (cleanedAnswer:{cleanedAnswer})')
+
+        # this converts the answer 'A' into 0, 'B' into 1, 'C' into 2, and so on...
+        return ord(cleanedAnswer.upper()) % 65
 
     def __createNumberToWordMap(self) -> Dict[str, str]:
         numbers: Dict[str, str] = dict()
