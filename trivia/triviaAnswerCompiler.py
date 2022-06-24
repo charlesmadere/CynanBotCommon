@@ -15,12 +15,13 @@ class TriviaAnswerCompiler():
     def __init__(self):
         self.__numberToWordMap: Dict[str, str] = self.__createNumberToWordMap()
         self.__wordToNumberMap: Dict[str, str] = self.__createWordToNumberMap()
-        self.__prefixStringsToRemove: List[str] = [ 'a ', 'an ', 'and ', 'or ', 'the ' ]
+        self.__ampersandRegEx: Pattern = re.compile(r'(^&\s+)|(\s+&\s+)|(\s+&$)', re.IGNORECASE)
         self.__multipleChoiceAnswerRegEx: Pattern = re.compile(r'[a-z]', re.IGNORECASE)
         self.__parenGroupRegEx: Pattern = re.compile(r'(\(.*?\))', re.IGNORECASE)
         self.__phraseAnswerRegEx: Pattern = re.compile(r'[^A-Za-z0-9 ]|(?<=\s)\s+', re.IGNORECASE)
+        self.__prefixRegEx: Pattern = re.compile(r'^(a|an|and|or|the)\s+', re.IGNORECASE)
         self.__tagRemovalRegEx: Pattern = re.compile(r'<\/?\w+>', re.IGNORECASE)
-        self.__underscoreRegEx: Pattern = re.compile(r'_{3,}', re.IGNORECASE)
+        self.__underscoreRegEx: Pattern = re.compile(r'_{2,}', re.IGNORECASE)
         self.__whiteSpaceRegEx: Pattern = re.compile(r'\s\s*', re.IGNORECASE)
 
     async def compileBoolAnswer(self, answer: str) -> str:
@@ -35,17 +36,24 @@ class TriviaAnswerCompiler():
         if not utils.isValidStr(answer):
             return ''
 
-        answer = answer.strip().lower()
-        answer = self.__tagRemovalRegEx.sub('', answer)
-        answer = self.__underscoreRegEx.sub('___', answer)
-        answer = answer.replace(' & ', ' and ')
+        answer = answer.lower().strip()
 
-        for prefixString in self.__prefixStringsToRemove:
-            if answer.startswith(prefixString) and len(answer) > len(prefixString):
-                answer = answer[len(prefixString):]
-                break
+        # removes HTML tag-like junk
+        answer = self.__tagRemovalRegEx.sub('', answer).strip()
 
-        return self.__phraseAnswerRegEx.sub('', answer)
+        # removes common phrase prefixes
+        answer = self.__prefixRegEx.sub('', answer).strip()
+
+        # replaces the '&' character, when used like the word "and", with the word "and"
+        answer = self.__ampersandRegEx.sub(' and ', answer).strip()
+
+        # replaces sequences of underscores with just 3 underscores
+        answer = self.__underscoreRegEx.sub('___', answer).strip()
+
+        # ???
+        answer = self.__phraseAnswerRegEx.sub('', answer).strip()
+
+        return answer
 
     async def compileTextAnswers(self, answers: List[str]) -> List[str]:
         if not utils.hasItems(answers):
