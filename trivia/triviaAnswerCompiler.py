@@ -50,7 +50,7 @@ class TriviaAnswerCompiler():
         # replaces sequences of underscores with just 3 underscores
         answer = self.__underscoreRegEx.sub('___', answer).strip()
 
-        # ???
+        # removes all special characters
         answer = self.__phraseAnswerRegEx.sub('', answer).strip()
 
         return answer
