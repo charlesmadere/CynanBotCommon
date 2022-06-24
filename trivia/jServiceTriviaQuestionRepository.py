@@ -16,6 +16,8 @@ try:
     from CynanBotCommon.trivia.triviaExceptions import \
         UnsupportedTriviaTypeException
     from CynanBotCommon.trivia.triviaIdGenerator import TriviaIdGenerator
+    from CynanBotCommon.trivia.triviaQuestionCompiler import \
+        TriviaQuestionCompiler
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
     from CynanBotCommon.trivia.triviaSource import TriviaSource
@@ -32,6 +34,7 @@ except:
     from trivia.triviaDifficulty import TriviaDifficulty
     from trivia.triviaExceptions import UnsupportedTriviaTypeException
     from trivia.triviaIdGenerator import TriviaIdGenerator
+    from trivia.triviaQuestionCompiler import TriviaQuestionCompiler
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
     from trivia.triviaType import TriviaType
@@ -45,6 +48,7 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
         timber: Timber,
         triviaAnswerCompiler: TriviaAnswerCompiler,
         triviaIdGenerator: TriviaIdGenerator,
+        triviaQuestionCompiler: TriviaQuestionCompiler,
         triviaSettingsRepository: TriviaSettingsRepository
     ):
         super().__init__(triviaSettingsRepository)
@@ -57,11 +61,14 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
             raise ValueError(f'triviaAnswerCompiler argument is malformed: \"{triviaAnswerCompiler}\"')
         elif triviaIdGenerator is None:
             raise ValueError(f'triviaIdGenerator argument is malformed: \"{triviaIdGenerator}\"')
+        elif triviaQuestionCompiler is None:
+            raise ValueError(f'triviaQuestionCompiler argument is malformed: \"{triviaQuestionCompiler}\"')
 
         self.__clientSession: aiohttp.ClientSession = clientSession
         self.__timber: Timber = timber
         self.__triviaAnswerCompiler: TriviaAnswerCompiler = triviaAnswerCompiler
         self.__triviaIdGenerator: TriviaIdGenerator = triviaIdGenerator
+        self.__triviaQuestionCompiler: TriviaQuestionCompiler = triviaQuestionCompiler
 
     async def fetchTriviaQuestion(self, twitchChannel: Optional[str]) -> AbsTriviaQuestion:
         self.__timber.log('JServiceTriviaQuestionRepository', 'Fetching trivia question...')
@@ -93,7 +100,7 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
             raise ValueError(f'Rejecting jService\'s JSON data due to null/empty contents: {jsonResponse}')
 
         category = utils.getStrFromDict(triviaJson['category'], 'title', fallback = '', clean = True, removeCarrots = True)
-        question = utils.getStrFromDict(triviaJson, 'question', clean = True, removeCarrots = True)
+        question = await self.__triviaQuestionCompiler.compileQuestion(utils.getStrFromDict(triviaJson, 'question'))
 
         # this API looks to only ever give question and answer, so for now, we're just hardcoding this
         triviaType = TriviaType.QUESTION_ANSWER
