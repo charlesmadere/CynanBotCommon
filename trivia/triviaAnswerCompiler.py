@@ -13,16 +13,15 @@ except:
 class TriviaAnswerCompiler():
 
     def __init__(self):
-        self.__numberToWordMap: Dict[str, str] = self.__createNumberToWordMap()
-        self.__wordToNumberMap: Dict[str, str] = self.__createWordToNumberMap()
         self.__ampersandRegEx: Pattern = re.compile(r'(^&\s+)|(\s+&\s+)|(\s+&$)', re.IGNORECASE)
         self.__multipleChoiceAnswerRegEx: Pattern = re.compile(r'[a-z]', re.IGNORECASE)
         self.__parenGroupRegEx: Pattern = re.compile(r'(\(.*?\))', re.IGNORECASE)
         self.__phraseAnswerRegEx: Pattern = re.compile(r'[^A-Za-z0-9 ]|(?<=\s)\s+', re.IGNORECASE)
         self.__prefixRegEx: Pattern = re.compile(r'^(a|an|and|or|the)\s+', re.IGNORECASE)
         self.__tagRemovalRegEx: Pattern = re.compile(r'<\/?\w+>', re.IGNORECASE)
-        self.__underscoreRegEx: Pattern = re.compile(r'_{2,}', re.IGNORECASE)
         self.__whiteSpaceRegEx: Pattern = re.compile(r'\s\s*', re.IGNORECASE)
+        self.__numberToWordMap: Dict[str, str] = self.__createNumberToWordMap()
+        self.__wordToNumberMap: Dict[str, str] = self.__createWordToNumberMap()
 
     async def compileBoolAnswer(self, answer: str) -> str:
         cleanedAnswer = await self.compileTextAnswer(answer)
@@ -47,15 +46,12 @@ class TriviaAnswerCompiler():
         # replaces the '&' character, when used like the word "and", with the word "and"
         answer = self.__ampersandRegEx.sub(' and ', answer).strip()
 
-        # replaces sequences of underscores with just 3 underscores
-        answer = self.__underscoreRegEx.sub('___', answer).strip()
-
         # removes all special characters
         answer = self.__phraseAnswerRegEx.sub('', answer).strip()
 
         return answer
 
-    async def compileTextAnswers(self, answers: List[str]) -> List[str]:
+    async def compileTextAnswersList(self, answers: List[str]) -> List[str]:
         if not utils.hasItems(answers):
             return list()
 
@@ -106,6 +102,16 @@ class TriviaAnswerCompiler():
         numbers['8'] = 'eight'
         numbers['9'] = 'nine'
         numbers['10'] = 'ten'
+        numbers['11'] = 'eleven'
+        numbers['12'] = 'twelve'
+        numbers['13'] = 'thirteen'
+        numbers['14'] = 'fourteen'
+        numbers['15'] = 'fifteen'
+        numbers['16'] = 'sixteen'
+        numbers['17'] = 'seventeen'
+        numbers['18'] = 'eighteen'
+        numbers['19'] = 'nineteen'
+        numbers['20'] = 'twenty'
 
         return numbers
 
@@ -122,6 +128,16 @@ class TriviaAnswerCompiler():
         words['eight'] = '8'
         words['nine'] = '9'
         words['ten'] = '10'
+        words['eleven'] = '11'
+        words['twelve'] = '12'
+        words['thirteen'] = '13'
+        words['fourteen'] = '14'
+        words['fifteen'] = '15'
+        words['sixteen'] = '16'
+        words['seventeen'] = '17'
+        words['eighteen'] = '18'
+        words['nineteen'] = '19'
+        words['twenty'] = '20'
 
         return words
 

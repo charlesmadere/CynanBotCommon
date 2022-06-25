@@ -104,7 +104,9 @@ class TriviaAnswerChecker():
 
         correctAnswers = triviaQuestion.getCorrectAnswers()
         cleanedCorrectAnswers = triviaQuestion.getCleanedCorrectAnswers()
-        levenshteinThreshold = await self.__triviaSettingsRepository.getLevenshteinThreshold()
+
+        levenshteinAnswerLengthsActivationThreshold = await self.__triviaSettingsRepository.getLevenshteinAnswerLengthsActivationThreshold()
+        maxLevenshteinDistance = await self.__triviaSettingsRepository.getMaxLevenshteinDistance()
         isAdditionalPluralCheckingEnabled = await self.__triviaSettingsRepository.isAdditionalPluralCheckingEnabled()
         isDebugLoggingEnabled = await self.__triviaSettingsRepository.isDebugLoggingEnabled()
 
@@ -118,13 +120,16 @@ class TriviaAnswerChecker():
             if utils.containsDigit(cleanedCorrectAnswer):
                 continue
 
-            threshold = int(min(len(cleanedAnswer), len(cleanedCorrectAnswer)) * levenshteinThreshold)
-            distance = polyleven.levenshtein(cleanedAnswer, cleanedCorrectAnswer, threshold)
+            cleanedAnswerLen: int = len(cleanedAnswer)
+            cleanedCorrectAnswerLen: int = len(cleanedCorrectAnswer)
+
+            threshold: int = int(min(cleanedAnswerLen, cleanedCorrectAnswerLen) * levenshteinAnswerLengthsActivationThreshold)
+            actualDistance: int = polyleven.levenshtein(cleanedAnswer, cleanedCorrectAnswer, threshold)
 
             if isDebugLoggingEnabled:
-                self.__timber.log('TriviaAnswerChecker', f'answer:\"{answer}\", cleanedAnswer:\"{cleanedAnswer}\", correctAnswers:\"{correctAnswers}\", cleanedCorrectAnswers:\"{cleanedCorrectAnswers}\", threshold:\"{threshold}\", distance:\"{distance}\", levenshteinThreshold:\"{levenshteinThreshold}\"')
+                self.__timber.log('TriviaAnswerChecker', f'answer:\"{answer}\", cleanedAnswer:\"{cleanedAnswer}\", correctAnswers:\"{correctAnswers}\", cleanedCorrectAnswers:\"{cleanedCorrectAnswers}\", threshold:\"{threshold}\", actualDistance:\"{actualDistance}\", levenshteinAnswerLengthsActivationThreshold:\"{levenshteinAnswerLengthsActivationThreshold}\", maxLevenshteinDistance:\"{maxLevenshteinDistance}\"')
 
-            if distance <= threshold:
+            if actualDistance <= threshold:
                 return True
 
             if isAdditionalPluralCheckingEnabled:
