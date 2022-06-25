@@ -1,15 +1,11 @@
 import html
 import re
-from typing import Pattern
+from typing import List, Pattern, Set
 
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.trivia.triviaExceptions import \
-        NoTriviaQuestionException
 except:
     import utils
-
-    from trivia.triviaExceptions import NoTriviaQuestionException
 
 
 class TriviaQuestionCompiler():
@@ -27,28 +23,73 @@ class TriviaQuestionCompiler():
         htmlUnescape: bool = False
     ) -> str:
         if not utils.isValidStr(question):
-            raise NoTriviaQuestionException(f'question argument is malformed: \"{question}\"')
+            raise question(f'question argument is malformed: \"{question}\"')
         elif not utils.isValidBool(htmlUnescape):
             raise ValueError(f'htmlUnescape argument is malformed: \"{htmlUnescape}\"')
 
-        question = question.strip()
+        return await self.__compileText(question, htmlUnescape)
+
+    async def compileResponse(
+        self,
+        response: str,
+        htmlUnescape: bool = False
+    ) -> str:
+        if not utils.isValidStr(response):
+            raise ValueError(f'response argument is malformed: \"{response}\"')
+        elif not utils.isValidBool(htmlUnescape):
+            raise ValueError(f'htmlUnescape argument is malformed: \"{htmlUnescape}\"')
+
+        return await self.__compileText(response, htmlUnescape)
+
+    async def compileResponses(
+        self,
+        responses: List[str],
+        htmlUnescape: bool = False
+    ) -> List[str]:
+        if not utils.isValidBool(htmlUnescape):
+            raise ValueError(f'htmlUnescape argument is malformed: \"{htmlUnescape}\"')
+
+        if not utils.hasItems(responses):
+            return list()
+
+        compiledResponses: Set[str] = set()
+
+        for response in responses:
+            compiledResponse = await self.compileResponse(response, htmlUnescape)
+
+            if utils.isValidStr(compiledResponse):
+                compiledResponses.add(compiledResponse)
+
+        return list(compiledResponses)
+
+    async def __compileText(
+        self,
+        text: str,
+        htmlUnescape: bool = False
+    ) -> str:
+        if not utils.isValidStr(text):
+            raise ValueError(f'text argument is malformed: \"{text}\"')
+        elif not utils.isValidBool(htmlUnescape):
+            raise ValueError(f'htmlUnescape argument is malformed: \"{htmlUnescape}\"')
+
+        text = text.strip()
 
         # replaces all "dot dot dot" sequences with the ellipsis character: "…"
-        question = self.__ellipsisRegEx.sub('…', question).strip()
+        text = self.__ellipsisRegEx.sub('…', text).strip()
 
         # replaces all new line characters with 1 space
-        question = self.__newLineRegEx.sub(' ', question).strip()
+        text = self.__newLineRegEx.sub(' ', text).strip()
 
         # removes HTML tag-like junk
-        question = self.__tagRemovalRegEx.sub('', question).strip()
+        text = self.__tagRemovalRegEx.sub('', text).strip()
 
         # replaces sequences of underscores (2 or more) with 3 underscores
-        question = self.__underscoreRegEx.sub('___', question).strip()
+        text = self.__underscoreRegEx.sub('___', text).strip()
 
         # replaces sequences of whitespace (2 or more) with 1 space
-        question = self.__whiteSpaceRegEx.sub(' ', question).strip()
+        text = self.__whiteSpaceRegEx.sub(' ', text).strip()
 
         if htmlUnescape:
-            question = html.unescape(question)
+            text = html.unescape(text)
 
-        return question
+        return text
