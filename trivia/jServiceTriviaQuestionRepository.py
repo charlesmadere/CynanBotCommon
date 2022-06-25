@@ -113,8 +113,7 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
             correctAnswer = utils.getStrFromDict(triviaJson, 'answer', clean = True, removeCarrots = True)
             correctAnswers: List[str] = list()
             correctAnswers.append(correctAnswer)
-
-            cleanedCorrectAnswers = await self.__triviaAnswerCompiler.compileTextAnswers(correctAnswers)
+            cleanedCorrectAnswers = await self.__triviaAnswerCompiler.compileTextAnswersList(correctAnswers)
 
             return QuestionAnswerTriviaQuestion(
                 correctAnswers = correctAnswers,
