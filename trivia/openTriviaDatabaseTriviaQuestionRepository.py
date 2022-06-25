@@ -15,6 +15,8 @@ try:
     from CynanBotCommon.trivia.triviaExceptions import \
         UnsupportedTriviaTypeException
     from CynanBotCommon.trivia.triviaIdGenerator import TriviaIdGenerator
+    from CynanBotCommon.trivia.triviaQuestionCompiler import \
+        TriviaQuestionCompiler
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
     from CynanBotCommon.trivia.triviaSource import TriviaSource
@@ -32,6 +34,7 @@ except:
     from trivia.triviaDifficulty import TriviaDifficulty
     from trivia.triviaExceptions import UnsupportedTriviaTypeException
     from trivia.triviaIdGenerator import TriviaIdGenerator
+    from trivia.triviaQuestionCompiler import TriviaQuestionCompiler
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
     from trivia.triviaType import TriviaType
@@ -45,6 +48,7 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
         clientSession: aiohttp.ClientSession,
         timber: Timber,
         triviaIdGenerator: TriviaIdGenerator,
+        triviaQuestionCompiler: TriviaQuestionCompiler,
         triviaSettingsRepository: TriviaSettingsRepository
     ):
         super().__init__(triviaSettingsRepository)
@@ -55,10 +59,13 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif triviaIdGenerator is None:
             raise ValueError(f'triviaIdGenerator argument is malformed: \"{triviaIdGenerator}\"')
+        elif triviaQuestionCompiler is None:
+            raise ValueError(f'triviaQuestionCompiler argument is malformed: \"{triviaQuestionCompiler}\"')
 
         self.__clientSession: aiohttp.ClientSession = clientSession
         self.__timber: Timber = timber
         self.__triviaIdGenerator: TriviaIdGenerator = triviaIdGenerator
+        self.__triviaQuestionCompiler: TriviaQuestionCompiler = triviaQuestionCompiler
 
         self.__sessionTokens: Dict[str, str] = dict()
 
@@ -150,8 +157,16 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         triviaDifficulty = TriviaDifficulty.fromStr(utils.getStrFromDict(triviaJson, 'difficulty', fallback = ''))
         triviaType = TriviaType.fromStr(utils.getStrFromDict(triviaJson, 'type'))
-        category = utils.getStrFromDict(triviaJson, 'category', fallback = '', clean = True, htmlUnescape = True)
-        question = utils.getStrFromDict(triviaJson, 'question', clean = True, htmlUnescape = True)
+
+        category = await self.__triviaQuestionCompiler.compileQuestion(
+            question = utils.getStrFromDict(triviaJson, 'category', fallback = ''),
+            htmlUnescape = True
+        )
+
+        question = await self.__triviaQuestionCompiler.compileQuestion(
+            question = utils.getStrFromDict(triviaJson, 'question'),
+            htmlUnescape = True
+        )
 
         triviaId = await self.__triviaIdGenerator.generate(
             category = category,
@@ -160,13 +175,21 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
         )
 
         if triviaType is TriviaType.MULTIPLE_CHOICE:
-            correctAnswer = utils.getStrFromDict(triviaJson, 'correct_answer', clean = True, htmlUnescape = True)
+            correctAnswer = await self.__triviaQuestionCompiler.compileResponse(
+                response = utils.getStrFromDict(triviaJson, 'correct_answer'),
+                htmlUnescape = True
+            )
             correctAnswers: List[str] = list()
             correctAnswers.append(correctAnswer)
 
+            multipleChoiceResponses = await self.__triviaQuestionCompiler.compileResponses(
+                responses = triviaJson['incorrect_answers'],
+                htmlUnescape = True
+            )
+
             multipleChoiceResponses = await self._buildMultipleChoiceResponsesList(
                 correctAnswers = correctAnswers,
-                multipleChoiceResponses = triviaJson['incorrect_answers']
+                multipleChoiceResponses = multipleChoiceResponses
             )
 
             if await self._verifyIsActuallyMultipleChoiceQuestion(correctAnswers, multipleChoiceResponses):
