@@ -99,7 +99,7 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
             self.__timber.log('JServiceTriviaQuestionRepository', f'Rejecting jService\'s JSON data due to null/empty contents: {jsonResponse}')
             raise ValueError(f'Rejecting jService\'s JSON data due to null/empty contents: {jsonResponse}')
 
-        category = utils.getStrFromDict(triviaJson['category'], 'title', fallback = '', clean = True, removeCarrots = True)
+        category = await self.__triviaQuestionCompiler.compileCategory(utils.getStrFromDict(triviaJson['category'], 'title', fallback = ''))
         question = await self.__triviaQuestionCompiler.compileQuestion(utils.getStrFromDict(triviaJson, 'question'))
 
         # this API looks to only ever give question and answer, so for now, we're just hardcoding this
@@ -110,9 +110,10 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
             triviaId = await self.__triviaIdGenerator.generate(category = category, question = question)
 
         if triviaType is TriviaType.QUESTION_ANSWER:
-            correctAnswer = utils.getStrFromDict(triviaJson, 'answer', clean = True, removeCarrots = True)
+            correctAnswer = await self.__triviaQuestionCompiler.compileResponse(utils.getStrFromDict(triviaJson, 'answer'))
             correctAnswers: List[str] = list()
             correctAnswers.append(correctAnswer)
+
             cleanedCorrectAnswers = await self.__triviaAnswerCompiler.compileTextAnswersList(correctAnswers)
 
             return QuestionAnswerTriviaQuestion(
