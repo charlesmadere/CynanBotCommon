@@ -17,6 +17,18 @@ class TriviaQuestionCompiler():
         self.__underscoreRegEx: Pattern = re.compile(r'_{2,}', re.IGNORECASE)
         self.__whiteSpaceRegEx: Pattern = re.compile(r'\s{2,}', re.IGNORECASE)
 
+    async def compileCategory(
+        self,
+        category: str,
+        htmlUnescape: bool = False
+    ) -> str:
+        if not utils.isValidStr(category):
+            raise category(f'category argument is malformed: \"{category}\"')
+        elif not utils.isValidBool(htmlUnescape):
+            raise ValueError(f'htmlUnescape argument is malformed: \"{htmlUnescape}\"')
+
+        return await self.__compileText(category, htmlUnescape)
+
     async def compileQuestion(
         self,
         question: str,
