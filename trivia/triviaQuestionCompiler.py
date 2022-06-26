@@ -12,7 +12,7 @@ class TriviaQuestionCompiler():
 
     def __init__(self):
         self.__ellipsisRegEx: Pattern = re.compile(r'(\.){3,}', re.IGNORECASE)
-        self.__newLineRegEx: Pattern = re.compile(r'(\n)*', re.IGNORECASE)
+        self.__newLineRegEx: Pattern = re.compile(r'(\n)+', re.IGNORECASE)
         self.__tagRemovalRegEx: Pattern = re.compile(r'<\/?\w+>', re.IGNORECASE)
         self.__underscoreRegEx: Pattern = re.compile(r'_{2,}', re.IGNORECASE)
         self.__whiteSpaceRegEx: Pattern = re.compile(r'\s{2,}', re.IGNORECASE)
