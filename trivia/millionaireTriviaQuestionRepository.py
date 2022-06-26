@@ -11,6 +11,8 @@ try:
     from CynanBotCommon.trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
+    from CynanBotCommon.trivia.triviaQuestionCompiler import \
+        TriviaQuestionCompiler
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
     from CynanBotCommon.trivia.triviaSource import TriviaSource
@@ -24,6 +26,7 @@ except:
     from trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
     from trivia.triviaDifficulty import TriviaDifficulty
+    from trivia.triviaQuestionCompiler import TriviaQuestionCompiler
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
     from trivia.triviaType import TriviaType
@@ -34,6 +37,7 @@ class MillionaireTriviaQuestionRepository(AbsTriviaQuestionRepository):
     def __init__(
         self,
         timber: Timber,
+        triviaQuestionCompiler: TriviaQuestionCompiler,
         triviaSettingsRepository: TriviaSettingsRepository,
         triviaDatabaseFile: str = 'CynanBotCommon/trivia/millionaireTriviaQuestionsDatabase.sqlite'
     ):
@@ -41,10 +45,13 @@ class MillionaireTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         if timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
+        elif triviaQuestionCompiler is None:
+            raise ValueError(f'triviaQuestionCompiler argument is malformed: \"{triviaQuestionCompiler}\"')
         elif not utils.isValidStr(triviaDatabaseFile):
             raise ValueError(f'triviaDatabaseFile argument is malformed: \"{triviaDatabaseFile}\"')
 
         self.__timber: Timber = timber
+        self.__triviaQuestionCompiler: TriviaQuestionCompiler = triviaQuestionCompiler
         self.__triviaDatabaseFile: str = triviaDatabaseFile
 
     async def fetchTriviaQuestion(self, twitchChannel: Optional[str]) -> AbsTriviaQuestion:
@@ -53,15 +60,20 @@ class MillionaireTriviaQuestionRepository(AbsTriviaQuestionRepository):
         triviaDict = await self.__fetchTriviaQuestionDict()
 
         triviaId = utils.getStrFromDict(triviaDict, 'triviaId')
-        correctAnswer = utils.getStrFromDict(triviaDict, 'answer', clean = True)
-        question = utils.getStrFromDict(triviaDict, 'question', clean = True)
+
+        correctAnswer = utils.getStrFromDict(triviaDict, 'answer')
+        correctAnswer = await self.__triviaQuestionCompiler.compileResponse(correctAnswer)
+
+        question = utils.getStrFromDict(triviaDict, 'question')
+        question = await self.__triviaQuestionCompiler.compileResponse(question)
 
         correctAnswers: List[str] = list()
         correctAnswers.append(correctAnswer)
 
+        multipleChoiceResponses = await self.__triviaQuestionCompiler.compileResponses(triviaDict['responses'])
         multipleChoiceResponses = await self._buildMultipleChoiceResponsesList(
             correctAnswers = correctAnswers,
-            multipleChoiceResponses = triviaDict['responses']
+            multipleChoiceResponses = multipleChoiceResponses
         )
 
         return MultipleChoiceTriviaQuestion(
