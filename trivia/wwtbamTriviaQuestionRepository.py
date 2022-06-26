@@ -11,6 +11,8 @@ try:
     from CynanBotCommon.trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
+    from CynanBotCommon.trivia.triviaQuestionCompiler import \
+        TriviaQuestionCompiler
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
     from CynanBotCommon.trivia.triviaSource import TriviaSource
@@ -24,6 +26,7 @@ except:
     from trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
     from trivia.triviaDifficulty import TriviaDifficulty
+    from trivia.triviaQuestionCompiler import TriviaQuestionCompiler
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
     from trivia.triviaType import TriviaType
@@ -34,6 +37,7 @@ class WwtbamTriviaQuestionRepository(AbsTriviaQuestionRepository):
     def __init__(
         self,
         timber: Timber,
+        triviaQuestionCompiler: TriviaQuestionCompiler,
         triviaSettingsRepository: TriviaSettingsRepository,
         triviaDatabaseFile: str = 'CynanBotCommon/trivia/wwtbamDatabase.sqlite'
     ):
@@ -41,10 +45,13 @@ class WwtbamTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         if timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
+        elif triviaQuestionCompiler is None:
+            raise ValueError(f'triviaQuestionCompiler argument is malformed: \"{triviaQuestionCompiler}\"')
         elif not utils.isValidStr(triviaDatabaseFile):
             raise ValueError(f'triviaDatabaseFile argument is malformed: \"{triviaDatabaseFile}\"')
 
         self.__timber: Timber = timber
+        self.__triviaQuestionCompiler: TriviaQuestionCompiler = triviaQuestionCompiler
         self.__triviaDatabaseFile: str = triviaDatabaseFile
 
     async def fetchTriviaQuestion(self, twitchChannel: Optional[str]) -> AbsTriviaQuestion:
@@ -53,13 +60,16 @@ class WwtbamTriviaQuestionRepository(AbsTriviaQuestionRepository):
         triviaDict = await self.__fetchTriviaQuestionDict()
 
         triviaId = utils.getStrFromDict(triviaDict, 'triviaId')
-        question = utils.getStrFromDict(triviaDict, 'question', clean = True)
+
+        question = utils.getStrFromDict(triviaDict, 'question')
+        question = await self.__triviaQuestionCompiler.compileQuestion(question)
 
         responses: List[str] = list()
-        responses.append(utils.getStrFromDict(triviaDict, 'responseA', clean = True))
-        responses.append(utils.getStrFromDict(triviaDict, 'responseB', clean = True))
-        responses.append(utils.getStrFromDict(triviaDict, 'responseC', clean = True))
-        responses.append(utils.getStrFromDict(triviaDict, 'responseD', clean = True))
+        responses.append(utils.getStrFromDict(triviaDict, 'responseA'))
+        responses.append(utils.getStrFromDict(triviaDict, 'responseB'))
+        responses.append(utils.getStrFromDict(triviaDict, 'responseC'))
+        responses.append(utils.getStrFromDict(triviaDict, 'responseD'))
+        responses = await self.__triviaQuestionCompiler.compileResponses(responses)
 
         correctAnswerIndex = utils.getStrFromDict(triviaDict, 'correctAnswer', clean = True)
 

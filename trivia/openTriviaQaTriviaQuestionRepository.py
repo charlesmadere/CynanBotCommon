@@ -13,6 +13,8 @@ try:
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
     from CynanBotCommon.trivia.triviaExceptions import \
         UnsupportedTriviaTypeException
+    from CynanBotCommon.trivia.triviaQuestionCompiler import \
+        TriviaQuestionCompiler
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
     from CynanBotCommon.trivia.triviaSource import TriviaSource
@@ -29,6 +31,7 @@ except:
         MultipleChoiceTriviaQuestion
     from trivia.triviaDifficulty import TriviaDifficulty
     from trivia.triviaExceptions import UnsupportedTriviaTypeException
+    from trivia.triviaQuestionCompiler import TriviaQuestionCompiler
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
     from trivia.triviaType import TriviaType
@@ -40,6 +43,7 @@ class OpenTriviaQaTriviaQuestionRepository(AbsTriviaQuestionRepository):
     def __init__(
         self,
         timber: Timber,
+        triviaQuestionCompiler: TriviaQuestionCompiler,
         triviaSettingsRepository: TriviaSettingsRepository,
         triviaDatabaseFile: str = 'CynanBotCommon/trivia/openTriviaQaTriviaQuestionDatabase.sqlite'
     ):
@@ -47,10 +51,13 @@ class OpenTriviaQaTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         if timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
+        elif triviaQuestionCompiler is None:
+            raise ValueError(f'triviaQuestionCompiler argument is malformed: \"{triviaQuestionCompiler}\"')
         elif not utils.isValidStr(triviaDatabaseFile):
             raise ValueError(f'triviaDatabaseFile argument is malformed: \"{triviaDatabaseFile}\"')
 
         self.__timber: Timber = timber
+        self.__triviaQuestionCompiler: TriviaQuestionCompiler = triviaQuestionCompiler
         self.__triviaDatabaseFile: str = triviaDatabaseFile
 
     async def fetchTriviaQuestion(self, twitchChannel: Optional[str]) -> AbsTriviaQuestion:
@@ -58,21 +65,28 @@ class OpenTriviaQaTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         triviaDict = await self.__fetchTriviaQuestionDict()
 
-        category = utils.getStrFromDict(triviaDict, 'category', clean = True)
-        question = utils.getStrFromDict(triviaDict, 'question', clean = True)
         triviaId = utils.getStrFromDict(triviaDict, 'questionId')
         triviaType = TriviaType.fromStr(utils.getStrFromDict(triviaDict, 'questionType'))
 
+        category = utils.getStrFromDict(triviaDict, 'category')
+        category = await self.__triviaQuestionCompiler.compileCategory(category)
+
+        question = utils.getStrFromDict(triviaDict, 'question')
+        question = await self.__triviaQuestionCompiler.compileQuestion(question)
+
         if triviaType is TriviaType.MULTIPLE_CHOICE:
-            correctAnswer = utils.getStrFromDict(triviaDict, 'correctAnswer', clean = True)
+            correctAnswer = utils.getStrFromDict(triviaDict, 'correctAnswer')
+            correctAnswer = await self.__triviaQuestionCompiler.compileResponse(correctAnswer)
+
             correctAnswers: List[str] = list()
             correctAnswers.append(correctAnswer)
 
             responses: List[str] = list()
-            responses.append(utils.getStrFromDict(triviaDict, 'response1', clean = True))
-            responses.append(utils.getStrFromDict(triviaDict, 'response2', clean = True))
-            responses.append(utils.getStrFromDict(triviaDict, 'response3', clean = True))
-            responses.append(utils.getStrFromDict(triviaDict, 'response4', clean = True))
+            responses.append(utils.getStrFromDict(triviaDict, 'response1'))
+            responses.append(utils.getStrFromDict(triviaDict, 'response2'))
+            responses.append(utils.getStrFromDict(triviaDict, 'response3'))
+            responses.append(utils.getStrFromDict(triviaDict, 'response4'))
+            responses = await self.__triviaQuestionCompiler.compileResponses(responses)
 
             multipleChoiceResponses = await self._buildMultipleChoiceResponsesList(
                 correctAnswers = correctAnswers,
@@ -102,7 +116,7 @@ class OpenTriviaQaTriviaQuestionRepository(AbsTriviaQuestionRepository):
                 triviaSource = TriviaSource.OPEN_TRIVIA_QA
             )
 
-        raise UnsupportedTriviaTypeException(f'triviaType \"{triviaType}\" is not supported for OpenTriviaQaTriviaQuestion: {triviaDict}')
+        raise UnsupportedTriviaTypeException(f'triviaType \"{triviaType}\" is not supported for OpenTriviaQaTriviaQuestionRepository: {triviaDict}')
 
     async def __fetchTriviaQuestionDict(self) -> Dict[str, object]:
         connection = await aiosqlite.connect(self.__triviaDatabaseFile)
