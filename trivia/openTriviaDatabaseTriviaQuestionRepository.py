@@ -182,14 +182,14 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
             correctAnswers: List[str] = list()
             correctAnswers.append(correctAnswer)
 
-            multipleChoiceResponses = await self.__triviaQuestionCompiler.compileResponses(
+            incorrectAnswers = await self.__triviaQuestionCompiler.compileResponses(
                 responses = triviaJson['incorrect_answers'],
                 htmlUnescape = True
             )
 
             multipleChoiceResponses = await self._buildMultipleChoiceResponsesList(
                 correctAnswers = correctAnswers,
-                multipleChoiceResponses = multipleChoiceResponses
+                multipleChoiceResponses = incorrectAnswers
             )
 
             if await self._verifyIsActuallyMultipleChoiceQuestion(correctAnswers, multipleChoiceResponses):
