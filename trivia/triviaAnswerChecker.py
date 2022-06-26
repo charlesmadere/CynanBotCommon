@@ -124,12 +124,13 @@ class TriviaAnswerChecker():
             cleanedCorrectAnswerLen: int = len(cleanedCorrectAnswer)
 
             threshold: int = int(min(cleanedAnswerLen, cleanedCorrectAnswerLen) * levenshteinAnswerLengthsActivationThreshold)
-            actualDistance: int = polyleven.levenshtein(cleanedAnswer, cleanedCorrectAnswer, threshold)
+            actualDistance: int = polyleven.levenshtein(cleanedAnswer, cleanedCorrectAnswer)
+            distance: int = int(min(actualDistance, maxLevenshteinDistance))
 
             if isDebugLoggingEnabled:
-                self.__timber.log('TriviaAnswerChecker', f'answer:\"{answer}\", cleanedAnswer:\"{cleanedAnswer}\", correctAnswers:\"{correctAnswers}\", cleanedCorrectAnswers:\"{cleanedCorrectAnswers}\", threshold:\"{threshold}\", actualDistance:\"{actualDistance}\", levenshteinAnswerLengthsActivationThreshold:\"{levenshteinAnswerLengthsActivationThreshold}\", maxLevenshteinDistance:\"{maxLevenshteinDistance}\"')
+                self.__timber.log('TriviaAnswerChecker', f'answer:\"{answer}\", cleanedAnswer:\"{cleanedAnswer}\", correctAnswers:\"{correctAnswers}\", cleanedCorrectAnswers:\"{cleanedCorrectAnswers}\", threshold:\"{threshold}\", actualDistance:\"{actualDistance}\", distance:\"{distance}\", levenshteinAnswerLengthsActivationThreshold:\"{levenshteinAnswerLengthsActivationThreshold}\", maxLevenshteinDistance:\"{maxLevenshteinDistance}\"')
 
-            if actualDistance <= threshold:
+            if distance <= threshold:
                 return True
 
             if isAdditionalPluralCheckingEnabled:
