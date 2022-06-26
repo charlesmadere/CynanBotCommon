@@ -1,3 +1,5 @@
+import math
+
 import polyleven
 
 try:
@@ -106,6 +108,7 @@ class TriviaAnswerChecker():
         cleanedCorrectAnswers = triviaQuestion.getCleanedCorrectAnswers()
 
         levenshteinAnswerLengthsActivationThreshold = await self.__triviaSettingsRepository.getLevenshteinAnswerLengthsActivationThreshold()
+        levenshteinAnswerLengthsRoundUpThreshold = await self.__triviaSettingsRepository.getLevenshteinAnswerLengthsRoundUpThreshold()
         maxLevenshteinDistance = await self.__triviaSettingsRepository.getMaxLevenshteinDistance()
         isAdditionalPluralCheckingEnabled = await self.__triviaSettingsRepository.isAdditionalPluralCheckingEnabled()
         isDebugLoggingEnabled = await self.__triviaSettingsRepository.isDebugLoggingEnabled()
@@ -122,13 +125,22 @@ class TriviaAnswerChecker():
 
             cleanedAnswerLen: int = len(cleanedAnswer)
             cleanedCorrectAnswerLen: int = len(cleanedCorrectAnswer)
+            rawThreshold: float = min(cleanedAnswerLen, cleanedCorrectAnswerLen) * levenshteinAnswerLengthsActivationThreshold
+            rawThresholdDecimal: float = rawThreshold % 1.0
 
-            threshold: int = int(min(cleanedAnswerLen, cleanedCorrectAnswerLen) * levenshteinAnswerLengthsActivationThreshold)
-            actualDistance: int = polyleven.levenshtein(cleanedAnswer, cleanedCorrectAnswer)
-            distance: int = int(min(actualDistance, maxLevenshteinDistance))
+            threshold: int = 0
+            if rawThresholdDecimal > levenshteinAnswerLengthsRoundUpThreshold:
+                threshold = int(math.ceil(rawThreshold))
+            elif rawThresholdDecimal < levenshteinAnswerLengthsRoundUpThreshold:
+                threshold = int(math.floor(rawThreshold))
+            else:
+                threshold = int(round(rawThreshold))
+
+            threshold = int(min(threshold, maxLevenshteinDistance))
+            distance: int = polyleven.levenshtein(cleanedAnswer, cleanedCorrectAnswer, threshold)
 
             if isDebugLoggingEnabled:
-                self.__timber.log('TriviaAnswerChecker', f'answer:\"{answer}\", cleanedAnswer:\"{cleanedAnswer}\", correctAnswers:\"{correctAnswers}\", cleanedCorrectAnswers:\"{cleanedCorrectAnswers}\", threshold:\"{threshold}\", actualDistance:\"{actualDistance}\", distance:\"{distance}\", levenshteinAnswerLengthsActivationThreshold:\"{levenshteinAnswerLengthsActivationThreshold}\", maxLevenshteinDistance:\"{maxLevenshteinDistance}\"')
+                self.__timber.log('TriviaAnswerChecker', f'answer:\"{answer}\", cleanedAnswer:\"{cleanedAnswer}\", correctAnswers:\"{correctAnswers}\", cleanedCorrectAnswers:\"{cleanedCorrectAnswers}\", threshold:\"{threshold}\", distance:\"{distance}\", levenshteinAnswerLengthsActivationThreshold:\"{levenshteinAnswerLengthsActivationThreshold}\", maxLevenshteinDistance:\"{maxLevenshteinDistance}\"')
 
             if distance <= threshold:
                 return True
