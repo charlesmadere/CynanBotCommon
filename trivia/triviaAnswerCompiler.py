@@ -20,8 +20,12 @@ class TriviaAnswerCompiler():
         self.__prefixRegEx: Pattern = re.compile(r'^(a|an|and|or|the)\s+', re.IGNORECASE)
         self.__tagRemovalRegEx: Pattern = re.compile(r'<\/?\w+>', re.IGNORECASE)
         self.__whiteSpaceRegEx: Pattern = re.compile(r'\s\s*', re.IGNORECASE)
+
         self.__numberToWordMap: Dict[str, str] = self.__createNumberToWordMap()
         self.__wordToNumberMap: Dict[str, str] = self.__createWordToNumberMap()
+
+        self.__ordinalToWordMap: Dict[str, str] = self.__createOrdinalToWordMap()
+        self.__wordToOrdinalMap: Dict[str, str] = self.__createWordToOrdinalMap()
 
     async def compileBoolAnswer(self, answer: str) -> str:
         cleanedAnswer = await self.compileTextAnswer(answer)
@@ -69,6 +73,12 @@ class TriviaAnswerCompiler():
             elif loweredAnswer in self.__wordToNumberMap:
                 cleanedAnswers.add(loweredAnswer)
                 cleanedAnswers.add(self.__wordToNumberMap[loweredAnswer])
+            elif loweredAnswer in self.__ordinalToWordMap:
+                cleanedAnswers.add(loweredAnswer)
+                cleanedAnswer.add(self.__ordinalToWordMap[loweredAnswer])
+            elif loweredAnswer in self.__wordToOrdinalMap:
+                cleanedAnswers.add(loweredAnswer)
+                cleanedAnswers.add(self.__wordToOrdinalMap[loweredAnswer])
             else:
                 possibilities = await self.__getPossibilities(answer)
 
@@ -115,6 +125,14 @@ class TriviaAnswerCompiler():
 
         return numbers
 
+    def __createOrdinalToWordMap(self) -> Dict[str, str]:
+        ordinals: Dict[str, str] = dict()
+        ordinals['first'] = '1st'
+        ordinals['second'] = '2nd'
+        ordinals['third'] = '3rd'
+
+        return ordinals
+
     def __createWordToNumberMap(self) -> Dict[str, str]:
         words: Dict[str, str] = dict()
         words['zero'] = '0'
@@ -140,6 +158,14 @@ class TriviaAnswerCompiler():
         words['twenty'] = '20'
 
         return words
+
+    def __createWordToOrdinalMap(self) -> Dict[str, str]:
+        ordinals: Dict[str, str] = dict()
+        ordinals['1st'] = 'first'
+        ordinals['2nd'] = 'second'
+        ordinals['3rd'] = 'third'
+
+        return ordinals
 
     # Returns all possibilities with parenthesized phrases both included and excluded
     async def __getPossibilities(self, answer: str) -> List[str]:
