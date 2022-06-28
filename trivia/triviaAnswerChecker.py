@@ -1,5 +1,5 @@
 import math
-
+import re
 import polyleven
 
 try:
@@ -53,6 +53,8 @@ class TriviaAnswerChecker():
         self.__timber: Timber = timber
         self.__triviaAnswerCompiler: TriviaAnswerCompiler = triviaAnswerCompiler
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
+
+        self.__digitPattern = re.compile(r'(\d+)')
 
     async def checkAnswer(self, answer: str, triviaQuestion: AbsTriviaQuestion) -> bool:
         if triviaQuestion is None:
@@ -117,12 +119,6 @@ class TriviaAnswerChecker():
             if cleanedAnswer == cleanedCorrectAnswer:
                 return True
 
-            # Check the answer for any digits. We do this to prevent there being any flexibility
-            # on answers that are number-based. This prevents issues that could occur where the
-            # correct answer is "19th century" but the user guessed "18th century."
-            if utils.containsDigit(cleanedCorrectAnswer):
-                continue
-
             cleanedAnswerLen: int = len(cleanedAnswer)
             cleanedCorrectAnswerLen: int = len(cleanedCorrectAnswer)
             rawThreshold: float = min(cleanedAnswerLen, cleanedCorrectAnswerLen) * levenshteinAnswerLengthsActivationThreshold
@@ -137,7 +133,7 @@ class TriviaAnswerChecker():
                 threshold = int(round(rawThreshold))
 
             threshold = int(min(threshold, maxLevenshteinDistance))
-            distance: int = polyleven.levenshtein(cleanedAnswer, cleanedCorrectAnswer, threshold)
+            distance: int = self.__digitlessDistanceCheck(cleanedAnswer, cleanedCorrectAnswer, threshold)
 
             if isDebugLoggingEnabled:
                 self.__timber.log('TriviaAnswerChecker', f'answer:\"{answer}\", cleanedAnswer:\"{cleanedAnswer}\", correctAnswers:\"{correctAnswers}\", cleanedCorrectAnswers:\"{cleanedCorrectAnswers}\", threshold:\"{threshold}\", distance:\"{distance}\", levenshteinAnswerLengthsActivationThreshold:\"{levenshteinAnswerLengthsActivationThreshold}\", maxLevenshteinDistance:\"{maxLevenshteinDistance}\"')
@@ -176,3 +172,14 @@ class TriviaAnswerChecker():
             return False
 
         return answerBool in triviaQuestion.getCorrectAnswerBools()
+
+    def __digitlessDistanceCheck(self, guess, correctAnswer, threshold=-1):
+        guessParts = self.__digitPattern.split(guess)
+        answerParts = self.__digitPattern.split(correctAnswer)
+        guessWords = guessParts[::2]
+        guessNumbers = guessParts[1::2]
+        answerWords = answerParts[::2]
+        answerNumbers = answerParts[1::2]
+        if (guessNumbers != answerNumbers):
+            return 500  # Max message length, impossible to be correct answer.
+        return polyleven.levenshtein(''.join(guessWords), ''.join(answerWords), threshold)
