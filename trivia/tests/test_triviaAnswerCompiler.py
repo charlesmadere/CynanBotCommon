@@ -61,5 +61,10 @@ class TestTriviaAnswerCompiler():
         result: bool = await self.__triviaAnswerCompiler.compileBoolAnswer('true')
         assert result is True
 
+    @pytest.mark.asyncio
+    async def test_compileTextAnswer_withNone(self):
+        result: str = await self.__triviaAnswerCompiler.compileTextAnswer(None)
+        assert result == ''
+
     def test_sanity(self):
         assert isinstance(self.__triviaAnswerCompiler, TriviaAnswerCompiler)
