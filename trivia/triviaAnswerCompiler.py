@@ -75,7 +75,7 @@ class TriviaAnswerCompiler():
                 cleanedAnswers.add(self.__wordToNumberMap[loweredAnswer])
             elif loweredAnswer in self.__ordinalToWordMap:
                 cleanedAnswers.add(loweredAnswer)
-                cleanedAnswer.add(self.__ordinalToWordMap[loweredAnswer])
+                cleanedAnswers.add(self.__ordinalToWordMap[loweredAnswer])
             elif loweredAnswer in self.__wordToOrdinalMap:
                 cleanedAnswers.add(loweredAnswer)
                 cleanedAnswers.add(self.__wordToOrdinalMap[loweredAnswer])
