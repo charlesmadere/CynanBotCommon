@@ -72,7 +72,6 @@ class WwtbamTriviaQuestionRepository(AbsTriviaQuestionRepository):
         responses.append(utils.getStrFromDict(triviaDict, 'responseB'))
         responses.append(utils.getStrFromDict(triviaDict, 'responseC'))
         responses.append(utils.getStrFromDict(triviaDict, 'responseD'))
-        responses = await self.__triviaQuestionCompiler.compileResponses(responses)
 
         correctAnswerIndex = utils.getStrFromDict(triviaDict, 'correctAnswer', clean = True)
 
@@ -91,6 +90,9 @@ class WwtbamTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         correctAnswers: List[str] = list()
         correctAnswers.append(correctAnswer)
+
+        correctAnswers = await self.__triviaQuestionCompiler.compileResponses(correctAnswers)
+        responses = await self.__triviaQuestionCompiler.compileResponses(responses)
 
         multipleChoiceResponses = await self._buildMultipleChoiceResponsesList(
             correctAnswers = correctAnswers,
