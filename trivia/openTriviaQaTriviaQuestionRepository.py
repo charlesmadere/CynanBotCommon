@@ -65,6 +65,9 @@ class OpenTriviaQaTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         triviaDict = await self.__fetchTriviaQuestionDict()
 
+        if await self._triviaSettingsRepository.isDebugLoggingEnabled():
+            self.__timber.log('OpenTriviaQaTriviaQuestionRepository', f'{triviaDict}')
+
         triviaId = utils.getStrFromDict(triviaDict, 'questionId')
         triviaType = TriviaType.fromStr(utils.getStrFromDict(triviaDict, 'questionType'))
 

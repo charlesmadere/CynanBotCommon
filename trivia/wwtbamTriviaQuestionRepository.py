@@ -59,6 +59,9 @@ class WwtbamTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         triviaDict = await self.__fetchTriviaQuestionDict()
 
+        if await self._triviaSettingsRepository.isDebugLoggingEnabled():
+            self.__timber.log('WwtbamTriviaQuestionRepository', f'{triviaDict}')
+
         triviaId = utils.getStrFromDict(triviaDict, 'triviaId')
 
         question = utils.getStrFromDict(triviaDict, 'question')

@@ -49,6 +49,9 @@ class TriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self.__timber.log('TriviaDatabaseTriviaQuestionRepository', 'Fetching trivia question...')
 
         triviaDict = await self.__fetchTriviaQuestionDict()
+
+        if await self._triviaSettingsRepository.isDebugLoggingEnabled():
+            self.__timber.log('TriviaDatabaseTriviaQuestionRepository', f'{triviaDict}')
         category = utils.getStrFromDict(triviaDict, 'category')
         question = utils.getStrFromDict(triviaDict, 'question')
         triviaId = utils.getStrFromDict(triviaDict, 'triviaId')

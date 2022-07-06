@@ -65,6 +65,9 @@ class LotrTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         triviaDict = await self.__fetchTriviaQuestionDict()
 
+        if await self._triviaSettingsRepository.isDebugLoggingEnabled():
+            self.__timber.log('LotrTriviaQuestionRepository', f'{triviaDict}')
+
         triviaId = utils.getStrFromDict(triviaDict, 'triviaId')
         question = await self.__triviaQuestionCompiler.compileQuestion(utils.getStrFromDict(triviaDict, 'question'))
 

@@ -59,6 +59,9 @@ class MillionaireTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         triviaDict = await self.__fetchTriviaQuestionDict()
 
+        if await self._triviaSettingsRepository.isDebugLoggingEnabled():
+            self.__timber.log('MillionaireTriviaQuestionRepository', f'{triviaDict}')
+
         triviaId = utils.getStrFromDict(triviaDict, 'triviaId')
 
         correctAnswer = utils.getStrFromDict(triviaDict, 'answer')
