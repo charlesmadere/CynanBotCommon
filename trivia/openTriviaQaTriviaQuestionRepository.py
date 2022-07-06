@@ -84,12 +84,7 @@ class OpenTriviaQaTriviaQuestionRepository(AbsTriviaQuestionRepository):
             correctAnswers: List[str] = list()
             correctAnswers.append(correctAnswer)
 
-            responses: List[str] = list()
-            responses.append(utils.getStrFromDict(triviaDict, 'response1'))
-            responses.append(utils.getStrFromDict(triviaDict, 'response2'))
-            responses.append(utils.getStrFromDict(triviaDict, 'response3'))
-            responses.append(utils.getStrFromDict(triviaDict, 'response4'))
-            responses = await self.__triviaQuestionCompiler.compileResponses(responses)
+            responses = await self.__triviaQuestionCompiler.compileResponses(triviaDict['responses'])
 
             multipleChoiceResponses = await self._buildMultipleChoiceResponsesList(
                 correctAnswers = correctAnswers,
@@ -141,10 +136,7 @@ class OpenTriviaQaTriviaQuestionRepository(AbsTriviaQuestionRepository):
             'question': row[2],
             'questionId': row[3],
             'questionType': row[4],
-            'response1': row[5],
-            'response2': row[6],
-            'response3': row[7],
-            'response4': row[8]
+            'responses': [ row[5], row[6], row[7], row[8] ]
         }
 
         await cursor.close()
