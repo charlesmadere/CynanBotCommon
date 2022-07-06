@@ -11,6 +11,8 @@ try:
     from CynanBotCommon.trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
+    from CynanBotCommon.trivia.triviaQuestionCompiler import \
+        TriviaQuestionCompiler
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
     from CynanBotCommon.trivia.triviaSource import TriviaSource
@@ -22,6 +24,7 @@ except:
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.absTriviaQuestionRepository import AbsTriviaQuestionRepository
     from trivia.triviaDifficulty import TriviaDifficulty
+    from trivia.triviaQuestionCompiler import TriviaQuestionCompiler
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
     from trivia.triviaType import TriviaType
@@ -32,6 +35,7 @@ class TriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
     def __init__(
         self,
         timber: Timber,
+        triviaQuestionCompiler: TriviaQuestionCompiler,
         triviaSettingsRepository: TriviaSettingsRepository,
         triviaDatabaseFile: str = 'CynanBotCommon/trivia/triviaDatabaseTriviaQuestionRepository.sqlite'
     ):
@@ -39,10 +43,13 @@ class TriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         if timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
+        elif triviaQuestionCompiler is None:
+            raise ValueError(f'triviaQuestionCompiler argument is malformed: \"{triviaQuestionCompiler}\"')
         elif not utils.isValidStr(triviaDatabaseFile):
             raise ValueError(f'triviaDatabaseFile argument is malformed: \"{triviaDatabaseFile}\"')
 
         self.__timber: Timber = timber
+        self.__triviaQuestionCompiler: TriviaQuestionCompiler = triviaQuestionCompiler
         self.__triviaDatabaseFile: str = triviaDatabaseFile
 
     async def fetchTriviaQuestion(self, twitchChannel: Optional[str]) -> AbsTriviaQuestion:
@@ -52,17 +59,26 @@ class TriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         if await self._triviaSettingsRepository.isDebugLoggingEnabled():
             self.__timber.log('TriviaDatabaseTriviaQuestionRepository', f'{triviaDict}')
-        category = utils.getStrFromDict(triviaDict, 'category')
-        question = utils.getStrFromDict(triviaDict, 'question')
+
         triviaId = utils.getStrFromDict(triviaDict, 'triviaId')
 
+        category = utils.getStrFromDict(triviaDict, 'category')
+        category = await self.__triviaQuestionCompiler.compileCategory(category)
+
+        question = utils.getStrFromDict(triviaDict, 'question')
+        question = await self.__triviaQuestionCompiler.compileQuestion(question)
+
         correctAnswer = utils.getStrFromDict(triviaDict, 'correctAnswer')
+        correctAnswer = await self.__triviaQuestionCompiler.compileResponse(correctAnswer)
+
         correctAnswers: List[str] = list()
         correctAnswers.append(correctAnswer)
 
+        wrongAnswers = await self.__triviaQuestionCompiler.compileResponses(triviaDict['wrongAnswers'])
+
         multipleChoiceResponses = await self._buildMultipleChoiceResponsesList(
             correctAnswers = correctAnswers,
-            multipleChoiceResponses = triviaDict['wrongAnswers']
+            multipleChoiceResponses = wrongAnswers
         )
 
         triviaDifficultyInt = utils.getIntFromDict(triviaDict, 'difficulty', -1)

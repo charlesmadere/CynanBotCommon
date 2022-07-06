@@ -69,7 +69,9 @@ class LotrTriviaQuestionRepository(AbsTriviaQuestionRepository):
             self.__timber.log('LotrTriviaQuestionRepository', f'{triviaDict}')
 
         triviaId = utils.getStrFromDict(triviaDict, 'triviaId')
-        question = await self.__triviaQuestionCompiler.compileQuestion(utils.getStrFromDict(triviaDict, 'question'))
+
+        question = utils.getStrFromDict(triviaDict, 'question')
+        question = await self.__triviaQuestionCompiler.compileQuestion(question)
 
         correctAnswers: List[str] = triviaDict['correctAnswers']
         cleanedCorrectAnswers = await self.__triviaAnswerCompiler.compileTextAnswersList(correctAnswers)
