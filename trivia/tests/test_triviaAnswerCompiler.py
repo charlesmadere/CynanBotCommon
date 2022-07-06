@@ -80,18 +80,18 @@ class TestTriviaAnswerCompiler():
     @pytest.mark.asyncio
     async def test_compileMultipleChoiceAnswer_withC(self):
         result: int = await self.__triviaAnswerCompiler.compileTextAnswerToMultipleChoiceOrdinal('C')
-        assert result == 3
+        assert result == 2
 
         result = await self.__triviaAnswerCompiler.compileTextAnswerToMultipleChoiceOrdinal('c')
-        assert result == 3
+        assert result == 2
 
     @pytest.mark.asyncio
     async def test_compileMultipleChoiceAnswer_withD(self):
         result: int = await self.__triviaAnswerCompiler.compileTextAnswerToMultipleChoiceOrdinal('D')
-        assert result == 4
+        assert result == 3
 
         result = await self.__triviaAnswerCompiler.compileTextAnswerToMultipleChoiceOrdinal('d')
-        assert result == 4
+        assert result == 3
 
     @pytest.mark.asyncio
     async def test_compileMultipleChoiceAnswer_withDigit(self):
@@ -109,18 +109,18 @@ class TestTriviaAnswerCompiler():
     @pytest.mark.asyncio
     async def test_compileMultipleChoiceAnswer_withE(self):
         result: int = await self.__triviaAnswerCompiler.compileTextAnswerToMultipleChoiceOrdinal('E')
-        assert result == 5
+        assert result == 4
 
         result = await self.__triviaAnswerCompiler.compileTextAnswerToMultipleChoiceOrdinal('e')
-        assert result == 5
+        assert result == 4
 
     @pytest.mark.asyncio
     async def test_compileMultipleChoiceAnswer_withF(self):
         result: int = await self.__triviaAnswerCompiler.compileTextAnswerToMultipleChoiceOrdinal('F')
-        assert result == 6
+        assert result == 5
 
         result = await self.__triviaAnswerCompiler.compileTextAnswerToMultipleChoiceOrdinal('f')
-        assert result == 6
+        assert result == 5
 
     @pytest.mark.asyncio
     async def test_compileMultipleChoiceAnswer_withEmptyString(self):
@@ -177,10 +177,10 @@ class TestTriviaAnswerCompiler():
     @pytest.mark.asyncio
     async def test_compileMultipleChoiceAnswer_withZ(self):
         result: int = await self.__triviaAnswerCompiler.compileTextAnswerToMultipleChoiceOrdinal('Z')
-        assert result == 26
+        assert result == 25
 
         result = await self.__triviaAnswerCompiler.compileTextAnswerToMultipleChoiceOrdinal('z')
-        assert result == 26
+        assert result == 25
 
     @pytest.mark.asyncio
     async def test_compileTextAnswer_withEmptyString(self):
