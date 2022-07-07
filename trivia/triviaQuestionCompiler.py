@@ -12,6 +12,7 @@ class TriviaQuestionCompiler():
 
     def __init__(self):
         self.__ellipsisRegEx: Pattern = re.compile(r'(\.){3,}', re.IGNORECASE)
+        self.__weirdEllipsisRegEx: Pattern = re.compile(r'\.\s\.\s\.', re.IGNORECASE)
         self.__newLineRegEx: Pattern = re.compile(r'(\n)+', re.IGNORECASE)
         self.__tagRemovalRegEx: Pattern = re.compile(r'<\/?\w+>', re.IGNORECASE)
         self.__underscoreRegEx: Pattern = re.compile(r'_{2,}', re.IGNORECASE)
@@ -88,6 +89,9 @@ class TriviaQuestionCompiler():
 
         # replaces all "dot dot dot" sequences with the ellipsis character: "…"
         text = self.__ellipsisRegEx.sub('…', text).strip()
+
+        # replaces all "dot space dot space dot" sequences with the ellipsis character
+        text = self.__weirdEllipsisRegEx.sub('…', text).strip()
 
         # replaces all new line characters with 1 space
         text = self.__newLineRegEx.sub(' ', text).strip()
