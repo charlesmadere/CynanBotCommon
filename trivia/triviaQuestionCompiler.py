@@ -23,7 +23,7 @@ class TriviaQuestionCompiler():
         htmlUnescape: bool = False
     ) -> str:
         if not utils.isValidStr(category):
-            raise category(f'category argument is malformed: \"{category}\"')
+            raise ValueError(f'category argument is malformed: \"{category}\"')
         elif not utils.isValidBool(htmlUnescape):
             raise ValueError(f'htmlUnescape argument is malformed: \"{htmlUnescape}\"')
 
