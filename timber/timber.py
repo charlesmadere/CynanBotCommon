@@ -19,7 +19,7 @@ class Timber():
         self,
         eventLoop: AbstractEventLoop,
         alsoPrintToStandardOut: bool = True,
-        sleepTimeSeconds: float = 0.25,
+        sleepTimeSeconds: float = 5,
         timberRootDirectory: str = 'CynanBotCommon/timber'
     ):
         if eventLoop is None:
@@ -28,7 +28,7 @@ class Timber():
             raise ValueError(f'alsoPrintToStandardOut argument is malformed: \"{alsoPrintToStandardOut}\"')
         elif not utils.isValidNum(sleepTimeSeconds):
             raise ValueError(f'sleepTimeSeconds argument is malformed: \"{sleepTimeSeconds}\"')
-        elif sleepTimeSeconds < 0.1 or sleepTimeSeconds > 5:
+        elif sleepTimeSeconds < 0.1 or sleepTimeSeconds > 60:
             raise ValueError(f'sleepTimeSeconds argument is out of bounds: {sleepTimeSeconds}')
         elif not utils.isValidStr(timberRootDirectory):
             raise ValueError(f'timberRootDirectory argument is malformed: \"{timberRootDirectory}\"')
