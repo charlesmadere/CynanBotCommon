@@ -35,7 +35,7 @@ class TriviaQuestionCompiler():
         htmlUnescape: bool = False
     ) -> str:
         if not utils.isValidStr(question):
-            raise question(f'question argument is malformed: \"{question}\"')
+            raise ValueError(f'question argument is malformed: \"{question}\"')
         elif not utils.isValidBool(htmlUnescape):
             raise ValueError(f'htmlUnescape argument is malformed: \"{htmlUnescape}\"')
 
