@@ -213,6 +213,16 @@ class TestTriviaAnswerCompiler():
         assert 'van halen' in result
 
     @pytest.mark.asyncio
+    async def test_compileTextAnswersList_withKurtVonnegutJr(self):
+        result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ '(Kurt) Vonnegut (Jr.)' ])
+        assert result is not None
+        assert len(result) == 4
+        assert 'kurt vonnegut jr' in result
+        assert 'kurt vonnegut' in result
+        assert 'vonnegut' in result
+        assert 'vonnegut jr' in result
+
+    @pytest.mark.asyncio
     async def test_compileTextAnswersList_withEmptyList(self):
         result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList(list())
         assert result is not None
@@ -225,6 +235,14 @@ class TestTriviaAnswerCompiler():
         assert len(result) == 0
 
     @pytest.mark.asyncio
+    async def test_compileTextAnswersList_withNumberWord(self):
+        result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ 'three' ])
+        assert result is not None
+        assert len(result) == 2
+        assert 'three' in result
+        assert '3' in result
+
+    @pytest.mark.asyncio
     async def test_compileTextAnswersList_withNumberWords(self):
         result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ 'one', 'two' ])
         assert result is not None
@@ -233,6 +251,24 @@ class TestTriviaAnswerCompiler():
         assert '1' in result
         assert 'two' in result
         assert '2' in result
+
+    @pytest.mark.asyncio
+    async def test_compileTextAnswersList_withOrdinalWord(self):
+        result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ 'third' ])
+        assert result is not None
+        assert len(result) == 2
+        assert 'third' in result
+        assert '3rd' in result
+
+    @pytest.mark.asyncio
+    async def test_compileTextAnswersList_withOrdinalWords(self):
+        result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ 'first', 'second' ])
+        assert result is not None
+        assert len(result) == 4
+        assert 'first' in result
+        assert '1st' in result
+        assert 'second' in result
+        assert '2nd' in result
 
     def test_sanity(self):
         assert self.triviaAnswerCompiler is not None
