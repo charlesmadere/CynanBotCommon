@@ -205,22 +205,20 @@ class TestTriviaAnswerCompiler():
         assert result == ''
 
     @pytest.mark.asyncio
+    async def test_compileTextAnswersList_withDuplicateWords(self):
+        result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ 'hello', 'Hello', 'HELLO', 'world', 'World', 'World!' ])
+        assert result is not None
+        assert len(result) == 2
+        assert 'hello' in result
+        assert 'world' in result
+
+    @pytest.mark.asyncio
     async def test_compileTextAnswersList_withEddieVanHalen(self):
         result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ '(Eddie) Van Halen' ])
         assert result is not None
         assert len(result) == 2
         assert 'eddie van halen' in result
         assert 'van halen' in result
-
-    @pytest.mark.asyncio
-    async def test_compileTextAnswersList_withKurtVonnegutJr(self):
-        result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ '(Kurt) Vonnegut (Jr.)' ])
-        assert result is not None
-        assert len(result) == 4
-        assert 'kurt vonnegut jr' in result
-        assert 'kurt vonnegut' in result
-        assert 'vonnegut' in result
-        assert 'vonnegut jr' in result
 
     @pytest.mark.asyncio
     async def test_compileTextAnswersList_withEmptyList(self):
@@ -233,6 +231,16 @@ class TestTriviaAnswerCompiler():
         result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList(None)
         assert result is not None
         assert len(result) == 0
+
+    @pytest.mark.asyncio
+    async def test_compileTextAnswersList_withKurtVonnegutJr(self):
+        result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ '(Kurt) Vonnegut (Jr.)' ])
+        assert result is not None
+        assert len(result) == 4
+        assert 'kurt vonnegut jr' in result
+        assert 'kurt vonnegut' in result
+        assert 'vonnegut' in result
+        assert 'vonnegut jr' in result
 
     @pytest.mark.asyncio
     async def test_compileTextAnswersList_withNumberWord(self):
