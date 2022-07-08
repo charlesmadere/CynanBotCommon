@@ -52,6 +52,25 @@ class TestTriviaQuestionCompiler():
         assert isinstance(exception, ValueError)
 
     @pytest.mark.asyncio
+    async def test_compileQuestion_withEllipsis(self):
+        question: str = await self.triviaQuestionCompiler.compileQuestion('...And Justice for All')
+        assert question is not None
+        assert question == '…And Justice for All'
+
+    @pytest.mark.asyncio
+    async def test_compileQuestion_withEmptyString(self):
+        question: str = None
+        exception: Exception = None
+
+        try:
+            question = await self.triviaQuestionCompiler.compileQuestion('')
+        except Exception as e:
+            exception = e
+
+        assert question is None
+        assert isinstance(exception, ValueError)
+
+    @pytest.mark.asyncio
     async def test_compileQuestion_withNone(self):
         question: str = None
         exception: Exception = None
@@ -65,20 +84,7 @@ class TestTriviaQuestionCompiler():
         assert isinstance(exception, ValueError)
 
     @pytest.mark.asyncio
-    async def test_compileResponse_withEmptyString(self):
-        question: str = None
-        exception: Exception = None
-
-        try:
-            question = await self.triviaQuestionCompiler.compileQuestion('')
-        except Exception as e:
-            exception = e
-
-        assert question is None
-        assert isinstance(exception, ValueError)
-
-    @pytest.mark.asyncio
-    async def test_compileResponse_withWhitespaceString(self):
+    async def test_compileQuestion_withWhitespaceString(self):
         question: str = None
         exception: Exception = None
 
@@ -91,12 +97,12 @@ class TestTriviaQuestionCompiler():
         assert isinstance(exception, ValueError)
 
     @pytest.mark.asyncio
-    async def test_compileResponse_withNone(self):
+    async def test_compileResponse_withEmptyString(self):
         response: str = None
         exception: Exception = None
 
         try:
-            response = await self.triviaQuestionCompiler.compileResponse(None)
+            response = await self.triviaQuestionCompiler.compileResponse('')
         except Exception as e:
             exception = e
 
@@ -104,12 +110,12 @@ class TestTriviaQuestionCompiler():
         assert isinstance(exception, ValueError)
 
     @pytest.mark.asyncio
-    async def test_compileResponse_withEmptyString(self):
+    async def test_compileResponse_withNone(self):
         response: str = None
         exception: Exception = None
 
         try:
-            response = await self.triviaQuestionCompiler.compileResponse('')
+            response = await self.triviaQuestionCompiler.compileResponse(None)
         except Exception as e:
             exception = e
 
