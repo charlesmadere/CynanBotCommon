@@ -6,6 +6,7 @@ from os import path
 from typing import Dict
 
 import aiofile
+import aiofiles.ospath
 import aiohttp
 from google.cloud import translate_v2 as translate
 
@@ -105,7 +106,7 @@ class TranslationHelper():
 
             if not await self.__hasGoogleApiCredentials():
                 raise RuntimeError(f'Unable to initialize a new Google translate.Client instance because the Google API credentials are missing')
-            elif not path.exists(self.__googleServiceAccountFile):
+            elif not await aiofiles.ospath.exists(self.__googleServiceAccountFile):
                 raise FileNotFoundError(f'googleServiceAccount file not found: \"{self.__googleServiceAccountFile}\"')
 
             self.__googleTranslateClient = translate.Client.from_service_account_json(self.__googleServiceAccountFile)
