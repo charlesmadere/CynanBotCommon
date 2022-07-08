@@ -1,9 +1,9 @@
 import json
 import random
-from os import path
 from typing import Dict, List, Optional
 
 import aiofile
+import aiofiles.ospath
 
 try:
     import CynanBotCommon.utils as utils
@@ -129,7 +129,7 @@ class JokeTriviaQuestionRepository(AbsTriviaQuestionRepository):
         return TriviaSource.JOKE_TRIVIA_REPOSITORY
 
     async def __readAllJson(self) -> Dict[str, object]:
-        if not path.exists(self.__jokeTriviaQuestionFile):
+        if not await aiofiles.ospath.exists(self.__jokeTriviaQuestionFile):
             raise FileNotFoundError(f'Joke trivia question file not found: \"{self.__jokeTriviaQuestionFile}\"')
 
         async with aiofile.async_open(self.__jokeTriviaQuestionFile, 'r') as file:

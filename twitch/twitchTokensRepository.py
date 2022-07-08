@@ -1,11 +1,11 @@
 import json
 import locale
-import os
 from asyncio import TimeoutError
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List
 
 import aiofile
+import aiofiles.ospath
 import aiohttp
 
 try:
@@ -111,7 +111,7 @@ class TwitchTokensRepository():
         return utils.getBoolFromDict(jsonContents, 'debugLoggingEnabled', fallback = False)
 
     async def __readAllJson(self) -> Dict[str, object]:
-        if not os.path.exists(self.__twitchTokensFile):
+        if not await aiofiles.ospath.exists(self.__twitchTokensFile):
             raise FileNotFoundError(f'Twitch tokens file not found: \"{self.__twitchTokensFile}\"')
 
         async with aiofile.async_open(self.__twitchTokensFile, 'r') as file:

@@ -1,8 +1,8 @@
 import json
-import os
 from typing import Dict
 
 import aiofile
+import aiofiles.ospath
 
 try:
     import CynanBotCommon.utils as utils
@@ -123,7 +123,7 @@ class TriviaSettingsRepository():
         return utils.getBoolFromDict(jsonContents, 'debug_logging_enabled', False)
 
     async def __readJson(self) -> Dict[str, object]:
-        if not os.path.exists(self.__settingsFile):
+        if not await aiofiles.ospath.exists(self.__settingsFile):
             raise FileNotFoundError(f'Trivia settings file not found: \"{self.__settingsFile}\"')
 
         async with aiofile.async_open(self.__settingsFile, 'r') as file:

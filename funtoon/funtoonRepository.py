@@ -1,10 +1,10 @@
 import json
-import os
 from asyncio import TimeoutError
 from typing import Dict
 
+import aiofile
+import aiofiles.ospath
 import aiohttp
-from aiofile import async_open
 
 try:
     import CynanBotCommon.utils as utils
@@ -207,10 +207,10 @@ class FuntoonRepository():
         )
 
     async def __readAllJson(self) -> Dict[str, object]:
-        if not os.path.exists(self.__funtoonRepositoryFile):
+        if not await aiofiles.ospath.exists(self.__funtoonRepositoryFile):
             raise FileNotFoundError(f'Funtoon repository file not found: \"{self.__funtoonRepositoryFile}\"')
 
-        async with async_open(self.__funtoonRepositoryFile, 'r') as file:
+        async with aiofile.async_open(self.__funtoonRepositoryFile, 'r') as file:
             data = await file.read()
             jsonContents = json.loads(data)
 

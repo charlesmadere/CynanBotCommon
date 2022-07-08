@@ -1,7 +1,7 @@
-from os import path
 from typing import List, Set
 
 import aiofile
+import aiofiles.ospath
 
 try:
     import CynanBotCommon.utils as utils
@@ -41,7 +41,7 @@ class TriviaContentScanner():
         self.__bannedWordsFile: str = bannedWordsFile
 
     async def __readBannedWordsList(self) -> List[str]:
-        if not path.exists(self.__bannedWordsFile):
+        if not await aiofiles.ospath.exists(self.__bannedWordsFile):
             self.__timber.log('TriviaContentScanner', 'Not attempting to read in any banned words due to the file missing: \"{self.__bannedWordsFile}\"')
             return None
 
