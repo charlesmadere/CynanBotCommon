@@ -1,8 +1,11 @@
 import asyncio
-import os
 import queue
 from asyncio import AbstractEventLoop
 from queue import SimpleQueue
+
+import aiofile
+import aiofiles.os
+import aiofiles.ospath
 
 try:
     import CynanBotCommon.utils as utils
@@ -77,10 +80,10 @@ class ChatLogger():
         messageDirectory = f'{self.__logRootDirectory}/{chatMessage.getTwitchChannel()}/{sdt.getYearStr()}/{sdt.getMonthStr()}'
         messageFile = f'{messageDirectory}/{sdt.getDayStr()}.log'
 
-        if not os.path.exists(messageDirectory):
-            os.makedirs(messageDirectory)
+        if not await aiofiles.ospath.exists(messageDirectory):
+            await aiofiles.os.makedirs(messageDirectory)
 
         logStatement = self.__getLogStatement(chatMessage)
 
-        with open(messageFile, 'a') as file:
-            file.write(logStatement)
+        async with aiofile.async_open(messageFile, 'a') as file:
+            await file.write(logStatement)

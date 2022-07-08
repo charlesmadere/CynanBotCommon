@@ -2,7 +2,8 @@ import json
 from os import path
 from typing import Dict
 
-from aiofile import async_open
+import aiofile
+import aiofiles.ospath
 
 try:
     import CynanBotCommon.utils as utils
@@ -61,10 +62,10 @@ class LocationsRepository():
         raise RuntimeError(f'Unable to find location with ID \"{locationId}\" in locations file: \"{self.__locationsFile}\"')
 
     async def __readAllJson(self) -> Dict[str, object]:
-        if not path.exists(self.__locationsFile):
+        if not await aiofiles.ospath.exists(self.__locationsFile):
             raise FileNotFoundError(f'Locations file not found: \"{self.__locationsFile}\"')
 
-        async with async_open(self.__locationsFile, 'r') as file:
+        async with aiofile.async_open(self.__locationsFile, 'r') as file:
             data = await file.read()
             jsonContents = json.loads(data)
 

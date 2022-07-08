@@ -3,7 +3,8 @@ from datetime import timedelta
 from os import path
 from typing import Dict, Optional
 
-from aiofile import async_open
+import aiofile
+import aiofiles.ospath
 
 try:
     import CynanBotCommon.utils as utils
@@ -157,10 +158,10 @@ class ChatBandManager():
         return True
 
     async def __readAllJson(self) -> Dict[str, object]:
-        if not path.exists(self.__chatBandFile):
+        if not await aiofiles.ospath.exists(self.__chatBandFile):
             raise FileNotFoundError(f'Chat Band file not found: \"{self.__chatBandFile}\"')
 
-        async with async_open(self.__chatBandFile, 'r') as file:
+        async with aiofile.async_open(self.__chatBandFile, 'r') as file:
             data = await file.read()
             jsonContents = json.loads(data)
 

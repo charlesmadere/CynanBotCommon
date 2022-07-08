@@ -5,6 +5,7 @@ from os import path
 from typing import Dict, List
 
 import aiofile
+import aiofiles.ospath
 
 try:
     import CynanBotCommon.utils as utils
@@ -56,7 +57,7 @@ class StarWarsQuotesRepository():
         return quote.replace(result.group(0), value)
 
     async def __readJson(self) -> Dict[str, object]:
-        if not path.exists(self.__quotesFile):
+        if not await aiofiles.ospath.exists(self.__quotesFile):
             raise FileNotFoundError(f'quotes file not found: \"{self.__quotesFile}\"')
 
         async with aiofile.async_open(self.__quotesFile, 'r') as file:

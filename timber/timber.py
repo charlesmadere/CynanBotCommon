@@ -1,8 +1,11 @@
 import asyncio
-import os
 import queue
 from asyncio import AbstractEventLoop
 from queue import SimpleQueue
+
+import aiofile
+import aiofiles.os
+import aiofiles.ospath
 
 try:
     import CynanBotCommon.utils as utils
@@ -95,10 +98,10 @@ class Timber():
         timberDirectory = f'{self.__timberRootDirectory}/{sdt.getYearStr()}/{sdt.getMonthStr()}'
         timberFile = f'{timberDirectory}/{sdt.getDayStr()}.log'
 
-        if not os.path.exists(timberDirectory):
-            os.makedirs(timberDirectory)
+        if not await aiofiles.ospath.exists(timberDirectory):
+            await aiofiles.os.makedirs(timberDirectory)
 
         logStatement = self.__getLogStatement(True, timberEntry)
 
-        with open(timberFile, 'a') as file:
-            file.write(logStatement)
+        async with aiofile.async_open(timberFile, 'a') as file:
+            await file.write(logStatement)

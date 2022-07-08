@@ -1,6 +1,5 @@
 import asyncio
 import json
-import os
 import queue
 from asyncio import AbstractEventLoop
 from datetime import datetime, timedelta, timezone
@@ -8,6 +7,7 @@ from queue import SimpleQueue
 from typing import Dict
 
 import aiofile
+import aiofiles.ospath
 import websockets
 
 try:
@@ -68,7 +68,7 @@ class WebsocketConnectionServer():
         return utils.getBoolFromDict(jsonContents, 'debugLoggingEnabled', False)
 
     async def __readJson(self) -> Dict[str, object]:
-        if not os.path.exists(self.__websocketSettingsFile):
+        if not await aiofiles.ospath.exists(self.__websocketSettingsFile):
             raise FileNotFoundError(f'Websocket settings file not found: \"{self.__websocketSettingsFile}\"')
 
         async with aiofile.async_open(self.__websocketSettingsFile, 'r') as file:
