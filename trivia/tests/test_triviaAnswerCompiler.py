@@ -185,6 +185,11 @@ class TestTriviaAnswerCompiler():
         assert result == 25
 
     @pytest.mark.asyncio
+    async def test_compileTextAnswer_withAmpersand(self):
+        result: str = await self.triviaAnswerCompiler.compileTextAnswer('Between the Buried & Me')
+        assert result == 'between the buried and me'
+
+    @pytest.mark.asyncio
     async def test_compileTextAnswer_withEmptyString(self):
         result: str = await self.triviaAnswerCompiler.compileTextAnswer('')
         assert result == ''
@@ -195,9 +200,24 @@ class TestTriviaAnswerCompiler():
         assert result == 'hello world'
 
     @pytest.mark.asyncio
+    async def test_compileTextAnswer_withNewLines(self):
+        result: str = await self.triviaAnswerCompiler.compileTextAnswer('\nDream Theater\nOctavarium\n')
+        assert result == 'dream theater octavarium'
+
+    @pytest.mark.asyncio
     async def test_compileTextAnswer_withNone(self):
         result: str = await self.triviaAnswerCompiler.compileTextAnswer(None)
         assert result == ''
+
+    @pytest.mark.asyncio
+    async def test_compileTextAnswer_withPrefixA(self):
+        result: str = await self.triviaAnswerCompiler.compileTextAnswer('A View From the Top of the World')
+        assert result == 'view from the top of the world'
+
+    @pytest.mark.asyncio
+    async def test_compileTextAnswer_withPrefixAn(self):
+        result: str = await self.triviaAnswerCompiler.compileTextAnswer('An Orange')
+        assert result == 'orange'
 
     @pytest.mark.asyncio
     async def test_compileTextAnswer_withWhitespaceString(self):
