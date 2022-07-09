@@ -2,7 +2,7 @@ import json
 from asyncio import TimeoutError
 from typing import Dict
 
-import aiofile
+import aiofiles
 import aiofiles.ospath
 import aiohttp
 
@@ -210,7 +210,7 @@ class FuntoonRepository():
         if not await aiofiles.ospath.exists(self.__funtoonRepositoryFile):
             raise FileNotFoundError(f'Funtoon repository file not found: \"{self.__funtoonRepositoryFile}\"')
 
-        async with aiofile.async_open(self.__funtoonRepositoryFile, 'r') as file:
+        async with aiofiles.open(self.__funtoonRepositoryFile, mode = 'r') as file:
             data = await file.read()
             jsonContents = json.loads(data)
 

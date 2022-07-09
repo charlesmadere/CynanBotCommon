@@ -1,8 +1,7 @@
 import json
-from os import path
 from typing import Dict
 
-import aiofile
+import aiofiles
 import aiofiles.ospath
 
 try:
@@ -65,7 +64,7 @@ class LocationsRepository():
         if not await aiofiles.ospath.exists(self.__locationsFile):
             raise FileNotFoundError(f'Locations file not found: \"{self.__locationsFile}\"')
 
-        async with aiofile.async_open(self.__locationsFile, 'r') as file:
+        async with aiofiles.open(self.__locationsFile, mode = 'r') as file:
             data = await file.read()
             jsonContents = json.loads(data)
 

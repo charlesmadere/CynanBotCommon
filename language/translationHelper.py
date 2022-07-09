@@ -2,10 +2,9 @@ import json
 import random
 from asyncio import TimeoutError
 from json.decoder import JSONDecodeError
-from os import path
 from typing import Dict
 
-import aiofile
+import aiofiles
 import aiofiles.ospath
 import aiohttp
 from google.cloud import translate_v2 as translate
@@ -147,13 +146,13 @@ class TranslationHelper():
         )
 
     async def __hasGoogleApiCredentials(self) -> bool:
-        if not path.exists(self.__googleServiceAccountFile):
+        if not await aiofiles.ospath.exists(self.__googleServiceAccountFile):
             return False
 
         jsonContents: Dict[str, object] = None
         exception: JSONDecodeError = None
 
-        async with aiofile.async_open(self.__googleServiceAccountFile, 'r') as file:
+        async with aiofiles.open(self.__googleServiceAccountFile, mode = 'r') as file:
             data = await file.read()
 
             try:

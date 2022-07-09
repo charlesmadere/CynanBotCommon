@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, timezone
 from queue import SimpleQueue
 from typing import Dict
 
-import aiofile
+import aiofiles
 import aiofiles.ospath
 import websockets
 
@@ -71,7 +71,7 @@ class WebsocketConnectionServer():
         if not await aiofiles.ospath.exists(self.__websocketSettingsFile):
             raise FileNotFoundError(f'Websocket settings file not found: \"{self.__websocketSettingsFile}\"')
 
-        async with aiofile.async_open(self.__websocketSettingsFile, 'r') as file:
+        async with aiofiles.open(self.__websocketSettingsFile, 'r') as file:
             data = await file.read()
             jsonContents = json.loads(data)
 

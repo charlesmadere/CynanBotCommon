@@ -2,7 +2,7 @@ import json
 import random
 from typing import Dict, List, Optional
 
-import aiofile
+import aiofiles
 import aiofiles.ospath
 
 try:
@@ -132,7 +132,7 @@ class JokeTriviaQuestionRepository(AbsTriviaQuestionRepository):
         if not await aiofiles.ospath.exists(self.__jokeTriviaQuestionFile):
             raise FileNotFoundError(f'Joke trivia question file not found: \"{self.__jokeTriviaQuestionFile}\"')
 
-        async with aiofile.async_open(self.__jokeTriviaQuestionFile, 'r') as file:
+        async with aiofiles.open(self.__jokeTriviaQuestionFile, mode = 'r') as file:
             data = await file.read()
             jsonContents = json.loads(data)
 

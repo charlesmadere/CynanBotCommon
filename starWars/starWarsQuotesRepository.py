@@ -1,10 +1,9 @@
 import json
 import random
 import re
-from os import path
 from typing import Dict, List
 
-import aiofile
+import aiofiles
 import aiofiles.ospath
 
 try:
@@ -60,7 +59,7 @@ class StarWarsQuotesRepository():
         if not await aiofiles.ospath.exists(self.__quotesFile):
             raise FileNotFoundError(f'quotes file not found: \"{self.__quotesFile}\"')
 
-        async with aiofile.async_open(self.__quotesFile, 'r') as file:
+        async with aiofiles.open(self.__quotesFile, mode = 'r') as file:
             data = await file.read()
             jsonContents = json.loads(data)
 
