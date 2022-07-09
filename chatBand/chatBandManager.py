@@ -1,9 +1,8 @@
 import json
 from datetime import timedelta
-from os import path
 from typing import Dict, Optional
 
-import aiofile
+import aiofiles
 import aiofiles.ospath
 
 try:
@@ -161,7 +160,7 @@ class ChatBandManager():
         if not await aiofiles.ospath.exists(self.__chatBandFile):
             raise FileNotFoundError(f'Chat Band file not found: \"{self.__chatBandFile}\"')
 
-        async with aiofile.async_open(self.__chatBandFile, 'r') as file:
+        async with aiofiles.open(self.__chatBandFile, mode = 'r') as file:
             data = await file.read()
             jsonContents = json.loads(data)
 

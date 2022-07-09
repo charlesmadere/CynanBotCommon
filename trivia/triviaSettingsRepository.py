@@ -1,7 +1,7 @@
 import json
 from typing import Dict
 
-import aiofile
+import aiofiles
 import aiofiles.ospath
 
 try:
@@ -126,7 +126,7 @@ class TriviaSettingsRepository():
         if not await aiofiles.ospath.exists(self.__settingsFile):
             raise FileNotFoundError(f'Trivia settings file not found: \"{self.__settingsFile}\"')
 
-        async with aiofile.async_open(self.__settingsFile, 'r') as file:
+        async with aiofiles.open(self.__settingsFile, mode = 'r') as file:
             data = await file.read()
             jsonContents = json.loads(data)
 

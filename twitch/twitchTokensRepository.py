@@ -4,7 +4,7 @@ from asyncio import TimeoutError
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List
 
-import aiofile
+import aiofiles
 import aiofiles.ospath
 import aiohttp
 
@@ -114,7 +114,7 @@ class TwitchTokensRepository():
         if not await aiofiles.ospath.exists(self.__twitchTokensFile):
             raise FileNotFoundError(f'Twitch tokens file not found: \"{self.__twitchTokensFile}\"')
 
-        async with aiofile.async_open(self.__twitchTokensFile, 'r') as file:
+        async with aiofiles.open(self.__twitchTokensFile, mode = 'r') as file:
             data = await file.read()
             jsonContents = json.loads(data)
 
@@ -210,7 +210,7 @@ class TwitchTokensRepository():
         }
 
         jsonString: str = ''
-        async with aiofile.async_open(self.__twitchTokensFile, 'w') as file:
+        async with aiofiles.open(self.__twitchTokensFile, mode = 'w') as file:
             jsonString = json.dumps(jsonContents, indent = 4, sort_keys = True)
             await file.write(jsonString)
 
