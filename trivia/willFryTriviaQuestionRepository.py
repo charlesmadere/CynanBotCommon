@@ -72,7 +72,7 @@ class WillFryTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         response = None
         try:
-            response = await self.__clientSession.get('https://the-trivia-api.com/questions?limit=1')
+            response = await self.__clientSession.get('https://the-trivia-api.com/api/questions?limit=1')
         except (aiohttp.ClientError, TimeoutError) as e:
             self.__timber.log('WillFryTriviaQuestionRepository', f'Encountered network error: {e}')
             return None
