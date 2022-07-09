@@ -3,7 +3,7 @@ import queue
 from asyncio import AbstractEventLoop
 from queue import SimpleQueue
 
-import aiofile
+import aiofiles
 import aiofiles.os
 import aiofiles.ospath
 
@@ -85,5 +85,5 @@ class ChatLogger():
 
         logStatement = self.__getLogStatement(chatMessage)
 
-        async with aiofile.async_open(messageFile, 'a') as file:
+        async with aiofiles.open(messageFile, mode = 'a') as file:
             await file.write(logStatement)
