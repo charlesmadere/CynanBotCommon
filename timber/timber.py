@@ -3,7 +3,7 @@ import queue
 from asyncio import AbstractEventLoop
 from queue import SimpleQueue
 
-import aiofile
+import aiofiles
 import aiofiles.os
 import aiofiles.ospath
 
@@ -103,5 +103,5 @@ class Timber():
 
         logStatement = self.__getLogStatement(True, timberEntry)
 
-        async with aiofile.async_open(timberFile, 'a') as file:
+        async with aiofiles.open(timberFile, mode = 'a') as file:
             await file.write(logStatement)
