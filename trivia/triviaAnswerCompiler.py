@@ -15,6 +15,7 @@ class TriviaAnswerCompiler():
     def __init__(self):
         self.__ampersandRegEx: Pattern = re.compile(r'(^&\s+)|(\s+&\s+)|(\s+&$)', re.IGNORECASE)
         self.__multipleChoiceAnswerRegEx: Pattern = re.compile(r'[a-z]', re.IGNORECASE)
+        self.__newLineRegEx: Pattern = re.compile(r'(\n)+', re.IGNORECASE)
         self.__parenGroupRegEx: Pattern = re.compile(r'(\(.*?\))', re.IGNORECASE)
         self.__phraseAnswerRegEx: Pattern = re.compile(r'[^A-Za-z0-9 ]|(?<=\s)\s+', re.IGNORECASE)
         self.__prefixRegEx: Pattern = re.compile(r'^(a|an|and|or|the)\s+', re.IGNORECASE)
@@ -43,6 +44,9 @@ class TriviaAnswerCompiler():
 
         # removes HTML tag-like junk
         answer = self.__tagRemovalRegEx.sub('', answer).strip()
+
+        # replaces all new line characters with just a space
+        answer = self.__newLineRegEx.sub(' ', answer).strip()
 
         # removes common phrase prefixes
         answer = self.__prefixRegEx.sub('', answer).strip()
