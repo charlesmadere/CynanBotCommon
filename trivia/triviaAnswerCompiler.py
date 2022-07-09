@@ -130,6 +130,13 @@ class TriviaAnswerCompiler():
         ordinals['first'] = '1st'
         ordinals['second'] = '2nd'
         ordinals['third'] = '3rd'
+        ordinals['fourth'] = '4th'
+        ordinals['fifth'] = '5th'
+        ordinals['sixth'] = '6th'
+        ordinals['seventh'] = '7th'
+        ordinals['eighth'] = '8th'
+        ordinals['ninth'] = '9th'
+        ordinals['tenth'] = '10th'
 
         return ordinals
 
@@ -164,6 +171,13 @@ class TriviaAnswerCompiler():
         ordinals['1st'] = 'first'
         ordinals['2nd'] = 'second'
         ordinals['3rd'] = 'third'
+        ordinals['4th'] = 'fourth'
+        ordinals['5th'] = 'fifth'
+        ordinals['6th'] = 'sixth'
+        ordinals['7th'] = 'seventh'
+        ordinals['8th'] = 'eighth'
+        ordinals['9th'] = 'ninth'
+        ordinals['10th'] = 'tenth'
 
         return ordinals
 
