@@ -51,7 +51,7 @@ class TestTriviaAnswerChecker():
             question = 'Which of these Super Metroid players is a bully?',
             triviaId = 'abc123',
             triviaDifficulty = TriviaDifficulty.UNKNOWN,
-            triviaSource = TriviaSource[0]
+            triviaSource = TriviaSource.BONGO
         )
 
         result: bool = await self.triviaAnswerChecker.checkAnswer('a', question)
@@ -74,7 +74,7 @@ class TestTriviaAnswerChecker():
             question = 'The Super Metroid player stashiocat is a Chicago Bully.',
             triviaId = 'abc123',
             triviaDifficulty = TriviaDifficulty.UNKNOWN,
-            triviaSource = TriviaSource[0]
+            triviaSource = TriviaSource.BONGO
         )
 
         result: bool = await self.triviaAnswerChecker.checkAnswer('false', question)
@@ -91,7 +91,7 @@ class TestTriviaAnswerChecker():
             question = 'The Super Metroid player stashiocat is a Chicago Bully.',
             triviaId = 'abc123',
             triviaDifficulty = TriviaDifficulty.UNKNOWN,
-            triviaSource = TriviaSource[0]
+            triviaSource = TriviaSource.BONGO
         )
 
         result: bool = await self.triviaAnswerChecker.checkAnswer('false', question)
@@ -108,7 +108,7 @@ class TestTriviaAnswerChecker():
             question = 'The Super Metroid player stashiocat is a Chicago Bully.',
             triviaId = 'abc123',
             triviaDifficulty = TriviaDifficulty.UNKNOWN,
-            triviaSource = TriviaSource[0]
+            triviaSource = TriviaSource.BONGO
         )
 
         result: bool = await self.triviaAnswerChecker.checkAnswer('false', question)
@@ -125,7 +125,7 @@ class TestTriviaAnswerChecker():
             question = 'The Super Metroid player stashiocat is a Chicago Bully.',
             triviaId = 'abc123',
             triviaDifficulty = TriviaDifficulty.UNKNOWN,
-            triviaSource = TriviaSource[0]
+            triviaSource = TriviaSource.BONGO
         )
 
         result: bool = await self.triviaAnswerChecker.checkAnswer('false', question)
