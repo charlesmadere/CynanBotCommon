@@ -1,0 +1,23 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+aiosqlite = "*"
+requests = "*"
+pytz = "*"
+aiohttp = "*"
+lxml = "*"
+aiofiles = "*"
+google-cloud-translate = "*"
+xmltodict = "*"
+polyleven = "*"
+aiofile = "*"
+pytest = "*"
+websockets = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.8"
