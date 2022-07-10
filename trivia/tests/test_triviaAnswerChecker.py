@@ -1,26 +1,46 @@
+import asyncio
+from asyncio import AbstractEventLoop
+
 import pytest
 
 try:
+    from ...timber.timber import Timber
     from ...trivia.absTriviaQuestion import AbsTriviaQuestion
     from ...trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
     from ...trivia.triviaAnswerChecker import TriviaAnswerChecker
+    from ...trivia.triviaAnswerCompiler import TriviaAnswerCompiler
     from ...trivia.triviaDifficulty import TriviaDifficulty
+    from ...trivia.triviaSettingsRepository import TriviaSettingsRepository
     from ...trivia.triviaSource import TriviaSource
     from ...trivia.trueFalseTriviaQuestion import TrueFalseTriviaQuestion
 except:
+    from timber.timber import Timber
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
     from trivia.triviaAnswerChecker import TriviaAnswerChecker
+    from trivia.triviaAnswerCompiler import TriviaAnswerCompiler
     from trivia.triviaDifficulty import TriviaDifficulty
+    from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
     from trivia.trueFalseTriviaQuestion import TrueFalseTriviaQuestion
 
 
 class TestTriviaAnswerChecker():
 
-    triviaAnswerChecker: TriviaAnswerChecker = TriviaAnswerChecker()
+    eventLoop: AbstractEventLoop = asyncio.get_event_loop()
+    timber: Timber = Timber(
+        eventLoop = eventLoop
+    )
+    triviaAnswerCompiler: TriviaAnswerCompiler = TriviaAnswerCompiler()
+    triviaSettingsRepository: TriviaSettingsRepository = TriviaSettingsRepository()
+
+    triviaAnswerChecker: TriviaAnswerChecker = TriviaAnswerChecker(
+        timber = timber,
+        triviaAnswerCompiler = triviaAnswerCompiler,
+        triviaSettingsRepository = triviaSettingsRepository
+    )
 
     @pytest.mark.asyncio
     async def test_checkAnswer_withMultipleChoiceQuestionAndAnswerIsA(self):
