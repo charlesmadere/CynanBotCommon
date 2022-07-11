@@ -123,10 +123,10 @@ class TriviaAnswerCompiler():
                 raise BadTriviaAnswerException(f'numbers cannot be expanded properly in trivia answer (answer: {answer})')
             if not match.group(1):
                 # roman numerals
-                split[i] = await self.__getRomanNumeralSubstitutes(match.group(2), len(match.group(3) or '') > 1)
+                split[i] = await self.__getRomanNumeralSubstitutes(match.group(2))
             else:
                 # arabic numerals
-                split[i] = await self.__getArabicNumeralSubstitutes(match.group(1), len(match.group(3) or '') > 1)
+                split[i] = await self.__getArabicNumeralSubstitutes(match.group(1))
         return list(set(''.join(item) for item in utils.permuteSubArrays(split)))
 
     async def compileTextAnswerToMultipleChoiceOrdinal(self, answer: str) -> int:
@@ -138,18 +138,10 @@ class TriviaAnswerCompiler():
         # this converts the answer 'A' into 0, 'B' into 1, 'C' into 2, and so on...
         return ord(cleanedAnswer.upper()) % 65
 
-    async def __getArabicNumeralSubstitutes(self, arabicNumerals, isDefinitelyOrdinal=False):
+    async def __getArabicNumeralSubstitutes(self, arabicNumerals):
         individualDigits = ' '.join([num2words(int(digit)) for digit in arabicNumerals])
         n = int(arabicNumerals)
-        if isDefinitelyOrdinal:
-            # has ordinal suffix
-            return [
-                num2words(n, to='ordinal').replace('-', ' ').replace(',', ''),
-                'the ' + num2words(n, to='ordinal').replace('-', ' ').replace(',', ''),
-                individualDigits,
-            ]
-        else:
-            return [
+        return [
                 num2words(n, to='ordinal').replace('-', ' ').replace(',', ''),
                 'the ' + num2words(n, to='ordinal').replace('-', ' ').replace(',', ''),
                 num2words(n).replace('-', ' ').replace(',', ''),
@@ -157,20 +149,14 @@ class TriviaAnswerCompiler():
                 individualDigits,
             ]
 
-    async def __getRomanNumeralSubstitutes(self, romanNumerals, isDefinitelyOrdinal=False):
+    async def __getRomanNumeralSubstitutes(self, romanNumerals):
         n = roman.fromRoman(romanNumerals.upper())
-        if isDefinitelyOrdinal:
-            return [
-                num2words(n, to='ordinal').replace('-', ' ').replace(',', ''),
-                'the ' + num2words(n, to='ordinal').replace('-', ' ').replace(',', ''),
-            ]
-        else:
-            return [
-                num2words(n, to='ordinal').replace('-', ' ').replace(',', ''),
-                'the ' + num2words(n, to='ordinal').replace('-', ' ').replace(',', ''),
-                num2words(n).replace('-', ' ').replace(',', ''),
-                num2words(n, to='year').replace('-', ' ').replace(',', ''),
-            ]
+        return [
+            num2words(n, to='ordinal').replace('-', ' ').replace(',', ''),
+            'the ' + num2words(n, to='ordinal').replace('-', ' ').replace(',', ''),
+            num2words(n).replace('-', ' ').replace(',', ''),
+            num2words(n, to='year').replace('-', ' ').replace(',', ''),
+        ]
 
     # Returns all possibilities with parenthesized phrases both included and excluded
     async def __getParentheticalPossibilities(self, answer: str) -> List[str]:
