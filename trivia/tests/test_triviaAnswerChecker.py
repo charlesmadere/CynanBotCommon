@@ -189,7 +189,7 @@ class TestTriviaAnswerChecker():
         assert result is True
 
         result = await self.triviaAnswerChecker.checkAnswer('kurt vonnegut junior', question)
-        assert result is False
+        assert result is True
 
         result = await self.triviaAnswerChecker.checkAnswer('kurt voneguit', question)
         assert result is False
@@ -200,7 +200,7 @@ class TestTriviaAnswerChecker():
             correctAnswers=['(King) Richard III'],
             cleanedCorrectAnswers=['richard three', 'richard third', 'richard the third', 'king richard three', 'king richard third', 'king richard the third', ],
             category='Test Category',
-            question='That one weird author guy',
+            question='Shakespeare wrote a play about him once or something...',
             triviaId='abc123',
             triviaDifficulty=TriviaDifficulty.UNKNOWN,
             triviaSource=TriviaSource.J_SERVICE,

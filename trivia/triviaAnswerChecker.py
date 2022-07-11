@@ -82,7 +82,7 @@ class TriviaAnswerChecker():
             'into', 'through', 'during', 'before', 'after', 'above', 'below', 'to', 'from', 'up', 'down', 'in', 'out',
             'on', 'off', 'over', 'under', 'again', 'further', 'then', 'once', 'here', 'there', 'when', 'where', 'why',
             'how', 'all', 'any', 'both', 'each', 'few', 'more', 'most', 'some', 'such', 'no', 'nor', 'not', 'only',
-            'own', 'same', 'so', 'than', 'too', 'very', 's', 't', 'can', 'will', 'just', 'don', 'should', 'now',
+            'own', 'same', 'so', 'than', 'too', 'very', 'can', 'will', 'just', 'don', 'should', 'now',
         )
 
     async def checkAnswer(self, answer: str, triviaQuestion: AbsTriviaQuestion) -> bool:
@@ -158,43 +158,6 @@ class TriviaAnswerChecker():
                         if all(self.__compareWords(gWords[i], aWords[i]) for i in range(len(gWords))):
                             return True
 
-        # for cleanedCorrectAnswer in cleanedCorrectAnswers:
-        #     if cleanedAnswer == cleanedCorrectAnswer:
-        #         return True
-
-        #     cleanedAnswerLen: int = len(cleanedAnswer)
-        #     cleanedCorrectAnswerLen: int = len(cleanedCorrectAnswer)
-        #     rawThreshold: float = min(cleanedAnswerLen, cleanedCorrectAnswerLen) * levenshteinAnswerLengthsActivationThreshold
-        #     rawThresholdDecimal: float = rawThreshold % 1.0
-
-        #     threshold: int = 0
-        #     if rawThresholdDecimal > levenshteinAnswerLengthsRoundUpThreshold:
-        #         threshold = int(math.ceil(rawThreshold))
-        #     elif rawThresholdDecimal < levenshteinAnswerLengthsRoundUpThreshold:
-        #         threshold = int(math.floor(rawThreshold))
-        #     else:
-        #         threshold = int(round(rawThreshold))
-
-        #     threshold = int(min(threshold, maxLevenshteinDistance))
-        #     distance: int = self.__digitlessDistanceCheck(cleanedAnswer, cleanedCorrectAnswer, threshold)
-
-        #     if isDebugLoggingEnabled:
-        #         self.__timber.log('TriviaAnswerChecker', f'answer:\"{answer}\", cleanedAnswer:\"{cleanedAnswer}\", correctAnswers:\"{correctAnswers}\", cleanedCorrectAnswers:\"{cleanedCorrectAnswers}\", threshold:\"{threshold}\", distance:\"{distance}\", levenshteinAnswerLengthsActivationThreshold:\"{levenshteinAnswerLengthsActivationThreshold}\", maxLevenshteinDistance:\"{maxLevenshteinDistance}\"')
-
-        #     if distance <= threshold:
-        #         return True
-
-            # if isAdditionalPluralCheckingEnabled:
-            #     if cleanedCorrectAnswer.endswith('s'):
-            #         continue
-            #     elif cleanedCorrectAnswer.endswith('y'):
-            #         cleanedCorrectAnswer = f'{cleanedCorrectAnswer[0:len(cleanedCorrectAnswer) - 1]}ies'
-            #     else:
-            #         cleanedCorrectAnswer = f'{cleanedCorrectAnswer}s'
-
-            #     if cleanedAnswer == cleanedCorrectAnswer:
-            #         return True
-
         return False
 
     async def __checkAnswerTrueFalse(
@@ -216,17 +179,6 @@ class TriviaAnswerChecker():
 
         return answerBool in triviaQuestion.getCorrectAnswerBools()
 
-    def __digitlessDistanceCheck(self, guess, correctAnswer, threshold=-1):
-        guessParts = self.__digitPattern.split(guess)
-        answerParts = self.__digitPattern.split(correctAnswer)
-        guessWords = guessParts[::2]
-        guessNumbers = guessParts[1::2]
-        answerWords = answerParts[::2]
-        answerNumbers = answerParts[1::2]
-        if (guessNumbers != answerNumbers):
-            return 500  # Max message length, impossible to be correct answer.
-        return polyleven.levenshtein(''.join(guessWords), ''.join(answerWords), threshold)
-
     # generates all possible groupings of the given words such that the resulting word count is target_length
     # example: words = ["a", "b", "c", "d"], target_length = 2
     #          returns ["abc", "d"], ["ab", "cd"], ["a", "bcd"]
@@ -244,21 +196,19 @@ class TriviaAnswerChecker():
 
     # compare two individual words, returns minimal edit distance of all valid versions of each word
     def __compareWords(self, word1, word2):
-        for w1 in self.__genPluralPossibilities(word1):
-            for w2 in self.__genPluralPossibilities(word2):
+        for w1 in self.__genVariantPossibilities(word1):
+            for w2 in self.__genVariantPossibilities(word2):
                 threshold = math.floor(min(len(w1), len(w2)) / 7)  # calculate threshold based on min(len(w1), len(w2))
                 dist = polyleven.levenshtein(w1, w2, threshold + 1)
                 if dist <= threshold:
                     return True
         return False
 
-    def __genPluralPossibilities(self, word):
+    def __genVariantPossibilities(self, word):
         # don't preprocess stopwords
         if word in self.__stopwords:
             yield word
         else:
-            # TODO: return all variants of this word that we should consider valid (pluralization, etc.)
-            #   (number->word expansions etc should be done way earlier, not here)
             yield word
             # pluralizations
             if any(word.endswith(s) for s in ('ss', 'sh', 'ch', 'x', 'z', 's', 'o')):
@@ -281,3 +231,63 @@ class TriviaAnswerChecker():
                 yield self.__irregular_nouns[word]
             if word[-1] != 's':
                 yield word + 's'
+
+            # titles
+            if word == 'jr':
+                yield 'junior'
+            if word == 'sr':
+                yield 'senior'
+            if word == 'mr':
+                yield 'mister'
+            if word == 'ms':
+                yield 'mister'
+
+            # streets
+            if word == 'ave':
+                yield 'avenue'
+            if word == 'blvd':
+                yield 'boulevard'
+            if word in ('ct', 'crt'):
+                yield 'court'
+            if word == 'dr':
+                yield 'drive'
+                yield 'doctor'
+            if word == 'st':
+                yield 'street'
+                yield 'saint'
+            if word == 'rd':
+                yield 'road'
+            if word == 'pl':
+                yield 'place'
+            if word == 'sq':
+                yield 'square'
+            if word == 'stn':
+                yield 'station'
+
+            # directions
+            if word == 'n':
+                yield 'north'
+            if word == 's':
+                yield 'south'
+            if word == 'e':
+                yield 'east'
+            if word == 'w':
+                yield 'west'
+            if word == 'nw':
+                yield 'northwest'
+            if word == 'ne':
+                yield 'northeast'
+            if word == 'sw':
+                yield 'southwest'
+            if word == 'se':
+                yield 'southeast'
+
+            # other
+            if word == 'dept':
+                yield 'department'
+            if word == 'no':
+                yield 'number'
+            if word == 'vs':
+                yield 'versus'
+            if word == 'mt':
+                yield 'mount'
