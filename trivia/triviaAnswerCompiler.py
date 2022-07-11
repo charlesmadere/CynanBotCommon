@@ -29,31 +29,6 @@ class TriviaAnswerCompiler():
         # RegEx patterns for arabic and roman numerals, returning separate capturing groups for digits and ordinals
         self.__groupedNumeralRegEx = re.compile(r'\b(?:(\d+)|([IVXLCDM]+))(st|nd|rd|th)?\b', re.IGNORECASE)
 
-        self.__irregular_nouns = {
-            'child': 'children',
-            'goose': 'geese',
-            'man': 'men',
-            'woman': 'women',
-            'person': 'people',
-            'tooth': 'teeth',
-            'foot': 'feet',
-            'mouse': 'mice',
-            'die': 'dice',
-            'ox': 'oxen',
-            'index': 'indices',
-        }
-
-        self.stopwords = (
-            'i', 'me', 'my', 'myself', 'we', 'ourselves', 'you', 'he', 'him', 'his', 'she', 'they', 'them',  'what',
-            'which', 'who', 'whom', 'this', 'that', 'these', 'those', 'am', 'is', 'are', 'was', 'were', 'be', 'been',
-            'being', 'have', 'has', 'had', 'having', 'do', 'does', 'did', 'doing', 'a', 'an', 'the', 'and', 'but', 'if',
-            'or', 'because', 'as', 'until', 'while', 'of', 'at', 'by', 'for', 'with', 'about', 'against', 'between',
-            'into', 'through', 'during', 'before', 'after', 'above', 'below', 'to', 'from', 'up', 'down', 'in', 'out',
-            'on', 'off', 'over', 'under', 'again', 'further', 'then', 'once', 'here', 'there', 'when', 'where', 'why',
-            'how', 'all', 'any', 'both', 'each', 'few', 'more', 'most', 'some', 'such', 'no', 'nor', 'not', 'only',
-            'own', 'same', 'so', 'than', 'too', 'very', 's', 't', 'can', 'will', 'just', 'don', 'should', 'now',
-        )
-
     async def compileBoolAnswer(self, answer: str) -> str:
         cleanedAnswer = await self.compileTextAnswer(answer)
 
@@ -147,7 +122,7 @@ class TriviaAnswerCompiler():
             ]
 
     async def __getRomanNumeralSubstitutes(self, romanNumerals, isDefinitelyOrdinal=False):
-        n = roman.fromRoman(romanNumerals)
+        n = roman.fromRoman(romanNumerals.upper())
         if isDefinitelyOrdinal:
             return [
                 num2words(n, to='ordinal').replace('-', ' ').replace(',', ''),
@@ -160,48 +135,6 @@ class TriviaAnswerCompiler():
                 num2words(n).replace('-', ' ').replace(',', ''),
                 num2words(n, to='year').replace('-', ' ').replace(',', ''),
             ]
-
-    def __genPluralPossibilities(self, word: str) -> List[str]:
-        # don't preprocess stopwords
-        if word in self.stopwords:
-            yield word
-        else:
-            # TODO: return all variants of this word that we should consider valid (pluralization, etc.)
-            #   (number->word expansions etc should be done way earlier, not here)
-            yield word
-            # pluralizations
-            if any(word.endswith(s) for s in ('ss', 'sh', 'ch', 'x', 'z', 's', 'o')):
-                yield word+'es'
-            if word[-1] in 'sz':
-                yield word + word[-1] + 'es'
-            elif word.endswith('f'):
-                yield word[:-1] + 'ves'
-            elif word.endswith('fe'):
-                yield word[:-2] + 'ves'
-            elif word[-1] == 'y' and len(word) > 1 and word[-2] not in 'aeiou':
-                yield word[:-1] + 'ies'
-            elif word.endswith('us'):
-                yield word[:-2] + 'i'
-            elif word.endswith('is'):
-                yield word[:-2] + 'es'
-            elif word.endswith('on') or word.endswith('um'):
-                yield word[:-2] + 'a'
-            if word in self.__irregular_nouns:
-                yield self.__irregular_nouns[word]
-            if word[-1] != 's':
-                yield word + 's'
-
-    def __genMergedWords(self, words, target_length):
-        if len(words) <= target_length:
-            yield words
-        else:
-            for i in range(len(words) - 1):
-                # merge the ith and i+1th word
-                w = words[:]
-                p = w.pop(i+1)
-                w[i] += p
-                # recurse on the new merged set until target length is reached
-                yield from self.__mergeWords_generator(w, target_length)
 
     # Returns all possibilities with parenthesized phrases both included and excluded
     async def __getParentheticalPossibilities(self, answer: str) -> List[str]:

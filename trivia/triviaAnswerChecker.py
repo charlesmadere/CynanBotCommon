@@ -60,7 +60,30 @@ class TriviaAnswerChecker():
         self.__digitPattern = re.compile(r'(\d+)')
         self.__whitespacePattern = re.compile(r'\s\s+')
 
-        self.__maxEditDistance = 10000  # Larger than any Twitch chat message can be
+        self.__irregular_nouns = {
+            'child': 'children',
+            'goose': 'geese',
+            'man': 'men',
+            'woman': 'women',
+            'person': 'people',
+            'tooth': 'teeth',
+            'foot': 'feet',
+            'mouse': 'mice',
+            'die': 'dice',
+            'ox': 'oxen',
+            'index': 'indices',
+        }
+
+        self.__stopwords = (
+            'i', 'me', 'my', 'myself', 'we', 'ourselves', 'you', 'he', 'him', 'his', 'she', 'they', 'them',  'what',
+            'which', 'who', 'whom', 'this', 'that', 'these', 'those', 'am', 'is', 'are', 'was', 'were', 'be', 'been',
+            'being', 'have', 'has', 'had', 'having', 'do', 'does', 'did', 'doing', 'a', 'an', 'the', 'and', 'but', 'if',
+            'or', 'because', 'as', 'until', 'while', 'of', 'at', 'by', 'for', 'with', 'about', 'against', 'between',
+            'into', 'through', 'during', 'before', 'after', 'above', 'below', 'to', 'from', 'up', 'down', 'in', 'out',
+            'on', 'off', 'over', 'under', 'again', 'further', 'then', 'once', 'here', 'there', 'when', 'where', 'why',
+            'how', 'all', 'any', 'both', 'each', 'few', 'more', 'most', 'some', 'such', 'no', 'nor', 'not', 'only',
+            'own', 'same', 'so', 'than', 'too', 'very', 's', 't', 'can', 'will', 'just', 'don', 'should', 'now',
+        )
 
     async def checkAnswer(self, answer: str, triviaQuestion: AbsTriviaQuestion) -> bool:
         if triviaQuestion is None:
@@ -115,25 +138,25 @@ class TriviaAnswerChecker():
         correctAnswers = triviaQuestion.getCorrectAnswers()
         cleanedCorrectAnswers = triviaQuestion.getCleanedCorrectAnswers()
 
-        levenshteinAnswerLengthsActivationThreshold = await self.__triviaSettingsRepository.getLevenshteinAnswerLengthsActivationThreshold()
-        levenshteinAnswerLengthsRoundUpThreshold = await self.__triviaSettingsRepository.getLevenshteinAnswerLengthsRoundUpThreshold()
-        maxLevenshteinDistance = await self.__triviaSettingsRepository.getMaxLevenshteinDistance()
-        isAdditionalPluralCheckingEnabled = await self.__triviaSettingsRepository.isAdditionalPluralCheckingEnabled()
-        isDebugLoggingEnabled = await self.__triviaSettingsRepository.isDebugLoggingEnabled()
+        # levenshteinAnswerLengthsActivationThreshold = await self.__triviaSettingsRepository.getLevenshteinAnswerLengthsActivationThreshold()
+        # levenshteinAnswerLengthsRoundUpThreshold = await self.__triviaSettingsRepository.getLevenshteinAnswerLengthsRoundUpThreshold()
+        # maxLevenshteinDistance = await self.__triviaSettingsRepository.getMaxLevenshteinDistance()
+        # isAdditionalPluralCheckingEnabled = await self.__triviaSettingsRepository.isAdditionalPluralCheckingEnabled()
+        # isDebugLoggingEnabled = await self.__triviaSettingsRepository.isDebugLoggingEnabled()
 
         for cleanedCorrectAnswer in cleanedCorrectAnswers:
-            if cleanedAnswer == cleanedCorrectAnswer:
-                return True
-            guessWords = self.__whitespacePattern.sub(' ', cleanedAnswer).split(' ')
-            answerWords = self.__whitespacePattern.sub(' ', cleanedCorrectAnswer).split(' ')
+            for guess in await self.__triviaAnswerCompiler.expandNumerals(cleanedAnswer):
+                if guess == cleanedCorrectAnswer:
+                    return True
+                guessWords = self.__whitespacePattern.sub(' ', guess).split(' ')
+                answerWords = self.__whitespacePattern.sub(' ', cleanedCorrectAnswer).split(' ')
 
-            minWords = min(len(guessWords), len(answerWords))
+                minWords = min(len(guessWords), len(answerWords))
 
-            for gWords in self.__mergeWords(guessWords, minWords):
-                for aWords in self.__mergeWords(answerWords, minWords):
-                    if all(self.__compareWords(gWords[i], aWords[i]) for i in range(len(gWords))):
-                        return True
-            return False
+                for gWords in self.__mergeWords(guessWords, minWords):
+                    for aWords in self.__mergeWords(answerWords, minWords):
+                        if all(self.__compareWords(gWords[i], aWords[i]) for i in range(len(gWords))):
+                            return True
 
         # for cleanedCorrectAnswer in cleanedCorrectAnswers:
         #     if cleanedAnswer == cleanedCorrectAnswer:
@@ -221,11 +244,40 @@ class TriviaAnswerChecker():
 
     # compare two individual words, returns minimal edit distance of all valid versions of each word
     def __compareWords(self, word1, word2):
-        m = self.__maxEditDistance
-        for w1 in self.__triviaAnswerCompiler.__genPluralPossibilities(word1):
-            for w2 in self.__triviaAnswerCompiler.__genPluralPossibilities(word2):
-                threshold = math.floor(min(len(w1), len(w2)) / 6)  # calculate threshold based on`min(len(w1), len(w2))
+        for w1 in self.__genPluralPossibilities(word1):
+            for w2 in self.__genPluralPossibilities(word2):
+                threshold = math.floor(min(len(w1), len(w2)) / 7)  # calculate threshold based on min(len(w1), len(w2))
                 dist = polyleven.levenshtein(w1, w2, threshold + 1)
                 if dist <= threshold:
-                    return m
-        return m
+                    return True
+        return False
+
+    def __genPluralPossibilities(self, word):
+        # don't preprocess stopwords
+        if word in self.__stopwords:
+            yield word
+        else:
+            # TODO: return all variants of this word that we should consider valid (pluralization, etc.)
+            #   (number->word expansions etc should be done way earlier, not here)
+            yield word
+            # pluralizations
+            if any(word.endswith(s) for s in ('ss', 'sh', 'ch', 'x', 'z', 's', 'o')):
+                yield word+'es'
+            if word[-1] in 'sz':
+                yield word + word[-1] + 'es'
+            elif word.endswith('f'):
+                yield word[:-1] + 'ves'
+            elif word.endswith('fe'):
+                yield word[:-2] + 'ves'
+            elif word[-1] == 'y' and len(word) > 1 and word[-2] not in 'aeiou':
+                yield word[:-1] + 'ies'
+            elif word.endswith('us'):
+                yield word[:-2] + 'i'
+            elif word.endswith('is'):
+                yield word[:-2] + 'es'
+            elif word.endswith('on') or word.endswith('um'):
+                yield word[:-2] + 'a'
+            if word in self.__irregular_nouns:
+                yield self.__irregular_nouns[word]
+            if word[-1] != 's':
+                yield word + 's'
