@@ -1,7 +1,7 @@
 import re
 from typing import Dict, List, Pattern, Set, Generator
 import roman
-import num2words
+from num2words import num2words
 
 try:
     import CynanBotCommon.utils as utils
@@ -27,7 +27,7 @@ class TriviaAnswerCompiler():
         # RegEx pattern for arabic and roman numerals, returning only one capturing group
         self.__numeralRegEx = re.compile(r'\b(\d+(?:st|nd|rd|th)?|[IVXLCDM]+(?:st|nd|rd|th)?)\b', re.IGNORECASE)
         # RegEx patterns for arabic and roman numerals, returning separate capturing groups for digits and ordinals
-        self.__groupedNumeralRegEx = re.compile(r'\b(?:(\d+)|[IVXLCDM]+)(st|nd|rd|th)?\b', re.IGNORECASE)
+        self.__groupedNumeralRegEx = re.compile(r'\b(?:(\d+)|([IVXLCDM]+))(st|nd|rd|th)?\b', re.IGNORECASE)
 
         self.__irregular_nouns = {
             'child': 'children',
@@ -112,11 +112,11 @@ class TriviaAnswerCompiler():
                 raise BadTriviaAnswerException(f'numbers cannot be expanded properly in trivia answer (answer: {answer})')
             if not match.group(1):
                 # roman numerals
-                split[i] = self.__getRomanNumeralSubstitutes(match.group(2), len(match.group(3)) > 1)
+                split[i] = await self.__getRomanNumeralSubstitutes(match.group(2), len(match.group(3) or '') > 1)
             else:
                 # arabic numerals
-                split[i] = self.__getArabicNumeralSubstitutes(match.group(1), len(match.group(3)) > 1)
-        return (''.join(item) for item in utils.permuteSubArrays(split))
+                split[i] = await self.__getArabicNumeralSubstitutes(match.group(1), len(match.group(3) or '') > 1)
+        return list(set(''.join(item) for item in utils.permuteSubArrays(split)))
 
     async def compileTextAnswerToMultipleChoiceOrdinal(self, answer: str) -> int:
         cleanedAnswer = await self.compileTextAnswer(answer)
@@ -135,13 +135,15 @@ class TriviaAnswerCompiler():
             return [
                 num2words(n, to='ordinal').replace('-', ' ').replace(',', ''),
                 'the ' + num2words(n, to='ordinal').replace('-', ' ').replace(',', ''),
+                individualDigits,
             ]
         else:
             return [
                 num2words(n, to='ordinal').replace('-', ' ').replace(',', ''),
                 'the ' + num2words(n, to='ordinal').replace('-', ' ').replace(',', ''),
                 num2words(n).replace('-', ' ').replace(',', ''),
-                num2words(n, to='year').replace('-', ' ').replace(',', '')
+                num2words(n, to='year').replace('-', ' ').replace(',', ''),
+                individualDigits,
             ]
 
     async def __getRomanNumeralSubstitutes(self, romanNumerals, isDefinitelyOrdinal=False):

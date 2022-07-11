@@ -18,6 +18,8 @@ pytest = "*"
 websockets = "*"
 roman = "*"
 num2words = "*"
+pytest-asyncio = "*"
+flake8 = "*"
 
 [dev-packages]
 
