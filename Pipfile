@@ -16,6 +16,8 @@ polyleven = "*"
 aiofile = "*"
 pytest = "*"
 websockets = "*"
+roman = "*"
+num2words = "*"
 
 [dev-packages]
 

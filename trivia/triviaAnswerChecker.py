@@ -1,6 +1,9 @@
 import math
 import re
 import polyleven
+from num2words import num2words
+import roman
+
 
 try:
     import CynanBotCommon.utils as utils
@@ -55,6 +58,9 @@ class TriviaAnswerChecker():
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
 
         self.__digitPattern = re.compile(r'(\d+)')
+        self.__whitespacePattern = re.compile(r'\s\s+')
+
+        self.__maxEditDistance = 10000  # Larger than any Twitch chat message can be
 
     async def checkAnswer(self, answer: str, triviaQuestion: AbsTriviaQuestion) -> bool:
         if triviaQuestion is None:
@@ -118,39 +124,53 @@ class TriviaAnswerChecker():
         for cleanedCorrectAnswer in cleanedCorrectAnswers:
             if cleanedAnswer == cleanedCorrectAnswer:
                 return True
+            guessWords = self.__whitespacePattern.sub(' ', cleanedAnswer).split(' ')
+            answerWords = self.__whitespacePattern.sub(' ', cleanedCorrectAnswer).split(' ')
 
-            cleanedAnswerLen: int = len(cleanedAnswer)
-            cleanedCorrectAnswerLen: int = len(cleanedCorrectAnswer)
-            rawThreshold: float = min(cleanedAnswerLen, cleanedCorrectAnswerLen) * levenshteinAnswerLengthsActivationThreshold
-            rawThresholdDecimal: float = rawThreshold % 1.0
+            minWords = min(len(guessWords), len(answerWords))
 
-            threshold: int = 0
-            if rawThresholdDecimal > levenshteinAnswerLengthsRoundUpThreshold:
-                threshold = int(math.ceil(rawThreshold))
-            elif rawThresholdDecimal < levenshteinAnswerLengthsRoundUpThreshold:
-                threshold = int(math.floor(rawThreshold))
-            else:
-                threshold = int(round(rawThreshold))
+            for gWords in self.__mergeWords(guessWords, minWords):
+                for aWords in self.__mergeWords(answerWords, minWords):
+                    if all(self.__compareWords(gWords[i], aWords[i]) for i in range(len(gWords))):
+                        return True
+            return False
 
-            threshold = int(min(threshold, maxLevenshteinDistance))
-            distance: int = self.__digitlessDistanceCheck(cleanedAnswer, cleanedCorrectAnswer, threshold)
+        # for cleanedCorrectAnswer in cleanedCorrectAnswers:
+        #     if cleanedAnswer == cleanedCorrectAnswer:
+        #         return True
 
-            if isDebugLoggingEnabled:
-                self.__timber.log('TriviaAnswerChecker', f'answer:\"{answer}\", cleanedAnswer:\"{cleanedAnswer}\", correctAnswers:\"{correctAnswers}\", cleanedCorrectAnswers:\"{cleanedCorrectAnswers}\", threshold:\"{threshold}\", distance:\"{distance}\", levenshteinAnswerLengthsActivationThreshold:\"{levenshteinAnswerLengthsActivationThreshold}\", maxLevenshteinDistance:\"{maxLevenshteinDistance}\"')
+        #     cleanedAnswerLen: int = len(cleanedAnswer)
+        #     cleanedCorrectAnswerLen: int = len(cleanedCorrectAnswer)
+        #     rawThreshold: float = min(cleanedAnswerLen, cleanedCorrectAnswerLen) * levenshteinAnswerLengthsActivationThreshold
+        #     rawThresholdDecimal: float = rawThreshold % 1.0
 
-            if distance <= threshold:
-                return True
+        #     threshold: int = 0
+        #     if rawThresholdDecimal > levenshteinAnswerLengthsRoundUpThreshold:
+        #         threshold = int(math.ceil(rawThreshold))
+        #     elif rawThresholdDecimal < levenshteinAnswerLengthsRoundUpThreshold:
+        #         threshold = int(math.floor(rawThreshold))
+        #     else:
+        #         threshold = int(round(rawThreshold))
 
-            if isAdditionalPluralCheckingEnabled:
-                if cleanedCorrectAnswer.endswith('s'):
-                    continue
-                elif cleanedCorrectAnswer.endswith('y'):
-                    cleanedCorrectAnswer = f'{cleanedCorrectAnswer[0:len(cleanedCorrectAnswer) - 1]}ies'
-                else:
-                    cleanedCorrectAnswer = f'{cleanedCorrectAnswer}s'
+        #     threshold = int(min(threshold, maxLevenshteinDistance))
+        #     distance: int = self.__digitlessDistanceCheck(cleanedAnswer, cleanedCorrectAnswer, threshold)
 
-                if cleanedAnswer == cleanedCorrectAnswer:
-                    return True
+        #     if isDebugLoggingEnabled:
+        #         self.__timber.log('TriviaAnswerChecker', f'answer:\"{answer}\", cleanedAnswer:\"{cleanedAnswer}\", correctAnswers:\"{correctAnswers}\", cleanedCorrectAnswers:\"{cleanedCorrectAnswers}\", threshold:\"{threshold}\", distance:\"{distance}\", levenshteinAnswerLengthsActivationThreshold:\"{levenshteinAnswerLengthsActivationThreshold}\", maxLevenshteinDistance:\"{maxLevenshteinDistance}\"')
+
+        #     if distance <= threshold:
+        #         return True
+
+            # if isAdditionalPluralCheckingEnabled:
+            #     if cleanedCorrectAnswer.endswith('s'):
+            #         continue
+            #     elif cleanedCorrectAnswer.endswith('y'):
+            #         cleanedCorrectAnswer = f'{cleanedCorrectAnswer[0:len(cleanedCorrectAnswer) - 1]}ies'
+            #     else:
+            #         cleanedCorrectAnswer = f'{cleanedCorrectAnswer}s'
+
+            #     if cleanedAnswer == cleanedCorrectAnswer:
+            #         return True
 
         return False
 
@@ -183,3 +203,29 @@ class TriviaAnswerChecker():
         if (guessNumbers != answerNumbers):
             return 500  # Max message length, impossible to be correct answer.
         return polyleven.levenshtein(''.join(guessWords), ''.join(answerWords), threshold)
+
+    # generates all possible groupings of the given words such that the resulting word count is target_length
+    # example: words = ["a", "b", "c", "d"], target_length = 2
+    #          returns ["abc", "d"], ["ab", "cd"], ["a", "bcd"]
+    def __mergeWords(self, wordList, target_length):
+        if len(wordList) <= target_length:
+            yield wordList
+        else:
+            for i in range(len(wordList) - 1):
+                # merge the ith and i+1th word
+                w = wordList[:]
+                p = w.pop(i+1)
+                w[i] += p
+                # recurse on the new merged set until target length is reached
+                yield from self.__mergeWords(w, target_length)
+
+    # compare two individual words, returns minimal edit distance of all valid versions of each word
+    def __compareWords(self, word1, word2):
+        m = self.__maxEditDistance
+        for w1 in self.__triviaAnswerCompiler.__genPluralPossibilities(word1):
+            for w2 in self.__triviaAnswerCompiler.__genPluralPossibilities(word2):
+                threshold = math.floor(min(len(w1), len(w2)) / 6)  # calculate threshold based on`min(len(w1), len(w2))
+                dist = polyleven.levenshtein(w1, w2, threshold + 1)
+                if dist <= threshold:
+                    return m
+        return m

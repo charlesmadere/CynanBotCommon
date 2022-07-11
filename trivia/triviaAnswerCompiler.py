@@ -1,5 +1,7 @@
 import re
-from typing import Dict, List, Pattern, Set
+from typing import Dict, List, Pattern, Set, Generator
+import roman
+import num2words
 
 try:
     import CynanBotCommon.utils as utils
@@ -19,14 +21,38 @@ class TriviaAnswerCompiler():
         self.__parenGroupRegEx: Pattern = re.compile(r'(\(.*?\))', re.IGNORECASE)
         self.__phraseAnswerRegEx: Pattern = re.compile(r'[^A-Za-z0-9 ]|(?<=\s)\s+', re.IGNORECASE)
         self.__prefixRegEx: Pattern = re.compile(r'^(a|an|and|or|the)\s+', re.IGNORECASE)
-        self.__tagRemovalRegEx: Pattern = re.compile(r'<\/?\w+>', re.IGNORECASE)
+        self.__tagRemovalRegEx: Pattern = re.compile(r'[<\[]\/?\w+[>\]]', re.IGNORECASE)
         self.__whiteSpaceRegEx: Pattern = re.compile(r'\s\s*', re.IGNORECASE)
 
-        self.__numberToWordMap: Dict[str, str] = self.__createNumberToWordMap()
-        self.__wordToNumberMap: Dict[str, str] = self.__createWordToNumberMap()
+        # RegEx pattern for arabic and roman numerals, returning only one capturing group
+        self.__numeralRegEx = re.compile(r'\b(\d+(?:st|nd|rd|th)?|[IVXLCDM]+(?:st|nd|rd|th)?)\b', re.IGNORECASE)
+        # RegEx patterns for arabic and roman numerals, returning separate capturing groups for digits and ordinals
+        self.__groupedNumeralRegEx = re.compile(r'\b(?:(\d+)|[IVXLCDM]+)(st|nd|rd|th)?\b', re.IGNORECASE)
 
-        self.__ordinalToWordMap: Dict[str, str] = self.__createOrdinalToWordMap()
-        self.__wordToOrdinalMap: Dict[str, str] = self.__createWordToOrdinalMap()
+        self.__irregular_nouns = {
+            'child': 'children',
+            'goose': 'geese',
+            'man': 'men',
+            'woman': 'women',
+            'person': 'people',
+            'tooth': 'teeth',
+            'foot': 'feet',
+            'mouse': 'mice',
+            'die': 'dice',
+            'ox': 'oxen',
+            'index': 'indices',
+        }
+
+        self.stopwords = (
+            'i', 'me', 'my', 'myself', 'we', 'ourselves', 'you', 'he', 'him', 'his', 'she', 'they', 'them',  'what',
+            'which', 'who', 'whom', 'this', 'that', 'these', 'those', 'am', 'is', 'are', 'was', 'were', 'be', 'been',
+            'being', 'have', 'has', 'had', 'having', 'do', 'does', 'did', 'doing', 'a', 'an', 'the', 'and', 'but', 'if',
+            'or', 'because', 'as', 'until', 'while', 'of', 'at', 'by', 'for', 'with', 'about', 'against', 'between',
+            'into', 'through', 'during', 'before', 'after', 'above', 'below', 'to', 'from', 'up', 'down', 'in', 'out',
+            'on', 'off', 'over', 'under', 'again', 'further', 'then', 'once', 'here', 'there', 'when', 'where', 'why',
+            'how', 'all', 'any', 'both', 'each', 'few', 'more', 'most', 'some', 'such', 'no', 'nor', 'not', 'only',
+            'own', 'same', 'so', 'than', 'too', 'very', 's', 't', 'can', 'will', 'just', 'don', 'should', 'now',
+        )
 
     async def compileBoolAnswer(self, answer: str) -> str:
         cleanedAnswer = await self.compileTextAnswer(answer)
@@ -69,30 +95,28 @@ class TriviaAnswerCompiler():
             if not utils.isValidStr(answer):
                 continue
 
-            loweredAnswer = answer.lower()
+            possibilities = await self.__getParentheticalPossibilities(answer)
 
-            if loweredAnswer in self.__numberToWordMap:
-                cleanedAnswers.add(loweredAnswer)
-                cleanedAnswers.add(self.__numberToWordMap[loweredAnswer])
-            elif loweredAnswer in self.__wordToNumberMap:
-                cleanedAnswers.add(loweredAnswer)
-                cleanedAnswers.add(self.__wordToNumberMap[loweredAnswer])
-            elif loweredAnswer in self.__ordinalToWordMap:
-                cleanedAnswers.add(loweredAnswer)
-                cleanedAnswers.add(self.__ordinalToWordMap[loweredAnswer])
-            elif loweredAnswer in self.__wordToOrdinalMap:
-                cleanedAnswers.add(loweredAnswer)
-                cleanedAnswers.add(self.__wordToOrdinalMap[loweredAnswer])
+            for possibility in possibilities:
+                cleanedAnswer = await self.compileTextAnswer(possibility)
+                cleanedAnswers.add(cleanedAnswer)
+
+        return list(answer for answer in cleanedAnswers if utils.isValidStr(answer))
+
+    # returns text answers with all arabic and roman numerals expanded into possible full-word forms
+    async def expandNumerals(self, answer: str) -> Generator[List[str], None, None]:
+        split = self.__numeralRegEx.split(answer)
+        for i in range(1, len(split), 2):
+            match = self.__groupedNumeralRegEx.fullmatch(split[i])
+            if not match:
+                raise BadTriviaAnswerException(f'numbers cannot be expanded properly in trivia answer (answer: {answer})')
+            if not match.group(1):
+                # roman numerals
+                split[i] = self.__getRomanNumeralSubstitutes(match.group(2), len(match.group(3)) > 1)
             else:
-                possibilities = await self.__getPossibilities(answer)
-
-                for possibility in possibilities:
-                    cleanedAnswer = await self.compileTextAnswer(possibility)
-
-                    if utils.isValidStr(cleanedAnswer):
-                        cleanedAnswers.add(cleanedAnswer)
-
-        return list(cleanedAnswers)
+                # arabic numerals
+                split[i] = self.__getArabicNumeralSubstitutes(match.group(1), len(match.group(3)) > 1)
+        return (''.join(item) for item in utils.permuteSubArrays(split))
 
     async def compileTextAnswerToMultipleChoiceOrdinal(self, answer: str) -> int:
         cleanedAnswer = await self.compileTextAnswer(answer)
@@ -103,90 +127,82 @@ class TriviaAnswerCompiler():
         # this converts the answer 'A' into 0, 'B' into 1, 'C' into 2, and so on...
         return ord(cleanedAnswer.upper()) % 65
 
-    def __createNumberToWordMap(self) -> Dict[str, str]:
-        numbers: Dict[str, str] = dict()
-        numbers['0'] = 'zero'
-        numbers['1'] = 'one'
-        numbers['2'] = 'two'
-        numbers['3'] = 'three'
-        numbers['4'] = 'four'
-        numbers['5'] = 'five'
-        numbers['6'] = 'six'
-        numbers['7'] = 'seven'
-        numbers['8'] = 'eight'
-        numbers['9'] = 'nine'
-        numbers['10'] = 'ten'
-        numbers['11'] = 'eleven'
-        numbers['12'] = 'twelve'
-        numbers['13'] = 'thirteen'
-        numbers['14'] = 'fourteen'
-        numbers['15'] = 'fifteen'
-        numbers['16'] = 'sixteen'
-        numbers['17'] = 'seventeen'
-        numbers['18'] = 'eighteen'
-        numbers['19'] = 'nineteen'
-        numbers['20'] = 'twenty'
+    async def __getArabicNumeralSubstitutes(self, arabicNumerals, isDefinitelyOrdinal=False):
+        individualDigits = ' '.join([num2words(int(digit)) for digit in arabicNumerals])
+        n = int(arabicNumerals)
+        if isDefinitelyOrdinal:
+            # has ordinal suffix
+            return [
+                num2words(n, to='ordinal').replace('-', ' ').replace(',', ''),
+                'the ' + num2words(n, to='ordinal').replace('-', ' ').replace(',', ''),
+            ]
+        else:
+            return [
+                num2words(n, to='ordinal').replace('-', ' ').replace(',', ''),
+                'the ' + num2words(n, to='ordinal').replace('-', ' ').replace(',', ''),
+                num2words(n).replace('-', ' ').replace(',', ''),
+                num2words(n, to='year').replace('-', ' ').replace(',', '')
+            ]
 
-        return numbers
+    async def __getRomanNumeralSubstitutes(self, romanNumerals, isDefinitelyOrdinal=False):
+        n = roman.fromRoman(romanNumerals)
+        if isDefinitelyOrdinal:
+            return [
+                num2words(n, to='ordinal').replace('-', ' ').replace(',', ''),
+                'the ' + num2words(n, to='ordinal').replace('-', ' ').replace(',', ''),
+            ]
+        else:
+            return [
+                num2words(n, to='ordinal').replace('-', ' ').replace(',', ''),
+                'the ' + num2words(n, to='ordinal').replace('-', ' ').replace(',', ''),
+                num2words(n).replace('-', ' ').replace(',', ''),
+                num2words(n, to='year').replace('-', ' ').replace(',', ''),
+            ]
 
-    def __createOrdinalToWordMap(self) -> Dict[str, str]:
-        ordinals: Dict[str, str] = dict()
-        ordinals['first'] = '1st'
-        ordinals['second'] = '2nd'
-        ordinals['third'] = '3rd'
-        ordinals['fourth'] = '4th'
-        ordinals['fifth'] = '5th'
-        ordinals['sixth'] = '6th'
-        ordinals['seventh'] = '7th'
-        ordinals['eighth'] = '8th'
-        ordinals['ninth'] = '9th'
-        ordinals['tenth'] = '10th'
+    def __genPluralPossibilities(self, word: str) -> List[str]:
+        # don't preprocess stopwords
+        if word in self.stopwords:
+            yield word
+        else:
+            # TODO: return all variants of this word that we should consider valid (pluralization, etc.)
+            #   (number->word expansions etc should be done way earlier, not here)
+            yield word
+            # pluralizations
+            if any(word.endswith(s) for s in ('ss', 'sh', 'ch', 'x', 'z', 's', 'o')):
+                yield word+'es'
+            if word[-1] in 'sz':
+                yield word + word[-1] + 'es'
+            elif word.endswith('f'):
+                yield word[:-1] + 'ves'
+            elif word.endswith('fe'):
+                yield word[:-2] + 'ves'
+            elif word[-1] == 'y' and len(word) > 1 and word[-2] not in 'aeiou':
+                yield word[:-1] + 'ies'
+            elif word.endswith('us'):
+                yield word[:-2] + 'i'
+            elif word.endswith('is'):
+                yield word[:-2] + 'es'
+            elif word.endswith('on') or word.endswith('um'):
+                yield word[:-2] + 'a'
+            if word in self.__irregular_nouns:
+                yield self.__irregular_nouns[word]
+            if word[-1] != 's':
+                yield word + 's'
 
-        return ordinals
-
-    def __createWordToNumberMap(self) -> Dict[str, str]:
-        words: Dict[str, str] = dict()
-        words['zero'] = '0'
-        words['one'] = '1'
-        words['two'] = '2'
-        words['three'] = '3'
-        words['four'] = '4'
-        words['five'] = '5'
-        words['six'] = '6'
-        words['seven'] = '7'
-        words['eight'] = '8'
-        words['nine'] = '9'
-        words['ten'] = '10'
-        words['eleven'] = '11'
-        words['twelve'] = '12'
-        words['thirteen'] = '13'
-        words['fourteen'] = '14'
-        words['fifteen'] = '15'
-        words['sixteen'] = '16'
-        words['seventeen'] = '17'
-        words['eighteen'] = '18'
-        words['nineteen'] = '19'
-        words['twenty'] = '20'
-
-        return words
-
-    def __createWordToOrdinalMap(self) -> Dict[str, str]:
-        ordinals: Dict[str, str] = dict()
-        ordinals['1st'] = 'first'
-        ordinals['2nd'] = 'second'
-        ordinals['3rd'] = 'third'
-        ordinals['4th'] = 'fourth'
-        ordinals['5th'] = 'fifth'
-        ordinals['6th'] = 'sixth'
-        ordinals['7th'] = 'seventh'
-        ordinals['8th'] = 'eighth'
-        ordinals['9th'] = 'ninth'
-        ordinals['10th'] = 'tenth'
-
-        return ordinals
+    def __genMergedWords(self, words, target_length):
+        if len(words) <= target_length:
+            yield words
+        else:
+            for i in range(len(words) - 1):
+                # merge the ith and i+1th word
+                w = words[:]
+                p = w.pop(i+1)
+                w[i] += p
+                # recurse on the new merged set until target length is reached
+                yield from self.__mergeWords_generator(w, target_length)
 
     # Returns all possibilities with parenthesized phrases both included and excluded
-    async def __getPossibilities(self, answer: str) -> List[str]:
+    async def __getParentheticalPossibilities(self, answer: str) -> List[str]:
         # Split the uncleaned answer with this regex to find all parentheticals
         splitPossibilities = self.__parenGroupRegEx.split(answer)
 
