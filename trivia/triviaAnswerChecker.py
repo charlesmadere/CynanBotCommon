@@ -240,7 +240,9 @@ class TriviaAnswerChecker():
             if word == 'mr':
                 yield 'mister'
             if word == 'ms':
-                yield 'mister'
+                yield 'miss'
+            if word == 'mrs':
+                yield 'missus'
 
             # streets
             if word == 'ave':
