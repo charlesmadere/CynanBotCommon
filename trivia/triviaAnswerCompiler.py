@@ -1,5 +1,5 @@
 import re
-from typing import Dict, List, Pattern, Set, Generator, Any
+from typing import List, Pattern, Set
 import roman
 from num2words import num2words
 
