@@ -136,8 +136,6 @@ class TriviaAnswerChecker():
         correctAnswers = triviaQuestion.getCorrectAnswers()
         cleanedCorrectAnswers = triviaQuestion.getCleanedCorrectAnswers()
 
-        thresholdGrowthRate = await self.__triviaSettingsRepository.getLevenshteinThresholdGrowthRate()
-
         self.__timber.log('TriviaAnswerChecker', f'answer:\"{answer}\", cleanedAnswers:\"{cleanedAnswers}\", correctAnswers:\"{correctAnswers}\", cleanedCorrectAnswers:\"{cleanedCorrectAnswers}\"')
 
         for cleanedCorrectAnswer in cleanedCorrectAnswers:
@@ -152,12 +150,14 @@ class TriviaAnswerChecker():
 
                     for gWords in self.__mergeWords(guessWords, minWords):
                         for aWords in self.__mergeWords(answerWords, minWords):
-                            if all(
-                                self.__compareWords(
-                                    gWords[i],
-                                    aWords[i],
-                                    thresholdGrowthRate
-                                ) for i in range(len(gWords))):
+                            # This expansion of all() is required because you can't perform list comprehension on async
+                            #   generators yet. :(
+                            valid = True
+                            for i in range(len(gWords)):
+                                if not await self.__compareWords(gWords[i], aWords[i]):
+                                    valid = False
+                                    break
+                            if valid:
                                 return True
 
         return False
@@ -197,7 +197,8 @@ class TriviaAnswerChecker():
                 yield from self.__mergeWords(w, target_length)
 
     # compare two individual words, returns true if any valid variants match between the two words
-    def __compareWords(self, word1: str, word2: str, thresholdGrowthRate: int) -> bool:
+    async def __compareWords(self, word1: str, word2: str) -> bool:
+        thresholdGrowthRate = await self.__triviaSettingsRepository.getLevenshteinThresholdGrowthRate()
         for w1 in self.__genVariantPossibilities(word1):
             for w2 in self.__genVariantPossibilities(word2):
                 # calculate threshold based on shorter word length
