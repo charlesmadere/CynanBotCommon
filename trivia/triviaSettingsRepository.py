@@ -1,5 +1,5 @@
 import json
-from typing import Dict
+from typing import Dict, Any, Union
 
 import aiofiles
 import aiofiles.ospath
@@ -23,6 +23,11 @@ class TriviaSettingsRepository():
             raise ValueError(f'settingsFile argument is malformed: \"{settingsFile}\"')
 
         self.__settingsFile: str = settingsFile
+
+        self.__settingsCache: Union[Dict[Any], None] = None
+
+    async def clearCachedSettings(self):
+        self.__settingsCache = None
 
     async def getAvailableTriviaSourcesAndWeights(self) -> Dict[TriviaSource, int]:
         jsonContents = await self.__readJson()
@@ -115,6 +120,8 @@ class TriviaSettingsRepository():
         return utils.getBoolFromDict(jsonContents, 'debug_logging_enabled', False)
 
     async def __readJson(self) -> Dict[str, object]:
+        if self.__settingsCache:
+            return self.__settingsCache
         if not await aiofiles.ospath.exists(self.__settingsFile):
             raise FileNotFoundError(f'Trivia settings file not found: \"{self.__settingsFile}\"')
 
@@ -127,4 +134,5 @@ class TriviaSettingsRepository():
         elif len(jsonContents) == 0:
             raise ValueError(f'JSON contents of trivia settings file \"{self.__settingsFile}\" is empty')
 
+        self.__settingsCache = jsonContents
         return jsonContents
