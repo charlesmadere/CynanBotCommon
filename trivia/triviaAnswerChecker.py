@@ -137,12 +137,6 @@ class TriviaAnswerChecker():
 
         self.__timber.log('TriviaAnswerChecker', f'answer:\"{answer}\", cleanedAnswers:\"{cleanedAnswers}\", correctAnswers:\"{correctAnswers}\", cleanedCorrectAnswers:\"{cleanedCorrectAnswers}\"')
 
-        # levenshteinAnswerLengthsActivationThreshold = await self.__triviaSettingsRepository.getLevenshteinAnswerLengthsActivationThreshold()
-        # levenshteinAnswerLengthsRoundUpThreshold = await self.__triviaSettingsRepository.getLevenshteinAnswerLengthsRoundUpThreshold()
-        # maxLevenshteinDistance = await self.__triviaSettingsRepository.getMaxLevenshteinDistance()
-        # isAdditionalPluralCheckingEnabled = await self.__triviaSettingsRepository.isAdditionalPluralCheckingEnabled()
-        # isDebugLoggingEnabled = await self.__triviaSettingsRepository.isDebugLoggingEnabled()
-
         for cleanedCorrectAnswer in cleanedCorrectAnswers:
             for cleanedAnswer in cleanedAnswers:
                 for guess in await self.__triviaAnswerCompiler.expandNumerals(cleanedAnswer):
