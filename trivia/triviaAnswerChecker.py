@@ -1,6 +1,7 @@
 import math
 import re
 import polyleven
+from typing import List, Generator
 
 try:
     import CynanBotCommon.utils as utils
@@ -55,6 +56,32 @@ class TriviaAnswerChecker():
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
 
         self.__digitPattern = re.compile(r'(\d+)')
+        self.__whitespacePattern = re.compile(r'\s\s+')
+
+        self.__irregular_nouns = {
+            'child': 'children',
+            'goose': 'geese',
+            'man': 'men',
+            'woman': 'women',
+            'person': 'people',
+            'tooth': 'teeth',
+            'foot': 'feet',
+            'mouse': 'mice',
+            'die': 'dice',
+            'ox': 'oxen',
+            'index': 'indices',
+        }
+
+        self.__stopwords = (
+            'i', 'me', 'my', 'myself', 'we', 'ourselves', 'you', 'he', 'him', 'his', 'she', 'they', 'them',  'what',
+            'which', 'who', 'whom', 'this', 'that', 'these', 'those', 'am', 'is', 'are', 'was', 'were', 'be', 'been',
+            'being', 'have', 'has', 'had', 'having', 'do', 'does', 'did', 'doing', 'a', 'an', 'the', 'and', 'but', 'if',
+            'or', 'because', 'as', 'until', 'while', 'of', 'at', 'by', 'for', 'with', 'about', 'against', 'between',
+            'into', 'through', 'during', 'before', 'after', 'above', 'below', 'to', 'from', 'up', 'down', 'in', 'out',
+            'on', 'off', 'over', 'under', 'again', 'further', 'then', 'once', 'here', 'there', 'when', 'where', 'why',
+            'how', 'all', 'any', 'both', 'each', 'few', 'more', 'most', 'some', 'such', 'nor', 'not', 'only',
+            'own', 'same', 'so', 'than', 'too', 'very', 'can', 'will', 'just', 'dont', 'should', 'now',
+        )
 
     async def checkAnswer(self, answer: str, triviaQuestion: AbsTriviaQuestion) -> bool:
         if triviaQuestion is None:
@@ -101,56 +128,37 @@ class TriviaAnswerChecker():
         elif triviaQuestion.getTriviaType() is not TriviaType.QUESTION_ANSWER:
             raise RuntimeError(f'TriviaType is not {TriviaType.QUESTION_ANSWER}: \"{triviaQuestion.getTriviaType()}\"')
 
-        cleanedAnswer = await self.__triviaAnswerCompiler.compileTextAnswer(answer)
+        cleanedAnswers = await self.__triviaAnswerCompiler.compileTextAnswersList([answer], False)
 
-        if not utils.isValidStr(cleanedAnswer):
+        if not all(utils.isValidStr(cleanedAnswer) for cleanedAnswer in cleanedAnswers):
             return False
 
         correctAnswers = triviaQuestion.getCorrectAnswers()
         cleanedCorrectAnswers = triviaQuestion.getCleanedCorrectAnswers()
 
-        levenshteinAnswerLengthsActivationThreshold = await self.__triviaSettingsRepository.getLevenshteinAnswerLengthsActivationThreshold()
-        levenshteinAnswerLengthsRoundUpThreshold = await self.__triviaSettingsRepository.getLevenshteinAnswerLengthsRoundUpThreshold()
-        maxLevenshteinDistance = await self.__triviaSettingsRepository.getMaxLevenshteinDistance()
-        isAdditionalPluralCheckingEnabled = await self.__triviaSettingsRepository.isAdditionalPluralCheckingEnabled()
-        isDebugLoggingEnabled = await self.__triviaSettingsRepository.isDebugLoggingEnabled()
+        thresholdGrowthRate = await self.__triviaSettingsRepository.getLevenshteinThresholdGrowthRate()
+
+        self.__timber.log('TriviaAnswerChecker', f'answer:\"{answer}\", cleanedAnswers:\"{cleanedAnswers}\", correctAnswers:\"{correctAnswers}\", cleanedCorrectAnswers:\"{cleanedCorrectAnswers}\"')
 
         for cleanedCorrectAnswer in cleanedCorrectAnswers:
-            if cleanedAnswer == cleanedCorrectAnswer:
-                return True
+            for cleanedAnswer in cleanedAnswers:
+                for guess in await self.__triviaAnswerCompiler.expandNumerals(cleanedAnswer):
+                    if guess == cleanedCorrectAnswer:
+                        return True
+                    guessWords = self.__whitespacePattern.sub(' ', guess).split(' ')
+                    answerWords = self.__whitespacePattern.sub(' ', cleanedCorrectAnswer).split(' ')
 
-            cleanedAnswerLen: int = len(cleanedAnswer)
-            cleanedCorrectAnswerLen: int = len(cleanedCorrectAnswer)
-            rawThreshold: float = min(cleanedAnswerLen, cleanedCorrectAnswerLen) * levenshteinAnswerLengthsActivationThreshold
-            rawThresholdDecimal: float = rawThreshold % 1.0
+                    minWords = min(len(guessWords), len(answerWords))
 
-            threshold: int = 0
-            if rawThresholdDecimal > levenshteinAnswerLengthsRoundUpThreshold:
-                threshold = int(math.ceil(rawThreshold))
-            elif rawThresholdDecimal < levenshteinAnswerLengthsRoundUpThreshold:
-                threshold = int(math.floor(rawThreshold))
-            else:
-                threshold = int(round(rawThreshold))
-
-            threshold = int(min(threshold, maxLevenshteinDistance))
-            distance: int = self.__digitlessDistanceCheck(cleanedAnswer, cleanedCorrectAnswer, threshold)
-
-            if isDebugLoggingEnabled:
-                self.__timber.log('TriviaAnswerChecker', f'answer:\"{answer}\", cleanedAnswer:\"{cleanedAnswer}\", correctAnswers:\"{correctAnswers}\", cleanedCorrectAnswers:\"{cleanedCorrectAnswers}\", threshold:\"{threshold}\", distance:\"{distance}\", levenshteinAnswerLengthsActivationThreshold:\"{levenshteinAnswerLengthsActivationThreshold}\", maxLevenshteinDistance:\"{maxLevenshteinDistance}\"')
-
-            if distance <= threshold:
-                return True
-
-            if isAdditionalPluralCheckingEnabled:
-                if cleanedCorrectAnswer.endswith('s'):
-                    continue
-                elif cleanedCorrectAnswer.endswith('y'):
-                    cleanedCorrectAnswer = f'{cleanedCorrectAnswer[0:len(cleanedCorrectAnswer) - 1]}ies'
-                else:
-                    cleanedCorrectAnswer = f'{cleanedCorrectAnswer}s'
-
-                if cleanedAnswer == cleanedCorrectAnswer:
-                    return True
+                    for gWords in self.__mergeWords(guessWords, minWords):
+                        for aWords in self.__mergeWords(answerWords, minWords):
+                            if all(
+                                self.__compareWords(
+                                    gWords[i],
+                                    aWords[i],
+                                    thresholdGrowthRate
+                                ) for i in range(len(gWords))):
+                                return True
 
         return False
 
@@ -173,13 +181,118 @@ class TriviaAnswerChecker():
 
         return answerBool in triviaQuestion.getCorrectAnswerBools()
 
-    def __digitlessDistanceCheck(self, guess, correctAnswer, threshold=-1):
-        guessParts = self.__digitPattern.split(guess)
-        answerParts = self.__digitPattern.split(correctAnswer)
-        guessWords = guessParts[::2]
-        guessNumbers = guessParts[1::2]
-        answerWords = answerParts[::2]
-        answerNumbers = answerParts[1::2]
-        if (guessNumbers != answerNumbers):
-            return 500  # Max message length, impossible to be correct answer.
-        return polyleven.levenshtein(''.join(guessWords), ''.join(answerWords), threshold)
+    # generates all possible groupings of the given words such that the resulting word count is target_length
+    # example: words = ["a", "b", "c", "d"], target_length = 2
+    #          generates ["abc", "d"], ["ab", "cd"], ["a", "bcd"]
+    def __mergeWords(self, wordList: List[str], target_length: int) -> Generator[List[str], None, None]:
+        if len(wordList) <= target_length:
+            yield wordList
+        else:
+            for i in range(len(wordList) - 1):
+                # merge the ith and i+1th word
+                w = wordList[:]
+                p = w.pop(i+1)
+                w[i] += p
+                # recurse on the new merged set until target length is reached
+                yield from self.__mergeWords(w, target_length)
+
+    # compare two individual words, returns true if any valid variants match between the two words
+    def __compareWords(self, word1: str, word2: str, thresholdGrowthRate: int) -> bool:
+        for w1 in self.__genVariantPossibilities(word1):
+            for w2 in self.__genVariantPossibilities(word2):
+                # calculate threshold based on shorter word length
+                threshold = math.floor(min(len(w1), len(w2)) / thresholdGrowthRate)
+                dist = polyleven.levenshtein(w1, w2, threshold + 1)
+                if dist <= threshold:
+                    return True
+        return False
+
+    def __genVariantPossibilities(self, word: str) -> Generator[str, None, None]:
+        # don't preprocess stopwords
+        if word in self.__stopwords:
+            yield word
+        else:
+            yield word
+            # pluralizations
+            if any(word.endswith(s) for s in ('ss', 'sh', 'ch', 'x', 'z', 's', 'o')):
+                yield word+'es'
+            if word[-1] in 'sz':
+                yield word + word[-1] + 'es'
+            elif word.endswith('f'):
+                yield word[:-1] + 'ves'
+            elif word.endswith('fe'):
+                yield word[:-2] + 'ves'
+            elif word[-1] == 'y' and len(word) > 1 and word[-2] not in 'aeiou':
+                yield word[:-1] + 'ies'
+            elif word.endswith('us'):
+                yield word[:-2] + 'i'
+            elif word.endswith('is'):
+                yield word[:-2] + 'es'
+            elif word.endswith('on') or word.endswith('um'):
+                yield word[:-2] + 'a'
+            if word in self.__irregular_nouns:
+                yield self.__irregular_nouns[word]
+            if word[-1] != 's':
+                yield word + 's'
+
+            # titles
+            if word == 'jr':
+                yield 'junior'
+            if word == 'sr':
+                yield 'senior'
+            if word == 'mr':
+                yield 'mister'
+            if word == 'ms':
+                yield 'miss'
+            if word == 'mrs':
+                yield 'missus'
+
+            # streets
+            if word == 'ave':
+                yield 'avenue'
+            if word == 'blvd':
+                yield 'boulevard'
+            if word in ('ct', 'crt'):
+                yield 'court'
+            if word == 'dr':
+                yield 'drive'
+                yield 'doctor'
+            if word == 'st':
+                yield 'street'
+                yield 'saint'
+            if word == 'rd':
+                yield 'road'
+            if word == 'pl':
+                yield 'place'
+            if word == 'sq':
+                yield 'square'
+            if word == 'stn':
+                yield 'station'
+
+            # directions
+            if word == 'n':
+                yield 'north'
+            if word == 's':
+                yield 'south'
+            if word == 'e':
+                yield 'east'
+            if word == 'w':
+                yield 'west'
+            if word == 'nw':
+                yield 'northwest'
+            if word == 'ne':
+                yield 'northeast'
+            if word == 'sw':
+                yield 'southwest'
+            if word == 'se':
+                yield 'southeast'
+
+            # other
+            if word == 'dept':
+                yield 'department'
+            if word == 'no':
+                yield 'number'
+            if word == 'vs':
+                yield 'versus'
+            if word == 'mt':
+                yield 'mount'

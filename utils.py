@@ -4,7 +4,7 @@ import random
 import re
 from datetime import datetime
 from numbers import Number
-from typing import Dict, List, Pattern
+from typing import Dict, List, Pattern, Any, Generator
 from urllib.parse import urlparse
 
 
@@ -333,3 +333,18 @@ def strsToBools(l: List[str]) -> List[bool]:
         newList.append(strToBool(s))
 
     return newList
+
+def permuteSubArrays(array: List[Any], pos=0) -> Generator[List[Any], None, None]:
+    if pos >= len(array):
+        yield []
+    elif all(not isinstance(item, list) for item in array):
+        for item in array:
+            yield [item]
+    else:
+        if isinstance(array[pos], list):
+            for subArray in permuteSubArrays(array[pos]):
+                for nextSubArray in permuteSubArrays(array, pos + 1):
+                    yield subArray + list(nextSubArray)
+        else:
+            for subArray in permuteSubArrays(array, pos + 1):
+                yield [array[pos]] + list(subArray)
