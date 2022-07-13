@@ -52,21 +52,13 @@ class TriviaSettingsRepository():
 
         return triviaSources
 
-    async def getLevenshteinAnswerLengthsActivationThreshold(self) -> float:
+    async def getLevenshteinThresholdGrowthRate(self) -> int:
         jsonContents = await self.__readJson()
-        return utils.getFloatFromDict(jsonContents, 'levenshtein_answer_lengths_activation_threshold', 0.20)
-
-    async def getLevenshteinAnswerLengthsRoundUpThreshold(self) -> float:
-        jsonContents = await self.__readJson()
-        return utils.getFloatFromDict(jsonContents, 'levenshtein_answer_lengths_round_up_threshold', 0.75)
+        return utils.getIntFromDict(jsonContents, 'levenshtein_threshold_growth_rate', 7)
 
     async def getMaxAnswerLength(self) -> int:
         jsonContents = await self.__readJson()
         return utils.getIntFromDict(jsonContents, 'max_answer_length', 80)
-
-    async def getMaxLevenshteinDistance(self) -> int:
-        jsonContents = await self.__readJson()
-        return utils.getIntFromDict(jsonContents, 'max_levenshtein_distance', 1)
 
     async def getMaxMultipleChoiceResponses(self) -> int:
         jsonContents = await self.__readJson()

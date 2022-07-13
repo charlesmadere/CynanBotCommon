@@ -135,6 +135,8 @@ class TriviaAnswerChecker():
         correctAnswers = triviaQuestion.getCorrectAnswers()
         cleanedCorrectAnswers = triviaQuestion.getCleanedCorrectAnswers()
 
+        thresholdGrowthRate = await self.__triviaSettingsRepository.getLevenshteinThresholdGrowthRate()
+
         self.__timber.log('TriviaAnswerChecker', f'answer:\"{answer}\", cleanedAnswers:\"{cleanedAnswers}\", correctAnswers:\"{correctAnswers}\", cleanedCorrectAnswers:\"{cleanedCorrectAnswers}\"')
 
         for cleanedCorrectAnswer in cleanedCorrectAnswers:
@@ -149,7 +151,12 @@ class TriviaAnswerChecker():
 
                     for gWords in self.__mergeWords(guessWords, minWords):
                         for aWords in self.__mergeWords(answerWords, minWords):
-                            if all(self.__compareWords(gWords[i], aWords[i]) for i in range(len(gWords))):
+                            if all(
+                                self.__compareWords(
+                                    gWords[i],
+                                    aWords[i],
+                                    thresholdGrowthRate
+                                ) for i in range(len(gWords))):
                                 return True
 
         return False
@@ -189,11 +196,11 @@ class TriviaAnswerChecker():
                 yield from self.__mergeWords(w, target_length)
 
     # compare two individual words, returns minimal edit distance of all valid versions of each word
-    def __compareWords(self, word1, word2):
+    def __compareWords(self, word1, word2, thresholdGrowthRate):
         for w1 in self.__genVariantPossibilities(word1):
             for w2 in self.__genVariantPossibilities(word2):
-                # TODO: Make this 7 a setting
-                threshold = math.floor(min(len(w1), len(w2)) / 7)  # calculate threshold based on shorter word length
+                # calculate threshold based on shorter word length
+                threshold = math.floor(min(len(w1), len(w2)) / thresholdGrowthRate)
                 dist = polyleven.levenshtein(w1, w2, threshold + 1)
                 if dist <= threshold:
                     return True
