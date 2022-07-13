@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Generator
 
 import pytest
 
@@ -266,37 +266,69 @@ class TestTriviaAnswerCompiler():
     async def test_compileTextAnswersList_withNumberWord(self):
         result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ 'three' ])
         assert result is not None
-        assert len(result) == 2
+        assert len(result) == 1
         assert 'three' in result
-        assert '3' in result
 
     @pytest.mark.asyncio
     async def test_compileTextAnswersList_withNumberWords(self):
         result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ 'one', 'two' ])
         assert result is not None
-        assert len(result) == 4
+        assert len(result) == 2
         assert 'one' in result
-        assert '1' in result
         assert 'two' in result
-        assert '2' in result
 
     @pytest.mark.asyncio
     async def test_compileTextAnswersList_withOrdinalWord(self):
         result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ 'third' ])
         assert result is not None
-        assert len(result) == 2
+        assert len(result) == 1
         assert 'third' in result
-        assert '3rd' in result
 
     @pytest.mark.asyncio
     async def test_compileTextAnswersList_withOrdinalWords(self):
         result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ 'first', 'second' ])
         assert result is not None
-        assert len(result) == 4
+        assert len(result) == 2
         assert 'first' in result
-        assert '1st' in result
         assert 'second' in result
-        assert '2nd' in result
+
+    @pytest.mark.asyncio
+    async def test_compileTextAnswersList_withHash(self):
+        result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ 'mambo #5' ])
+        assert result is not None
+        assert len(result) == 2
+        assert 'mambo number 5' in result
+        assert 'mambo 5' in result
+
+    @pytest.mark.asyncio
+    async def test_expandNumerals_withSimpleDigit(self):
+        result: List[str] = await self.triviaAnswerCompiler.expandNumerals('3')
+        assert result is not None
+        assert len(result) == 3
+        assert 'three' in result  # cardinal, year, individual digits
+        assert 'third' in result  # ordinal
+        assert 'the third' in result  # ordinal preceded by 'the'
+
+    @pytest.mark.asyncio
+    async def test_expandNumerals_withYear(self):
+        result: List[str] = await self.triviaAnswerCompiler.expandNumerals('1234')
+        assert result is not None
+        assert len(result) == 5
+        assert 'one thousand two hundred and thirty four' in result  # cardinal
+        assert 'one thousand two hundred and thirty fourth' in result  # ordinal
+        assert 'the one thousand two hundred and thirty fourth' in result  # ordinal preceded by 'the'
+        assert 'twelve thirty four' in result  # year
+        assert 'one two three four' in result  # individual digits
+
+    @pytest.mark.asyncio
+    async def test_expandNumerals_withRomanNumerals(self):
+        result: List[str] = await self.triviaAnswerCompiler.expandNumerals('XIV')
+        assert result is not None
+        assert len(result) == 4
+        assert 'fourteen' in result  # cardinal, year
+        assert 'fourteenth' in result  # ordinal
+        assert 'the fourteenth' in result  # ordinal preceded by 'the'
+        assert 'xiv' in result
 
     def test_sanity(self):
         assert self.triviaAnswerCompiler is not None

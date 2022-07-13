@@ -119,9 +119,13 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
             cleanedCorrectAnswers = await self.__triviaAnswerCompiler.compileTextAnswersList(correctAnswers)
 
+            expandedCorrectAnswers = []
+            for answer in cleanedCorrectAnswers:
+                expandedCorrectAnswers.extend(await self.__triviaAnswerCompiler.expandNumerals(answer))
+
             return QuestionAnswerTriviaQuestion(
                 correctAnswers = correctAnswers,
-                cleanedCorrectAnswers = cleanedCorrectAnswers,
+                cleanedCorrectAnswers = expandedCorrectAnswers,
                 category = category,
                 question = question,
                 triviaId = triviaId,
