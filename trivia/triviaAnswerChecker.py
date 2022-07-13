@@ -1,6 +1,7 @@
 import math
 import re
 import polyleven
+from typing import List, Generator
 
 try:
     import CynanBotCommon.utils as utils
@@ -182,8 +183,8 @@ class TriviaAnswerChecker():
 
     # generates all possible groupings of the given words such that the resulting word count is target_length
     # example: words = ["a", "b", "c", "d"], target_length = 2
-    #          returns ["abc", "d"], ["ab", "cd"], ["a", "bcd"]
-    def __mergeWords(self, wordList, target_length):
+    #          generates ["abc", "d"], ["ab", "cd"], ["a", "bcd"]
+    def __mergeWords(self, wordList: List[str], target_length: int) -> Generator[List[str], None, None]:
         if len(wordList) <= target_length:
             yield wordList
         else:
@@ -195,8 +196,8 @@ class TriviaAnswerChecker():
                 # recurse on the new merged set until target length is reached
                 yield from self.__mergeWords(w, target_length)
 
-    # compare two individual words, returns minimal edit distance of all valid versions of each word
-    def __compareWords(self, word1, word2, thresholdGrowthRate):
+    # compare two individual words, returns true if any valid variants match between the two words
+    def __compareWords(self, word1: str, word2: str, thresholdGrowthRate: int) -> bool:
         for w1 in self.__genVariantPossibilities(word1):
             for w2 in self.__genVariantPossibilities(word2):
                 # calculate threshold based on shorter word length
@@ -206,7 +207,7 @@ class TriviaAnswerChecker():
                     return True
         return False
 
-    def __genVariantPossibilities(self, word):
+    def __genVariantPossibilities(self, word: str) -> Generator[str, None, None]:
         # don't preprocess stopwords
         if word in self.__stopwords:
             yield word

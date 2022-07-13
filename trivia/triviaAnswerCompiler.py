@@ -163,7 +163,7 @@ class TriviaAnswerCompiler():
         # this converts the answer 'A' into 0, 'B' into 1, 'C' into 2, and so on...
         return ord(cleanedAnswer.upper()) % 65
 
-    async def __getArabicNumeralSubstitutes(self, arabicNumerals):
+    async def __getArabicNumeralSubstitutes(self, arabicNumerals: str) -> List[str]:
         individualDigits = ' '.join([num2words(int(digit)) for digit in arabicNumerals])
         n = int(arabicNumerals)
         return [
@@ -174,7 +174,7 @@ class TriviaAnswerCompiler():
                 individualDigits,
             ]
 
-    async def __getRomanNumeralSubstitutes(self, romanNumerals):
+    async def __getRomanNumeralSubstitutes(self, romanNumerals: str) -> List[str]:
         n = roman.fromRoman(romanNumerals.upper())
         return [
             romanNumerals.lower(),
