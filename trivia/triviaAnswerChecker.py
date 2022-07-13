@@ -128,12 +128,14 @@ class TriviaAnswerChecker():
             raise RuntimeError(f'TriviaType is not {TriviaType.QUESTION_ANSWER}: \"{triviaQuestion.getTriviaType()}\"')
 
         cleanedAnswers = await self.__triviaAnswerCompiler.compileTextAnswersList([answer], False)
-        print(f'cleaned={cleanedAnswers}')
+
         if not all(utils.isValidStr(cleanedAnswer) for cleanedAnswer in cleanedAnswers):
             return False
 
         correctAnswers = triviaQuestion.getCorrectAnswers()
         cleanedCorrectAnswers = triviaQuestion.getCleanedCorrectAnswers()
+
+        self.__timber.log('TriviaAnswerChecker', f'answer:\"{answer}\", cleanedAnswers:\"{cleanedAnswers}\", correctAnswers:\"{correctAnswers}\", cleanedCorrectAnswers:\"{cleanedCorrectAnswers}\"')
 
         # levenshteinAnswerLengthsActivationThreshold = await self.__triviaSettingsRepository.getLevenshteinAnswerLengthsActivationThreshold()
         # levenshteinAnswerLengthsRoundUpThreshold = await self.__triviaSettingsRepository.getLevenshteinAnswerLengthsRoundUpThreshold()
@@ -144,7 +146,6 @@ class TriviaAnswerChecker():
         for cleanedCorrectAnswer in cleanedCorrectAnswers:
             for cleanedAnswer in cleanedAnswers:
                 for guess in await self.__triviaAnswerCompiler.expandNumerals(cleanedAnswer):
-                    print(guess)
                     if guess == cleanedCorrectAnswer:
                         return True
                     guessWords = self.__whitespacePattern.sub(' ', guess).split(' ')
@@ -197,7 +198,8 @@ class TriviaAnswerChecker():
     def __compareWords(self, word1, word2):
         for w1 in self.__genVariantPossibilities(word1):
             for w2 in self.__genVariantPossibilities(word2):
-                threshold = math.floor(min(len(w1), len(w2)) / 7)  # calculate threshold based on min(len(w1), len(w2))
+                # TODO: Make this 7 a setting
+                threshold = math.floor(min(len(w1), len(w2)) / 7)  # calculate threshold based on shorter word length
                 dist = polyleven.levenshtein(w1, w2, threshold + 1)
                 if dist <= threshold:
                     return True
