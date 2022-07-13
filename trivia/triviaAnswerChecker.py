@@ -1,9 +1,6 @@
 import math
 import re
 import polyleven
-from num2words import num2words
-import roman
-
 
 try:
     import CynanBotCommon.utils as utils
@@ -81,8 +78,8 @@ class TriviaAnswerChecker():
             'or', 'because', 'as', 'until', 'while', 'of', 'at', 'by', 'for', 'with', 'about', 'against', 'between',
             'into', 'through', 'during', 'before', 'after', 'above', 'below', 'to', 'from', 'up', 'down', 'in', 'out',
             'on', 'off', 'over', 'under', 'again', 'further', 'then', 'once', 'here', 'there', 'when', 'where', 'why',
-            'how', 'all', 'any', 'both', 'each', 'few', 'more', 'most', 'some', 'such', 'no', 'nor', 'not', 'only',
-            'own', 'same', 'so', 'than', 'too', 'very', 'can', 'will', 'just', 'don', 'should', 'now',
+            'how', 'all', 'any', 'both', 'each', 'few', 'more', 'most', 'some', 'such', 'nor', 'not', 'only',
+            'own', 'same', 'so', 'than', 'too', 'very', 'can', 'will', 'just', 'dont', 'should', 'now',
         )
 
     async def checkAnswer(self, answer: str, triviaQuestion: AbsTriviaQuestion) -> bool:
@@ -130,9 +127,9 @@ class TriviaAnswerChecker():
         elif triviaQuestion.getTriviaType() is not TriviaType.QUESTION_ANSWER:
             raise RuntimeError(f'TriviaType is not {TriviaType.QUESTION_ANSWER}: \"{triviaQuestion.getTriviaType()}\"')
 
-        cleanedAnswer = await self.__triviaAnswerCompiler.compileTextAnswer(answer)
-
-        if not utils.isValidStr(cleanedAnswer):
+        cleanedAnswers = await self.__triviaAnswerCompiler.compileTextAnswersList([answer], False)
+        print(f'cleaned={cleanedAnswers}')
+        if not all(utils.isValidStr(cleanedAnswer) for cleanedAnswer in cleanedAnswers):
             return False
 
         correctAnswers = triviaQuestion.getCorrectAnswers()
@@ -145,18 +142,20 @@ class TriviaAnswerChecker():
         # isDebugLoggingEnabled = await self.__triviaSettingsRepository.isDebugLoggingEnabled()
 
         for cleanedCorrectAnswer in cleanedCorrectAnswers:
-            for guess in await self.__triviaAnswerCompiler.expandNumerals(cleanedAnswer):
-                if guess == cleanedCorrectAnswer:
-                    return True
-                guessWords = self.__whitespacePattern.sub(' ', guess).split(' ')
-                answerWords = self.__whitespacePattern.sub(' ', cleanedCorrectAnswer).split(' ')
+            for cleanedAnswer in cleanedAnswers:
+                for guess in await self.__triviaAnswerCompiler.expandNumerals(cleanedAnswer):
+                    print(guess)
+                    if guess == cleanedCorrectAnswer:
+                        return True
+                    guessWords = self.__whitespacePattern.sub(' ', guess).split(' ')
+                    answerWords = self.__whitespacePattern.sub(' ', cleanedCorrectAnswer).split(' ')
 
-                minWords = min(len(guessWords), len(answerWords))
+                    minWords = min(len(guessWords), len(answerWords))
 
-                for gWords in self.__mergeWords(guessWords, minWords):
-                    for aWords in self.__mergeWords(answerWords, minWords):
-                        if all(self.__compareWords(gWords[i], aWords[i]) for i in range(len(gWords))):
-                            return True
+                    for gWords in self.__mergeWords(guessWords, minWords):
+                        for aWords in self.__mergeWords(answerWords, minWords):
+                            if all(self.__compareWords(gWords[i], aWords[i]) for i in range(len(gWords))):
+                                return True
 
         return False
 

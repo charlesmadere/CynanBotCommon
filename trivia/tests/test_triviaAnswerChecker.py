@@ -338,6 +338,83 @@ class TestTriviaAnswerChecker():
         result = await self.triviaAnswerChecker.checkAnswer('twenty forth', question)
         assert result is False
 
+    @pytest.mark.asyncio
+    async def test_checkAnswer_withQuestionAnswerQuestion_withHash(self):
+        question: AbsTriviaQuestion = QuestionAnswerTriviaQuestion(
+            correctAnswers=['Red Dye #5'],
+            cleanedCorrectAnswers=[
+                'red dye five',
+                'red dye fifth',
+                'red dye the fifth',
+                'red dye number five',
+                'red dye number fifth',
+                'red dye number the fifth',
+            ],
+            category='Test Category',
+            question='Name a food coloring',
+            triviaId='abc123',
+            triviaDifficulty=TriviaDifficulty.UNKNOWN,
+            triviaSource=TriviaSource.J_SERVICE,
+        )
+
+        result: bool = await self.triviaAnswerChecker.checkAnswer('red dye #5', question)
+        assert result is True
+
+        result = await self.triviaAnswerChecker.checkAnswer('red dye number 5', question)
+        assert result is True
+
+        result = await self.triviaAnswerChecker.checkAnswer('red dye no 5', question)
+        assert result is True
+
+        result = await self.triviaAnswerChecker.checkAnswer('red number 5', question)
+        assert result is False
+
+    @pytest.mark.asyncio
+    async def test_checkAnswer_withQuestionAnswerQuestion_withEquation(self):
+        question: AbsTriviaQuestion = QuestionAnswerTriviaQuestion(
+            correctAnswers=['X=5'],
+            cleanedCorrectAnswers=[
+                'x five',
+                'x fifth',
+                'x the fifth',
+                'five',
+                'fifth',
+                'the fifth',
+                'x is five',
+                'x is fifth',
+                'x is the fifth',
+                'x equals five',
+                'x equals fifth',
+                'x equals the fifth',
+            ],
+            category='Test Category',
+            question='Name a food coloring',
+            triviaId='abc123',
+            triviaDifficulty=TriviaDifficulty.UNKNOWN,
+            triviaSource=TriviaSource.J_SERVICE,
+        )
+
+        result: bool = await self.triviaAnswerChecker.checkAnswer('x=5', question)
+        assert result is True
+
+        result = await self.triviaAnswerChecker.checkAnswer('x = 5', question)
+        assert result is True
+
+        result = await self.triviaAnswerChecker.checkAnswer('5', question)
+        assert result is True
+
+        result = await self.triviaAnswerChecker.checkAnswer('five', question)
+        assert result is True
+
+        result = await self.triviaAnswerChecker.checkAnswer('x is 5', question)
+        assert result is True
+
+        result = await self.triviaAnswerChecker.checkAnswer('x equals 5', question)
+        assert result is True
+
+        result = await self.triviaAnswerChecker.checkAnswer('x = 5.0', question)
+        assert result is False
+
     def test_sanity(self):
         assert self.triviaAnswerChecker is not None
         assert isinstance(self.triviaAnswerChecker, TriviaAnswerChecker)

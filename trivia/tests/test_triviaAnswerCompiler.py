@@ -293,6 +293,14 @@ class TestTriviaAnswerCompiler():
         assert 'second' in result
 
     @pytest.mark.asyncio
+    async def test_compileTextAnswersList_withHash(self):
+        result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ 'mambo #5' ])
+        assert result is not None
+        assert len(result) == 2
+        assert 'mambo number 5' in result
+        assert 'mambo 5' in result
+
+    @pytest.mark.asyncio
     async def test_expandNumerals_withSimpleDigit(self):
         result: List[str] = await self.triviaAnswerCompiler.expandNumerals('3')
         assert result is not None
@@ -311,6 +319,16 @@ class TestTriviaAnswerCompiler():
         assert 'the one thousand two hundred and thirty fourth' in result  # ordinal preceded by 'the'
         assert 'twelve thirty four' in result  # year
         assert 'one two three four' in result  # individual digits
+
+    @pytest.mark.asyncio
+    async def test_expandNumerals_withRomanNumerals(self):
+        result: List[str] = await self.triviaAnswerCompiler.expandNumerals('XIV')
+        assert result is not None
+        assert len(result) == 4
+        assert 'fourteen' in result  # cardinal, year
+        assert 'fourteenth' in result  # ordinal
+        assert 'the fourteenth' in result  # ordinal preceded by 'the'
+        assert 'xiv' in result
 
     def test_sanity(self):
         assert self.triviaAnswerCompiler is not None
