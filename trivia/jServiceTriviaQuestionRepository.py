@@ -151,10 +151,10 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
             raise UnsupportedTriviaTypeException(f'triviaType \"{triviaType}\" is not supported for jService: {jsonResponse}')
 
         if not utils.hasItems(questions):
-            self.__timber.log('JServiceTriviaQuestionRepository', f'Unable to fetch any trivia questions from JService (twitchChannel={twitchChannel}, count={count}): {questions}')
-            raise ValueError(f'Unable to fetch any trivia questions from JService (twitchChannel={twitchChannel}, count={count}): {questions}')
+            self.__timber.log('JServiceTriviaQuestionRepository', f'Unable to fetch any trivia questions from jService (twitchChannel={twitchChannel}, count={count}): {questions}')
+            raise ValueError(f'Unable to fetch any trivia questions from jService (twitchChannel={twitchChannel}, count={count}): {questions}')
         elif len(questions) != count:
-            self.__timber.log('JServiceTriviaQuestionRepository', f'Requested {count} questions from JService, but only received {len(questions)} (twitchChannel={twitchChannel}): {questions}')
+            self.__timber.log('JServiceTriviaQuestionRepository', f'Requested {count} questions from jService, but only received {len(questions)} (twitchChannel={twitchChannel}): {questions}')
 
         return questions
 
