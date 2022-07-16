@@ -147,8 +147,8 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
                     triviaDifficulty = TriviaDifficulty.UNKNOWN,
                     triviaSource = TriviaSource.J_SERVICE
                 ))
-
-            raise UnsupportedTriviaTypeException(f'triviaType \"{triviaType}\" is not supported for jService: {jsonResponse}')
+            else:
+                raise UnsupportedTriviaTypeException(f'triviaType \"{triviaType}\" is not supported for jService: {jsonResponse}')
 
         if not utils.hasItems(questions):
             self.__timber.log('JServiceTriviaQuestionRepository', f'Unable to fetch any trivia questions from jService (twitchChannel={twitchChannel}, count={count}): {questions}')
