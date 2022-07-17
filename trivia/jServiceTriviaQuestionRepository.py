@@ -84,7 +84,7 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
         elif count < 1 or count > 100:
             raise ValueError(f'count argument is out of bounds: {count}')
 
-        self.__timber.log('JServiceTriviaQuestionRepository', f'Fetching trivia question(s)... (count={count})')
+        self.__timber.log('JServiceTriviaQuestionRepository', f'Fetching trivia question(s)... (twitchChannel={twitchChannel}, count={count})')
 
         response = None
         try:
