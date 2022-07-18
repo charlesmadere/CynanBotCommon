@@ -1,5 +1,5 @@
 import json
-from typing import Dict, Any, Union
+from typing import Any, Dict, Optional
 
 import aiofiles
 import aiofiles.ospath
@@ -24,7 +24,7 @@ class TriviaSettingsRepository():
 
         self.__settingsFile: str = settingsFile
 
-        self.__settingsCache: Union[Dict[Any], None] = None
+        self.__settingsCache: Optional[Dict[str, Any]] = None
 
     async def clearCachedSettings(self):
         self.__settingsCache = None
@@ -67,14 +67,13 @@ class TriviaSettingsRepository():
 
     async def getMaxMultipleChoiceResponses(self) -> int:
         jsonContents = await self.__readJson()
-
-        maxMultipleChoiceResponses = utils.getIntFromDict(jsonContents, 'max_multiple_choice_responses', 5)
+        maxMultipleChoiceResponses = utils.getIntFromDict(jsonContents, 'max_multiple_choice_responses', 6)
         minMultipleChoiceResponses = utils.getIntFromDict(jsonContents, 'min_multiple_choice_responses', 2)
 
-        if maxMultipleChoiceResponses < 2:
-            raise ValueError(f'maxMultipleChoiceResponses is too small: {maxMultipleChoiceResponses}')
+        if minMultipleChoiceResponses < 2:
+            raise ValueError(f'min_multiple_choice_responses is too small: {minMultipleChoiceResponses}')
         elif maxMultipleChoiceResponses < minMultipleChoiceResponses:
-            raise ValueError(f'maxMultipleChoiceResponses ({maxMultipleChoiceResponses}) is less than minMultipleChoiceResponses ({minMultipleChoiceResponses})')
+            raise ValueError(f'min_multiple_choice_responses ({minMultipleChoiceResponses}) is less than max_multiple_choice_responses ({maxMultipleChoiceResponses})')
 
         return maxMultipleChoiceResponses
 
@@ -91,7 +90,7 @@ class TriviaSettingsRepository():
         maxRetryCount = utils.getIntFromDict(jsonContents, 'max_retry_count', 5)
 
         if maxRetryCount < 2:
-            raise ValueError(f'maxRetryCount is too small: \"{maxRetryCount}\"')
+            raise ValueError(f'max_retry_count is too small: \"{maxRetryCount}\"')
 
         return maxRetryCount
 
@@ -101,13 +100,13 @@ class TriviaSettingsRepository():
 
     async def getMinMultipleChoiceResponses(self) -> int:
         jsonContents = await self.__readJson()
-        maxMultipleChoiceResponses = utils.getIntFromDict(jsonContents, 'max_multiple_choice_responses', 5)
+        maxMultipleChoiceResponses = utils.getIntFromDict(jsonContents, 'max_multiple_choice_responses', 6)
         minMultipleChoiceResponses = utils.getIntFromDict(jsonContents, 'min_multiple_choice_responses', 2)
 
         if minMultipleChoiceResponses < 2:
-            raise ValueError(f'minMultipleChoiceResponses is too small: \"{minMultipleChoiceResponses}\"')
-        elif minMultipleChoiceResponses > maxMultipleChoiceResponses:
-            raise ValueError(f'minMultipleChoiceResponses ({minMultipleChoiceResponses}) is greater than maxMultipleChoiceResponses ({maxMultipleChoiceResponses})')
+            raise ValueError(f'min_multiple_choice_responses is too small: {minMultipleChoiceResponses}')
+        elif maxMultipleChoiceResponses < minMultipleChoiceResponses:
+            raise ValueError(f'min_multiple_choice_responses ({minMultipleChoiceResponses}) is less than max_multiple_choice_responses ({maxMultipleChoiceResponses})')
 
         return minMultipleChoiceResponses
 
@@ -119,9 +118,10 @@ class TriviaSettingsRepository():
         jsonContents = await self.__readJson()
         return utils.getBoolFromDict(jsonContents, 'debug_logging_enabled', False)
 
-    async def __readJson(self) -> Dict[str, object]:
+    async def __readJson(self) -> Dict[str, Any]:
         if self.__settingsCache:
             return self.__settingsCache
+
         if not await aiofiles.ospath.exists(self.__settingsFile):
             raise FileNotFoundError(f'Trivia settings file not found: \"{self.__settingsFile}\"')
 
