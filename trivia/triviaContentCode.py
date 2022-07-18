@@ -8,6 +8,7 @@ class TriviaContentCode(Enum):
     CONTAINS_EMPTY_STR = auto()
     CONTAINS_URL = auto()
     ILLEGAL_TRIVIA_TYPE = auto()
+    IS_BANNED = auto()
     IS_NONE = auto()
     OK = auto()
     QUESTION_TOO_LONG = auto()
