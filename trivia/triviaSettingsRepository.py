@@ -26,7 +26,7 @@ class TriviaSettingsRepository():
 
         self.__settingsCache: Optional[Dict[str, Any]] = None
 
-    async def clearCachedSettings(self):
+    async def clearCaches(self):
         self.__settingsCache = None
 
     async def getAvailableTriviaSourcesAndWeights(self) -> Dict[TriviaSource, int]:
