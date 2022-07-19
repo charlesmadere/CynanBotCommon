@@ -71,6 +71,24 @@ class TestTriviaQuestionCompiler():
         assert isinstance(exception, ValueError)
 
     @pytest.mark.asyncio
+    async def test_compileQuestion_withBbCodeTags(self):
+        question: str = await self.triviaQuestionCompiler.compileQuestion('[b]Scenes from a Memory[/b]')
+        assert question is not None
+        assert question == 'Scenes from a Memory'
+
+    @pytest.mark.asyncio
+    async def test_compileQuestion_withHtmlTags(self):
+        question: str = await self.triviaQuestionCompiler.compileQuestion('<i>The Great Misdirect</i>')
+        assert question is not None
+        assert question == 'The Great Misdirect'
+
+    @pytest.mark.asyncio
+    async def test_compileQuestion_withManyUnderscores(self):
+        question: str = await self.triviaQuestionCompiler.compileQuestion('The _________ river is very long.')
+        assert question is not None
+        assert question == 'The ___ river is very long.'
+
+    @pytest.mark.asyncio
     async def test_compileQuestion_withNone(self):
         question: str = None
         exception: Exception = None
