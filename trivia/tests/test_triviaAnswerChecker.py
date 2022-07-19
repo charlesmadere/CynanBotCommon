@@ -247,46 +247,46 @@ class TestTriviaAnswerChecker():
             result = await self.triviaAnswerChecker.checkAnswer('king richard 30', question)
             assert result is False
 
-        @pytest.mark.asyncio
-        async def test_checkAnswer_withQuestionAnswerQuestion_withSpaces(self):
-            question: AbsTriviaQuestion = QuestionAnswerTriviaQuestion(
-                correctAnswers=['Beach Ball'],
-                cleanedCorrectAnswers=['beach ball'],
-                category='Test Category',
-                question='Shakespeare wrote a play about him once or something...',
-                triviaId='abc123',
-                triviaDifficulty=TriviaDifficulty.UNKNOWN,
-                triviaSource=TriviaSource.J_SERVICE,
-            )
-            result: bool = await self.triviaAnswerChecker.checkAnswer('beach ball', question)
-            assert result is True
+    @pytest.mark.asyncio
+    async def test_checkAnswer_withQuestionAnswerQuestion_withSpaces(self):
+        question: AbsTriviaQuestion = QuestionAnswerTriviaQuestion(
+            correctAnswers=['Beach Ball'],
+            cleanedCorrectAnswers=['beach ball'],
+            category='Test Category',
+            question='Shakespeare wrote a play about him once or something...',
+            triviaId='abc123',
+            triviaDifficulty=TriviaDifficulty.UNKNOWN,
+            triviaSource=TriviaSource.J_SERVICE,
+        )
+        result: bool = await self.triviaAnswerChecker.checkAnswer('beach ball', question)
+        assert result is True
 
-            result = await self.triviaAnswerChecker.checkAnswer('beachball', question)
-            assert result is True
+        result = await self.triviaAnswerChecker.checkAnswer('beachball', question)
+        assert result is True
 
-            result = await self.triviaAnswerChecker.checkAnswer('beach balls', question)
-            assert result is True
+        result = await self.triviaAnswerChecker.checkAnswer('beach balls', question)
+        assert result is True
 
-            result = await self.triviaAnswerChecker.checkAnswer('beachballs', question)
-            assert result is True
+        result = await self.triviaAnswerChecker.checkAnswer('beachballs', question)
+        assert result is True
 
-            result = await self.triviaAnswerChecker.checkAnswer('a beach ball', question)
-            assert result is True
+        result = await self.triviaAnswerChecker.checkAnswer('a beach ball', question)
+        assert result is True
 
-            result = await self.triviaAnswerChecker.checkAnswer('beach ball s', question)
-            assert result is True
+        result = await self.triviaAnswerChecker.checkAnswer('beach ball s', question)
+        assert result is True
 
-            result = await self.triviaAnswerChecker.checkAnswer('beach es ball s', question)
-            assert result is True
+        result = await self.triviaAnswerChecker.checkAnswer('beach es ball s', question)
+        assert result is True
 
-            result = await self.triviaAnswerChecker.checkAnswer('beachballa', question)
-            assert result is True
+        result = await self.triviaAnswerChecker.checkAnswer('beachballa', question)
+        assert result is True
 
-            result = await self.triviaAnswerChecker.checkAnswer('beach balla', question)
-            assert result is False
+        result = await self.triviaAnswerChecker.checkAnswer('beach balla', question)
+        assert result is False
 
-            result = await self.triviaAnswerChecker.checkAnswer('green beach ball', question)
-            assert result is False
+        result = await self.triviaAnswerChecker.checkAnswer('green beach ball', question)
+        assert result is False
 
     @pytest.mark.asyncio
     async def test_checkAnswer_withQuestionAnswerQuestion_numberOnly(self):
