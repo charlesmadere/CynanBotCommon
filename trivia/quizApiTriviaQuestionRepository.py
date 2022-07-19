@@ -1,5 +1,5 @@
 from asyncio import TimeoutError
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import aiohttp
 
@@ -84,7 +84,7 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
             self.__timber.log('QuizApiTriviaQuestionRepository', f'Encountered non-200 HTTP status code: \"{response.status}\"')
             return None
 
-        jsonResponse: Dict[str, object] = await response.json()
+        jsonResponse: List[Dict[str, Any]] = await response.json()
         response.close()
 
         if await self._triviaSettingsRepository.isDebugLoggingEnabled():
@@ -94,7 +94,7 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
             self.__timber.log('QuizApiTriviaQuestionRepository', f'Rejecting Quiz API\'s JSON data due to null/empty contents: {jsonResponse}')
             raise ValueError(f'Rejecting Quiz API JSON data due to null/empty contents: {jsonResponse}')
 
-        triviaJson: Dict[str, object] = jsonResponse[0]
+        triviaJson: Dict[str, Any] = jsonResponse[0]
         if not utils.hasItems(triviaJson):
             self.__timber.log('QuizApiTriviaQuestionRepository', f'Rejecting Quiz API\'s JSON data due to null/empty contents: {jsonResponse}')
             raise ValueError(f'Rejecting Quiz API\'s JSON data due to null/empty contents: {jsonResponse}')

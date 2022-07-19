@@ -1,7 +1,7 @@
 import json
 import random
 import re
-from typing import Dict, List
+from typing import Any, Dict, List
 
 import aiofiles
 import aiofiles.ospath
@@ -55,7 +55,7 @@ class StarWarsQuotesRepository():
 
         return quote.replace(result.group(0), value)
 
-    async def __readJson(self) -> Dict[str, object]:
+    async def __readJson(self) -> Dict[str, Any]:
         if not await aiofiles.ospath.exists(self.__quotesFile):
             raise FileNotFoundError(f'quotes file not found: \"{self.__quotesFile}\"')
 

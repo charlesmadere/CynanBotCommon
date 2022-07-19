@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Dict
+from typing import Any, Dict
 
 try:
     import CynanBotCommon.utils as utils
@@ -9,14 +9,14 @@ except:
 
 class WebsocketEvent():
 
-    def __init__(self, eventData: Dict[str, object]):
+    def __init__(self, eventData: Dict[str, Any]):
         if not utils.hasItems(eventData):
             raise ValueError(f'eventData argument is malformed: \"{eventData}\"')
 
         self.__eventTime: datetime = datetime.now(timezone.utc)
-        self.__eventData: Dict[str, object] = eventData
+        self.__eventData: Dict[str, Any] = eventData
 
-    def getEventData(self) -> Dict[str, object]:
+    def getEventData(self) -> Dict[str, Any]:
         return self.__eventData
 
     def getEventTime(self) -> datetime:

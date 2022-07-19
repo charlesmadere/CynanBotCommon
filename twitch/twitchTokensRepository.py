@@ -2,7 +2,7 @@ import json
 import locale
 from asyncio import TimeoutError
 from datetime import datetime, timedelta, timezone
-from typing import Dict, List
+from typing import Any, Dict, List
 
 import aiofiles
 import aiofiles.ospath
@@ -110,7 +110,7 @@ class TwitchTokensRepository():
         jsonContents = await self.__readAllJson()
         return utils.getBoolFromDict(jsonContents, 'debugLoggingEnabled', fallback = False)
 
-    async def __readAllJson(self) -> Dict[str, object]:
+    async def __readAllJson(self) -> Dict[str, Any]:
         if not await aiofiles.ospath.exists(self.__twitchTokensFile):
             raise FileNotFoundError(f'Twitch tokens file not found: \"{self.__twitchTokensFile}\"')
 
@@ -125,12 +125,12 @@ class TwitchTokensRepository():
 
         return jsonContents
 
-    async def __readJsonForTwitchHandle(self, twitchHandle: str) -> Dict[str, object]:
+    async def __readJsonForTwitchHandle(self, twitchHandle: str) -> Dict[str, Any]:
         if not utils.isValidStr(twitchHandle):
             raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
 
         jsonContents = await self.__readAllJson()
-        twitchHandlesJson: Dict[str, object] = jsonContents.get('twitchHandles')
+        twitchHandlesJson: Dict[str, Any] = jsonContents.get('twitchHandles')
         if not utils.hasItems(twitchHandlesJson):
             raise ValueError(f'\"twitchHandles\" JSON contents of Twitch tokens file \"{self.__twitchTokensFile}\" is missing/empty')
 
@@ -179,7 +179,7 @@ class TwitchTokensRepository():
             self.__timber.log('TwitchTokensRepository', f'Encountered non-200 HTTP status code when requesting new Twitch tokens for \"{twitchHandle}\": {response.status}')
             raise TwitchNetworkException(f'Encountered non-200 HTTP status code when requesting new Twitch tokens for \"{twitchHandle}\": {response.status}')
 
-        jsonResponse: Dict[str, object] = await response.json()
+        jsonResponse: Dict[str, Any] = await response.json()
         response.close()
 
         if not utils.hasItems(jsonResponse):
@@ -291,7 +291,7 @@ class TwitchTokensRepository():
             raise TwitchNetworkException(f'Encountered network error when validating Twitch access token for \"{twitchHandle}\": {e}')
 
         responseStatus = response.status
-        jsonResponse: Dict[str, object] = await response.json()
+        jsonResponse: Dict[str, Any] = await response.json()
         response.close()
 
         clientId: str = None

@@ -4,7 +4,7 @@ import queue
 from asyncio import AbstractEventLoop
 from datetime import datetime, timedelta, timezone
 from queue import SimpleQueue
-from typing import Dict
+from typing import Any, Dict
 
 import aiofiles
 import aiofiles.ospath
@@ -67,7 +67,7 @@ class WebsocketConnectionServer():
         jsonContents = await self.__readJson()
         return utils.getBoolFromDict(jsonContents, 'debugLoggingEnabled', False)
 
-    async def __readJson(self) -> Dict[str, object]:
+    async def __readJson(self) -> Dict[str, Any]:
         if not await aiofiles.ospath.exists(self.__websocketSettingsFile):
             raise FileNotFoundError(f'Websocket settings file not found: \"{self.__websocketSettingsFile}\"')
 
@@ -95,7 +95,7 @@ class WebsocketConnectionServer():
         elif not utils.hasItems(eventData):
             raise ValueError(f'eventData argument for eventType \"{eventType}\" and twitchChannel \"{twitchChannel}\" is malformed: \"{eventData}\"')
 
-        event: Dict[str, object] = {
+        event: Dict[str, Any] = {
             'twitchChannel': twitchChannel,
             'eventType': eventType,
             'eventData': eventData

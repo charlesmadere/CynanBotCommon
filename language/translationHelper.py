@@ -2,7 +2,7 @@ import json
 import random
 from asyncio import TimeoutError
 from json.decoder import JSONDecodeError
-from typing import Dict
+from typing import Any, Dict
 
 import aiofiles
 import aiofiles.ospath
@@ -73,7 +73,7 @@ class TranslationHelper():
             self.__timber.log('TranslationHelper', f'Encountered non-200 HTTP status code when fetching translation from DeepL for \"{text}\": {response.status}')
             raise RuntimeError(f'Encountered non-200 HTTP status code when fetching translation from DeepL for \"{text}\": {response.status}')
 
-        jsonResponse = await response.json()
+        jsonResponse: Dict[str, Any] = await response.json()
         response.close()
 
         if not utils.hasItems(jsonResponse):
@@ -149,7 +149,7 @@ class TranslationHelper():
         if not await aiofiles.ospath.exists(self.__googleServiceAccountFile):
             return False
 
-        jsonContents: Dict[str, object] = None
+        jsonContents: Dict[str, Any] = None
         exception: JSONDecodeError = None
 
         async with aiofiles.open(self.__googleServiceAccountFile, mode = 'r') as file:

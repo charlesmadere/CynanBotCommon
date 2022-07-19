@@ -1,4 +1,5 @@
 from asyncio import TimeoutError
+from typing import Any, Dict
 
 import aiohttp
 from aiosqlite import Connection
@@ -90,7 +91,7 @@ class UserIdsRepository():
             self.__timber.log('UserIdsRepository', f'Encountered non-200 HTTP status code when fetching userId for userName \"{userName}\": \"{response.status}\"')
             raise RuntimeError(f'UserIdsRepository encountered non-200 HTTP status code when fetching userId for userName \"{userName}\": \"{response.status}\"')
 
-        jsonResponse = await response.json()
+        jsonResponse: Dict[str, Any] = await response.json()
         response.close()
 
         if 'error' in jsonResponse and len(jsonResponse['error']) >= 1:

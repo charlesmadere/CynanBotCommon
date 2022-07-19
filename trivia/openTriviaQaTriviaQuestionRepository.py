@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import aiosqlite
 
@@ -116,7 +116,7 @@ class OpenTriviaQaTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         raise UnsupportedTriviaTypeException(f'triviaType \"{triviaType}\" is not supported for OpenTriviaQaTriviaQuestionRepository: {triviaDict}')
 
-    async def __fetchTriviaQuestionDict(self) -> Dict[str, object]:
+    async def __fetchTriviaQuestionDict(self) -> Dict[str, Any]:
         connection = await aiosqlite.connect(self.__triviaDatabaseFile)
         cursor = await connection.execute(
             '''
@@ -130,7 +130,7 @@ class OpenTriviaQaTriviaQuestionRepository(AbsTriviaQuestionRepository):
         if not utils.hasItems(row) or len(row) != 9:
             raise RuntimeError(f'Received malformed data from OpenTriviaQaTriviaQuestion database: {row}')
 
-        triviaQuestionDict: Dict[str, object] = {
+        triviaQuestionDict: Dict[str, Any] = {
             'category': row[1],
             'correctAnswer': row[0],
             'question': row[2],

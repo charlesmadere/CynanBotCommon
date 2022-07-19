@@ -1,6 +1,6 @@
 import json
 import random
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import aiofiles
 import aiofiles.ospath
@@ -57,7 +57,7 @@ class JokeTriviaQuestionRepository(AbsTriviaQuestionRepository):
     async def fetchTriviaQuestion(self, twitchChannel: Optional[str]) -> AbsTriviaQuestion:
         self.__timber.log('JokeTriviaQuestionRepository', 'Fetching trivia question...')
 
-        triviaJson: Optional[Dict[str, object]] = await self.__fetchTriviaQuestionJson(twitchChannel)
+        triviaJson: Optional[Dict[str, Any]] = await self.__fetchTriviaQuestionJson(twitchChannel)
 
         if not utils.hasItems(triviaJson):
             return None
@@ -96,14 +96,14 @@ class JokeTriviaQuestionRepository(AbsTriviaQuestionRepository):
         else:
             raise UnsupportedTriviaTypeException(f'triviaType \"{triviaType}\" is not supported for Joke Trivia Question Repository: {triviaJson}')
 
-    async def __fetchTriviaQuestionJson(self, twitchChannel: Optional[str]) -> Optional[Dict[str, object]]:
+    async def __fetchTriviaQuestionJson(self, twitchChannel: Optional[str]) -> Optional[Dict[str, Any]]:
         jsonContents = await self.__readAllJson()
 
-        triviaQuestions: List[Dict[str, object]] = jsonContents.get('triviaQuestions')
+        triviaQuestions: List[Dict[str, Any]] = jsonContents.get('triviaQuestions')
         if not utils.hasItems(triviaQuestions):
             return None
 
-        acceptableTriviaQuestions: List[Dict[str, object]] = list()
+        acceptableTriviaQuestions: List[Dict[str, Any]] = list()
 
         for triviaQuestion in triviaQuestions:
             compatibleWith: Optional[List[str]] = triviaQuestion.get('compatibleWith')
@@ -128,7 +128,7 @@ class JokeTriviaQuestionRepository(AbsTriviaQuestionRepository):
     def getTriviaSource(self) -> TriviaSource:
         return TriviaSource.JOKE_TRIVIA_REPOSITORY
 
-    async def __readAllJson(self) -> Dict[str, object]:
+    async def __readAllJson(self) -> Dict[str, Any]:
         if not await aiofiles.ospath.exists(self.__jokeTriviaQuestionFile):
             raise FileNotFoundError(f'Joke trivia question file not found: \"{self.__jokeTriviaQuestionFile}\"')
 

@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import aiosqlite
 
@@ -89,7 +89,7 @@ class MillionaireTriviaQuestionRepository(AbsTriviaQuestionRepository):
             triviaSource = TriviaSource.MILLIONAIRE
         )
 
-    async def __fetchTriviaQuestionDict(self) -> Dict[str, object]:
+    async def __fetchTriviaQuestionDict(self) -> Dict[str, Any]:
         connection = await aiosqlite.connect(self.__triviaDatabaseFile)
         cursor = await connection.execute(
             '''
@@ -103,7 +103,7 @@ class MillionaireTriviaQuestionRepository(AbsTriviaQuestionRepository):
         if not utils.hasItems(row) or len(row) != 7:
             raise RuntimeError(f'Received malformed data from Millionaire database: {row}')
 
-        triviaQuestionDict: Dict[str, object] = {
+        triviaQuestionDict: Dict[str, Any] = {
             'answer': row[0],
             'question': row[1],
             'responses': [ row[2], row[3], row[4], row[5] ],
