@@ -1,16 +1,16 @@
 import asyncio
 from asyncio import AbstractEventLoop
-from math import fabs
 
-import pytest
 import mock
+import pytest
 
 try:
     from ...timber.timber import Timber
     from ...trivia.absTriviaQuestion import AbsTriviaQuestion
     from ...trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
-    from ...trivia.questionAnswerTriviaQuestion import QuestionAnswerTriviaQuestion
+    from ...trivia.questionAnswerTriviaQuestion import \
+        QuestionAnswerTriviaQuestion
     from ...trivia.triviaAnswerChecker import TriviaAnswerChecker
     from ...trivia.triviaAnswerCompiler import TriviaAnswerCompiler
     from ...trivia.triviaDifficulty import TriviaDifficulty
@@ -22,7 +22,8 @@ except:
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
-    from trivia.questionAnswerTriviaQuestion import QuestionAnswerTriviaQuestion
+    from trivia.questionAnswerTriviaQuestion import \
+        QuestionAnswerTriviaQuestion
     from trivia.triviaAnswerChecker import TriviaAnswerChecker
     from trivia.triviaAnswerCompiler import TriviaAnswerCompiler
     from trivia.triviaDifficulty import TriviaDifficulty
