@@ -1,5 +1,5 @@
 from asyncio import TimeoutError
-from typing import List
+from typing import Any, Dict, List
 from urllib.parse import quote
 
 import aiohttp
@@ -63,7 +63,7 @@ class JishoHelper():
             self.__timber.log('JishoHelper', f'Encountered non-200 HTTP status code when searching Jisho for \"{query}\": {response.status}')
             raise RuntimeError(f'Encountered non-200 HTTP status code when searching Jisho for \"{query}\": {response.status}')
 
-        jsonResponse = await response.json()
+        jsonResponse: Dict[str, Any] = await response.json()
         response.close()
 
         if not utils.hasItems(jsonResponse):

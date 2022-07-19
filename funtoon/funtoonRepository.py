@@ -1,6 +1,6 @@
 import json
 from asyncio import TimeoutError
-from typing import Dict
+from typing import Any, Dict, Optional
 
 import aiofiles
 import aiofiles.ospath
@@ -60,7 +60,7 @@ class FuntoonRepository():
         event: str,
         funtoonToken: str,
         twitchChannel: str,
-        data = None
+        data: Optional[Any] = None
     ) -> bool:
         if not utils.isValidStr(event):
             raise ValueError(f'event argument is malformed: \"{event}\"')
@@ -206,7 +206,7 @@ class FuntoonRepository():
             data = userThatRedeemed
         )
 
-    async def __readAllJson(self) -> Dict[str, object]:
+    async def __readAllJson(self) -> Dict[str, Any]:
         if not await aiofiles.ospath.exists(self.__funtoonRepositoryFile):
             raise FileNotFoundError(f'Funtoon repository file not found: \"{self.__funtoonRepositoryFile}\"')
 
@@ -221,12 +221,12 @@ class FuntoonRepository():
 
         return jsonContents
 
-    async def __readJsonForTwitchChannel(self, twitchChannel: str) -> Dict[str, object]:
+    async def __readJsonForTwitchChannel(self, twitchChannel: str) -> Dict[str, Any]:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
         jsonContents = await self.__readAllJson()
-        twitchChannelsJson: Dict[str, object] = jsonContents.get('twitchChannels')
+        twitchChannelsJson: Dict[str, Any] = jsonContents.get('twitchChannels')
         if not utils.hasItems(twitchChannelsJson):
             raise ValueError(f'\"twitchChannels\" JSON contents of Funtoon repository file \"{self.__funtoonRepositoryFile}\" is missing/empty')
 

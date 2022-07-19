@@ -1,5 +1,5 @@
 from asyncio import TimeoutError
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import aiohttp
 
@@ -89,7 +89,7 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
                 self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Encountered non-200 HTTP status code when fetching session token: \"{response.status}\"')
                 return None
 
-            jsonResponse: Dict[str, object] = await response.json()
+            jsonResponse: Dict[str, Any] = await response.json()
             response.close()
 
             if await self._triviaSettingsRepository.isDebugLoggingEnabled():
@@ -132,7 +132,7 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
             self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Encountered non-200 HTTP status code when fetching trivia question: \"{response.status}\"')
             return None
 
-        jsonResponse: Dict[str, object] = await response.json()
+        jsonResponse: Dict[str, Any] = await response.json()
         response.close()
 
         if await self._triviaSettingsRepository.isDebugLoggingEnabled():
@@ -150,7 +150,7 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
             self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Rejecting Open Trivia Database\'s JSON data due to missing/null/empty \"results\" array: {jsonResponse}')
             raise ValueError(f'Rejecting Open Trivia Database\'s JSON data due to missing/null/empty \"results\" array: {jsonResponse}')
 
-        triviaJson: Dict[str, object] = jsonResponse['results'][0]
+        triviaJson: Dict[str, Any] = jsonResponse['results'][0]
         if not utils.hasItems(triviaJson):
             self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Rejecting Open Trivia Database\'s JSON data due to null/empty \"results\" contents: {jsonResponse}')
             raise ValueError(f'Rejecting Open Trivia Database\'s JSON API data due to null/empty contents: {jsonResponse}')

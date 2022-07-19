@@ -1,5 +1,5 @@
 from asyncio import TimeoutError
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import aiohttp
 
@@ -97,7 +97,7 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
             self.__timber.log('JServiceTriviaQuestionRepository', f'Encountered non-200 HTTP status code: \"{response.status}\"')
             return None
 
-        jsonResponse: List[Dict[str, object]] = await response.json()
+        jsonResponse: List[Dict[str, Any]] = await response.json()
         response.close()
 
         if await self._triviaSettingsRepository.isDebugLoggingEnabled():

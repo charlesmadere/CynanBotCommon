@@ -1,5 +1,5 @@
 from asyncio import TimeoutError
-from typing import Dict, List
+from typing import Any, Dict, List
 
 import aiohttp
 
@@ -101,7 +101,7 @@ class PokepediaRepository():
 
         return elementTypeGenerationDictionary
 
-    def __getEnDescription(self, jsonResponse: Dict[str, object]) -> str:
+    def __getEnDescription(self, jsonResponse: Dict[str, Any]) -> str:
         if not utils.hasItems(jsonResponse):
             raise ValueError(f'jsonResponse argument is malformed: \"{jsonResponse}\"')
 
@@ -115,7 +115,7 @@ class PokepediaRepository():
 
         raise RuntimeError(f'can\'t find \"en\" language name in \"flavor_text_entries\" field: {jsonResponse}')
 
-    def __getEnName(self, jsonResponse: Dict[str, object]) -> str:
+    def __getEnName(self, jsonResponse: Dict[str, Any]) -> str:
         if not utils.hasItems(jsonResponse):
             raise ValueError(f'jsonResponse argument is malformed: \"{jsonResponse}\"')
 
@@ -129,7 +129,7 @@ class PokepediaRepository():
 
         raise RuntimeError(f'can\'t find \"en\" language name in \"names\" field: {jsonResponse}')
 
-    def __getMoveGenerationDictionary(self, jsonResponse: Dict[str, object]) -> Dict[PokepediaGeneration, PokepediaMoveGeneration]:
+    def __getMoveGenerationDictionary(self, jsonResponse: Dict[str, Any]) -> Dict[PokepediaGeneration, PokepediaMoveGeneration]:
         if not utils.hasItems(jsonResponse):
             raise ValueError(f'jsonResponse argument is malformed: \"{jsonResponse}\"')
 
@@ -271,7 +271,7 @@ class PokepediaRepository():
             self.__timber.log('PokepediaRepository', f'Encountered non-200 HTTP status code from PokeAPI when searching for \"{name}\" move: \"{response.status}\"')
             raise RuntimeError(f'Exception occurred due to non-200 HTTP status code from PokeAPI when searching for \"{name}\" move: \"{response.status}\"')
 
-        jsonResponse = await response.json()
+        jsonResponse: Dict[str, Any] = await response.json()
         response.close()
 
         return PokepediaMove(
@@ -301,7 +301,7 @@ class PokepediaRepository():
             self.__timber.log('PokepediaRepository', f'Encountered non-200 HTTP status code from PokeAPI when searching for \"{name}\" Pokemon: \"{response.status}\"')
             raise RuntimeError(f'Exception occurred due to non-200 HTTP status code from PokeAPI when searching for \"{name}\" Pokemon: \"{response.status}\"')
 
-        jsonResponse = await response.json()
+        jsonResponse: Dict[str, Any] = await response.json()
         response.close()
 
         pokedexId = utils.getIntFromDict(jsonResponse, 'id')

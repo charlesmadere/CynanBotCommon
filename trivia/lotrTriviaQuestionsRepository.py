@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import aiosqlite
 
@@ -86,7 +86,7 @@ class LotrTriviaQuestionRepository(AbsTriviaQuestionRepository):
             triviaSource = TriviaSource.LORD_OF_THE_RINGS
         )
 
-    async def __fetchTriviaQuestionDict(self) -> Dict[str, object]:
+    async def __fetchTriviaQuestionDict(self) -> Dict[str, Any]:
         connection = await aiosqlite.connect(self.__triviaDatabaseFile)
         cursor = await connection.execute(
             '''
@@ -109,7 +109,7 @@ class LotrTriviaQuestionRepository(AbsTriviaQuestionRepository):
         if not utils.hasItems(correctAnswers):
             raise RuntimeError(f'Received malformed correct answer data from LOTR database: {row}')
 
-        triviaQuestionDict: Dict[str, object] = {
+        triviaQuestionDict: Dict[str, Any] = {
             'correctAnswers': correctAnswers,
             'question': row[4],
             'triviaId': row[5]

@@ -32,7 +32,7 @@ class TriviaSettingsRepository():
     async def getAvailableTriviaSourcesAndWeights(self) -> Dict[TriviaSource, int]:
         jsonContents = await self.__readJson()
 
-        triviaSourcesJson: Dict[str, object] = jsonContents['trivia_sources']
+        triviaSourcesJson: Dict[str, Any] = jsonContents['trivia_sources']
         if not utils.hasItems(triviaSourcesJson):
             raise RuntimeError(f'\"trivia_sources\" field in \"{self.__settingsFile}\" is malformed: \"{triviaSourcesJson}\"')
 
@@ -40,7 +40,7 @@ class TriviaSettingsRepository():
 
         for key in triviaSourcesJson:
             triviaSource = TriviaSource.fromStr(key)
-            triviaSourceJson: Dict[str, object] = triviaSourcesJson[key]
+            triviaSourceJson: Dict[str, Any] = triviaSourcesJson[key]
 
             isEnabled = utils.getBoolFromDict(triviaSourceJson, 'is_enabled', False)
             if not isEnabled:

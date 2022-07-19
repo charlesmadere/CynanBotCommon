@@ -1,5 +1,5 @@
 from asyncio import TimeoutError
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import aiohttp
 
@@ -81,7 +81,7 @@ class WillFryTriviaQuestionRepository(AbsTriviaQuestionRepository):
             self.__timber.log('WillFryTriviaQuestionRepository', f'Encountered non-200 HTTP status code: \"{response.status}\"')
             return None
 
-        jsonResponse: Dict[str, object] = await response.json()
+        jsonResponse: Dict[str, Any] = await response.json()
         response.close()
 
         if await self._triviaSettingsRepository.isDebugLoggingEnabled():
@@ -91,7 +91,7 @@ class WillFryTriviaQuestionRepository(AbsTriviaQuestionRepository):
             self.__timber.log('WillFryTriviaQuestionRepository', f'Rejecting Will Fry Trivia\'s JSON data due to null/empty contents: {jsonResponse}')
             raise ValueError(f'Rejecting Will Fry Trivia\'s JSON data due to null/empty contents: {jsonResponse}')
 
-        triviaJson: Dict[str, object] = jsonResponse[0]
+        triviaJson: Dict[str, Any] = jsonResponse[0]
         if not utils.hasItems(triviaJson):
             self.__timber.log('WillFryTriviaQuestionRepository', f'Rejecting Will Fry Trivia\'s JSON data due to null/empty contents: {jsonResponse}')
             raise ValueError(f'Rejecting Will Fry Trivia\'s JSON data due to null/empty contents: {jsonResponse}')

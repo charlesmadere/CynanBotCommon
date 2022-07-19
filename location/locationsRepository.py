@@ -1,5 +1,5 @@
 import json
-from typing import Dict
+from typing import Any, Dict
 
 import aiofiles
 import aiofiles.ospath
@@ -60,7 +60,7 @@ class LocationsRepository():
 
         raise RuntimeError(f'Unable to find location with ID \"{locationId}\" in locations file: \"{self.__locationsFile}\"')
 
-    async def __readAllJson(self) -> Dict[str, object]:
+    async def __readAllJson(self) -> Dict[str, Any]:
         if not await aiofiles.ospath.exists(self.__locationsFile):
             raise FileNotFoundError(f'Locations file not found: \"{self.__locationsFile}\"')
 

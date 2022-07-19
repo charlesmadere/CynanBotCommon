@@ -1,6 +1,6 @@
 from asyncio import TimeoutError
 from datetime import datetime, timedelta, timezone
-from typing import List
+from typing import Any, Dict, List
 
 import aiohttp
 
@@ -155,7 +155,7 @@ class TamaleGuyRepository():
             self.__timber.log('TamaleGuyRepository', f'Encountered non-200 HTTP status code when fetching Tamale Guy store stock: {response.status}')
             raise RuntimeError(f'Encountered non-200 HTTP status code when fetching Tamale Guy store stock: {response.status}')
 
-        jsonResponse = await response.json()
+        jsonResponse: Dict[str, Any] = await response.json()
         response.close()
 
         if 'data' not in jsonResponse:

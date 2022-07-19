@@ -1,6 +1,6 @@
 import json
 from datetime import timedelta
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 import aiofiles
 import aiofiles.ospath
@@ -156,7 +156,7 @@ class ChatBandManager():
 
         return True
 
-    async def __readAllJson(self) -> Dict[str, object]:
+    async def __readAllJson(self) -> Dict[str, Any]:
         if not await aiofiles.ospath.exists(self.__chatBandFile):
             raise FileNotFoundError(f'Chat Band file not found: \"{self.__chatBandFile}\"')
 
@@ -171,12 +171,12 @@ class ChatBandManager():
 
         return jsonContents
 
-    async def __readJsonForTwitchChannel(self, twitchChannel: str) -> Dict[str, object]:
+    async def __readJsonForTwitchChannel(self, twitchChannel: str) -> Dict[str, Any]:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
         jsonContents = await self.__readAllJson()
-        twitchChannelsJson: Dict[str, object] = jsonContents.get('twitchChannels')
+        twitchChannelsJson: Dict[str, Any] = jsonContents.get('twitchChannels')
         if not utils.hasItems(twitchChannelsJson):
             raise ValueError(f'\"twitchChannels\" JSON contents of Chat Band file \"{self.__chatBandFile}\" is missing/empty')
 
@@ -188,7 +188,7 @@ class ChatBandManager():
 
         return None
 
-    def __toEventData(self, chatBandMember: ChatBandMember) -> Dict[str, object]:
+    def __toEventData(self, chatBandMember: ChatBandMember) -> Dict[str, Any]:
         if chatBandMember is None:
             raise ValueError(f'chatBandMember argument is malformed: \"{chatBandMember}\"')
 

@@ -1,6 +1,6 @@
 from asyncio import TimeoutError
 from datetime import timedelta
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import aiohttp
 
@@ -54,7 +54,7 @@ class WeatherRepository():
         self.__cache = TimedDict(timeDelta = cacheTimeDelta)
         self.__conditionIcons: Dict[str, str] = self.__createConditionIconsDict()
 
-    async def __chooseTomorrowFromForecast(self, jsonResponse: Dict) -> Dict[str, object]:
+    async def __chooseTomorrowFromForecast(self, jsonResponse: Dict[str, Any]) -> Dict[str, Any]:
         currentSunrise = jsonResponse['current']['sunrise']
         currentSunset = jsonResponse['current']['sunset']
 
@@ -131,7 +131,7 @@ class WeatherRepository():
             self.__timber.log('WeatherRepository', f'Encountered non-200 HTTP status code when fetching air quality index for \"{location.getName()}\" ({location.getLocationId()}): {response.status}')
             return None
 
-        jsonResponse = await response.json()
+        jsonResponse: Dict[str, Any] = await response.json()
         response.close()
 
         airQualityIndex = utils.getIntFromDict(
@@ -181,10 +181,10 @@ class WeatherRepository():
             self.__timber.log('WeatherRepository', f'Encountered non-200 HTTP status code when fetching weather for \"{location.getName()}\" ({location.getLocationId()}): {response.status}')
             raise RuntimeError(f'Encountered network error when fetching weather for \"{location.getName()}\" ({location.getLocationId()})')
 
-        jsonResponse = await response.json()
+        jsonResponse: Dict[str, Any] = await response.json()
         response.close()
 
-        currentJson: Dict[str, object] = jsonResponse['current']
+        currentJson: Dict[str, Any] = jsonResponse['current']
         humidity = int(round(utils.getFloatFromDict(currentJson, 'humidity')))
         pressure = int(round(utils.getFloatFromDict(currentJson, 'pressure')))
         temperature = utils.getFloatFromDict(currentJson, 'temp')

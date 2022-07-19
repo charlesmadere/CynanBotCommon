@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import aiosqlite
 
@@ -109,7 +109,7 @@ class WwtbamTriviaQuestionRepository(AbsTriviaQuestionRepository):
             triviaSource = TriviaSource.WWTBAM
         )
 
-    async def __fetchTriviaQuestionDict(self) -> Dict[str, object]:
+    async def __fetchTriviaQuestionDict(self) -> Dict[str, Any]:
         connection = await aiosqlite.connect(self.__triviaDatabaseFile)
         cursor = await connection.execute(
             '''
@@ -123,7 +123,7 @@ class WwtbamTriviaQuestionRepository(AbsTriviaQuestionRepository):
         if not utils.hasItems(row) or len(row) != 7:
             raise RuntimeError(f'Received malformed data from WWTBAM database: {row}')
 
-        triviaQuestionDict: Dict[str, object] = {
+        triviaQuestionDict: Dict[str, Any] = {
             'correctAnswer': row[0],
             'question': row[1],
             'responseA': row[2],
