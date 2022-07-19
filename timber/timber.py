@@ -68,6 +68,10 @@ class Timber():
             raise ValueError(f'msg argument is malformed: \"{msg}\"')
 
         timberEntry = TimberEntry(tag, msg)
+
+        if self.__alsoPrintToStandardOut:
+            print(self.__getLogStatement(False, timberEntry))
+
         self.__entryQueue.put(timberEntry)
 
     async def __log(self, timberEntry: TimberEntry):
@@ -75,9 +79,6 @@ class Timber():
             raise ValueError(f'timberEntry argument is malformed: \"{timberEntry}\"')
 
         await self.__writeToLogFile(timberEntry)
-
-        if self.__alsoPrintToStandardOut:
-            print(self.__getLogStatement(False, timberEntry))
 
     async def __startEventLoop(self):
         while True:
