@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from typing import Optional
 
 from aiosqlite import Connection
 
@@ -8,8 +9,11 @@ try:
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.triviaContentCode import TriviaContentCode
+    from CynanBotCommon.trivia.triviaQuestionReference import \
+        TriviaQuestionReference
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
+    from CynanBotCommon.trivia.triviaSource import TriviaSource
 except:
     import utils
     from backingDatabase import BackingDatabase
@@ -17,7 +21,9 @@ except:
 
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.triviaContentCode import TriviaContentCode
+    from trivia.triviaQuestionReference import TriviaQuestionReference
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
+    from trivia.triviaSource import TriviaSource
 
 
 class TriviaHistoryRepository():
@@ -44,6 +50,38 @@ class TriviaHistoryRepository():
     async def __getDatabaseConnection(self) -> Connection:
         await self.__initDatabaseTable()
         return await self.__backingDatabase.getConnection()
+
+    async def getMostRecentTriviaQuestionDetails(
+        self,
+        twitchChannel: str
+    ) -> Optional[TriviaQuestionReference]:
+        if not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+
+        connection = await self.__getDatabaseConnection()
+        cursor = await connection.execute(
+            '''
+                SELECT triviaId, triviaSource FROM triviaHistory
+                WHERE twitchChannel = ?
+                ORDER BY datetime DESC
+                LIMIT 1
+            ''',
+            ( twitchChannel, )
+        )
+
+        row = await cursor.fetchone()
+        triviaQuestionReference: TriviaQuestionReference = None
+
+        if row is not None:
+            triviaQuestionReference = TriviaQuestionReference(
+                triviaId = row[0],
+                twitchChannel = twitchChannel,
+                triviaSource = TriviaSource.fromStr(row[1])
+            )
+
+        await cursor.close()
+        await connection.close()
+        return triviaQuestionReference
 
     async def __initDatabaseTable(self):
         if self.__isDatabaseReady:
