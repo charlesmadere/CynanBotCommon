@@ -41,6 +41,12 @@ class FuntoonRepository():
         self.__funtoonApiUrl: str = funtoonApiUrl
         self.__funtoonRepositoryFile: str = funtoonRepositoryFile
 
+        self.__cache: Optional[Dict[str, Any]] = None
+
+    async def clearCaches(self):
+        self.__cache = None
+        self.__timber.log('FuntoonRepository', 'Caches cleared')
+
     async def getFuntoonToken(self, twitchChannel: str) -> str:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
@@ -207,6 +213,9 @@ class FuntoonRepository():
         )
 
     async def __readAllJson(self) -> Dict[str, Any]:
+        if self.__cache:
+            return self.__cache
+
         if not await aiofiles.ospath.exists(self.__funtoonRepositoryFile):
             raise FileNotFoundError(f'Funtoon repository file not found: \"{self.__funtoonRepositoryFile}\"')
 
@@ -219,6 +228,7 @@ class FuntoonRepository():
         elif len(jsonContents) == 0:
             raise ValueError(f'JSON contents of Funtoon repository file \"{self.__funtoonRepositoryFile}\" is empty')
 
+        self.__cache = jsonContents
         return jsonContents
 
     async def __readJsonForTwitchChannel(self, twitchChannel: str) -> Dict[str, Any]:
