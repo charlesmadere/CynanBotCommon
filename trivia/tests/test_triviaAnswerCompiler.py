@@ -301,13 +301,23 @@ class TestTriviaAnswerCompiler():
         assert 'mambo 5' in result
 
     @pytest.mark.asyncio
-    async def test_expandNumerals_withSimpleDigit(self):
+    async def test_expandNumerals_withSimpleDigit1(self):
         result: List[str] = await self.triviaAnswerCompiler.expandNumerals('3')
         assert result is not None
         assert len(result) == 3
         assert 'three' in result  # cardinal, year, individual digits
         assert 'third' in result  # ordinal
         assert 'the third' in result  # ordinal preceded by 'the'
+
+    @pytest.mark.asyncio
+    async def test_expandNumerals_withSimpleDigit2(self):
+        result: List[str] = await self.triviaAnswerCompiler.expandNumerals('50')
+        assert result is not None
+        assert len(result) == 4
+        assert 'fifty' in result  # cardinal, year, individual digits
+        assert 'five zero' in result  # cardinal, year, individual digits
+        assert 'fiftieth' in result  # ordinal
+        assert 'the fiftieth' in result  # ordinal preceded by 'the'
 
     @pytest.mark.asyncio
     async def test_expandNumerals_withYear(self):
