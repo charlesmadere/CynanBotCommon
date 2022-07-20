@@ -1,4 +1,4 @@
-from typing import List, Set
+from typing import List, Optional, Set
 
 import aiofile
 import aiofiles.ospath
@@ -40,12 +40,21 @@ class TriviaContentScanner():
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
         self.__bannedWordsFile: str = bannedWordsFile
 
+        self.__bannedWordsCache: Optional[List[str]] = None
+
+    async def clearCaches(self):
+        self.__bannedWordsCache = None
+        self.__timber.log('TriviaContentScanner', 'Caches cleared')
+
     async def __readBannedWordsList(self) -> List[str]:
+        if self.__bannedWordsCache:
+            return self.__bannedWordsCache
+
         if not await aiofiles.ospath.exists(self.__bannedWordsFile):
-            self.__timber.log('TriviaContentScanner', 'Not attempting to read in any banned words due to the file missing: \"{self.__bannedWordsFile}\"')
+            self.__timber.log('TriviaContentScanner', f'Not attempting to read in any banned words due to the file missing: \"{self.__bannedWordsFile}\"')
             return None
 
-        bannedWords: Set[str] = set()
+        bannedWordsSet: Set[str] = set()
 
         async with aiofile.AIOFile(self.__bannedWordsFile, 'r') as file:
             async for line in aiofile.LineReader(file):
@@ -53,12 +62,11 @@ class TriviaContentScanner():
                     line = line.strip().lower()
 
                     if utils.isValidStr(line):
-                        bannedWords.add(line)
+                        bannedWordsSet.add(line)
 
-        if utils.hasItems(bannedWords):
-            return list(bannedWords)
-        else:
-            return None
+        bannedWordsList = list(bannedWordsSet)
+        self.__bannedWordsCache = bannedWordsList
+        return bannedWordsList
 
     async def verify(self, question: AbsTriviaQuestion) -> TriviaContentCode:
         if question is None:

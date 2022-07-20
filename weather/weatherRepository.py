@@ -64,6 +64,10 @@ class WeatherRepository():
 
         raise RuntimeError(f'Unable to find viable tomorrow data in JSON response: \"{jsonResponse}\"')
 
+    async def clearCaches(self):
+        self.__cache.clear()
+        self.__timber.log('WeatherRepository', 'Caches cleared')
+
     def __createConditionIconsDict(self) -> Dict[str, str]:
         # This dictionary is built from the Weather Condition Codes listed here:
         # https://openweathermap.org/weather-conditions#Weather-Condition-Codes-2
