@@ -1,3 +1,5 @@
+from typing import Optional
+
 from aiosqlite import Connection
 
 try:
@@ -100,7 +102,7 @@ class BannedTriviaIdsRepository():
         )
 
         row = await cursor.fetchone()
-        count: int = None
+        count: Optional[int] = None
 
         if row is not None:
             count = row[0]

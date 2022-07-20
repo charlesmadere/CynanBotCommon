@@ -4,7 +4,7 @@ import random
 import re
 from datetime import datetime
 from numbers import Number
-from typing import Dict, List, Pattern, Any, Generator
+from typing import Any, Dict, Generator, List, Optional, Pattern
 from urllib.parse import urlparse
 
 
@@ -283,19 +283,19 @@ def getStrFromDict(d: Dict, key: str, fallback: str = None, clean: bool = False,
 
     return value
 
-def hasItems(l: List) -> bool:
+def hasItems(l: Optional[List]) -> bool:
     return l is not None and len(l) >= 1
 
-def isValidBool(b: bool) -> bool:
+def isValidBool(b: Optional[bool]) -> bool:
     return b is not None and isinstance(b, bool)
 
-def isValidNum(n: Number) -> bool:
+def isValidNum(n: Optional[Number]) -> bool:
     return n is not None and isinstance(n, Number) and math.isfinite(n)
 
-def isValidStr(s: str) -> bool:
+def isValidStr(s: Optional[str]) -> bool:
     return s is not None and isinstance(s, str) and len(s) >= 1 and not s.isspace()
 
-def isValidUrl(s: str) -> bool:
+def isValidUrl(s: Optional[str]) -> bool:
     if not isValidStr(s):
         return False
 
