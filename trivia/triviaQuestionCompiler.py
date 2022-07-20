@@ -23,9 +23,7 @@ class TriviaQuestionCompiler():
         category: str,
         htmlUnescape: bool = False
     ) -> str:
-        if not utils.isValidStr(category):
-            raise ValueError(f'category argument is malformed: \"{category}\"')
-        elif not utils.isValidBool(htmlUnescape):
+        if not utils.isValidBool(htmlUnescape):
             raise ValueError(f'htmlUnescape argument is malformed: \"{htmlUnescape}\"')
 
         return await self.__compileText(category, htmlUnescape)
@@ -47,9 +45,7 @@ class TriviaQuestionCompiler():
         response: str,
         htmlUnescape: bool = False
     ) -> str:
-        if not utils.isValidStr(response):
-            raise ValueError(f'response argument is malformed: \"{response}\"')
-        elif not utils.isValidBool(htmlUnescape):
+        if not utils.isValidBool(htmlUnescape):
             raise ValueError(f'htmlUnescape argument is malformed: \"{htmlUnescape}\"')
 
         return await self.__compileText(response, htmlUnescape)
@@ -80,10 +76,11 @@ class TriviaQuestionCompiler():
         text: str,
         htmlUnescape: bool = False
     ) -> str:
-        if not utils.isValidStr(text):
-            raise ValueError(f'text argument is malformed: \"{text}\"')
-        elif not utils.isValidBool(htmlUnescape):
+        if not utils.isValidBool(htmlUnescape):
             raise ValueError(f'htmlUnescape argument is malformed: \"{htmlUnescape}\"')
+
+        if not utils.isValidStr(text):
+            return ''
 
         text = text.strip()
 
