@@ -13,8 +13,6 @@ try:
         QuestionAnswerTriviaQuestion
     from CynanBotCommon.trivia.triviaAnswerCompiler import TriviaAnswerCompiler
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
-    from CynanBotCommon.trivia.triviaExceptions import \
-        UnsupportedTriviaTypeException
     from CynanBotCommon.trivia.triviaIdGenerator import TriviaIdGenerator
     from CynanBotCommon.trivia.triviaQuestionCompiler import \
         TriviaQuestionCompiler
@@ -32,7 +30,6 @@ except:
         QuestionAnswerTriviaQuestion
     from trivia.triviaAnswerCompiler import TriviaAnswerCompiler
     from trivia.triviaDifficulty import TriviaDifficulty
-    from trivia.triviaExceptions import UnsupportedTriviaTypeException
     from trivia.triviaIdGenerator import TriviaIdGenerator
     from trivia.triviaQuestionCompiler import TriviaQuestionCompiler
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
@@ -75,6 +72,9 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
             twitchChannel = twitchChannel,
             count = 1
         )
+
+        if not utils.hasItems(questions):
+            return None
 
         return questions[0]
 
@@ -120,40 +120,37 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
             question = utils.getStrFromDict(triviaJson, 'question')
             question = await self.__triviaQuestionCompiler.compileQuestion(question)
 
-            # this API looks to only ever give question and answer, so for now, we're just hardcoding this
-            triviaType = TriviaType.QUESTION_ANSWER
-
             triviaId = utils.getStrFromDict(triviaJson, 'id', fallback = '')
             if not utils.isValidStr(triviaId):
                 triviaId = await self.__triviaIdGenerator.generate(category = category, question = question)
 
-            if triviaType is TriviaType.QUESTION_ANSWER:
-                correctAnswer = await self.__triviaQuestionCompiler.compileResponse(utils.getStrFromDict(triviaJson, 'answer'))
-                correctAnswers: List[str] = list()
-                correctAnswers.append(correctAnswer)
+            correctAnswers: List[str] = list()
+            correctAnswers.append(utils.getStrFromDict(triviaJson, 'answer'))
+            correctAnswers = await self.__triviaQuestionCompiler.compileResponses(correctAnswers)
 
-                cleanedCorrectAnswers = await self.__triviaAnswerCompiler.compileTextAnswersList(correctAnswers)
+            cleanedCorrectAnswers: List[str] = list()
+            cleanedCorrectAnswers.append(utils.getStrFromDict(triviaJson, 'answer'))
+            cleanedCorrectAnswers = await self.__triviaAnswerCompiler.compileTextAnswersList(cleanedCorrectAnswers)
 
-                expandedCorrectAnswers: List[str] = list()
-                for answer in cleanedCorrectAnswers:
-                    expandedCorrectAnswers.extend(await self.__triviaAnswerCompiler.expandNumerals(answer))
+            expandedCorrectAnswers: List[str] = list()
+            for answer in cleanedCorrectAnswers:
+                expandedCorrectAnswers.extend(await self.__triviaAnswerCompiler.expandNumerals(answer))
 
-                questions.append(QuestionAnswerTriviaQuestion(
-                    correctAnswers = correctAnswers,
-                    cleanedCorrectAnswers = expandedCorrectAnswers,
-                    category = category,
-                    question = question,
-                    triviaId = triviaId,
-                    triviaDifficulty = TriviaDifficulty.UNKNOWN,
-                    triviaSource = TriviaSource.J_SERVICE
-                ))
-            else:
-                raise UnsupportedTriviaTypeException(f'triviaType \"{triviaType}\" is not supported for jService: {jsonResponse}')
+            questions.append(QuestionAnswerTriviaQuestion(
+                correctAnswers = correctAnswers,
+                cleanedCorrectAnswers = expandedCorrectAnswers,
+                category = category,
+                question = question,
+                triviaId = triviaId,
+                triviaDifficulty = TriviaDifficulty.UNKNOWN,
+                triviaSource = TriviaSource.J_SERVICE
+            ))
 
         if not utils.hasItems(questions):
             self.__timber.log('JServiceTriviaQuestionRepository', f'Unable to fetch any trivia questions from jService (twitchChannel={twitchChannel}, count={count}): {questions}')
-            raise ValueError(f'Unable to fetch any trivia questions from jService (twitchChannel={twitchChannel}, count={count}): {questions}')
-        elif len(questions) != count:
+            return None
+
+        if len(questions) != count:
             self.__timber.log('JServiceTriviaQuestionRepository', f'Requested {count} questions from jService, but only received {len(questions)} (twitchChannel={twitchChannel}): {questions}')
 
         return questions
