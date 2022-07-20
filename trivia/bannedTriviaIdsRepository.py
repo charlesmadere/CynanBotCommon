@@ -39,11 +39,11 @@ class BannedTriviaIdsRepository():
 
         self.__isDatabaseReady: bool = False
 
-    async def ban(self, triviaSource: TriviaSource, triviaId: str):
-        if triviaSource is None:
-            raise ValueError(f'triviaSource argument is malformed: \"{triviaSource}\"')
-        elif not utils.isValidStr(triviaId):
+    async def ban(self, triviaId: str, triviaSource: TriviaSource):
+        if not utils.isValidStr(triviaId):
             raise ValueError(f'triviaId argument is malformed: \"{triviaId}\"')
+        elif triviaSource is None:
+            raise ValueError(f'triviaSource argument is malformed: \"{triviaSource}\"')
 
         if await self.__triviaSettingsRepository.isDebugLoggingEnabled():
             self.__timber.log('BannedTriviaIdsRepository', f'Banning trivia question (triviaId=\"{triviaId}\", triviaSource=\"{triviaSource}\")...')
