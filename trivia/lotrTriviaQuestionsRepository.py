@@ -73,12 +73,16 @@ class LotrTriviaQuestionRepository(AbsTriviaQuestionRepository):
         question = utils.getStrFromDict(triviaDict, 'question')
         question = await self.__triviaQuestionCompiler.compileQuestion(question)
 
-        correctAnswers: List[str] = triviaDict['correctAnswers']
-        cleanedCorrectAnswers = await self.__triviaAnswerCompiler.compileTextAnswersList(correctAnswers)
+        correctAnswers = await self.__triviaQuestionCompiler.compileResponses(triviaDict['correctAnswers'])
+        cleanedCorrectAnswers = await self.__triviaAnswerCompiler.compileTextAnswersList(triviaDict['correctAnswers'])
+
+        expandedCorrectAnswers: List[str] = list()
+        for answer in cleanedCorrectAnswers:
+            expandedCorrectAnswers.extend(await self.__triviaAnswerCompiler.expandNumerals(answer))
 
         return QuestionAnswerTriviaQuestion(
             correctAnswers = correctAnswers,
-            cleanedCorrectAnswers = cleanedCorrectAnswers,
+            cleanedCorrectAnswers = expandedCorrectAnswers,
             category = 'Lord of the Rings',
             question = question,
             triviaId = triviaId,
