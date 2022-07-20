@@ -117,3 +117,25 @@ class BannedTriviaIdsRepository():
             self.__timber.log('BannedTriviaIdsRepository', f'Encountered banned trivia ID with count of {count} (triviaId=\"{triviaId}\", triviaSource=\"{triviaSource}\")')
 
         return True
+
+    async def unban(self, triviaId: str, triviaSource: TriviaSource):
+        if not utils.isValidStr(triviaId):
+            raise ValueError(f'triviaId argument is malformed: \"{triviaId}\"')
+        elif triviaSource is None:
+            raise ValueError(f'triviaSource argument is malformed: \"{triviaSource}\"')
+
+        if await self.__triviaSettingsRepository.isDebugLoggingEnabled():
+            self.__timber.log('BannedTriviaIdsRepository', f'Unbanning trivia question (triviaId=\"{triviaId}\", triviaSource=\"{triviaSource}\")...')
+
+        connection = await self.__getDatabaseConnection()
+        cursor = await connection.execute(
+            '''
+                DELETE FROM bannedTriviaIds
+                WHERE triviaId = ? AND triviaSource = ?
+            ''',
+            ( triviaId, triviaSource.toStr() )
+        )
+
+        await connection.commit()
+        await cursor.close()
+        await connection.close()
