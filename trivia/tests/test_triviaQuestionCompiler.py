@@ -13,43 +13,28 @@ class TestTriviaQuestionCompiler():
     triviaQuestionCompiler: TriviaQuestionCompiler = TriviaQuestionCompiler()
 
     @pytest.mark.asyncio
-    async def test_compileCategory_withNone(self):
-        category: str = None
-        exception: Exception = None
-
-        try:
-            category = await self.triviaQuestionCompiler.compileCategory(None)
-        except Exception as e:
-            exception = e
-
-        assert category is None
-        assert isinstance(exception, ValueError)
+    async def test_compileCategory_withEmptyString(self):
+        category: str = await self.triviaQuestionCompiler.compileCategory('')
+        assert category is not None
+        assert category == ''
 
     @pytest.mark.asyncio
-    async def test_compileCategory_withEmptyString(self):
-        category: str = None
-        exception: Exception = None
+    async def test_compileCategory_withNewLineString(self):
+        category: str = await self.triviaQuestionCompiler.compileCategory('\n')
+        assert category is not None
+        assert category == ''
 
-        try:
-            category = await self.triviaQuestionCompiler.compileCategory('')
-        except Exception as e:
-            exception = e
-
-        assert category is None
-        assert isinstance(exception, ValueError)
+    @pytest.mark.asyncio
+    async def test_compileCategory_withNone(self):
+        category: str = await self.triviaQuestionCompiler.compileCategory(None)
+        assert category is not None
+        assert category == ''
 
     @pytest.mark.asyncio
     async def test_compileCategory_withWhitespaceString(self):
-        category: str = None
-        exception: Exception = None
-
-        try:
-            category = await self.triviaQuestionCompiler.compileCategory(' ')
-        except Exception as e:
-            exception = e
-
-        assert category is None
-        assert isinstance(exception, ValueError)
+        category: str = await self.triviaQuestionCompiler.compileCategory(' ')
+        assert category is not None
+        assert category == ''
 
     @pytest.mark.asyncio
     async def test_compileQuestion_withEllipsis(self):
@@ -89,6 +74,19 @@ class TestTriviaQuestionCompiler():
         assert question == 'The ___ river is very long.'
 
     @pytest.mark.asyncio
+    async def test_compileQuestion_withNewLineString(self):
+        question: str = None
+        exception: Exception = None
+
+        try:
+            question = await self.triviaQuestionCompiler.compileQuestion('\n')
+        except Exception as e:
+            exception = e
+
+        assert question is None
+        assert isinstance(exception, ValueError)
+
+    @pytest.mark.asyncio
     async def test_compileQuestion_withNone(self):
         question: str = None
         exception: Exception = None
@@ -116,42 +114,27 @@ class TestTriviaQuestionCompiler():
 
     @pytest.mark.asyncio
     async def test_compileResponse_withEmptyString(self):
-        response: str = None
-        exception: Exception = None
+        response: str = await self.triviaQuestionCompiler.compileResponse('')
+        assert response is not None
+        assert response == ''
 
-        try:
-            response = await self.triviaQuestionCompiler.compileResponse('')
-        except Exception as e:
-            exception = e
-
-        assert response is None
-        assert isinstance(exception, ValueError)
+    @pytest.mark.asyncio
+    async def test_compileResponse_withNewLineString(self):
+        response: str = await self.triviaQuestionCompiler.compileResponse('\n')
+        assert response is not None
+        assert response == ''
 
     @pytest.mark.asyncio
     async def test_compileResponse_withNone(self):
-        response: str = None
-        exception: Exception = None
-
-        try:
-            response = await self.triviaQuestionCompiler.compileResponse(None)
-        except Exception as e:
-            exception = e
-
-        assert response is None
-        assert isinstance(exception, ValueError)
+        response: str = await self.triviaQuestionCompiler.compileResponse(None)
+        assert response is not None
+        assert response == ''
 
     @pytest.mark.asyncio
     async def test_compileResponse_withWhitespaceString(self):
-        response: str = None
-        exception: Exception = None
-
-        try:
-            response = await self.triviaQuestionCompiler.compileResponse(' ')
-        except Exception as e:
-            exception = e
-
-        assert response is None
-        assert isinstance(exception, ValueError)
+        response: str = await self.triviaQuestionCompiler.compileResponse(' ')
+        assert response is not None
+        assert response == ''
 
     @pytest.mark.asyncio
     async def test_compileResponses_withEmptyList(self):
