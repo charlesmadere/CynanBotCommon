@@ -92,6 +92,9 @@ class BannedTriviaIdsRepository():
         elif not utils.isValidStr(triviaId):
             raise ValueError(f'triviaId argument is malformed: \"{triviaId}\"')
 
+        if not await self.__triviaSettingsRepository.isBanListEnabled():
+            return False
+
         connection = await self.__getDatabaseConnection()
         cursor = await connection.execute(
             '''
