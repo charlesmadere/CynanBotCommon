@@ -29,8 +29,26 @@ class TestTriviaAnswerCompiler():
 
     @pytest.mark.asyncio
     async def test_compileBoolAnswer_withFalse(self):
+        result: bool = await self.triviaAnswerCompiler.compileBoolAnswer('f')
+        assert result is False
+
+    @pytest.mark.asyncio
+    async def test_compileBoolAnswer_withFalse(self):
         result: bool = await self.triviaAnswerCompiler.compileBoolAnswer('false')
         assert result is False
+
+    @pytest.mark.asyncio
+    async def test_compileBoolAnswer_withNewLineString(self):
+        result: bool = None
+        exception: Exception = None
+
+        try:
+            result = await self.triviaAnswerCompiler.compileBoolAnswer('\n')
+        except Exception as e:
+            exception = e
+
+        assert result is None
+        assert isinstance(exception, BadTriviaAnswerException)
 
     @pytest.mark.asyncio
     async def test_compileBoolAnswer_withNone(self):
@@ -57,6 +75,11 @@ class TestTriviaAnswerCompiler():
 
         assert result is None
         assert isinstance(exception, BadTriviaAnswerException)
+
+    @pytest.mark.asyncio
+    async def test_compileBoolAnswer_withTrue(self):
+        result: bool = await self.triviaAnswerCompiler.compileBoolAnswer('t')
+        assert result is True
 
     @pytest.mark.asyncio
     async def test_compileBoolAnswer_withTrue(self):
