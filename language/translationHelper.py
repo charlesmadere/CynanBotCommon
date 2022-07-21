@@ -53,6 +53,7 @@ class TranslationHelper():
         self.__deepLAuthKey: str = deepLAuthKey
         self.__timber: Timber = timber
         self.__googleServiceAccountFile: str = googleServiceAccountFile
+
         self.__googleTranslateClient = None
 
     async def __deepLTranslate(self, text: str, targetLanguageEntry: LanguageEntry) -> TranslationResponse:
