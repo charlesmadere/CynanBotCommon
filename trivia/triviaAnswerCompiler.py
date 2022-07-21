@@ -71,7 +71,7 @@ class TriviaAnswerCompiler():
         cleanedAnswer = await self.compileTextAnswer(answer)
 
         try:
-            return utils.strToBool(cleanedAnswer)
+            return utils.strictStrToBool(cleanedAnswer)
         except ValueError:
             raise BadTriviaAnswerException(f'answer can\'t be compiled to bool (answer:{answer}) (cleanedAnswer:{cleanedAnswer})')
 
