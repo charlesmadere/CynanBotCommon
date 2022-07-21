@@ -320,13 +320,52 @@ def removePreceedingAt(s: str) -> str:
 trueRegEx: Pattern = re.compile(r't(rue)?|y(es)?', re.IGNORECASE)
 falseRegEx: Pattern = re.compile(r'f(alse)?|n(o)?', re.IGNORECASE)
 
-def strToBool(s: str) -> bool:
+def strictStrToBool(s: Optional[str]) -> bool:
+    """
+    Converts the given string into a bool. None/empty/whitespace strings will .
+    Random strings ("abc123", "asdf", "qwerty", etc) will return True. Only strings that provide a
+    match with falseRegEx will return False.
+
+    Parameters
+    ------------
+    s: str
+        The string to convert into a bool (if None, an exception will be raised)
+
+    Raises
+    --------
+    ValueError
+        This exception will be raised if the given string matches neither one of trueRegEx nor
+        falseRegEx.
+    """
+
     if not isValidStr(s):
         raise ValueError(f's argument is malformed: \"{s}\"')
 
-    return falseRegEx.match(s) is None
+    if trueRegEx.match(s) is not None:
+        return True
+    elif falseRegEx.match(s) is not None:
+        return False
+    else:
+        raise ValueError(f'no matching bool conversion: \"{s}\"')
 
-def strsToBools(l: List[str]) -> List[bool]:
+def strToBool(s: Optional[str]) -> bool:
+    """
+    Converts the given string into a bool. None/empty/whitespace strings are converted into True.
+    Random strings ("abc123", "asdf", "qwerty", etc) will return True. Only strings that provide a
+    match with falseRegEx will return False.
+
+    Parameters
+    ------------
+    s: str
+        The string to convert into a bool (can be None)
+    """
+
+    if not isValidStr(s) or falseRegEx.match(s) is None:
+        return True
+    else:
+        return False
+
+def strsToBools(l: List[Optional[str]]) -> List[bool]:
     newList: List[bool] = list()
 
     for s in l:
