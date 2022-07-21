@@ -46,6 +46,10 @@ class AnalogueStoreRepository():
         self.__cacheTime = datetime.now(timezone.utc) - cacheTimeDelta
         self.__storeStock: AnalogueStoreStock = None
 
+    async def clearCaches(self):
+        self.__storeStock = None
+        self.__timber.log('AnalogueStoreRepository', 'Caches cleared')
+
     async def fetchStoreStock(self) -> AnalogueStoreStock:
         if self.__cacheTime + self.__cacheTimeDelta < datetime.now(timezone.utc) or self.__storeStock is None:
             self.__storeStock = self.__fetchStoreStock()
