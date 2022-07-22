@@ -127,6 +127,7 @@ class WillFryTriviaQuestionRepository(AbsTriviaQuestionRepository):
                     correctAnswers = correctAnswers,
                     multipleChoiceResponses = multipleChoiceResponses,
                     category = category,
+                    categoryId = None,
                     question = question,
                     triviaId = triviaId,
                     triviaDifficulty = TriviaDifficulty.UNKNOWN,
@@ -144,6 +145,7 @@ class WillFryTriviaQuestionRepository(AbsTriviaQuestionRepository):
             return TrueFalseTriviaQuestion(
                 correctAnswers = correctAnswers,
                 category = category,
+                categoryId = None,
                 question = question,
                 triviaId = triviaId,
                 triviaDifficulty = TriviaDifficulty.UNKNOWN,

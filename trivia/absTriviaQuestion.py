@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Optional
 
 try:
     import CynanBotCommon.utils as utils
@@ -21,7 +21,8 @@ class AbsTriviaQuestion(ABC):
 
     def __init__(
         self,
-        category: str,
+        category: Optional[str],
+        categoryId: Optional[str],
         question: str,
         triviaId: str,
         triviaDifficulty: TriviaDifficulty,
@@ -39,15 +40,19 @@ class AbsTriviaQuestion(ABC):
         elif triviaType is None:
             raise ValueError(f'triviaType argument is malformed: \"{triviaType}\"')
 
-        self.__category: str = category
+        self.__category: Optional[str] = category
+        self.__categoryId: Optional[str] = categoryId
         self.__question: str = question
         self.__triviaId: str = triviaId
         self.__triviaDifficulty: TriviaDifficulty = triviaDifficulty
         self.__triviaSource: TriviaSource = triviaSource
         self.__triviaType: TriviaType = triviaType
 
-    def getCategory(self) -> str:
+    def getCategory(self) -> Optional[str]:
         return self.__category
+
+    def getCategoryId(self) -> Optional[str]:
+        return self.__categoryId
 
     @abstractmethod
     def getCorrectAnswers(self) -> List[str]:
@@ -78,3 +83,6 @@ class AbsTriviaQuestion(ABC):
 
     def hasCategory(self) -> bool:
         return utils.isValidStr(self.__category)
+
+    def hasCategoryId(self) -> bool:
+        return utils.isValidStr(self.__categoryId)

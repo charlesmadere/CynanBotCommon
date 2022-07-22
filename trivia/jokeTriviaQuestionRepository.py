@@ -77,6 +77,7 @@ class JokeTriviaQuestionRepository(AbsTriviaQuestionRepository):
                 correctAnswers = correctAnswers,
                 multipleChoiceResponses = multipleChoiceResponses,
                 category = category,
+                categoryId = None,
                 triviaId = triviaId,
                 question = question,
                 triviaDifficulty = triviaDifficulty,
@@ -88,6 +89,7 @@ class JokeTriviaQuestionRepository(AbsTriviaQuestionRepository):
             return TrueFalseTriviaQuestion(
                 correctAnswers = correctAnswers,
                 category = category,
+                categoryId = None,
                 triviaId = triviaId,
                 question = question,
                 triviaDifficulty = triviaDifficulty,

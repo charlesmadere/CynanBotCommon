@@ -10,6 +10,8 @@ try:
         AbsTriviaQuestionRepository
     from CynanBotCommon.trivia.bongoTriviaQuestionRepository import \
         BongoTriviaQuestionRepository
+    from CynanBotCommon.trivia.funtoonTriviaQuestionRepository import \
+        FuntoonTriviaQuestionRepository
     from CynanBotCommon.trivia.jokeTriviaQuestionRepository import \
         JokeTriviaQuestionRepository
     from CynanBotCommon.trivia.jServiceTriviaQuestionRepository import \
@@ -47,6 +49,8 @@ except:
 
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.absTriviaQuestionRepository import AbsTriviaQuestionRepository
+    from trivia.funtoonTriviaQuestionRepository import \
+        FuntoonTriviaQuestionRepository
     from trivia.jokeTriviaQuestionRepository import \
         JokeTriviaQuestionRepository
     from trivia.jServiceTriviaQuestionRepository import \
@@ -82,7 +86,8 @@ class TriviaRepository():
     def __init__(
         self,
         bongoTriviaQuestionRepository: BongoTriviaQuestionRepository,
-        jokeTriviaQuestionRepository: JokeTriviaQuestionRepository,
+        funtoonTriviaQuestionRepository: FuntoonTriviaQuestionRepository,
+        jokeTriviaQuestionRepository: Optional[JokeTriviaQuestionRepository],
         jServiceTriviaQuestionRepository: JServiceTriviaQuestionRepository,
         lotrTriviaQuestionsRepository: LotrTriviaQuestionRepository,
         millionaireTriviaQuestionRepository: MillionaireTriviaQuestionRepository,
@@ -99,8 +104,8 @@ class TriviaRepository():
     ):
         if bongoTriviaQuestionRepository is None:
             raise ValueError(f'bongoTriviaQuestionRepository argument is malformed: \"{bongoTriviaQuestionRepository}\"')
-        elif jokeTriviaQuestionRepository is None:
-            raise ValueError(f'jokeTriviaQuestionRepository argument is malformed: \"{jokeTriviaQuestionRepository}\"')
+        elif funtoonTriviaQuestionRepository is None:
+            raise ValueError(f'funtoonTriviaQuestionRepository argument is malformed: \"{funtoonTriviaQuestionRepository}\"')
         elif jServiceTriviaQuestionRepository is None:
             raise ValueError(f'jServiceTriviaQuestionRepository argument is malformed: \"{jServiceTriviaQuestionRepository}\"')
         elif lotrTriviaQuestionsRepository is None:
@@ -129,13 +134,14 @@ class TriviaRepository():
             raise ValueError(f'sleepTimeSeconds argument is out of bounds: {sleepTimeSeconds}')
 
         self.__bongoTriviaQuestionRepository: AbsTriviaQuestionRepository = bongoTriviaQuestionRepository
-        self.__jokeTriviaQuestionRepository: AbsTriviaQuestionRepository = jokeTriviaQuestionRepository
+        self.__funtoonTriviaQuestionRepository: AbsTriviaQuestionRepository = funtoonTriviaQuestionRepository
+        self.__jokeTriviaQuestionRepository: Optional[AbsTriviaQuestionRepository] = jokeTriviaQuestionRepository
         self.__jServiceTriviaQuestionRepository: AbsTriviaQuestionRepository = jServiceTriviaQuestionRepository
         self.__lotrTriviaQuestionsRepository: AbsTriviaQuestionRepository = lotrTriviaQuestionsRepository
         self.__millionaireTriviaQuestionRepository: AbsTriviaQuestionRepository = millionaireTriviaQuestionRepository
         self.__openTriviaDatabaseTriviaQuestionRepository: AbsTriviaQuestionRepository = openTriviaDatabaseTriviaQuestionRepository
         self.__openTriviaQaTriviaQuestionRepository: OpenTriviaQaTriviaQuestionRepository = openTriviaQaTriviaQuestionRepository
-        self.__quizApiTriviaQuestionRepository: AbsTriviaQuestionRepository = quizApiTriviaQuestionRepository
+        self.__quizApiTriviaQuestionRepository: Optional[AbsTriviaQuestionRepository] = quizApiTriviaQuestionRepository
         self.__timber: Timber = timber
         self.__triviaDatabaseTriviaQuestionRepository: AbsTriviaQuestionRepository = triviaDatabaseTriviaQuestionRepository
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
@@ -166,7 +172,10 @@ class TriviaRepository():
                 if TriviaType.QUESTION_ANSWER not in triviaQuestionRepository.getSupportedTriviaTypes():
                     triviaSourcesToRemove.add(triviaSource)
 
-        if not await self.__isQuizApiAvailable():
+        if not await self.__isJokeTriviaQuestionRepositoryAvailable():
+            triviaSourcesToRemove.add(TriviaSource.JOKE_TRIVIA_REPOSITORY)
+
+        if not await self.__isQuizApiTriviaQuestionRepositoryAvailable():
             triviaSourcesToRemove.add(TriviaSource.QUIZ_API)
 
         if utils.hasItems(triviaSourcesToRemove):
@@ -198,6 +207,7 @@ class TriviaRepository():
     def __createTriviaSourceToRepositoryMap(self) -> Dict[TriviaSource, AbsTriviaQuestionRepository]:
         triviaSourceToRepositoryMap: Dict[TriviaSource, AbsTriviaQuestionRepository] = {
             TriviaSource.BONGO: self.__bongoTriviaQuestionRepository,
+            TriviaSource.FUNTOON: self.__funtoonTriviaQuestionRepository,
             TriviaSource.JOKE_TRIVIA_REPOSITORY: self.__jokeTriviaQuestionRepository,
             TriviaSource.J_SERVICE: self.__jServiceTriviaQuestionRepository,
             TriviaSource.LORD_OF_THE_RINGS: self.__lotrTriviaQuestionsRepository,
@@ -237,9 +247,9 @@ class TriviaRepository():
             try:
                 triviaQuestion = await triviaQuestionRepository.fetchTriviaQuestion(triviaFetchOptions.getTwitchChannel())
             except (NoTriviaCorrectAnswersException, NoTriviaMultipleChoiceResponsesException, NoTriviaQuestionException) as e:
-                self.__timber.log('TriviaRepository', f'Failed to fetch trivia question due to malformed data: {e}')
+                self.__timber.log('TriviaRepository', f'Failed to fetch trivia question due to malformed data (trivia source was \"{triviaQuestionRepository.getTriviaSource()}\"): {e}')
             except Exception as e:
-                self.__timber.log('TriviaRepository', f'Encountered unknown Exception when fetching trivia question: {e}')
+                self.__timber.log('TriviaRepository', f'Encountered unknown Exception when fetching trivia question (trivia source was \"{triviaQuestionRepository.getTriviaSource()}\"): {e}')
 
             if await self.__verifyGoodTriviaQuestion(triviaQuestion, triviaFetchOptions):
                 return triviaQuestion
@@ -249,7 +259,10 @@ class TriviaRepository():
 
         raise TooManyTriviaFetchAttemptsException(f'Unable to fetch trivia from {attemptedTriviaSources} after {retryCount} attempts (max attempts is {maxRetryCount})')
 
-    async def __isQuizApiAvailable(self) -> bool:
+    async def __isJokeTriviaQuestionRepositoryAvailable(self) -> bool:
+        return self.__jokeTriviaQuestionRepository is not None
+
+    async def __isQuizApiTriviaQuestionRepositoryAvailable(self) -> bool:
         return self.__quizApiTriviaQuestionRepository is not None
 
     async def __verifyGoodTriviaQuestion(

@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 try:
     import CynanBotCommon.utils as utils
@@ -23,7 +23,8 @@ class TrueFalseTriviaQuestion(AbsTriviaQuestion):
     def __init__(
         self,
         correctAnswers: List[bool],
-        category: str,
+        category: Optional[str],
+        categoryId: Optional[str],
         question: str,
         triviaId: str,
         triviaDifficulty: TriviaDifficulty,
@@ -31,6 +32,7 @@ class TrueFalseTriviaQuestion(AbsTriviaQuestion):
     ):
         super().__init__(
             category = category,
+            categoryId = categoryId,
             question = question,
             triviaId = triviaId,
             triviaDifficulty = triviaDifficulty,

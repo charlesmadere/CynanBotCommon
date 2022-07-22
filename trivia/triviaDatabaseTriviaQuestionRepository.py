@@ -88,6 +88,7 @@ class TriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
             correctAnswers = correctAnswers,
             multipleChoiceResponses = multipleChoiceResponses,
             category = category,
+            categoryId = None,
             question = question,
             triviaId = triviaId,
             triviaDifficulty = triviaDifficulty,

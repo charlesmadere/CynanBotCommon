@@ -12,12 +12,16 @@
             "is_enabled": true,
             "weight": 600
         },
-        "joke_trivia_repository": {
+        "funtoon": {
             "is_enabled": true,
+            "weight": 150
+        },
+        "joke_trivia_repository": {
+            "is_enabled": false,
             "weight": 10
         },
         "j_service": {
-            "is_enabled": true,
+            "is_enabled": false,
             "weight": 100
         },
         "lord_of_the_rings": {

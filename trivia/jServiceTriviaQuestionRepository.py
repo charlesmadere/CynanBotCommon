@@ -140,6 +140,7 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
                 correctAnswers = correctAnswers,
                 cleanedCorrectAnswers = expandedCorrectAnswers,
                 category = category,
+                categoryId = None,
                 question = question,
                 triviaId = triviaId,
                 triviaDifficulty = TriviaDifficulty.UNKNOWN,
