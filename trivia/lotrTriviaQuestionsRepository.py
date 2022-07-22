@@ -84,6 +84,7 @@ class LotrTriviaQuestionRepository(AbsTriviaQuestionRepository):
             correctAnswers = correctAnswers,
             cleanedCorrectAnswers = expandedCorrectAnswers,
             category = 'Lord of the Rings',
+            categoryId = None,
             question = question,
             triviaId = triviaId,
             triviaDifficulty = TriviaDifficulty.UNKNOWN,

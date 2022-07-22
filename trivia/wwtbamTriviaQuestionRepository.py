@@ -103,6 +103,7 @@ class WwtbamTriviaQuestionRepository(AbsTriviaQuestionRepository):
             correctAnswers = correctAnswers,
             multipleChoiceResponses = multipleChoiceResponses,
             category = None,
+            categoryId = None,
             question = question,
             triviaId = triviaId,
             triviaDifficulty = TriviaDifficulty.UNKNOWN,

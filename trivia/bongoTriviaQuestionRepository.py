@@ -140,6 +140,7 @@ class BongoTriviaQuestionRepository(AbsTriviaQuestionRepository):
                     correctAnswers = correctAnswers,
                     multipleChoiceResponses = multipleChoiceResponses,
                     category = category,
+                    categoryId = None,
                     question = question,
                     triviaId = triviaId,
                     triviaDifficulty = triviaDifficulty,
@@ -157,6 +158,7 @@ class BongoTriviaQuestionRepository(AbsTriviaQuestionRepository):
             return TrueFalseTriviaQuestion(
                 correctAnswers = correctAnswers,
                 category = category,
+                categoryId = None,
                 question = question,
                 triviaId = triviaId,
                 triviaDifficulty = triviaDifficulty,

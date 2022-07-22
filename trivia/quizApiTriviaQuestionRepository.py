@@ -150,6 +150,7 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
                     correctAnswers = correctAnswers,
                     multipleChoiceResponses = multipleChoiceResponses,
                     category = category,
+                    categoryId = None,
                     question = question,
                     triviaId = triviaId,
                     triviaDifficulty = triviaDifficulty,
@@ -163,6 +164,7 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
             return TrueFalseTriviaQuestion(
                 correctAnswers = utils.strsToBools(correctAnswers),
                 category = category,
+                categoryId = None,
                 question = question,
                 triviaId = triviaId,
                 triviaDifficulty = triviaDifficulty,
