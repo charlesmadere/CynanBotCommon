@@ -90,7 +90,7 @@ class FuntoonTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         categoryId = utils.getStrFromDict(jsonResponse, 'category_id')
 
-        question = utils.getStrFromDict(jsonResponse, 'question')
+        question = utils.getStrFromDict(jsonResponse, 'clue')
         question = await self.__triviaQuestionCompiler.compileQuestion(question)
 
         triviaId = utils.getStrFromDict(jsonResponse, 'id')
