@@ -69,7 +69,7 @@ class TriviaHistoryRepository():
                 ORDER BY datetime DESC
                 LIMIT 1
             ''',
-            ( twitchChannel, )
+            ( emote, twitchChannel )
         )
 
         row = await cursor.fetchone()
