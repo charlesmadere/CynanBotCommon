@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import aiosqlite
 
@@ -11,6 +11,7 @@ try:
     from CynanBotCommon.trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
+    from CynanBotCommon.trivia.triviaEmoteGenerator import TriviaEmoteGenerator
     from CynanBotCommon.trivia.triviaExceptions import \
         UnsupportedTriviaTypeException
     from CynanBotCommon.trivia.triviaQuestionCompiler import \
@@ -30,6 +31,7 @@ except:
     from trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
     from trivia.triviaDifficulty import TriviaDifficulty
+    from trivia.triviaEmoteGenerator import TriviaEmoteGenerator
     from trivia.triviaExceptions import UnsupportedTriviaTypeException
     from trivia.triviaQuestionCompiler import TriviaQuestionCompiler
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
@@ -43,6 +45,7 @@ class OpenTriviaQaTriviaQuestionRepository(AbsTriviaQuestionRepository):
     def __init__(
         self,
         timber: Timber,
+        triviaEmoteGenerator: TriviaEmoteGenerator,
         triviaQuestionCompiler: TriviaQuestionCompiler,
         triviaSettingsRepository: TriviaSettingsRepository,
         triviaDatabaseFile: str = 'CynanBotCommon/trivia/openTriviaQaTriviaQuestionDatabase.sqlite'
@@ -51,17 +54,20 @@ class OpenTriviaQaTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         if timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
+        elif triviaEmoteGenerator is None:
+            raise ValueError(f'triviaEmoteGenerator argument is malformed: \"{triviaEmoteGenerator}\"')
         elif triviaQuestionCompiler is None:
             raise ValueError(f'triviaQuestionCompiler argument is malformed: \"{triviaQuestionCompiler}\"')
         elif not utils.isValidStr(triviaDatabaseFile):
             raise ValueError(f'triviaDatabaseFile argument is malformed: \"{triviaDatabaseFile}\"')
 
         self.__timber: Timber = timber
+        self.__triviaEmoteGenerator: TriviaEmoteGenerator = triviaEmoteGenerator
         self.__triviaQuestionCompiler: TriviaQuestionCompiler = triviaQuestionCompiler
         self.__triviaDatabaseFile: str = triviaDatabaseFile
 
-    async def fetchTriviaQuestion(self, twitchChannel: Optional[str]) -> AbsTriviaQuestion:
-        self.__timber.log('OpenTriviaQaTriviaQuestionRepository', 'Fetching trivia question...')
+    async def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
+        self.__timber.log('OpenTriviaQaTriviaQuestionRepository', f'Fetching trivia question... (twitchChannel={twitchChannel})')
 
         triviaDict = await self.__fetchTriviaQuestionDict()
 
@@ -76,6 +82,8 @@ class OpenTriviaQaTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         question = utils.getStrFromDict(triviaDict, 'question')
         question = await self.__triviaQuestionCompiler.compileQuestion(question)
+
+        emote = await self.__triviaEmoteGenerator.getNextEmoteFor(twitchChannel)
 
         if triviaType is TriviaType.MULTIPLE_CHOICE:
             correctAnswer = utils.getStrFromDict(triviaDict, 'correctAnswer')
@@ -96,6 +104,7 @@ class OpenTriviaQaTriviaQuestionRepository(AbsTriviaQuestionRepository):
                 multipleChoiceResponses = multipleChoiceResponses,
                 category = category,
                 categoryId = None,
+                emote = emote,
                 question = question,
                 triviaId = triviaId,
                 triviaDifficulty = TriviaDifficulty.UNKNOWN,
@@ -110,6 +119,7 @@ class OpenTriviaQaTriviaQuestionRepository(AbsTriviaQuestionRepository):
                 correctAnswers = correctAnswers,
                 category = category,
                 categoryId = None,
+                emote = emote,
                 question = question,
                 triviaId = triviaId,
                 triviaDifficulty = TriviaDifficulty.UNKNOWN,

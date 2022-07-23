@@ -1,5 +1,5 @@
 from asyncio import TimeoutError
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import aiohttp
 
@@ -13,6 +13,7 @@ try:
         QuestionAnswerTriviaQuestion
     from CynanBotCommon.trivia.triviaAnswerCompiler import TriviaAnswerCompiler
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
+    from CynanBotCommon.trivia.triviaEmoteGenerator import TriviaEmoteGenerator
     from CynanBotCommon.trivia.triviaIdGenerator import TriviaIdGenerator
     from CynanBotCommon.trivia.triviaQuestionCompiler import \
         TriviaQuestionCompiler
@@ -30,6 +31,7 @@ except:
         QuestionAnswerTriviaQuestion
     from trivia.triviaAnswerCompiler import TriviaAnswerCompiler
     from trivia.triviaDifficulty import TriviaDifficulty
+    from trivia.triviaEmoteGenerator import TriviaEmoteGenerator
     from trivia.triviaIdGenerator import TriviaIdGenerator
     from trivia.triviaQuestionCompiler import TriviaQuestionCompiler
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
@@ -44,6 +46,7 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
         clientSession: aiohttp.ClientSession,
         timber: Timber,
         triviaAnswerCompiler: TriviaAnswerCompiler,
+        triviaEmoteGenerator: TriviaEmoteGenerator,
         triviaIdGenerator: TriviaIdGenerator,
         triviaQuestionCompiler: TriviaQuestionCompiler,
         triviaSettingsRepository: TriviaSettingsRepository
@@ -56,6 +59,8 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif triviaAnswerCompiler is None:
             raise ValueError(f'triviaAnswerCompiler argument is malformed: \"{triviaAnswerCompiler}\"')
+        elif triviaEmoteGenerator is None:
+            raise ValueError(f'triviaEmoteGenerator argument is malformed: \"{triviaEmoteGenerator}\"')
         elif triviaIdGenerator is None:
             raise ValueError(f'triviaIdGenerator argument is malformed: \"{triviaIdGenerator}\"')
         elif triviaQuestionCompiler is None:
@@ -64,10 +69,11 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self.__clientSession: aiohttp.ClientSession = clientSession
         self.__timber: Timber = timber
         self.__triviaAnswerCompiler: TriviaAnswerCompiler = triviaAnswerCompiler
+        self.__triviaEmoteGenerator: TriviaEmoteGenerator = triviaEmoteGenerator
         self.__triviaIdGenerator: TriviaIdGenerator = triviaIdGenerator
         self.__triviaQuestionCompiler: TriviaQuestionCompiler = triviaQuestionCompiler
 
-    async def fetchTriviaQuestion(self, twitchChannel: Optional[str]) -> AbsTriviaQuestion:
+    async def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
         questions = await self.fetchTriviaQuestions(
             twitchChannel = twitchChannel,
             count = 1
@@ -78,7 +84,7 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         return questions[0]
 
-    async def fetchTriviaQuestions(self, twitchChannel: Optional[str], count: int) -> List[AbsTriviaQuestion]:
+    async def fetchTriviaQuestions(self, twitchChannel: str, count: int) -> List[AbsTriviaQuestion]:
         if not utils.isValidNum(count):
             raise ValueError(f'count argument is malformed: \"{count}\"')
         elif count < 1 or count > 100:
@@ -136,11 +142,14 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
             for answer in cleanedCorrectAnswers:
                 expandedCorrectAnswers.extend(await self.__triviaAnswerCompiler.expandNumerals(answer))
 
+            emote = await self.__triviaEmoteGenerator.getNextEmoteFor(twitchChannel)
+
             questions.append(QuestionAnswerTriviaQuestion(
                 correctAnswers = correctAnswers,
                 cleanedCorrectAnswers = expandedCorrectAnswers,
                 category = category,
                 categoryId = None,
+                emote = emote,
                 question = question,
                 triviaId = triviaId,
                 triviaDifficulty = TriviaDifficulty.UNKNOWN,

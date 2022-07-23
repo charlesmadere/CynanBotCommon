@@ -53,16 +53,19 @@ class TriviaHistoryRepository():
 
     async def getMostRecentTriviaQuestionDetails(
         self,
+        emote: str,
         twitchChannel: str
     ) -> Optional[TriviaQuestionReference]:
-        if not utils.isValidStr(twitchChannel):
+        if not utils.isValidStr(emote):
+            raise ValueError(f'emote argument is malformed: \"{emote}\"')
+        elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
         connection = await self.__getDatabaseConnection()
         cursor = await connection.execute(
             '''
-                SELECT triviaId, triviaSource FROM triviaHistory
-                WHERE twitchChannel = ?
+                SELECT emote, triviaId, triviaSource FROM triviaHistory
+                WHERE emote IS NOT NULL AND emote = ? AND twitchChannel = ?
                 ORDER BY datetime DESC
                 LIMIT 1
             ''',
@@ -74,9 +77,10 @@ class TriviaHistoryRepository():
 
         if row is not None:
             triviaQuestionReference = TriviaQuestionReference(
-                triviaId = row[0],
+                emote = row[0],
+                triviaId = row[1],
                 twitchChannel = twitchChannel,
-                triviaSource = TriviaSource.fromStr(row[1])
+                triviaSource = TriviaSource.fromStr(row[2])
             )
 
         await cursor.close()
@@ -94,6 +98,7 @@ class TriviaHistoryRepository():
             '''
                 CREATE TABLE IF NOT EXISTS triviaHistory (
                     datetime TEXT NOT NULL,
+                    emote TEXT NOT NULL,
                     triviaId TEXT NOT NULL COLLATE NOCASE,
                     triviaSource TEXT NOT NULL COLLATE NOCASE,
                     twitchChannel TEXT NOT NULL COLLATE NOCASE,
@@ -106,13 +111,17 @@ class TriviaHistoryRepository():
         await cursor.close()
         await connection.close()
 
-    async def verify(self, question: AbsTriviaQuestion, twitchChannel: str) -> TriviaContentCode:
-        if not utils.isValidStr(twitchChannel):
+    async def verify(
+        self,
+        question: AbsTriviaQuestion,
+        twitchChannel: str
+    ) -> TriviaContentCode:
+        if question is None:
+            raise ValueError(f'question argument is malformed: \"{question}\"')
+        elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
-        if question is None:
-            return TriviaContentCode.IS_NONE
-
+        emote = question.getEmote()
         triviaId = question.getTriviaId()
         triviaSource = question.getTriviaSource().toStr()
 
@@ -130,12 +139,12 @@ class TriviaHistoryRepository():
         nowDateTimeStr = nowDateTime.isoformat()
 
         if row is None:
-            await cursor.execute(
+            await connection.execute(
                 '''
-                    INSERT INTO triviaHistory (datetime, triviaId, triviaSource, twitchChannel)
-                    VALUES (?, ?, ?, ?)
+                    INSERT INTO triviaHistory (datetime, emote, triviaId, triviaSource, twitchChannel)
+                    VALUES (?, ?, ?, ?, ?)
                 ''',
-                ( nowDateTimeStr, triviaId, triviaSource, twitchChannel )
+                ( nowDateTimeStr, emote, triviaId, triviaSource, twitchChannel )
             )
 
             await connection.commit()
@@ -145,32 +154,30 @@ class TriviaHistoryRepository():
 
         questionDateTimeStr: str = row[0]
         questionDateTime = datetime.fromisoformat(questionDateTimeStr)
+        await cursor.close()
+
         minimumTimeDelta = timedelta(days = await self.__triviaSettingsRepository.getMinDaysBeforeRepeatQuestion())
         isDebugLoggingEnabled = await self.__triviaSettingsRepository.isDebugLoggingEnabled()
 
         if questionDateTime + minimumTimeDelta >= nowDateTime:
-            await cursor.close()
-            await connection.close()
-
             if isDebugLoggingEnabled:
                 self.__timber.log('TriviaHistoryRepository', f'Encountered duplicate triviaHistory entry for triviaId:{triviaId} triviaSource:{triviaSource} twitchChannel:{twitchChannel} that is within the window of being a repeat (now:{nowDateTimeStr}) (db:{questionDateTimeStr})')
 
+            await connection.close()
             return TriviaContentCode.REPEAT
 
-        await cursor.execute(
+        await connection.execute(
             '''
                 UPDATE triviaHistory
-                SET datetime = ?
+                SET datetime = ?, emote = ?
                 WHERE triviaId = ? AND triviaSource = ? AND twitchChannel = ?
             ''',
-            ( nowDateTimeStr, triviaId, triviaSource, twitchChannel )
+            ( nowDateTimeStr, emote, triviaId, triviaSource, twitchChannel )
         )
-
-        await connection.commit()
-        await cursor.close()
-        await connection.close()
 
         if isDebugLoggingEnabled:
             self.__timber.log('TriviaHistoryRepository', f'Updated triviaHistory entry for triviaId:{triviaId} triviaSource:{triviaSource} twitchChannel:{twitchChannel} to {nowDateTimeStr} from {questionDateTimeStr}')
 
+        await connection.commit()
+        await connection.close()
         return TriviaContentCode.OK

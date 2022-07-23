@@ -1,5 +1,5 @@
 from asyncio import TimeoutError
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import aiohttp
 
@@ -13,6 +13,7 @@ try:
         QuestionAnswerTriviaQuestion
     from CynanBotCommon.trivia.triviaAnswerCompiler import TriviaAnswerCompiler
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
+    from CynanBotCommon.trivia.triviaEmoteGenerator import TriviaEmoteGenerator
     from CynanBotCommon.trivia.triviaQuestionCompiler import \
         TriviaQuestionCompiler
     from CynanBotCommon.trivia.triviaSettingsRepository import \
@@ -29,6 +30,7 @@ except:
         QuestionAnswerTriviaQuestion
     from trivia.triviaAnswerCompiler import TriviaAnswerCompiler
     from trivia.triviaDifficulty import TriviaDifficulty
+    from trivia.triviaEmoteGenerator import TriviaEmoteGenerator
     from trivia.triviaQuestionCompiler import TriviaQuestionCompiler
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
@@ -42,6 +44,7 @@ class FuntoonTriviaQuestionRepository(AbsTriviaQuestionRepository):
         clientSession: aiohttp.ClientSession,
         timber: Timber,
         triviaAnswerCompiler: TriviaAnswerCompiler,
+        triviaEmoteGenerator: TriviaEmoteGenerator,
         triviaQuestionCompiler: TriviaQuestionCompiler,
         triviaSettingsRepository: TriviaSettingsRepository
     ):
@@ -49,6 +52,8 @@ class FuntoonTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         if clientSession is None:
             raise ValueError(f'clientSession argument is malformed: \"{clientSession}\"')
+        elif triviaEmoteGenerator is None:
+            raise ValueError(f'triviaEmoteGenerator argument is malformed: \"{triviaEmoteGenerator}\"')
         elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif triviaAnswerCompiler is None:
@@ -59,9 +64,13 @@ class FuntoonTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self.__clientSession: aiohttp.ClientSession = clientSession
         self.__timber: Timber = timber
         self.__triviaAnswerCompiler: TriviaAnswerCompiler = triviaAnswerCompiler
+        self.__triviaEmoteGenerator: TriviaEmoteGenerator = triviaEmoteGenerator
         self.__triviaQuestionCompiler: TriviaQuestionCompiler = triviaQuestionCompiler
 
-    async def fetchTriviaQuestion(self, twitchChannel: Optional[str]) -> AbsTriviaQuestion:
+    async def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
+        if not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+
         self.__timber.log('FuntoonTriviaQuestionRepository', f'Fetching trivia question(s)... (twitchChannel={twitchChannel})')
 
         response = None
@@ -110,11 +119,14 @@ class FuntoonTriviaQuestionRepository(AbsTriviaQuestionRepository):
         # TODO In the future, we will also check some additional fields (`formatted_answer` and
         # `format_type`). These will assist in providing computer-readable answer logic.
 
+        emote = await self.__triviaEmoteGenerator.getNextEmoteFor(twitchChannel)
+
         return QuestionAnswerTriviaQuestion(
             correctAnswers = correctAnswers,
             cleanedCorrectAnswers = expandedCorrectAnswers,
             category = category,
             categoryId = categoryId,
+            emote = emote,
             question = question,
             triviaId = triviaId,
             triviaDifficulty = TriviaDifficulty.UNKNOWN,

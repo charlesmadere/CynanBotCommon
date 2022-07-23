@@ -23,13 +23,16 @@ class AbsTriviaQuestion(ABC):
         self,
         category: Optional[str],
         categoryId: Optional[str],
+        emote: str,
         question: str,
         triviaId: str,
         triviaDifficulty: TriviaDifficulty,
         triviaSource: TriviaSource,
         triviaType: TriviaType
     ):
-        if not utils.isValidStr(question):
+        if not utils.isValidStr(emote):
+            raise ValueError(f'emote argument is malformed: \"{emote}\"')
+        elif not utils.isValidStr(question):
             raise NoTriviaQuestionException(f'question argument is malformed: \"{question}\"')
         elif not utils.isValidStr(triviaId):
             raise ValueError(f'triviaId argument is malformed: \"{triviaId}\"')
@@ -42,6 +45,7 @@ class AbsTriviaQuestion(ABC):
 
         self.__category: Optional[str] = category
         self.__categoryId: Optional[str] = categoryId
+        self.__emote: str = emote
         self.__question: str = question
         self.__triviaId: str = triviaId
         self.__triviaDifficulty: TriviaDifficulty = triviaDifficulty
@@ -57,6 +61,9 @@ class AbsTriviaQuestion(ABC):
     @abstractmethod
     def getCorrectAnswers(self) -> List[str]:
         pass
+
+    def getEmote(self) -> str:
+        return self.__emote
 
     @abstractmethod
     def getPrompt(self, delimiter: str = ' ') -> str:
