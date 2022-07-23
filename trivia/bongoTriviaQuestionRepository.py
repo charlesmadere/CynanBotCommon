@@ -1,5 +1,5 @@
 from asyncio import TimeoutError
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import aiohttp
 
@@ -12,6 +12,7 @@ try:
     from CynanBotCommon.trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
+    from CynanBotCommon.trivia.triviaEmoteGenerator import TriviaEmoteGenerator
     from CynanBotCommon.trivia.triviaExceptions import \
         UnsupportedTriviaTypeException
     from CynanBotCommon.trivia.triviaIdGenerator import TriviaIdGenerator
@@ -32,6 +33,7 @@ except:
     from trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
     from trivia.triviaDifficulty import TriviaDifficulty
+    from trivia.triviaEmoteGenerator import TriviaEmoteGenerator
     from trivia.triviaExceptions import UnsupportedTriviaTypeException
     from trivia.triviaIdGenerator import TriviaIdGenerator
     from trivia.triviaQuestionCompiler import TriviaQuestionCompiler
@@ -47,6 +49,7 @@ class BongoTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self,
         clientSession: aiohttp.ClientSession,
         timber: Timber,
+        triviaEmoteGenerator: TriviaEmoteGenerator,
         triviaIdGenerator: TriviaIdGenerator,
         triviaQuestionCompiler: TriviaQuestionCompiler,
         triviaSettingsRepository: TriviaSettingsRepository
@@ -57,6 +60,8 @@ class BongoTriviaQuestionRepository(AbsTriviaQuestionRepository):
             raise ValueError(f'clientSession argument is malformed: \"{clientSession}\"')
         elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
+        elif triviaEmoteGenerator is None:
+            raise ValueError(f'triviaEmoteGenerator argument is malformed: \"{triviaEmoteGenerator}\"')
         elif triviaIdGenerator is None:
             raise ValueError(f'triviaIdGenerator argument is malformed: \"{triviaIdGenerator}\"')
         elif triviaQuestionCompiler is None:
@@ -64,11 +69,12 @@ class BongoTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         self.__clientSession: aiohttp.ClientSession = clientSession
         self.__timber: Timber = timber
+        self.__triviaEmoteGenerator: TriviaEmoteGenerator = triviaEmoteGenerator
         self.__triviaIdGenerator: TriviaIdGenerator = triviaIdGenerator
         self.__triviaQuestionCompiler: TriviaQuestionCompiler = triviaQuestionCompiler
 
-    async def fetchTriviaQuestion(self, twitchChannel: Optional[str]) -> AbsTriviaQuestion:
-        self.__timber.log('BongoTriviaQuestionRepository', 'Fetching trivia question...')
+    async def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
+        self.__timber.log('BongoTriviaQuestionRepository', f'Fetching trivia question... (twitchChannel={twitchChannel})')
 
         response = None
         try:
@@ -117,6 +123,8 @@ class BongoTriviaQuestionRepository(AbsTriviaQuestionRepository):
                 question = question
             )
 
+        emote = await self.__triviaEmoteGenerator.getNextEmoteFor(twitchChannel)
+
         if triviaType is TriviaType.MULTIPLE_CHOICE:
             correctAnswer = await self.__triviaQuestionCompiler.compileResponse(
                 response = utils.getStrFromDict(triviaJson, 'correct_answer'),
@@ -141,6 +149,7 @@ class BongoTriviaQuestionRepository(AbsTriviaQuestionRepository):
                     multipleChoiceResponses = multipleChoiceResponses,
                     category = category,
                     categoryId = None,
+                    emote = emote,
                     question = question,
                     triviaId = triviaId,
                     triviaDifficulty = triviaDifficulty,
@@ -159,6 +168,7 @@ class BongoTriviaQuestionRepository(AbsTriviaQuestionRepository):
                 correctAnswers = correctAnswers,
                 category = category,
                 categoryId = None,
+                emote = emote,
                 question = question,
                 triviaId = triviaId,
                 triviaDifficulty = triviaDifficulty,

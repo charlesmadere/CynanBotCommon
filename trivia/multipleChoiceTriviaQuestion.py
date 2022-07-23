@@ -29,6 +29,7 @@ class MultipleChoiceTriviaQuestion(AbsTriviaQuestion):
         multipleChoiceResponses: List[str],
         category: Optional[str],
         categoryId: Optional[str],
+        emote: str,
         question: str,
         triviaId: str,
         triviaDifficulty: TriviaDifficulty,
@@ -37,6 +38,7 @@ class MultipleChoiceTriviaQuestion(AbsTriviaQuestion):
         super().__init__(
             category = category,
             categoryId = categoryId,
+            emote = emote,
             question = question,
             triviaId = triviaId,
             triviaDifficulty = triviaDifficulty,

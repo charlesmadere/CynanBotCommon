@@ -25,6 +25,7 @@ class TrueFalseTriviaQuestion(AbsTriviaQuestion):
         correctAnswers: List[bool],
         category: Optional[str],
         categoryId: Optional[str],
+        emote: str,
         question: str,
         triviaId: str,
         triviaDifficulty: TriviaDifficulty,
@@ -33,6 +34,7 @@ class TrueFalseTriviaQuestion(AbsTriviaQuestion):
         super().__init__(
             category = category,
             categoryId = categoryId,
+            emote = emote,
             question = question,
             triviaId = triviaId,
             triviaDifficulty = triviaDifficulty,

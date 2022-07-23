@@ -381,6 +381,7 @@ class CutenessRepository():
         if row is not None:
             oldCuteness = row[0]
 
+        await cursor.close()
         newCuteness: int = oldCuteness + incrementAmount
 
         if newCuteness < 0:
@@ -388,7 +389,7 @@ class CutenessRepository():
         elif newCuteness > utils.getLongMaxSafeSize():
             raise OverflowError(f'New cuteness ({newCuteness}) would be too large (old cuteness = {oldCuteness}) (increment amount = {incrementAmount})')
 
-        await cursor.execute(
+        await connection.execute(
             '''
                 INSERT INTO cuteness (cuteness, twitchChannel, userId, utcYearAndMonth)
                 VALUES (?, ?, ?, ?)

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import List
 
 try:
     import CynanBotCommon.utils as utils
@@ -82,7 +82,7 @@ class AbsTriviaQuestionRepository(ABC):
         return filteredMultipleChoiceResponses
 
     @abstractmethod
-    async def fetchTriviaQuestion(self, twitchChannel: Optional[str]) -> AbsTriviaQuestion:
+    async def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
         pass
 
     @abstractmethod

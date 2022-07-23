@@ -1,5 +1,5 @@
 from asyncio import TimeoutError
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 import aiohttp
 
@@ -12,6 +12,7 @@ try:
     from CynanBotCommon.trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
+    from CynanBotCommon.trivia.triviaEmoteGenerator import TriviaEmoteGenerator
     from CynanBotCommon.trivia.triviaExceptions import (
         NoTriviaCorrectAnswersException, UnsupportedTriviaTypeException)
     from CynanBotCommon.trivia.triviaIdGenerator import TriviaIdGenerator
@@ -30,6 +31,7 @@ except:
     from trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
     from trivia.triviaDifficulty import TriviaDifficulty
+    from trivia.triviaEmoteGenerator import TriviaEmoteGenerator
     from trivia.triviaExceptions import (NoTriviaCorrectAnswersException,
                                          UnsupportedTriviaTypeException)
     from trivia.triviaIdGenerator import TriviaIdGenerator
@@ -46,6 +48,7 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
         clientSession: aiohttp.ClientSession,
         quizApiKey: str,
         timber: Timber,
+        triviaEmoteGenerator: TriviaEmoteGenerator,
         triviaIdGenerator: TriviaIdGenerator,
         triviaSettingsRepository: TriviaSettingsRepository
     ):
@@ -57,16 +60,19 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
             raise ValueError(f'quizApiKey argument is malformed: \"{quizApiKey}\"')
         elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
+        elif triviaEmoteGenerator is None:
+            raise ValueError(f'triviaEmoteGenerator argument is malformed: \"{triviaEmoteGenerator}\"')
         elif triviaIdGenerator is None:
             raise ValueError(f'triviaIdGenerator argument is malformed: \"{triviaIdGenerator}\"')
 
         self.__clientSession: aiohttp.ClientSession = clientSession
         self.__quizApiKey: str = quizApiKey
         self.__timber: Timber = timber
+        self.__triviaEmoteGenerator: TriviaEmoteGenerator = triviaEmoteGenerator
         self.__triviaIdGenerator: TriviaIdGenerator = triviaIdGenerator
 
-    async def fetchTriviaQuestion(self, twitchChannel: Optional[str]) -> AbsTriviaQuestion:
-        self.__timber.log('QuizApiTriviaQuestionRepository', 'Fetching trivia question...')
+    async def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
+        self.__timber.log('QuizApiTriviaQuestionRepository', f'Fetching trivia question... (twitchChannel={twitchChannel})')
 
         response = None
         try:
@@ -144,6 +150,8 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
             multipleChoiceResponses = filteredAnswers
         )
 
+        emote = await self.__triviaEmoteGenerator.getNextEmoteFor(twitchChannel)
+
         if triviaType is TriviaType.MULTIPLE_CHOICE:
             if await self._verifyIsActuallyMultipleChoiceQuestion(correctAnswers, multipleChoiceResponses):
                 return MultipleChoiceTriviaQuestion(
@@ -151,6 +159,7 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
                     multipleChoiceResponses = multipleChoiceResponses,
                     category = category,
                     categoryId = None,
+                    emote = emote,
                     question = question,
                     triviaId = triviaId,
                     triviaDifficulty = triviaDifficulty,
@@ -165,6 +174,7 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
                 correctAnswers = utils.strsToBools(correctAnswers),
                 category = category,
                 categoryId = None,
+                emote = emote,
                 question = question,
                 triviaId = triviaId,
                 triviaDifficulty = triviaDifficulty,

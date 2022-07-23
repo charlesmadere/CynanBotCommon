@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import aiosqlite
 
@@ -12,6 +12,7 @@ try:
         QuestionAnswerTriviaQuestion
     from CynanBotCommon.trivia.triviaAnswerCompiler import TriviaAnswerCompiler
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
+    from CynanBotCommon.trivia.triviaEmoteGenerator import TriviaEmoteGenerator
     from CynanBotCommon.trivia.triviaQuestionCompiler import \
         TriviaQuestionCompiler
     from CynanBotCommon.trivia.triviaSettingsRepository import \
@@ -28,6 +29,7 @@ except:
         QuestionAnswerTriviaQuestion
     from trivia.triviaAnswerCompiler import TriviaAnswerCompiler
     from trivia.triviaDifficulty import TriviaDifficulty
+    from trivia.triviaEmoteGenerator import TriviaEmoteGenerator
     from trivia.triviaQuestionCompiler import TriviaQuestionCompiler
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
@@ -40,6 +42,7 @@ class LotrTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self,
         timber: Timber,
         triviaAnswerCompiler: TriviaAnswerCompiler,
+        triviaEmoteGenerator: TriviaEmoteGenerator,
         triviaQuestionCompiler: TriviaQuestionCompiler,
         triviaSettingsRepository: TriviaSettingsRepository,
         triviaDatabaseFile: str = 'CynanBotCommon/trivia/lotrTriviaQuestionsDatabase.sqlite'
@@ -50,6 +53,8 @@ class LotrTriviaQuestionRepository(AbsTriviaQuestionRepository):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif triviaAnswerCompiler is None:
             raise ValueError(f'triviaAnswerCompiler argument is malformed: \"{triviaAnswerCompiler}\"')
+        elif triviaEmoteGenerator is None:
+            raise ValueError(f'triviaEmoteGenerator argument is malformed: \"{triviaEmoteGenerator}\"')
         elif triviaQuestionCompiler is None:
             raise ValueError(f'triviaQuestionCompiler argument is malformed: \"{triviaQuestionCompiler}\"')
         elif not utils.isValidStr(triviaDatabaseFile):
@@ -57,11 +62,12 @@ class LotrTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         self.__timber: Timber = timber
         self.__triviaAnswerCompiler: TriviaAnswerCompiler = triviaAnswerCompiler
+        self.__triviaEmoteGenerator: TriviaEmoteGenerator = triviaEmoteGenerator
         self.__triviaQuestionCompiler: TriviaQuestionCompiler = triviaQuestionCompiler
         self.__triviaDatabaseFile: str = triviaDatabaseFile
 
-    async def fetchTriviaQuestion(self, twitchChannel: Optional[str]) -> AbsTriviaQuestion:
-        self.__timber.log('LotrTriviaQuestionRepository', 'Fetching trivia question...')
+    async def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
+        self.__timber.log('LotrTriviaQuestionRepository', f'Fetching trivia question... (twitchChannel={twitchChannel})')
 
         triviaDict = await self.__fetchTriviaQuestionDict()
 
@@ -80,11 +86,14 @@ class LotrTriviaQuestionRepository(AbsTriviaQuestionRepository):
         for answer in cleanedCorrectAnswers:
             expandedCorrectAnswers.extend(await self.__triviaAnswerCompiler.expandNumerals(answer))
 
+        emote = await self.__triviaEmoteGenerator.getNextEmoteFor(twitchChannel)
+
         return QuestionAnswerTriviaQuestion(
             correctAnswers = correctAnswers,
             cleanedCorrectAnswers = expandedCorrectAnswers,
             category = 'Lord of the Rings',
             categoryId = None,
+            emote = emote,
             question = question,
             triviaId = triviaId,
             triviaDifficulty = TriviaDifficulty.UNKNOWN,
