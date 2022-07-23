@@ -42,7 +42,7 @@ class TriviaEmoteGenerator():
         connection = await self.__getDatabaseConnection()
         cursor = await connection.execute(
             '''
-                SELECT emote FROM triviaEmotes
+                SELECT emoteIndex FROM triviaEmotes
                 WHERE twitchChannel = ?
                 LIMIT 1
             ''',
