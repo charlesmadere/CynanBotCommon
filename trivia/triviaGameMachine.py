@@ -30,6 +30,8 @@ try:
         IncorrectAnswerTriviaEvent
     from CynanBotCommon.trivia.incorrectSuperAnswerTriviaEvent import \
         IncorrectSuperAnswerTriviaEvent
+    from CynanBotCommon.trivia.invalidAnswerInputTriviaEvent import \
+        InvalidAnswerInputTriviaEvent
     from CynanBotCommon.trivia.newSuperTriviaGameEvent import \
         NewSuperTriviaGameEvent
     from CynanBotCommon.trivia.newTriviaGameEvent import NewTriviaGameEvent
@@ -51,6 +53,8 @@ try:
     from CynanBotCommon.trivia.superTriviaGameState import SuperTriviaGameState
     from CynanBotCommon.trivia.triviaActionType import TriviaActionType
     from CynanBotCommon.trivia.triviaAnswerChecker import TriviaAnswerChecker
+    from CynanBotCommon.trivia.triviaAnswerCheckResult import \
+        TriviaAnswerCheckResult
     from CynanBotCommon.trivia.triviaExceptions import (
         TooManyTriviaFetchAttemptsException, UnknownTriviaActionTypeException,
         UnknownTriviaGameTypeException)
@@ -85,6 +89,8 @@ except:
     from trivia.incorrectAnswerTriviaEvent import IncorrectAnswerTriviaEvent
     from trivia.incorrectSuperAnswerTriviaEvent import \
         IncorrectSuperAnswerTriviaEvent
+    from trivia.invalidAnswerInputTriviaEvent import \
+        InvalidAnswerInputTriviaEvent
     from trivia.newSuperTriviaGameEvent import NewSuperTriviaGameEvent
     from trivia.newTriviaGameEvent import NewTriviaGameEvent
     from trivia.outOfTimeCheckAnswerTriviaEvent import \
@@ -103,6 +109,7 @@ except:
     from trivia.superTriviaGameState import SuperTriviaGameState
     from trivia.triviaActionType import TriviaActionType
     from trivia.triviaAnswerChecker import TriviaAnswerChecker
+    from trivia.triviaAnswerCheckResult import TriviaAnswerCheckResult
     from trivia.triviaExceptions import (TooManyTriviaFetchAttemptsException,
                                          UnknownTriviaActionTypeException,
                                          UnknownTriviaGameTypeException)
@@ -141,7 +148,7 @@ class TriviaGameMachine():
             raise ValueError(f'triviaScoreRepository argument is malformed: \"{triviaScoreRepository}\"')
         elif not utils.isValidNum(sleepTimeSeconds):
             raise ValueError(f'sleepTimeSeconds argument is malformed: \"{sleepTimeSeconds}\"')
-        elif sleepTimeSeconds < 0.1 or sleepTimeSeconds > 5:
+        elif sleepTimeSeconds < 0.25 or sleepTimeSeconds > 2:
             raise ValueError(f'sleepTimeSeconds argument is out of bounds: {sleepTimeSeconds}')
 
         self.__timber: Timber = timber
@@ -157,7 +164,7 @@ class TriviaGameMachine():
         eventLoop.create_task(self.__startActionLoop())
         eventLoop.create_task(self.__startEventLoop())
 
-    async def __checkAnswer(self, answer: str, triviaQuestion: AbsTriviaQuestion) -> bool:
+    async def __checkAnswer(self, answer: str, triviaQuestion: AbsTriviaQuestion) -> TriviaAnswerCheckResult:
         if triviaQuestion is None:
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
 
@@ -207,12 +214,25 @@ class TriviaGameMachine():
             ))
             return
 
+        checkResult = await self.__checkAnswer(action.getAnswer(), state.getTriviaQuestion())
+
+        if checkResult is TriviaAnswerCheckResult.INVALID_INPUT:
+            self.__eventQueue.put(InvalidAnswerInputTriviaEvent(
+                triviaQuestion = state.getTriviaQuestion(),
+                answer = action.getAnswer(),
+                gameId = state.getGameId(),
+                twitchChannel = action.getTwitchChannel(),
+                userId = action.getUserId(),
+                userName = action.getUserName()
+            ))
+            return
+
         await self.__triviaGameStore.removeNormalGame(
             twitchChannel = action.getTwitchChannel(),
             userName = action.getUserName()
         )
 
-        if not await self.__checkAnswer(action.getAnswer(), state.getTriviaQuestion()):
+        if checkResult is TriviaAnswerCheckResult.INCORRECT:
             triviaScoreResult = await self.__triviaScoreRepository.incrementTotalLosses(
                 twitchChannel = action.getTwitchChannel(),
                 userId = action.getUserId()
@@ -279,8 +299,11 @@ class TriviaGameMachine():
             return
 
         state.incrementAnswerCount(action.getUserName())
+        checkResult = await self.__checkAnswer(action.getAnswer(), state.getTriviaQuestion())
 
-        if not await self.__checkAnswer(action.getAnswer(), state.getTriviaQuestion()):
+        # Below, we're intentionally ignoring TriviaAnswerCheckResult values that are not CORRECT.
+
+        if checkResult is not TriviaAnswerCheckResult.CORRECT:
             self.__eventQueue.put(IncorrectSuperAnswerTriviaEvent(
                 triviaQuestion = state.getTriviaQuestion(),
                 answer = action.getAnswer(),
