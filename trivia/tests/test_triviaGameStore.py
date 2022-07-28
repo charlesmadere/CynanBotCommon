@@ -58,6 +58,7 @@ class TriviaGameStoreTests():
         cleanedCorrectAnswers = [ 'chicago bullies' ],
         category = None,
         categoryId = None,
+        emote = '😎',
         question = 'One of this team\'s members is stashiocat.',
         triviaId = 'ghi789',
         triviaDifficulty = TriviaDifficulty.UNKNOWN,
@@ -69,64 +70,65 @@ class TriviaGameStoreTests():
         cleanedCorrectAnswers = [ 'stashiocat' ],
         category = None,
         categoryId = None,
+        emote = '😎',
         question = 'This player forgot to fight Phantoon in a randomizer match.',
         triviaId = 'jkl012',
         triviaDifficulty = TriviaDifficulty.UNKNOWN,
         triviaSource = TriviaSource.J_SERVICE
     )
 
+    game1: AbsTriviaGameState = TriviaGameState(
+        triviaQuestion = normalQuestion1,
+        pointsForWinning = 5,
+        secondsToLive = 60,
+        twitchChannel = 'smCharles',
+        userId = '123456',
+        userName = 'Eddie'
+    )
+
+    game2: AbsTriviaGameState = SuperTriviaGameState(
+        triviaQuestion = superQuestion1,
+        perUserAttempts = 2,
+        pointsForWinning = 25,
+        pointsMultiplier = 5,
+        secondsToLive = 60,
+        twitchChannel = 'smCharles'
+    )
+
     triviaGameStore = TriviaGameStore()
 
     @pytest.mark.asyncio
     async def test_add(self):
-        game1: AbsTriviaGameState = TriviaGameState(
-            triviaQuestion = self.normalQuestion1,
-            pointsForWinning = 5,
-            secondsToLive = 60,
-            twitchChannel = 'smCharles',
-            userId = '123456',
-            userName = 'Eddie'
-        )
-
-        await self.triviaGameStore.add(game1)
+        await self.triviaGameStore.add(self.game1)
 
         games = await self.triviaGameStore.getAll()
         assert len(games) == 1
-        assert game1 in games
+        assert self.game1 in games
 
         games = await self.triviaGameStore.getNormalGames()
         assert len(games) == 1
-        assert game1 in games
+        assert self.game1 in games
 
         games = await self.triviaGameStore.getSuperGames()
         assert len(games) == 0
-        assert game1 not in games
+        assert self.game1 not in games
 
-        game2: AbsTriviaGameState = SuperTriviaGameState(
-            triviaQuestion = self.superQuestion1,
-            perUserAttempts = 2,
-            pointsForWinning = 25,
-            pointsMultiplier = 5,
-            secondsToLive = 60,
-            twitchChannel = 'smCharles'
-        )
-
-        await self.triviaGameStore.add(game2)
+        await self.triviaGameStore.add(self.game2)
 
         games = await self.triviaGameStore.getAll()
         assert len(games) == 2
-        assert game1 in games
-        assert game2 in games
+        assert self.game1 in games
+        assert self.game2 in games
 
         games = await self.triviaGameStore.getNormalGames()
         assert len(games) == 1
-        assert game1 in games
-        assert game2 not in games
+        assert self.game1 in games
+        assert self.game2 not in games
 
         games = await self.triviaGameStore.getSuperGames()
         assert len(games) == 1
-        assert game1 not in games
-        assert game2 in games
+        assert self.game1 not in games
+        assert self.game2 in games
 
     @pytest.mark.asyncio
     async def test_getAll_isEmptyList(self):
