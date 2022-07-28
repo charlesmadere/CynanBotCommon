@@ -1,3 +1,5 @@
+from typing import List
+
 try:
     import CynanBotCommon.utils as utils
 except:
@@ -5,6 +7,34 @@ except:
 
 
 class UtilsTest():
+
+    def test_copyList_withEmptyList(self):
+        original: List = list()
+        result: List = utils.copyList(original)
+        assert result is not None
+        assert len(result) == 0
+        assert result is not original
+
+    def test_copyList_withIntList(self):
+        original: List[int] = [ 1, 2, 3, 4 ]
+        result: List = utils.copyList(original)
+        assert result is not None
+        assert len(result) == 4
+        assert result is not original
+        assert result == original
+
+    def test_copyList_withNone(self):
+        result: List = utils.copyList(None)
+        assert result is not None
+        assert len(result) == 0
+
+    def test_copyList_withStrList(self):
+        original: List[str] = [ '1', '2', '3', '4' ]
+        result: List = utils.copyList(original)
+        assert result is not None
+        assert len(result) == 4
+        assert result is not original
+        assert result == original
 
     def test_isValidStr_withEmptyString(self):
         result: bool = utils.isValidStr('')
