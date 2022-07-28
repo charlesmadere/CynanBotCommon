@@ -54,6 +54,14 @@ class MultipleChoiceTriviaQuestion(AbsTriviaQuestion):
         self.__correctAnswers: List[str] = correctAnswers
         self.__multipleChoiceResponses: List[str] = multipleChoiceResponses
 
+    def getAnswerOrdinals(self) -> List[int]:
+        answerOrdinals: List[int] = list()
+
+        for index in range(0, len(self.__multipleChoiceResponses)):
+            answerOrdinals.append(index)
+
+        return answerOrdinals
+
     def getCorrectAnswers(self) -> List[str]:
         answerStrings: List[str] = list()
 
@@ -63,11 +71,11 @@ class MultipleChoiceTriviaQuestion(AbsTriviaQuestion):
         return answerStrings
 
     def getCorrectAnswerChars(self) -> List[str]:
-        answerOrdinals = self.getCorrectAnswerOrdinals()
+        correctAnswerOrdinals = self.getCorrectAnswerOrdinals()
         correctAnswerChars: List[str] = list()
 
-        for answerOrdinal in answerOrdinals:
-            correctAnswerChars.append(chr(ord('A') + answerOrdinal))
+        for ordinal in correctAnswerOrdinals:
+            correctAnswerChars.append(chr(ord('A') + ordinal))
 
         if not utils.hasItems(correctAnswerChars):
             raise RuntimeError(f'Couldn\'t find any correct answer chars within \"{self.__correctAnswers}\"')
@@ -100,12 +108,13 @@ class MultipleChoiceTriviaQuestion(AbsTriviaQuestion):
 
         responsesList: List[str] = list()
         entryChar = 'A'
+
         for response in self.__multipleChoiceResponses:
             responsesList.append(f'[{entryChar}] {response}')
             entryChar = chr(ord(entryChar) + 1)
 
-        responses = delimiter.join(responsesList)
-        return f'{self.getQuestion()} {responses}'
+        responsesStr = delimiter.join(responsesList)
+        return f'{self.getQuestion()} {responsesStr}'
 
     def getResponses(self) -> List[str]:
         return self.__multipleChoiceResponses

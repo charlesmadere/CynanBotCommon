@@ -1,7 +1,8 @@
 import math
 import re
+from typing import Dict, Generator, List, Pattern
+
 import polyleven
-from typing import List, Generator
 
 try:
     import CynanBotCommon.utils as utils
@@ -11,6 +12,8 @@ try:
         MultipleChoiceTriviaQuestion
     from CynanBotCommon.trivia.questionAnswerTriviaQuestion import \
         QuestionAnswerTriviaQuestion
+    from CynanBotCommon.trivia.triviaAnswerCheckResult import \
+        TriviaAnswerCheckResult
     from CynanBotCommon.trivia.triviaAnswerCompiler import TriviaAnswerCompiler
     from CynanBotCommon.trivia.triviaExceptions import (
         BadTriviaAnswerException, UnsupportedTriviaTypeException)
@@ -28,6 +31,7 @@ except:
         MultipleChoiceTriviaQuestion
     from trivia.questionAnswerTriviaQuestion import \
         QuestionAnswerTriviaQuestion
+    from trivia.triviaAnswerCheckResult import TriviaAnswerCheckResult
     from trivia.triviaAnswerCompiler import TriviaAnswerCompiler
     from trivia.triviaExceptions import (BadTriviaAnswerException,
                                          UnsupportedTriviaTypeException)
@@ -55,10 +59,10 @@ class TriviaAnswerChecker():
         self.__triviaAnswerCompiler: TriviaAnswerCompiler = triviaAnswerCompiler
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
 
-        self.__digitPattern = re.compile(r'(\d+)')
-        self.__whitespacePattern = re.compile(r'\s\s+')
+        self.__digitPattern: Pattern = re.compile(r'(\d+)')
+        self.__whitespacePattern: Pattern = re.compile(r'\s\s+')
 
-        self.__irregular_nouns = {
+        self.__irregular_nouns: Dict[str, str] = {
             'child': 'children',
             'goose': 'geese',
             'man': 'men',
@@ -72,7 +76,7 @@ class TriviaAnswerChecker():
             'index': 'indices',
         }
 
-        self.__stopwords = (
+        self.__stopwords: List[str] = (
             'i', 'me', 'my', 'myself', 'we', 'ourselves', 'you', 'he', 'him', 'his', 'she', 'they', 'them',  'what',
             'which', 'who', 'whom', 'this', 'that', 'these', 'those', 'am', 'is', 'are', 'was', 'were', 'be', 'been',
             'being', 'have', 'has', 'had', 'having', 'do', 'does', 'did', 'doing', 'a', 'an', 'the', 'and', 'but', 'if',
@@ -83,12 +87,16 @@ class TriviaAnswerChecker():
             'own', 'same', 'so', 'than', 'too', 'very', 'can', 'will', 'just', 'dont', 'should', 'now',
         )
 
-    async def checkAnswer(self, answer: str, triviaQuestion: AbsTriviaQuestion) -> bool:
+    async def checkAnswer(
+        self,
+        answer: str,
+        triviaQuestion: AbsTriviaQuestion
+    ) -> TriviaAnswerCheckResult:
         if triviaQuestion is None:
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
 
         if not utils.isValidStr(answer):
-            return False
+            return TriviaAnswerCheckResult.INVALID_INPUT
 
         if triviaQuestion.getTriviaType() is TriviaType.MULTIPLE_CHOICE:
             return await self.__checkAnswerMultipleChoice(answer, triviaQuestion)
@@ -103,7 +111,7 @@ class TriviaAnswerChecker():
         self,
         answer: str,
         triviaQuestion: MultipleChoiceTriviaQuestion
-    ) -> bool:
+    ) -> TriviaAnswerCheckResult:
         if triviaQuestion is None:
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
         elif triviaQuestion.getTriviaType() is not TriviaType.MULTIPLE_CHOICE:
@@ -114,15 +122,32 @@ class TriviaAnswerChecker():
             answerOrdinal = await self.__triviaAnswerCompiler.compileTextAnswerToMultipleChoiceOrdinal(answer)
         except BadTriviaAnswerException as e:
             self.__timber.log('TriviaAnswerChecker', f'Unable to convert multiple choice answer to ordinal: \"{answer}\": {e}')
-            return False
+            return TriviaAnswerCheckResult.INVALID_INPUT
 
-        return answerOrdinal in triviaQuestion.getCorrectAnswerOrdinals()
+        if not utils.isValidNum(answerOrdinal):
+            # this should be impossible, but let's just check anyway
+            self.__timber.log('TriviaAnswerChecker', f'Unable to convert multiple choice answer to ordinal: (answer=\"{answer}\", answerOrdinal={answerOrdinal})')
+            return TriviaAnswerCheckResult.INVALID_INPUT
+
+        answerOrdinals = triviaQuestion.getAnswerOrdinals()
+
+        if answerOrdinal < 0 or answerOrdinal >= len(answerOrdinals):
+            # Checks for a scenario where the user guessed an answer outside the range
+            # of actual responses. For example, the user might have guessed F, but the
+            # question only had up to D.
+            self.__timber.log('TriviaAnswerChecker', f'Multiple choice answer ordinal ({answerOrdinal}) is outside the range of actual answer ordinals: {answerOrdinals}')
+            return TriviaAnswerCheckResult.INVALID_INPUT
+
+        if answerOrdinal in triviaQuestion.getCorrectAnswerOrdinals():
+            return TriviaAnswerCheckResult.CORRECT
+        else:
+            return TriviaAnswerCheckResult.INCORRECT
 
     async def __checkAnswerQuestionAnswer(
         self,
         answer: str,
         triviaQuestion: QuestionAnswerTriviaQuestion
-    ) -> bool:
+    ) -> TriviaAnswerCheckResult:
         if triviaQuestion is None:
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
         elif triviaQuestion.getTriviaType() is not TriviaType.QUESTION_ANSWER:
@@ -131,7 +156,7 @@ class TriviaAnswerChecker():
         cleanedAnswers = await self.__triviaAnswerCompiler.compileTextAnswersList([answer], False)
 
         if not all(utils.isValidStr(cleanedAnswer) for cleanedAnswer in cleanedAnswers):
-            return False
+            return TriviaAnswerCheckResult.INCORRECT
 
         correctAnswers = triviaQuestion.getCorrectAnswers()
         cleanedCorrectAnswers = triviaQuestion.getCleanedCorrectAnswers()
@@ -142,7 +167,7 @@ class TriviaAnswerChecker():
             for cleanedAnswer in cleanedAnswers:
                 for guess in await self.__triviaAnswerCompiler.expandNumerals(cleanedAnswer):
                     if guess == cleanedCorrectAnswer:
-                        return True
+                        return TriviaAnswerCheckResult.CORRECT
                     guessWords = self.__whitespacePattern.sub(' ', guess).split(' ')
                     answerWords = self.__whitespacePattern.sub(' ', cleanedCorrectAnswer).split(' ')
 
@@ -158,15 +183,15 @@ class TriviaAnswerChecker():
                                     valid = False
                                     break
                             if valid:
-                                return True
+                                return TriviaAnswerCheckResult.CORRECT
 
-        return False
+        return TriviaAnswerCheckResult.INCORRECT
 
     async def __checkAnswerTrueFalse(
         self,
         answer: str,
         triviaQuestion: TrueFalseTriviaQuestion
-    ) -> bool:
+    ) -> TriviaAnswerCheckResult:
         if triviaQuestion is None:
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
         elif triviaQuestion.getTriviaType() is not TriviaType.TRUE_FALSE:
@@ -177,9 +202,12 @@ class TriviaAnswerChecker():
             answerBool = await self.__triviaAnswerCompiler.compileBoolAnswer(answer)
         except BadTriviaAnswerException as e:
             self.__timber.log('TriviaAnswerChecker', f'Unable to convert true false answer to bool: \"{answer}\": {e}')
-            return False
+            return TriviaAnswerCheckResult.INVALID_INPUT
 
-        return answerBool in triviaQuestion.getCorrectAnswerBools()
+        if answerBool in triviaQuestion.getCorrectAnswerBools():
+            return TriviaAnswerCheckResult.CORRECT
+        else:
+            return TriviaAnswerCheckResult.INCORRECT
 
     # generates all possible groupings of the given words such that the resulting word count is target_length
     # example: words = ["a", "b", "c", "d"], target_length = 2
