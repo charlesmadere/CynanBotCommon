@@ -34,6 +34,30 @@ class UtilsTest():
         result = utils.areAllStrsInts([ 'hello', 'world' ])
         assert result is False
 
+    def test_containsUrl_withEmptyString(self):
+        result = utils.containsUrl('')
+        assert result is False
+
+    def test_containsUrl_withGoogle(self):
+        result = utils.containsUrl('https://www.google.com/')
+        assert result is True
+
+    def test_containsUrl_withGoogleSentence(self):
+        result = utils.containsUrl('There\'s a URL here: https://www.google.com/ in this sentence.')
+        assert result is True
+
+    def test_containsUrl_withNone(self):
+        result = utils.containsUrl(None)
+        assert result is False
+
+    def test_containsUrl_withRandomNoise1(self):
+        result = utils.containsUrl('Qd19u(KAyCuZ~qNQkd-iy\%\E|KxRc')
+        assert result is False
+
+    def test_containsUrl_withRandomNoise2(self):
+        result = utils.containsUrl('.s*&Sxwa}RZ\'AIkvD6:&OkVT#_YA`')
+        assert result is False
+
     def test_copyList_withEmptyList(self):
         original: List = list()
         result: List = utils.copyList(original)
