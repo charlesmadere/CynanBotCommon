@@ -1,3 +1,4 @@
+import math
 from typing import List
 
 try:
@@ -7,6 +8,31 @@ except:
 
 
 class UtilsTest():
+
+    def test_areAllStrsInts_withEmptyList(self):
+        result: bool = None
+        exception: Exception = None
+
+        try:
+            result = utils.areAllStrsInts(list())
+        except Exception as e:
+            exception = e
+
+        assert result is None
+        assert exception is not None
+        assert isinstance(exception, Exception)
+
+    def test_areAllStrsInts_withIntList(self):
+        result = utils.areAllStrsInts([ '1', '10', '100', '1000' ])
+        assert result is True
+
+    def test_areAllStrsInts_withMixedList(self):
+        result = utils.areAllStrsInts([ '1', '10', '100', 'hello', '1000', 'world' ])
+        assert result is False
+
+    def test_areAllStrsInts_withWordList(self):
+        result = utils.areAllStrsInts([ 'hello', 'world' ])
+        assert result is False
 
     def test_copyList_withEmptyList(self):
         original: List = list()
@@ -35,6 +61,34 @@ class UtilsTest():
         assert len(result) == 4
         assert result is not original
         assert result == original
+
+    def test_isValidBool_withFalse(self):
+        result: bool = utils.isValidBool(False)
+        assert result is True
+
+    def test_isValidBool_withNone(self):
+        result: bool = utils.isValidBool(None)
+        assert result is False
+
+    def test_isValidBool_withTrue(self):
+        result: bool = utils.isValidBool(True)
+        assert result is True
+
+    def test_isValidNum_withFloat(self):
+        result: bool = utils.isValidNum(3.14)
+        assert result is True
+
+    def test_isValidNum_withInt(self):
+        result: bool = utils.isValidNum(100)
+        assert result is True
+
+    def test_isValidNum_withNan(self):
+        result: bool = utils.isValidNum(math.nan)
+        assert result is False
+
+    def test_isValidNum_withNone(self):
+        result: bool = utils.isValidNum(None)
+        assert result is False
 
     def test_isValidStr_withEmptyString(self):
         result: bool = utils.isValidStr('')
