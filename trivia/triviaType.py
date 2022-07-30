@@ -19,7 +19,7 @@ class TriviaType(Enum):
 
         text = text.lower()
 
-        if text == 'boolean' or text == 'true-false' or text == 'true_false' or text == 'true false':
+        if text == 'bool' or text == 'boolean' or text == 'true-false' or text == 'true_false' or text == 'true false':
             return TriviaType.TRUE_FALSE
         elif text == 'multiple' or text == 'multiple-choice' or text == 'multiple_choice' or text == 'multiple choice':
             return TriviaType.MULTIPLE_CHOICE

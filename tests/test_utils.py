@@ -30,6 +30,19 @@ class UtilsTest():
         result = utils.areAllStrsInts([ '1', '10', '100', 'hello', '1000', 'world' ])
         assert result is False
 
+    def test_areAllStrsInts_withNone(self):
+        result: bool = None
+        exception: Exception = None
+
+        try:
+            result = utils.areAllStrsInts(None)
+        except Exception as e:
+            exception = e
+
+        assert result is None
+        assert exception is not None
+        assert isinstance(exception, Exception)
+
     def test_areAllStrsInts_withWordList(self):
         result = utils.areAllStrsInts([ 'hello', 'world' ])
         assert result is False
@@ -132,6 +145,36 @@ class UtilsTest():
 
     def test_isValidStr_withWhitespaceString(self):
         result: bool = utils.isValidStr(' ')
+        assert result is False
+
+    def test_isValidUrl_withEmptyString(self):
+        result = utils.isValidUrl('')
+        assert result is False
+
+    def test_isValidUrl_withGoogle(self):
+        result = utils.isValidUrl('https://www.google.com/')
+        assert result is True
+
+        result = utils.isValidUrl('http://google.com')
+        assert result is True
+
+        result = utils.isValidUrl('https://google.com:8080/')
+        assert result is True
+
+    def test_isValidUrl_withNone(self):
+        result = utils.isValidUrl(None)
+        assert result is False
+
+    def test_isValidUrl_withRandomNoise1(self):
+        result = utils.isValidUrl('J)R+ALY,m`g9r>lO`+RMeb$XL.OF8np')
+        assert result is False
+
+    def test_isValidUrl_withRandomNoise2(self):
+        result = utils.isValidUrl('rpt\'%TmN$lx!T.Gg2le)QVO4\_UqMA8dA{=\'\"')
+        assert result is False
+
+    def test_isValidUrl_withWhitespaceString(self):
+        result = utils.isValidUrl(' ')
         assert result is False
 
     def test_strictStrToBool_withEmptyString(self):
