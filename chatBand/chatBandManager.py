@@ -54,11 +54,13 @@ class ChatBandManager():
         self.__eventType: str = eventType
         self.__lastChatBandMessageTimes: TimedDict = TimedDict(eventCooldown)
         self.__chatBandMemberCache: TimedDict = TimedDict(memberCacheTimeToLive)
-        self.__stubChatBandMember: ChatBandMember = ChatBandMember(False, ChatBandInstrument.BASS, "stub", "stub")
+        self.__stubChatBandMember: ChatBandMember = ChatBandMember(False, ChatBandInstrument.BASS, 'stub', 'stub')
+        self.__jsonCache: Optional[Dict[str, Any]] = None
 
     async def clearCaches(self):
         self.__lastChatBandMessageTimes.clear()
         self.__chatBandMemberCache.clear()
+        self.__jsonCache = None
         self.__timber.log('ChatBandManager', 'Caches cleared')
 
     async def __findChatBandMember(
@@ -75,7 +77,7 @@ class ChatBandManager():
             raise ValueError(f'message argument is malformed: \"{message}\"')
 
         isDebugLoggingEnabled = await self.__isDebugLoggingEnabled()
-        chatBandMember: ChatBandMember = self.__chatBandMemberCache[self.__getCooldownKey(twitchChannel, author)]
+        chatBandMember = self.__chatBandMemberCache[self.__getCooldownKey(twitchChannel, author)]
 
         if chatBandMember is None:
             jsonContents = await self.__readJsonForTwitchChannel(twitchChannel)
@@ -157,6 +159,9 @@ class ChatBandManager():
         return True
 
     async def __readAllJson(self) -> Dict[str, Any]:
+        if self.__jsonCache is not None:
+            return self.__jsonCache
+
         if not await aiofiles.ospath.exists(self.__chatBandFile):
             raise FileNotFoundError(f'Chat Band file not found: \"{self.__chatBandFile}\"')
 
@@ -169,6 +174,7 @@ class ChatBandManager():
         elif len(jsonContents) == 0:
             raise ValueError(f'JSON contents of Chat Band file \"{self.__chatBandFile}\" is empty')
 
+        self.__jsonCache = jsonContents
         return jsonContents
 
     async def __readJsonForTwitchChannel(self, twitchChannel: str) -> Dict[str, Any]:
