@@ -77,13 +77,13 @@ def cleanStr(s: str, replacement: str = ' ', htmlUnescape: bool = False, removeC
 
 digitRegEx: Pattern = re.compile(r"^.*\d+.*$", re.IGNORECASE)
 
-def containsDigit(s: str) -> bool:
+def containsDigit(s: Optional[str]) -> bool:
     if not isValidStr(s):
         return False
 
     return digitRegEx.fullmatch(s) is not None
 
-def containsUrl(s: str) -> bool:
+def containsUrl(s: Optional[str]) -> bool:
     if not isValidStr(s):
         return False
 
@@ -248,13 +248,14 @@ def getRandomSpaceEmoji() -> str:
     spaceEmoji: List[str] = [ '🚀', '👾', '☄️', '🌌', '👨‍🚀', '👩‍🚀', '👽', '🌠' ]
     return random.choice(spaceEmoji)
 
-def getStrFromDateTime(dt: datetime) -> str:
-    if dt is None:
-        return None
-    else:
-        return dt.isoformat()
-
-def getStrFromDict(d: Dict, key: str, fallback: str = None, clean: bool = False, htmlUnescape: bool = False, removeCarrots: bool = False) -> str:
+def getStrFromDict(
+    d: Dict[str, Any],
+    key: str,
+    fallback: str = None,
+    clean: bool = False,
+    htmlUnescape: bool = False,
+    removeCarrots: bool = False
+) -> str:
     if d is None:
         raise ValueError(f'd argument is malformed: \"{d}\"')
     elif not isValidStr(key):
@@ -266,7 +267,7 @@ def getStrFromDict(d: Dict, key: str, fallback: str = None, clean: bool = False,
     elif not isValidBool(removeCarrots):
         raise ValueError(f'removeCarrots argument is malformed: \"{removeCarrots}\"')
 
-    value = None
+    value: str = None
 
     if key in d and d[key] is not None:
         value = d[key]
@@ -300,11 +301,12 @@ def isValidUrl(s: Optional[str]) -> bool:
         return False
 
     parsed = urlparse(s)
-    if not isValidStr(parsed.scheme) or not isValidStr(parsed.netloc):
-        return False
 
-    url = parsed.geturl()
-    return isValidStr(url)
+    if isValidStr(parsed.scheme) and isValidStr(parsed.netloc):
+        url = parsed.geturl()
+        return isValidStr(url)
+
+    return False
 
 def randomBool() -> bool:
     return bool(random.getrandbits(1))
