@@ -216,7 +216,7 @@ class TriviaRepository():
             TriviaSource.OPEN_TRIVIA_QA: self.__openTriviaQaTriviaQuestionRepository,
             TriviaSource.QUIZ_API: self.__quizApiTriviaQuestionRepository,
             TriviaSource.TRIVIA_DATABASE: self.__triviaDatabaseTriviaQuestionRepository,
-            TriviaSource.WILL_FRY_TRIVIA_API: self.__willFryTriviaQuestionRepository,
+            TriviaSource.WILL_FRY_TRIVIA: self.__willFryTriviaQuestionRepository,
             TriviaSource.WWTBAM: self.__wwtbamTriviaQuestionRepository
         }
 

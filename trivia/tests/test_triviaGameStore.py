@@ -37,7 +37,7 @@ class TriviaGameStoreTests():
         question = 'What team is stashiocat a member of?',
         triviaId = 'abc123',
         triviaDifficulty = TriviaDifficulty.UNKNOWN,
-        triviaSource = TriviaSource.WILL_FRY_TRIVIA_API
+        triviaSource = TriviaSource.WILL_FRY_TRIVIA
     )
 
     normalQuestion2: AbsTriviaQuestion = TrueFalseTriviaQuestion(
