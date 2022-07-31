@@ -140,7 +140,7 @@ class WillFryTriviaQuestionRepository(AbsTriviaQuestionRepository):
                     question = question,
                     triviaId = triviaId,
                     triviaDifficulty = TriviaDifficulty.UNKNOWN,
-                    triviaSource = TriviaSource.WILL_FRY_TRIVIA_API
+                    triviaSource = TriviaSource.WILL_FRY_TRIVIA
                 )
             else:
                 self.__timber.log('WillFryTriviaQuestionRepository', f'Encountered a multiple choice question that is better suited for true/false')
@@ -159,7 +159,7 @@ class WillFryTriviaQuestionRepository(AbsTriviaQuestionRepository):
                 question = question,
                 triviaId = triviaId,
                 triviaDifficulty = TriviaDifficulty.UNKNOWN,
-                triviaSource = TriviaSource.WILL_FRY_TRIVIA_API
+                triviaSource = TriviaSource.WILL_FRY_TRIVIA
             )
 
         raise UnsupportedTriviaTypeException(f'triviaType \"{triviaType}\" is not supported for Will Fry Trivia: {jsonResponse}')
@@ -168,4 +168,4 @@ class WillFryTriviaQuestionRepository(AbsTriviaQuestionRepository):
         return [ TriviaType.MULTIPLE_CHOICE, TriviaType.TRUE_FALSE ]
 
     def getTriviaSource(self) -> TriviaSource:
-        return TriviaSource.WILL_FRY_TRIVIA_API
+        return TriviaSource.WILL_FRY_TRIVIA

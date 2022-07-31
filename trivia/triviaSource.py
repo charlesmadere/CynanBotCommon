@@ -18,7 +18,7 @@ class TriviaSource(Enum):
     OPEN_TRIVIA_QA = auto()
     QUIZ_API = auto()
     TRIVIA_DATABASE = auto()
-    WILL_FRY_TRIVIA_API = auto()
+    WILL_FRY_TRIVIA = auto()
     WWTBAM = auto()
 
     @classmethod
@@ -36,20 +36,20 @@ class TriviaSource(Enum):
             return TriviaSource.JOKE_TRIVIA_REPOSITORY
         elif text == 'j_service':
             return TriviaSource.J_SERVICE
-        elif text == 'open_trivia':
-            return TriviaSource.OPEN_TRIVIA_DATABASE
         elif text == 'lord_of_the_rings':
             return TriviaSource.LORD_OF_THE_RINGS
         elif text == 'millionaire':
             return TriviaSource.MILLIONAIRE
+        elif text == 'open_trivia':
+            return TriviaSource.OPEN_TRIVIA_DATABASE
         elif text == 'open_trivia_qa':
             return TriviaSource.OPEN_TRIVIA_QA
         elif text == 'quiz_api':
             return TriviaSource.QUIZ_API
         elif text == 'trivia_database':
             return TriviaSource.TRIVIA_DATABASE
-        elif text == 'will_fry_trivia':
-            return TriviaSource.WILL_FRY_TRIVIA_API
+        elif text == 'will_fry_trivia' or text == 'will_fry_trivia_api':
+            return TriviaSource.WILL_FRY_TRIVIA
         elif text == 'wwtbam':
             return TriviaSource.WWTBAM
         else:
@@ -76,8 +76,8 @@ class TriviaSource(Enum):
             return 'QUIZ_API'
         elif self is TriviaSource.TRIVIA_DATABASE:
             return 'TRIVIA_DATABASE'
-        elif self is TriviaSource.WILL_FRY_TRIVIA_API:
-            return 'WILL_FRY_TRIVIA_API'
+        elif self is TriviaSource.WILL_FRY_TRIVIA:
+            return 'WILL_FRY_TRIVIA'
         elif self is TriviaSource.WWTBAM:
             return 'WWTBAM'
         else:
