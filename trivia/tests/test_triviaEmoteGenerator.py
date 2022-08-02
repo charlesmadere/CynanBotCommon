@@ -14,7 +14,7 @@ class TestTriviaEmoteGenerator():
     triviaEmoteGenerator: TriviaEmoteGenerator = TriviaEmoteGenerator(BackingDatabase())
 
     def test_getRandomEmote(self):
-        for _ in 100:
+        for _ in range(100):
             result = self.triviaEmoteGenerator.getRandomEmote()
             assert result is not None
             assert isinstance(result, str)
