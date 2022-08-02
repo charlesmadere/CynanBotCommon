@@ -23,6 +23,13 @@ class TestTriviaEmoteGenerator():
             assert emoji.is_emoji(result)
 
     @pytest.mark.asyncio
+    async def test_getValidatedAndNormalizedEmote_withCrayon(self):
+        result = await self.triviaEmoteGenerator.getValidatedAndNormalizedEmote('🖍️')
+        assert result is not None
+        assert emoji.is_emoji(result)
+        assert result == '🖍️'
+
+    @pytest.mark.asyncio
     async def test_getValidatedAndNormalizedEmote_withEmptyString(self):
         result = await self.triviaEmoteGenerator.getValidatedAndNormalizedEmote('')
         assert result is None
@@ -60,6 +67,13 @@ class TestTriviaEmoteGenerator():
 
     @pytest.mark.asyncio
     async def test_getValidatedAndNormalizedEmote_withSchool(self):
+        result = await self.triviaEmoteGenerator.getValidatedAndNormalizedEmote('✏️')
+        assert result is not None
+        assert emoji.is_emoji(result)
+        assert result == '✏️'
+
+    @pytest.mark.asyncio
+    async def test_getValidatedAndNormalizedEmote_withSchool(self):
         result = await self.triviaEmoteGenerator.getValidatedAndNormalizedEmote('🏫')
         assert result is not None
         assert emoji.is_emoji(result)
@@ -85,6 +99,27 @@ class TestTriviaEmoteGenerator():
         assert result is not None
         assert emoji.is_emoji(result)
         assert result == '🧑‍🎓'
+
+    @pytest.mark.asyncio
+    async def test_getValidatedAndNormalizedEmote_withTeacher(self):
+        result = await self.triviaEmoteGenerator.getValidatedAndNormalizedEmote('🧑‍🏫')
+        assert result is not None
+        assert emoji.is_emoji(result)
+        assert result == '🧑‍🏫'
+
+    @pytest.mark.asyncio
+    async def test_getValidatedAndNormalizedEmote_withTeacherDarkSkin(self):
+        result = await self.triviaEmoteGenerator.getValidatedAndNormalizedEmote('🧑🏿‍🏫')
+        assert result is not None
+        assert emoji.is_emoji(result)
+        assert result == '🧑‍🏫'
+
+    @pytest.mark.asyncio
+    async def test_getValidatedAndNormalizedEmote_withTeacherLightSkin(self):
+        result = await self.triviaEmoteGenerator.getValidatedAndNormalizedEmote('🧑🏻‍🏫')
+        assert result is not None
+        assert emoji.is_emoji(result)
+        assert result == '🧑‍🏫'
 
     @pytest.mark.asyncio
     async def test_getValidatedAndNormalizedEmote_withWhitespaceString(self):
