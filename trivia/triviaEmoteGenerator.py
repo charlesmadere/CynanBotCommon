@@ -87,6 +87,7 @@ class TriviaEmoteGenerator():
 
         await connection.commit()
         await connection.close()
+
         return self.__emotes[emoteIndex]
 
     def getRandomEmote(self) -> str:
