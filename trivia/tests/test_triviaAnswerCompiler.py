@@ -28,7 +28,7 @@ class TestTriviaAnswerCompiler():
         assert isinstance(exception, BadTriviaAnswerException)
 
     @pytest.mark.asyncio
-    async def test_compileBoolAnswer_withFalse(self):
+    async def test_compileBoolAnswer_withF(self):
         result: bool = await self.triviaAnswerCompiler.compileBoolAnswer('f')
         assert result is False
 
@@ -77,7 +77,7 @@ class TestTriviaAnswerCompiler():
         assert isinstance(exception, BadTriviaAnswerException)
 
     @pytest.mark.asyncio
-    async def test_compileBoolAnswer_withTrue(self):
+    async def test_compileBoolAnswer_withT(self):
         result: bool = await self.triviaAnswerCompiler.compileBoolAnswer('t')
         assert result is True
 
