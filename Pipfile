@@ -21,6 +21,7 @@ num2words = "*"
 pytest-asyncio = "*"
 flake8 = "*"
 mock = "*"
+emoji = "*"
 
 [dev-packages]
 

@@ -1,6 +1,7 @@
 import random
 from typing import List, Optional
 
+import emoji
 from aiosqlite import Connection
 
 try:
@@ -90,6 +91,36 @@ class TriviaEmoteGenerator():
 
     def getRandomEmote(self) -> str:
         return random.choice(self.__emotes)
+
+    async def getValidatedAndNormalizedEmote(self, emote: Optional[str]) -> Optional[str]:
+        if not utils.isValidStr(emote):
+            return None
+        elif not emoji.is_emoji(emote):
+            return None
+
+        try:
+            emotesIndex = self.__emotes.index(emote)
+            return self.__emotes[emotesIndex]
+        except ValueError:
+            # this exception can be safely ignored
+            pass
+
+        # transforms "👩‍🎓" into ":woman_student:"
+        demojizedEmote: str = emoji.demojize(emote)
+        if not utils.isValidStr(demojizedEmote):
+            return None
+
+        # removes the ending ":" character
+        demojizedEmote = demojizedEmote[0:len(demojizedEmote) - 1]
+
+        for e in self.__emotes:
+            demojized = emoji.demojize(e)
+            demojized = demojized[0:len(demojized) - 1]
+
+            if demojizedEmote.startswith(demojized):
+                return e
+
+        return None
 
     async def __initDatabaseTable(self):
         if self.__isDatabaseReady:
