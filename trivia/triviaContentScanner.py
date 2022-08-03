@@ -1,6 +1,6 @@
 from typing import List, Optional, Set
 
-import aiofile
+import aiofiles
 import aiofiles.ospath
 
 try:
@@ -50,19 +50,23 @@ class TriviaContentScanner():
         if self.__bannedWordsCache:
             return self.__bannedWordsCache
 
-        if not await aiofiles.ospath.exists(self.__bannedWordsFile):
-            self.__timber.log('TriviaContentScanner', f'Not attempting to read in any banned words due to the file missing: \"{self.__bannedWordsFile}\"')
-            return None
-
         bannedWordsSet: Set[str] = set()
 
-        async with aiofile.AIOFile(self.__bannedWordsFile, 'r') as file:
-            async for line in aiofile.LineReader(file):
-                if utils.isValidStr(line):
-                    line = line.strip().lower()
+        if await aiofiles.ospath.exists(self.__bannedWordsFile):
+            lines: Optional[List[str]] = None
 
+            async with aiofiles.open(self.__bannedWordsFile, 'r') as file:
+                lines = await file.readlines()
+
+            if utils.hasItems(lines):
+                for line in lines:
                     if utils.isValidStr(line):
-                        bannedWordsSet.add(line)
+                        line = line.strip().lower()
+
+                        if utils.isValidStr(line):
+                            bannedWordsSet.add(line)
+        else:
+            self.__timber.log('TriviaContentScanner', f'Not attempting to read in any banned words due to the file missing: \"{self.__bannedWordsFile}\"')
 
         bannedWordsList = list(bannedWordsSet)
         self.__bannedWordsCache = bannedWordsList
