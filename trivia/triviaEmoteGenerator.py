@@ -115,7 +115,7 @@ class TriviaEmoteGenerator():
         demojizedEmote = demojizedEmote[0:len(demojizedEmote) - 1]
 
         for e in self.__emotes:
-            demojized = emoji.demojize(e)
+            demojized: str = emoji.demojize(e)
             demojized = demojized[0:len(demojized) - 1]
 
             if demojizedEmote.startswith(demojized):
@@ -142,9 +142,3 @@ class TriviaEmoteGenerator():
         await connection.commit()
         await cursor.close()
         await connection.close()
-
-    async def isValidEmote(self, emote: Optional[str]) -> bool:
-        if not utils.isValidStr(emote):
-            return False
-
-        return emote in self.__emotes
