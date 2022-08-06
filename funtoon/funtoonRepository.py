@@ -43,6 +43,23 @@ class FuntoonRepository():
 
         self.__cache: Optional[Dict[str, Any]] = None
 
+    async def banTriviaQuestion(self, triviaId: str) -> bool:
+        if not utils.isValidStr(triviaId):
+            raise ValueError(f'triviaId argument is malformed: \"{triviaId}\"')
+
+        try:
+            response = await self.__clientSession.get(f'{self.__funtoonApiUrl}/trivia/review/{triviaId}')
+        except (aiohttp.ClientError, TimeoutError) as e:
+            self.__timber.log('FuntoonRepository', f'Encountered network error when banning a trivia question (triviaId={triviaId}): {e}')
+            return False
+
+        responseStatus: Optional[int] = None
+        if response is not None:
+            responseStatus = response.status
+            response.close()
+
+        return utils.isValidNum(responseStatus) and responseStatus == 200
+
     async def clearCaches(self):
         self.__cache = None
         self.__timber.log('FuntoonRepository', 'Caches cleared')
@@ -101,16 +118,18 @@ class FuntoonRepository():
             self.__timber.log('FuntoonRepository', f'Encountered network error for \"{twitchChannel}\" for event \"{event}\": {e}')
             return False
 
-        if response is not None and response.status == 200:
+        responseStatus: Optional[int ] = None
+        if response is not None:
+            responseStatus = response.status
             response.close()
 
+        if responseStatus == 200:
             if isDebugLoggingEnabled:
                 self.__timber.log('FuntoonRepository', f'Successfully hit Funtoon API \"{url}\" for \"{twitchChannel}\" for event \"{event}\"')
 
             return True
         else:
             self.__timber.log('FuntoonRepository', f'Error when hitting Funtoon API \"{url}\" for \"{twitchChannel}\" for event \"{event}\" with token \"{funtoonToken}\" with JSON payload: {jsonPayload}, response: \"{response}\"')
-            response.close()
             return False
 
     async def __isDebugLoggingEnabled(self) -> bool:
