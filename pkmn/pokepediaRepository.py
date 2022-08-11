@@ -5,6 +5,7 @@ import aiohttp
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.networkClientProvider import NetworkClientProvider
     from CynanBotCommon.pkmn.pokepediaDamageClass import PokepediaDamageClass
     from CynanBotCommon.pkmn.pokepediaElementType import PokepediaElementType
     from CynanBotCommon.pkmn.pokepediaGeneration import PokepediaGeneration
@@ -15,6 +16,7 @@ try:
     from CynanBotCommon.timber.timber import Timber
 except:
     import utils
+    from networkClientProvider import NetworkClientProvider
     from timber.timber import Timber
 
     from pkmn.pokepediaDamageClass import PokepediaDamageClass
@@ -29,15 +31,15 @@ class PokepediaRepository():
 
     def __init__(
         self,
-        clientSession: aiohttp.ClientSession,
+        networkClientProvider: NetworkClientProvider,
         timber: Timber
     ):
-        if clientSession is None:
-            raise ValueError(f'clientSession argument is malformed: \"{clientSession}\"')
+        if networkClientProvider is None:
+            raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
         elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
 
-        self.__clientSession: aiohttp.ClientSession = clientSession
+        self.__networkClientProvider: NetworkClientProvider = networkClientProvider
         self.__timber: Timber = timber
 
     def __getElementTypeGenerationDictionary(
@@ -259,10 +261,10 @@ class PokepediaRepository():
         name = utils.cleanStr(name)
         name = name.replace(' ', '-')
         self.__timber.log('PokepediaRepository', f'Searching PokeAPI for move \"{name}\"...')
+        clientSession = await self.__networkClientProvider.get()
 
-        response = None
         try:
-            response = await self.__clientSession.get(f'https://pokeapi.co/api/v2/move/{name}/')
+            response = await clientSession.get(f'https://pokeapi.co/api/v2/move/{name}/')
         except (aiohttp.ClientError, TimeoutError) as e:
             self.__timber.log('PokepediaRepository', f'Encountered network error from PokeAPI when searching for \"{name}\" move: {e}')
             raise RuntimeError(f'Encountered network error from PokeAPI when searching for \"{name}\" move: {e}')
@@ -289,10 +291,10 @@ class PokepediaRepository():
         name = utils.cleanStr(name)
         name = name.replace(' ', '-')
         self.__timber.log('PokepediaRepository', f'Searching PokeAPI for Pokemon \"{name}\"...')
+        clientSession = await self.__networkClientProvider.get()
 
-        response = None
         try:
-            response = await self.__clientSession.get(f'https://pokeapi.co/api/v2/pokemon/{name}/')
+            response = await clientSession.get(f'https://pokeapi.co/api/v2/pokemon/{name}/')
         except (aiohttp.ClientError, TimeoutError) as e:
             self.__timber.log('PokepediaRepository', f'Encountered network error from PokeAPI when searching for \"{name}\" Pokemon: {e}')
             raise RuntimeError(f'Encountered network error from PokeAPI when searching for \"{name}\" Pokemon: {e}')

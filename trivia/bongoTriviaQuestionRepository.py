@@ -5,6 +5,7 @@ import aiohttp
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.networkClientProvider import NetworkClientProvider
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.absTriviaQuestionRepository import \
@@ -26,6 +27,7 @@ try:
         TrueFalseTriviaQuestion
 except:
     import utils
+    from networkClientProvider import NetworkClientProvider
     from timber.timber import Timber
 
     from trivia.absTriviaQuestion import AbsTriviaQuestion
@@ -47,7 +49,7 @@ class BongoTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
     def __init__(
         self,
-        clientSession: aiohttp.ClientSession,
+        networkClientProvider: NetworkClientProvider,
         timber: Timber,
         triviaEmoteGenerator: TriviaEmoteGenerator,
         triviaIdGenerator: TriviaIdGenerator,
@@ -56,8 +58,8 @@ class BongoTriviaQuestionRepository(AbsTriviaQuestionRepository):
     ):
         super().__init__(triviaSettingsRepository)
 
-        if clientSession is None:
-            raise ValueError(f'clientSession argument is malformed: \"{clientSession}\"')
+        if networkClientProvider is None:
+            raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
         elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif triviaEmoteGenerator is None:
@@ -67,7 +69,7 @@ class BongoTriviaQuestionRepository(AbsTriviaQuestionRepository):
         elif triviaQuestionCompiler is None:
             raise ValueError(f'triviaQuestionCompiler argument is malformed: \"{triviaQuestionCompiler}\"')
 
-        self.__clientSession: aiohttp.ClientSession = clientSession
+        self.__networkClientProvider: NetworkClientProvider = networkClientProvider
         self.__timber: Timber = timber
         self.__triviaEmoteGenerator: TriviaEmoteGenerator = triviaEmoteGenerator
         self.__triviaIdGenerator: TriviaIdGenerator = triviaIdGenerator
@@ -76,9 +78,10 @@ class BongoTriviaQuestionRepository(AbsTriviaQuestionRepository):
     async def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
         self.__timber.log('BongoTriviaQuestionRepository', f'Fetching trivia question... (twitchChannel={twitchChannel})')
 
-        response = None
+        clientSession = await self.__networkClientProvider.get()
+
         try:
-            response = await self.__clientSession.get('https://beta-trivia.bongo.best/?limit=1')
+            response = await clientSession.get('https://beta-trivia.bongo.best/?limit=1')
         except (aiohttp.ClientError, TimeoutError) as e:
             self.__timber.log('BongoTriviaQuestionRepository', f'Encountered network error: {e}')
             return None

@@ -7,6 +7,7 @@ import aiohttp
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.location.location import Location
+    from CynanBotCommon.networkClientProvider import NetworkClientProvider
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.timedDict import TimedDict
     from CynanBotCommon.weather.airQualityIndex import AirQualityIndex
@@ -15,6 +16,7 @@ try:
 except:
     import utils
     from location.location import Location
+    from networkClientProvider import NetworkClientProvider
     from timber.timber import Timber
     from timedDict import TimedDict
 
@@ -27,14 +29,14 @@ class WeatherRepository():
 
     def __init__(
         self,
-        clientSession: aiohttp.ClientSession,
+        networkClientProvider: NetworkClientProvider,
         oneWeatherApiKey: str,
         timber: Timber,
         maxAlerts: int = 2,
         cacheTimeDelta: timedelta = timedelta(minutes = 20)
     ):
-        if clientSession is None:
-            raise ValueError(f'clientSession argument is malformed: \"{clientSession}\"')
+        if networkClientProvider is None:
+            raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
         elif not utils.isValidStr(oneWeatherApiKey):
             raise ValueError(f'oneWeatherApiKey argument is malformed: \"{oneWeatherApiKey}\"')
         elif timber is None:
@@ -46,7 +48,7 @@ class WeatherRepository():
         elif cacheTimeDelta is None:
             raise ValueError(f'cacheTimeDelta argument is malformed: \"{cacheTimeDelta}\"')
 
-        self.__clientSession: aiohttp.ClientSession = clientSession
+        self.__networkClientProvider: NetworkClientProvider = networkClientProvider
         self.__oneWeatherApiKey: str = oneWeatherApiKey
         self.__timber: Timber = timber
         self.__maxAlerts: int = maxAlerts
@@ -124,9 +126,10 @@ class WeatherRepository():
         requestUrl = 'https://api.openweathermap.org/data/2.5/air_pollution?appid={}&lat={}&lon={}'.format(
             self.__oneWeatherApiKey, location.getLatitude(), location.getLongitude())
 
-        response = None
+        clientSession = await self.__networkClientProvider.get()
+
         try:
-            response = await self.__clientSession.get(requestUrl)
+            response = await clientSession.get(requestUrl)
         except (aiohttp.ClientError, TimeoutError) as e:
             self.__timber.log('WeatherRepository', f'Encountered network error when fetching air quality index for \"{location.getName()}\" ({location.getLocationId()}): {e}')
             return None
@@ -167,6 +170,7 @@ class WeatherRepository():
             raise ValueError(f'location argument is malformed: \"{location}\"')
 
         self.__timber.log('WeatherRepository', f'Fetching weather for \"{location.getName()}\" ({location.getLocationId()})...')
+        clientSession = await self.__networkClientProvider.get()
 
         # Retrieve weather report from https://openweathermap.org/api/one-call-api
         # Doing this requires an API key, which you can get here: https://openweathermap.org/api
@@ -174,9 +178,8 @@ class WeatherRepository():
         requestUrl = 'https://api.openweathermap.org/data/2.5/onecall?appid={}&lat={}&lon={}&exclude=minutely,hourly&units=metric'.format(
             self.__oneWeatherApiKey, location.getLatitude(), location.getLongitude())
 
-        response = None
         try:
-            response = await self.__clientSession.get(requestUrl)
+            response = await clientSession.get(requestUrl)
         except (aiohttp.ClientError, TimeoutError) as e:
             self.__timber.log('WeatherRepository', f'Encountered network error when fetching weather for \"{location.getName()}\" ({location.getLocationId()}): {e}')
             raise RuntimeError(f'Encountered network error when fetching weather for \"{location.getName()}\" ({location.getLocationId()})')

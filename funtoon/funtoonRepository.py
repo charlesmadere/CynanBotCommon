@@ -10,9 +10,11 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.funtoon.funtoonPkmnCatchType import \
         FuntoonPkmnCatchType
+    from CynanBotCommon.networkClientProvider import NetworkClientProvider
     from CynanBotCommon.timber.timber import Timber
 except:
     import utils
+    from networkClientProvider import NetworkClientProvider
     from timber.timber import Timber
 
     from funtoon.funtoonPkmnCatchType import FuntoonPkmnCatchType
@@ -22,13 +24,13 @@ class FuntoonRepository():
 
     def __init__(
         self,
-        clientSession: aiohttp.ClientSession,
+        networkClientProvider: NetworkClientProvider,
         timber: Timber,
         funtoonApiUrl: str = 'https://funtoon.party/api',
         funtoonRepositoryFile: str = 'CynanBotCommon/funtoon/funtoonRepository.json'
     ):
-        if clientSession is None:
-            raise ValueError(f'clientSession argument is malformed: \"{clientSession}\"')
+        if networkClientProvider is None:
+            raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
         elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not utils.isValidUrl(funtoonApiUrl):
@@ -36,7 +38,7 @@ class FuntoonRepository():
         elif not utils.isValidStr(funtoonRepositoryFile):
             raise ValueError(f'funtoonRepositoryFile argument is malformed: \"{funtoonRepositoryFile}\"')
 
-        self.__clientSession: aiohttp.ClientSession = clientSession
+        self.__networkClientProvider: NetworkClientProvider = networkClientProvider
         self.__timber: Timber = timber
         self.__funtoonApiUrl: str = funtoonApiUrl
         self.__funtoonRepositoryFile: str = funtoonRepositoryFile
@@ -47,8 +49,10 @@ class FuntoonRepository():
         if not utils.isValidStr(triviaId):
             raise ValueError(f'triviaId argument is malformed: \"{triviaId}\"')
 
+        clientSession = await self.__networkClientProvider.get()
+
         try:
-            response = await self.__clientSession.get(f'{self.__funtoonApiUrl}/trivia/review/{triviaId}')
+            response = await clientSession.get(f'{self.__funtoonApiUrl}/trivia/review/{triviaId}')
         except (aiohttp.ClientError, TimeoutError) as e:
             self.__timber.log('FuntoonRepository', f'Encountered network error when banning a trivia question (triviaId={triviaId}): {e}')
             return False
@@ -105,8 +109,10 @@ class FuntoonRepository():
         if isDebugLoggingEnabled:
             self.__timber.log('FuntoonRepository', f'Hitting Funtoon API \"{url}\" for \"{twitchChannel}\" for event \"{event}\" with JSON payload: {jsonPayload}')
 
+        clientSession = await self.__networkClientProvider.get()
+
         try:
-            response = await self.__clientSession.post(
+            response = await clientSession.post(
                 url = url,
                 headers = {
                     'Authorization': funtoonToken,

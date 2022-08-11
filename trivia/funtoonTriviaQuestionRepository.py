@@ -5,6 +5,7 @@ import aiohttp
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.networkClientProvider import NetworkClientProvider
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.absTriviaQuestionRepository import \
@@ -22,6 +23,7 @@ try:
     from CynanBotCommon.trivia.triviaType import TriviaType
 except:
     import utils
+    from networkClientProvider import NetworkClientProvider
     from timber.timber import Timber
 
     from trivia.absTriviaQuestion import AbsTriviaQuestion
@@ -41,7 +43,7 @@ class FuntoonTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
     def __init__(
         self,
-        clientSession: aiohttp.ClientSession,
+        networkClientProvider: NetworkClientProvider,
         timber: Timber,
         triviaAnswerCompiler: TriviaAnswerCompiler,
         triviaEmoteGenerator: TriviaEmoteGenerator,
@@ -50,8 +52,8 @@ class FuntoonTriviaQuestionRepository(AbsTriviaQuestionRepository):
     ):
         super().__init__(triviaSettingsRepository)
 
-        if clientSession is None:
-            raise ValueError(f'clientSession argument is malformed: \"{clientSession}\"')
+        if networkClientProvider is None:
+            raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
         elif triviaEmoteGenerator is None:
             raise ValueError(f'triviaEmoteGenerator argument is malformed: \"{triviaEmoteGenerator}\"')
         elif timber is None:
@@ -61,7 +63,7 @@ class FuntoonTriviaQuestionRepository(AbsTriviaQuestionRepository):
         elif triviaQuestionCompiler is None:
             raise ValueError(f'triviaQuestionCompiler argument is malformed: \"{triviaQuestionCompiler}\"')
 
-        self.__clientSession: aiohttp.ClientSession = clientSession
+        self.__networkClientProvider: NetworkClientProvider = networkClientProvider
         self.__timber: Timber = timber
         self.__triviaAnswerCompiler: TriviaAnswerCompiler = triviaAnswerCompiler
         self.__triviaEmoteGenerator: TriviaEmoteGenerator = triviaEmoteGenerator
@@ -73,9 +75,10 @@ class FuntoonTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         self.__timber.log('FuntoonTriviaQuestionRepository', f'Fetching trivia question(s)... (twitchChannel={twitchChannel})')
 
-        response = None
+        clientSession = await self.__networkClientProvider.get()
+
         try:
-            response = await self.__clientSession.get(f'https://funtoon.party/api/trivia/random')
+            response = await clientSession.get(f'https://funtoon.party/api/trivia/random')
         except (aiohttp.ClientError, TimeoutError) as e:
             self.__timber.log('FuntoonTriviaQuestionRepository', f'Encountered network error: {e}')
             return None

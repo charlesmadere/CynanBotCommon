@@ -8,10 +8,12 @@ try:
     from CynanBotCommon.language.languageEntry import LanguageEntry
     from CynanBotCommon.language.wordOfTheDayResponse import \
         WordOfTheDayResponse
+    from CynanBotCommon.networkClientProvider import NetworkClientProvider
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.timedDict import TimedDict
 except:
     import utils
+    from networkClientProvider import NetworkClientProvider
     from timber.timber import Timber
     from timedDict import TimedDict
 
@@ -23,18 +25,18 @@ class WordOfTheDayRepository():
 
     def __init__(
         self,
-        clientSession: aiohttp.ClientSession,
+        networkClientProvider: NetworkClientProvider,
         timber: Timber,
         cacheTimeDelta: timedelta = timedelta(hours = 1)
     ):
-        if clientSession is None:
-            raise ValueError(f'clientSession argument is malformed: \"{clientSession}\"')
+        if networkClientProvider is None:
+            raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
         elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif cacheTimeDelta is None:
             raise ValueError(f'cacheTimeDelta argument is malformed: \"{cacheTimeDelta}\"')
 
-        self.__clientSession: aiohttp.ClientSession = clientSession
+        self.__networkClientProvider: NetworkClientProvider = networkClientProvider
         self.__timber: Timber = timber
         self.__cache: TimedDict = TimedDict(timeDelta = cacheTimeDelta)
 
@@ -60,12 +62,18 @@ class WordOfTheDayRepository():
             raise ValueError(f'the given languageEntry is not supported for Word Of The Day: \"{languageEntry.getName()}\"')
 
         self.__timber.log('WordOfTheDayRepository', f'Fetching Word Of The Day for \"{languageEntry.getName()}\" ({languageEntry.getWotdApiCode()})...')
+        clientSession = await self.__networkClientProvider.get()
 
         ##############################################################################
         # retrieve word of the day from https://www.transparent.com/word-of-the-day/ #
         ##############################################################################
 
-        response = await self.__clientSession.get(f'https://wotd.transparent.com/rss/{languageEntry.getWotdApiCode()}-widget.xml?t=0')
+        try:
+            response = await clientSession.get(f'https://wotd.transparent.com/rss/{languageEntry.getWotdApiCode()}-widget.xml?t=0')
+        except (aiohttp.ClientError, TimeoutError) as e:
+            self.__timber.log('WordOfTheDayRepository', f'Encountered network error when fetching Word Of The Day for \"{languageEntry.getName()}\": {e}')
+            raise RuntimeError(f'Encountered network error when fetching Word Of The Day for \"{languageEntry.getName()}\": {e}')
+
         if response.status != 200:
             self.__timber.log('WordOfTheDayRepository', f'Encountered non-200 HTTP status code when fetching Word Of The Day for \"{languageEntry.getName()}\" ({languageEntry.getWotdApiCode()}): {response.status}')
             raise RuntimeError(f'Encountered non-200 HTTP status code when fetching Word Of The Day for \"{languageEntry.getName()}\" ({languageEntry.getWotdApiCode()}): {response.status}')

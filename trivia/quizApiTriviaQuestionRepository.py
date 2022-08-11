@@ -5,6 +5,7 @@ import aiohttp
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.networkClientProvider import NetworkClientProvider
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.absTriviaQuestionRepository import \
@@ -24,6 +25,7 @@ try:
         TrueFalseTriviaQuestion
 except:
     import utils
+    from networkClientProvider import NetworkClientProvider
     from timber.timber import Timber
 
     from trivia.absTriviaQuestion import AbsTriviaQuestion
@@ -45,7 +47,7 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
     def __init__(
         self,
-        clientSession: aiohttp.ClientSession,
+        networkClientProvider: NetworkClientProvider,
         quizApiKey: str,
         timber: Timber,
         triviaEmoteGenerator: TriviaEmoteGenerator,
@@ -54,8 +56,8 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
     ):
         super().__init__(triviaSettingsRepository)
 
-        if clientSession is None:
-            raise ValueError(f'clientSession argument is malformed: \"{clientSession}\"')
+        if networkClientProvider is None:
+            raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
         elif not utils.isValidStr(quizApiKey):
             raise ValueError(f'quizApiKey argument is malformed: \"{quizApiKey}\"')
         elif timber is None:
@@ -65,7 +67,7 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
         elif triviaIdGenerator is None:
             raise ValueError(f'triviaIdGenerator argument is malformed: \"{triviaIdGenerator}\"')
 
-        self.__clientSession: aiohttp.ClientSession = clientSession
+        self.__networkClientProvider: NetworkClientProvider = networkClientProvider
         self.__quizApiKey: str = quizApiKey
         self.__timber: Timber = timber
         self.__triviaEmoteGenerator: TriviaEmoteGenerator = triviaEmoteGenerator
@@ -74,9 +76,10 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
     async def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
         self.__timber.log('QuizApiTriviaQuestionRepository', f'Fetching trivia question... (twitchChannel={twitchChannel})')
 
-        response = None
+        clientSession = await self.__networkClientProvider.get()
+
         try:
-            response = await self.__clientSession.get(
+            response = await clientSession.get(
                 url = f'https://quizapi.io/api/v1/questions?apiKey={self.__quizApiKey}&limit=1',
                 headers = {
                     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:97.0) Gecko/20100101 Firefox/97.0' # LOOOOL

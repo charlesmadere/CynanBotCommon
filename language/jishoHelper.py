@@ -8,9 +8,11 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.language.jishoResult import JishoResult
     from CynanBotCommon.language.jishoVariant import JishoVariant
+    from CynanBotCommon.networkClientProvider import NetworkClientProvider
     from CynanBotCommon.timber.timber import Timber
 except:
     import utils
+    from networkClientProvider import NetworkClientProvider
     from timber.timber import Timber
 
     from language.jishoResult import JishoResult
@@ -21,13 +23,13 @@ class JishoHelper():
 
     def __init__(
         self,
-        clientSession: aiohttp.ClientSession,
+        networkClientProvider: NetworkClientProvider,
         timber: Timber,
         definitionsMaxSize: int = 3,
         variantsMaxSize: int = 3
     ):
-        if clientSession is None:
-            raise ValueError(f'clientSession argument is malformed: \"{clientSession}\"')
+        if networkClientProvider is None:
+            raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
         elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not utils.isValidNum(definitionsMaxSize):
@@ -39,7 +41,7 @@ class JishoHelper():
         elif variantsMaxSize < 1 or variantsMaxSize > 5:
             raise ValueError(f'variantsMaxSize argument is out of bounds: \"{variantsMaxSize}\"')
 
-        self.__clientSession: aiohttp.ClientSession = clientSession
+        self.__networkClientProvider: NetworkClientProvider = networkClientProvider
         self.__timber: Timber = timber
         self.__definitionsMaxSize: int = definitionsMaxSize
         self.__variantsMaxSize: int = variantsMaxSize
@@ -51,10 +53,10 @@ class JishoHelper():
         query = utils.cleanStr(query)
         encodedQuery = quote(query)
         self.__timber.log('JishoHelper', f'Looking up \"{query}\" at Jisho...')
+        clientSession = await self.__networkClientProvider.get()
 
-        response = None
         try:
-            response = await self.__clientSession.get(f'https://jisho.org/api/v1/search/words?keyword={encodedQuery}')
+            response = await clientSession.get(f'https://jisho.org/api/v1/search/words?keyword={encodedQuery}')
         except (aiohttp.ClientError, TimeoutError) as e:
             self.__timber.log('JishoHelper', f'Encountered network error when searching Jisho for \"{query}\": {e}')
             raise RuntimeError(f'Encountered network error when searching Jisho for \"{query}\": {e}')

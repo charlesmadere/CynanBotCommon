@@ -10,9 +10,11 @@ import aiohttp
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.networkClientProvider import NetworkClientProvider
     from CynanBotCommon.timber.timber import Timber
 except:
     import utils
+    from networkClientProvider import NetworkClientProvider
     from timber.timber import Timber
 
 
@@ -50,15 +52,15 @@ class TwitchTokensRepository():
 
     def __init__(
         self,
-        clientSession: aiohttp.ClientSession,
+        networkClientProvider: NetworkClientProvider,
         timber: Timber,
         oauth2TokenUrl: str = 'https://id.twitch.tv/oauth2/token',
         oauth2ValidateUrl: str = 'https://id.twitch.tv/oauth2/validate',
         twitchTokensFile: str = 'CynanBotCommon/twitch/twitchTokensRepository.json',
         tokensExpirationBuffer: timedelta = timedelta(minutes = 30)
     ):
-        if clientSession is None:
-            raise ValueError(f'clientSession argument is malformed: \"{clientSession}\"')
+        if networkClientProvider is None:
+            raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
         elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not utils.isValidUrl(oauth2TokenUrl):
@@ -70,7 +72,7 @@ class TwitchTokensRepository():
         elif tokensExpirationBuffer is None:
             raise ValueError(f'tokensExpirationBuffer argument is malformed: \"{tokensExpirationBuffer}\"')
 
-        self.__clientSession: aiohttp.ClientSession = clientSession
+        self.__networkClientProvider: NetworkClientProvider = networkClientProvider
         self.__timber: Timber = timber
         self.__oauth2TokenUrl: str = oauth2TokenUrl
         self.__oauth2ValidateUrl: str = oauth2ValidateUrl
@@ -159,10 +161,10 @@ class TwitchTokensRepository():
 
         twitchHandle = twitchHandle.lower()
         self.__timber.log('TwitchTokensRepository', f'Refreshing Twitch tokens for \"{twitchHandle}\"...')
+        clientSession = await self.__networkClientProvider.get()
 
-        response = None
         try:
-            response = await self.__clientSession.post(
+            response = await clientSession.post(
                 url = self.__oauth2TokenUrl,
                 params = {
                         'client_id': twitchClientId,
@@ -277,10 +279,10 @@ class TwitchTokensRepository():
 
         twitchHandle = twitchHandle.lower()
         self.__timber.log('TwitchTokensRepository', f'Validating Twitch access token for \"{twitchHandle}\"...')
+        clientSession = await self.__networkClientProvider.get()
 
-        response = None
         try:
-            response = await self.__clientSession.get(
+            response = await clientSession.get(
                 url = self.__oauth2ValidateUrl,
                 headers = {
                     'Authorization': f'OAuth {await self.requireAccessToken(twitchHandle)}'
