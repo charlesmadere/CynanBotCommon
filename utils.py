@@ -77,12 +77,6 @@ def cleanStr(s: str, replacement: str = ' ', htmlUnescape: bool = False, removeC
 
 digitRegEx: Pattern = re.compile(r"^.*\d+.*$", re.IGNORECASE)
 
-def containsDigit(s: Optional[str]) -> bool:
-    if not isValidStr(s):
-        return False
-
-    return digitRegEx.fullmatch(s) is not None
-
 def containsUrl(s: Optional[str]) -> bool:
     if not isValidStr(s):
         return False
