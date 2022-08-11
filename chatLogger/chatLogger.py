@@ -21,7 +21,7 @@ class ChatLogger():
     def __init__(
         self,
         eventLoop: AbstractEventLoop,
-        sleepTimeSeconds: float = 15,
+        sleepTimeSeconds: float = 10,
         logRootDirectory: str = 'CynanBotCommon/chatLogger'
     ):
         if eventLoop is None:
