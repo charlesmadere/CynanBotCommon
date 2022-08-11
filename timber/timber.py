@@ -22,7 +22,7 @@ class Timber():
         self,
         eventLoop: AbstractEventLoop,
         alsoPrintToStandardOut: bool = True,
-        sleepTimeSeconds: float = 5,
+        sleepTimeSeconds: float = 10,
         timberRootDirectory: str = 'CynanBotCommon/timber'
     ):
         if eventLoop is None:
