@@ -7,10 +7,12 @@ from aiosqlite import Connection
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.backingDatabase import BackingDatabase
+    from CynanBotCommon.networkClientProvider import NetworkClientProvider
     from CynanBotCommon.timber.timber import Timber
 except:
     import utils
     from backingDatabase import BackingDatabase
+    from networkClientProvider import NetworkClientProvider
     from timber.timber import Timber
 
 
@@ -18,19 +20,19 @@ class UserIdsRepository():
 
     def __init__(
         self,
-        clientSession: aiohttp.ClientSession,
         backingDatabase: BackingDatabase,
+        networkClientProvider: NetworkClientProvider,
         timber: Timber
     ):
-        if clientSession is None:
-            raise ValueError(f'clientSession argument is malformed: \"{clientSession}\"')
-        elif backingDatabase is None:
+        if backingDatabase is None:
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
+        elif networkClientProvider is None:
+            raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
         elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
 
-        self.__clientSession: aiohttp.ClientSession = clientSession
         self.__backingDatabase: BackingDatabase = backingDatabase
+        self.__networkClientProvider: NetworkClientProvider = networkClientProvider
         self.__timber: Timber = timber
 
         self.__isDatabaseReady: bool = False
@@ -74,9 +76,10 @@ class UserIdsRepository():
 
         self.__timber.log('UserIdsRepository', f'Performing network call to fetch Twitch userId for userName \"{userName}\"...')
 
-        response = None
+        clientSession = await self.__networkClientProvider.get()
+
         try:
-            response = await self.__clientSession.get(
+            response = await clientSession.get(
                 url = f'https://api.twitch.tv/helix/users?login={userName}',
                 headers = {
                     'Authorization': f'Bearer {twitchAccessToken}',
@@ -104,7 +107,9 @@ class UserIdsRepository():
             self.__timber.log('UserIdsRepository', f'Unable to fetch userId for \"{userName}\": {jsonResponse}')
             raise ValueError(f'UserIdsRepository was unable to fetch userId for \"{userName}\": {jsonResponse}')
 
+        self.__timber.log('UserIdsRepository', f'Successfully fetched Twitch userId for userName \"{userName}\": \"{userId}\"')
         await self.setUser(userId = userId, userName = userName)
+
         return userId
 
     async def fetchUserIdAsInt(

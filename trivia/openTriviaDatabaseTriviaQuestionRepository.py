@@ -5,6 +5,7 @@ import aiohttp
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.networkClientProvider import NetworkClientProvider
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.absTriviaQuestionRepository import \
@@ -26,6 +27,7 @@ try:
         TrueFalseTriviaQuestion
 except:
     import utils
+    from networkClientProvider import NetworkClientProvider
     from timber.timber import Timber
 
     from trivia.absTriviaQuestion import AbsTriviaQuestion
@@ -47,7 +49,7 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
     def __init__(
         self,
-        clientSession: aiohttp.ClientSession,
+        networkClientProvider: NetworkClientProvider,
         timber: Timber,
         triviaEmoteGenerator: TriviaEmoteGenerator,
         triviaIdGenerator: TriviaIdGenerator,
@@ -56,8 +58,8 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
     ):
         super().__init__(triviaSettingsRepository)
 
-        if clientSession is None:
-            raise ValueError(f'clientSession argument is malformed: \"{clientSession}\"')
+        if networkClientProvider is None:
+            raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
         elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif triviaEmoteGenerator is None:
@@ -67,7 +69,7 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
         elif triviaQuestionCompiler is None:
             raise ValueError(f'triviaQuestionCompiler argument is malformed: \"{triviaQuestionCompiler}\"')
 
-        self.__clientSession: aiohttp.ClientSession = clientSession
+        self.__networkClientProvider: NetworkClientProvider = networkClientProvider
         self.__timber: Timber = timber
         self.__triviaEmoteGenerator: TriviaEmoteGenerator = triviaEmoteGenerator
         self.__triviaIdGenerator: TriviaIdGenerator = triviaIdGenerator
@@ -84,9 +86,10 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
         if not utils.isValidStr(sessionToken):
             self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Fetching new session token for \"{twitchChannel}\"...')
 
-            response = None
+            clientSession = await self.__networkClientProvider.get()
+
             try:
-                response = await self.__clientSession.get('https://opentdb.com/api_token.php?command=request')
+                response = await clientSession.get('https://opentdb.com/api_token.php?command=request')
             except (aiohttp.ClientError, TimeoutError) as e:
                 self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Encountered network error when fetching session token: {e}')
                 return None
@@ -124,12 +127,13 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
         if utils.isValidStr(twitchChannel):
             sessionToken = await self.__fetchSessionToken(twitchChannel)
 
-        response = None
+        clientSession = await self.__networkClientProvider.get()
+
         try:
             if utils.isValidStr(sessionToken):
-                response = await self.__clientSession.get(f'https://opentdb.com/api.php?amount=1&token={sessionToken}')
+                response = await clientSession.get(f'https://opentdb.com/api.php?amount=1&token={sessionToken}')
             else:
-                response = await self.__clientSession.get('https://opentdb.com/api.php?amount=1')
+                response = await clientSession.get('https://opentdb.com/api.php?amount=1')
         except (aiohttp.ClientError, TimeoutError) as e:
             self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Encountered network error when fetching trivia question: {e}')
             return None

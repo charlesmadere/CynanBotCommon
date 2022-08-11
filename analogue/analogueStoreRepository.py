@@ -10,9 +10,11 @@ try:
     from CynanBotCommon.analogue.analogueProductType import AnalogueProductType
     from CynanBotCommon.analogue.analogueStoreEntry import AnalogueStoreEntry
     from CynanBotCommon.analogue.analogueStoreStock import AnalogueStoreStock
+    from CynanBotCommon.networkClientProvider import NetworkClientProvider
     from CynanBotCommon.timber.timber import Timber
 except:
     import utils
+    from networkClientProvider import NetworkClientProvider
     from timber.timber import Timber
 
     from analogue.analogueProductType import AnalogueProductType
@@ -24,13 +26,13 @@ class AnalogueStoreRepository():
 
     def __init__(
         self,
-        clientSession: aiohttp.ClientSession,
+        networkClientProvider: NetworkClientProvider,
         timber: Timber,
         storeUrl: str = 'https://www.analogue.co/store',
         cacheTimeDelta: timedelta = timedelta(hours = 1)
     ):
-        if clientSession is None:
-            raise ValueError(f'clientSession argument is malformed: \"{clientSession}\"')
+        if networkClientProvider is None:
+            raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
         elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not utils.isValidUrl(storeUrl):
@@ -38,7 +40,7 @@ class AnalogueStoreRepository():
         elif cacheTimeDelta is None:
             raise ValueError(f'cacheTimeDelta argument is malformed: \"{cacheTimeDelta}\"')
 
-        self.__clientSession: aiohttp.ClientSession = clientSession
+        self.__networkClientProvider: NetworkClientProvider = networkClientProvider
         self.__timber: Timber = timber
         self.__storeUrl: str = storeUrl
         self.__cacheTimeDelta: timedelta = cacheTimeDelta
@@ -60,9 +62,10 @@ class AnalogueStoreRepository():
     async def __fetchStoreStock(self) -> AnalogueStoreStock:
         self.__timber.log('AnalogueStoreRepository', f'Fetching Analogue store stock...')
 
-        response = None
+        clientSession = await self.__networkClientProvider.get()
+
         try:
-            response = await self.__clientSession.get(self.__storeUrl)
+            response = await clientSession.get(self.__storeUrl)
         except (aiohttp.ClientError, TimeoutError) as e:
             self.__timber.log('AnalogueStoreRepository', f'Encountered network error: {e}')
             raise RuntimeError(f'Encountered network error when fetching Analogue store stock: {e}')

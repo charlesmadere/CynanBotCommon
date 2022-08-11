@@ -6,9 +6,11 @@ import aiohttp
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.networkClientProvider import NetworkClientProvider
     from CynanBotCommon.timber.timber import Timber
 except:
     import utils
+    from networkClientProvider import NetworkClientProvider
     from timber.timber import Timber
 
 
@@ -98,18 +100,18 @@ class TamaleGuyRepository():
 
     def __init__(
         self,
-        clientSession: aiohttp.ClientSession,
+        networkClientProvider: NetworkClientProvider,
         timber: Timber,
         cacheTimeDelta: timedelta = timedelta(hours = 1)
     ):
-        if clientSession is None:
-            raise ValueError(f'clientSession argument is malformed: \"{clientSession}\"')
+        if networkClientProvider is None:
+            raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
         elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif cacheTimeDelta is None:
             raise ValueError(f'cacheTimeDelta argument is malformed: \"{cacheTimeDelta}\"')
 
-        self.__clientSession: aiohttp.ClientSession = clientSession
+        self.__networkClientProvider: NetworkClientProvider = networkClientProvider
         self.__timber: Timber = timber
         self.__cacheTimeDelta: timedelta = cacheTimeDelta
 
@@ -144,9 +146,10 @@ class TamaleGuyRepository():
     async def __refreshStoreStock(self) -> TamaleGuyStoreStock:
         self.__timber.log('TamaleGuyRepository', f'Refreshing Tamale Guy store stock...')
 
-        response = None
+        clientSession = await self.__networkClientProvider.get()
+
         try:
-            response = await self.__clientSession.get('https://cdn4.editmysite.com/app/store/api/v13/editor/users/133185089/sites/894723485170061581/store-locations/11ead036057c3aa5b510ac1f6bbba828/products?page=1&per_page=200&include=images,categories&fulfillments[]=pickup')
+            response = await clientSession.get('https://cdn4.editmysite.com/app/store/api/v13/editor/users/133185089/sites/894723485170061581/store-locations/11ead036057c3aa5b510ac1f6bbba828/products?page=1&per_page=200&include=images,categories&fulfillments[]=pickup')
         except (aiohttp.ClientError, TimeoutError) as e:
             self.__timber.log('TamaleGuyRepository', f'Encountered network error: {e}')
             raise RuntimeError(f'Encountered network error when fetching Tamale Guy store stock: {e}')

@@ -16,9 +16,11 @@ try:
     from CynanBotCommon.language.translationApiSource import \
         TranslationApiSource
     from CynanBotCommon.language.translationResponse import TranslationResponse
+    from CynanBotCommon.networkClientProvider import NetworkClientProvider
     from CynanBotCommon.timber.timber import Timber
 except:
     import utils
+    from networkClientProvider import NetworkClientProvider
     from timber.timber import Timber
 
     from language.languageEntry import LanguageEntry
@@ -31,16 +33,16 @@ class TranslationHelper():
 
     def __init__(
         self,
-        clientSession: aiohttp.ClientSession,
         languagesRepository: LanguagesRepository,
+        networkClientProvider: NetworkClientProvider,
         deepLAuthKey: str,
         timber: Timber,
         googleServiceAccountFile: str = 'CynanBotCommon/language/googleServiceAccount.json'
     ):
-        if clientSession is None:
-            raise ValueError(f'clientSession argument is malformed: \"{clientSession}\"')
-        elif languagesRepository is None:
+        if languagesRepository is None:
             raise ValueError(f'languagesRepository argument is malformed: \"{languagesRepository}\"')
+        elif networkClientProvider is None:
+            raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
         elif not utils.isValidStr(deepLAuthKey):
             raise ValueError(f'deepLAuthKey argument is malformed: \"{deepLAuthKey}\"')
         elif timber is None:
@@ -48,8 +50,8 @@ class TranslationHelper():
         elif not utils.isValidStr(googleServiceAccountFile):
             raise ValueError(f'googleServiceAccountFile argument is malformed: \"{googleServiceAccountFile}\"')
 
-        self.__clientSession: aiohttp.ClientSession = clientSession
         self.__languagesRepository: LanguagesRepository = languagesRepository
+        self.__networkClientProvider: NetworkClientProvider = networkClientProvider
         self.__deepLAuthKey: str = deepLAuthKey
         self.__timber: Timber = timber
         self.__googleServiceAccountFile: str = googleServiceAccountFile
@@ -64,8 +66,10 @@ class TranslationHelper():
         requestUrl = 'https://api-free.deepl.com/v2/translate?auth_key={}&text={}&target_lang={}'.format(
             self.__deepLAuthKey, text, targetLanguageEntry.getIso6391Code())
 
+        clientSession = await self.__networkClientProvider.get()
+
         try:
-            response = await self.__clientSession.get(requestUrl)
+            response = await clientSession.get(requestUrl)
         except (aiohttp.ClientError, TimeoutError) as e:
             self.__timber.log('TranslationHelper', f'Encountered network error when translating \"{text}\": {e}')
             raise RuntimeError(f'Encountered network error when translating \"{text}\": {e}')
