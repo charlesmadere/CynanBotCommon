@@ -12,40 +12,28 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.networkClientProvider import NetworkClientProvider
     from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.twitch.twitchAccessTokenMissingException import \
+        TwitchAccessTokenMissingException
+    from CynanBotCommon.twitch.twitchExpiresInMissingException import \
+        TwitchExpiresInMissingException
+    from CynanBotCommon.twitch.twitchJsonException import TwitchJsonException
+    from CynanBotCommon.twitch.twitchNetworkException import \
+        TwitchNetworkException
+    from CynanBotCommon.twitch.twitchRefreshTokenMissingException import \
+        TwitchRefreshTokenMissingException
 except:
     import utils
     from networkClientProvider import NetworkClientProvider
     from timber.timber import Timber
 
-
-class TwitchAccessTokenMissingException(Exception):
-
-    def __init__(self, message: str):
-        super().__init__(message)
-
-
-class TwitchExpiresInMissingException(Exception):
-
-    def __init__(self, message: str):
-        super().__init__(message)
-
-
-class TwitchJsonException(Exception):
-
-    def __init__(self, message: str):
-        super().__init__(message)
-
-
-class TwitchNetworkException(Exception):
-
-    def __init__(self, message: str):
-        super().__init__(message)
-
-
-class TwitchRefreshTokenMissingException(Exception):
-
-    def __init__(self, message: str):
-        super().__init__(message)
+    from twitch.twitchAccessTokenMissingException import \
+        TwitchAccessTokenMissingException
+    from twitch.twitchExpiresInMissingException import \
+        TwitchExpiresInMissingException
+    from twitch.twitchJsonException import TwitchJsonException
+    from twitch.twitchNetworkException import TwitchNetworkException
+    from twitch.twitchRefreshTokenMissingException import \
+        TwitchRefreshTokenMissingException
 
 
 class TwitchTokensRepository():
