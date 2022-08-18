@@ -5,7 +5,6 @@ from aiosqlite import Connection
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.backingDatabase import BackingDatabase
-    from CynanBotCommon.funtoon.funtoonRepository import FuntoonRepository
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
@@ -13,7 +12,6 @@ try:
 except:
     import utils
     from backingDatabase import BackingDatabase
-    from funtoon.funtoonRepository import FuntoonRepository
     from timber.timber import Timber
 
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
@@ -25,21 +23,17 @@ class BannedTriviaIdsRepository():
     def __init__(
         self,
         backingDatabase: BackingDatabase,
-        funtoonRepository: FuntoonRepository,
         timber: Timber,
         triviaSettingsRepository: TriviaSettingsRepository
     ):
         if backingDatabase is None:
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
-        elif funtoonRepository is None:
-            raise ValueError(f'funtoonRepository argument is malformed: \"{funtoonRepository}\"')
         elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif triviaSettingsRepository is None:
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
 
         self.__backingDatabase: BackingDatabase = backingDatabase
-        self.__funtoonRepository: FuntoonRepository = funtoonRepository
         self.__timber: Timber = timber
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
 
@@ -54,16 +48,7 @@ class BannedTriviaIdsRepository():
         if await self.__triviaSettingsRepository.isDebugLoggingEnabled():
             self.__timber.log('BannedTriviaIdsRepository', f'Banning trivia question (triviaId=\"{triviaId}\", triviaSource=\"{triviaSource}\")...')
 
-        if triviaSource is TriviaSource.FUNTOON:
-            await self.__banFuntoonQuestion(triviaId)
-        else:
-            await self.__banQuestion(triviaId, triviaSource)
-
-    async def __banFuntoonQuestion(self, triviaId: str):
-        if not utils.isValidStr(triviaId):
-            raise ValueError(f'triviaId argument is malformed: \"{triviaId}\"')
-
-        await self.__funtoonRepository.banTriviaQuestion(triviaId)
+        await self.__banQuestion(triviaId, triviaSource)
 
     async def __banQuestion(self, triviaId: str, triviaSource: TriviaSource):
         if not utils.isValidStr(triviaId):
