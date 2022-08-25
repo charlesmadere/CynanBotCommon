@@ -2,7 +2,7 @@ import json
 import locale
 from asyncio import TimeoutError
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Set
 
 import aiofiles
 import aiofiles.ospath
@@ -67,7 +67,12 @@ class TwitchTokensRepository():
         self.__twitchTokensFile: str = twitchTokensFile
         self.__tokensExpirationBuffer: timedelta = tokensExpirationBuffer
 
+        self.__jsonCache: Dict[str, Any] = None
         self.__tokenExpirations: Dict[str, datetime] = dict()
+
+    async def clearCaches(self):
+        self.__jsonCache = None
+        self.__timber.log('TwitchTokensRepository', f'Caches cleared')
 
     async def getAccessToken(self, twitchHandle: str) -> str:
         if not utils.isValidStr(twitchHandle):
@@ -80,14 +85,22 @@ class TwitchTokensRepository():
         if not utils.hasItems(self.__tokenExpirations):
             return None
 
-        expiringTwitchHandles: List[str] = list()
+        expiringTwitchHandles: Set[str] = set()
         nowDateTime = datetime.now(timezone.utc)
 
         for twitchHandle, expirationDateTime in self.__tokenExpirations.items():
             if expirationDateTime is None or nowDateTime + self.__tokensExpirationBuffer >= expirationDateTime:
-                expiringTwitchHandles.append(twitchHandle)
+                expiringTwitchHandles.add(twitchHandle.lower())
 
-        return expiringTwitchHandles
+        if await self.__isDynamicAdditionOfNewPubSubUsersEnabled():
+            twitchHandlesJson = await self.__readAllTwitchHandleJson()
+
+            for key in twitchHandlesJson:
+                if key.lower() not in self.__tokenExpirations:
+                    expiringTwitchHandles.add(key.lower())
+                    self.__timber.log('TwitchTokensRepository', f'Discovered new PubSub user: \"{key}\"!')
+
+        return list(expiringTwitchHandles)
 
     async def getRefreshToken(self, twitchHandle: str) -> str:
         if not utils.isValidStr(twitchHandle):
@@ -100,7 +113,14 @@ class TwitchTokensRepository():
         jsonContents = await self.__readAllJson()
         return utils.getBoolFromDict(jsonContents, 'debugLoggingEnabled', fallback = False)
 
+    async def __isDynamicAdditionOfNewPubSubUsersEnabled(self) -> bool:
+        jsonContents = await self.__readAllJson()
+        return utils.getBoolFromDict(jsonContents, 'dynamicAdditionOfNewPubSubUsers', fallback = True)
+
     async def __readAllJson(self) -> Dict[str, Any]:
+        if self.__jsonCache is not None:
+            return self.__jsonCache
+
         if not await aiofiles.ospath.exists(self.__twitchTokensFile):
             raise FileNotFoundError(f'Twitch tokens file not found: \"{self.__twitchTokensFile}\"')
 
@@ -113,17 +133,23 @@ class TwitchTokensRepository():
         elif len(jsonContents) == 0:
             raise ValueError(f'JSON contents of Twitch tokens file \"{self.__twitchTokensFile}\" is empty')
 
+        self.__jsonCache = jsonContents
         return jsonContents
+
+    async def __readAllTwitchHandleJson(self) -> Dict[str, Any]:
+        jsonContents = await self.__readAllJson()
+        twitchHandlesJson: Dict[str, Any] = jsonContents.get('twitchHandles')
+
+        if not utils.hasItems(twitchHandlesJson):
+            raise ValueError(f'\"twitchHandles\" JSON contents of Twitch tokens file \"{self.__twitchTokensFile}\" is missing/empty')
+
+        return twitchHandlesJson
 
     async def __readJsonForTwitchHandle(self, twitchHandle: str) -> Dict[str, Any]:
         if not utils.isValidStr(twitchHandle):
             raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
 
-        jsonContents = await self.__readAllJson()
-        twitchHandlesJson: Dict[str, Any] = jsonContents.get('twitchHandles')
-        if not utils.hasItems(twitchHandlesJson):
-            raise ValueError(f'\"twitchHandles\" JSON contents of Twitch tokens file \"{self.__twitchTokensFile}\" is missing/empty')
-
+        twitchHandlesJson = await self.__readAllTwitchHandleJson()
         twitchHandle = twitchHandle.lower()
 
         for key in twitchHandlesJson:
@@ -204,6 +230,9 @@ class TwitchTokensRepository():
             jsonString = json.dumps(jsonContents, indent = 4, sort_keys = True)
             await file.write(jsonString)
 
+        # be sure to clear caches, as JSON file contents have now been updated
+        await self.clearCaches()
+
         if await self.__isDebugLoggingEnabled():
             self.__timber.log('TwitchTokensRepository', f'{self.__twitchTokensFile} contents: {jsonString}')
 
@@ -280,7 +309,7 @@ class TwitchTokensRepository():
             self.__timber.log('TwitchTokensRepository', f'Encountered network error when validating Twitch access token for \"{twitchHandle}\": {e}')
             raise TwitchNetworkException(f'Encountered network error when validating Twitch access token for \"{twitchHandle}\": {e}')
 
-        responseStatus = response.status
+        responseStatus: int = response.status
         jsonResponse: Dict[str, Any] = await response.json()
         response.close()
 
