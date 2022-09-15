@@ -27,7 +27,7 @@ class TriviaEmoteGenerator():
         self.__emotes: List[str] = self.__createEmotesList()
 
     def __createEmotesList(self) -> List[str]:
-        return [ '🎒', '🏫', '🖍️', '✏️', '🤔', '🧑‍🎓', '🧑‍💻', '🧑‍🏫' ]
+        return [ '🎒', '🏫', '🖍️', '✏️', '🤔', '🧑‍⚕️', '🧑‍🎓', '🧑‍💻', '🧑‍🏫' ]
 
     async def getCurrentEmoteFor(self, twitchChannel: str) -> str:
         if not utils.isValidStr(twitchChannel):
