@@ -23,6 +23,13 @@ class TestTriviaEmoteGenerator():
             assert emoji.is_emoji(result)
 
     @pytest.mark.asyncio
+    async def test_getValidatedAndNormalizedEmote_withBus(self):
+        result = await self.triviaEmoteGenerator.getValidatedAndNormalizedEmote('🎒')
+        assert result is not None
+        assert emoji.is_emoji(result)
+        assert result == '🎒'
+
+    @pytest.mark.asyncio
     async def test_getValidatedAndNormalizedEmote_withCrayon(self):
         result = await self.triviaEmoteGenerator.getValidatedAndNormalizedEmote('🖍️')
         assert result is not None
@@ -141,6 +148,20 @@ class TestTriviaEmoteGenerator():
         assert result is not None
         assert emoji.is_emoji(result)
         assert result == '🧑‍🏫'
+
+    @pytest.mark.asyncio
+    async def test_getValidatedAndNormalizedEmote_withTechnologist(self):
+        result = await self.triviaEmoteGenerator.getValidatedAndNormalizedEmote('🧑‍💻')
+        assert result is not None
+        assert emoji.is_emoji(result)
+        assert result == '🧑‍💻'
+
+    @pytest.mark.asyncio
+    async def test_getValidatedAndNormalizedEmote_withThinkingFace(self):
+        result = await self.triviaEmoteGenerator.getValidatedAndNormalizedEmote('🤔')
+        assert result is not None
+        assert emoji.is_emoji(result)
+        assert result == '🤔'
 
     @pytest.mark.asyncio
     async def test_getValidatedAndNormalizedEmote_withWhitespaceString(self):
