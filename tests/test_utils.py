@@ -170,7 +170,7 @@ class UtilsTest():
         assert result is False
 
     def test_isValidUrl_withRandomNoise2(self):
-        result = utils.isValidUrl('rpt\'%TmN$lx!T.Gg2le)QVO4\_UqMA8dA{=\'\"')
+        result = utils.isValidUrl('rpt\\\'%TmN$lx!T.Gg2le)QVO4\\_UqMA8dA{=\\\'\\\"')
         assert result is False
 
     def test_isValidUrl_withWhitespaceString(self):
