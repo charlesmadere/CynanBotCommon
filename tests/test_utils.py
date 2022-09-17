@@ -7,7 +7,7 @@ except:
     import utils
 
 
-class UtilsTest():
+class TestUtils():
 
     def test_areAllStrsInts_withEmptyList(self):
         result: bool = None

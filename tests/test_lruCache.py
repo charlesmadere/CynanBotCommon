@@ -4,7 +4,7 @@ except:
     from lruCache import LruCache
 
 
-class LruCacheTest():
+class TestLruCache():
 
     def test_constructWithNegativeOneCapacity(self):
         lruCache: LruCache = None
