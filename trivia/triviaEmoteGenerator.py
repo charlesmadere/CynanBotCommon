@@ -1,5 +1,6 @@
 import random
-from typing import List, Optional
+from collections import OrderedDict
+from typing import Dict, List, Optional, Set
 
 import emoji
 from aiosqlite import Connection
@@ -24,17 +25,34 @@ class TriviaEmoteGenerator():
         self.__backingDatabase: BackingDatabase = backingDatabase
 
         self.__isDatabaseReady: bool = False
-        self.__emotes: List[str] = self.__createEmotesList()
+        self.__emotesDict: Dict[str, Optional[Set[str]]] = self.__createEmotesDict()
+        self.__emotesList: List[str] = list(self.__emotesDict)
 
-    def __createEmotesList(self) -> List[str]:
-        return [ '🎒', '🏫', '🖍️', '✏️', '🤔', '🧑‍⚕️', '🧑‍🎓', '🧑‍💻', '🧑‍🏫' ]
+    def __createEmotesDict(self) -> Dict[str, Optional[Set[str]]]:
+        emotesDict: Dict[str, Optional[Set[str]]] = OrderedDict()
+        emotesDict['🧮'] = None
+        emotesDict['🎒'] = None
+        emotesDict['🖍️'] = None
+        emotesDict['🧬'] = None
+        emotesDict['🧐'] = None
+        emotesDict['🤓'] = None
+        emotesDict['✏️'] = None
+        emotesDict['🏫'] = None
+        emotesDict['🤔'] = None
+        emotesDict['🧑‍⚕️'] = { '🧑🏻‍⚕️', '🧑🏼‍⚕️', '🧑🏽‍⚕️', '🧑🏾‍⚕️', '🧑🏿‍⚕️', '👨‍⚕️', '👨🏻‍⚕️', '👨🏼‍⚕️', '👨🏽‍⚕️', '👨🏾‍⚕️', '👨🏿‍⚕️', '👩‍⚕️', '👩🏻‍⚕️', '👩🏼‍⚕️', '👩🏽‍⚕️', '👩🏾‍⚕️', '👩🏿‍⚕️' }
+        emotesDict['🧑‍🎓'] = { '🧑🏻‍🎓', '🧑🏼‍🎓', '🧑🏽‍🎓', '🧑🏾‍🎓', '🧑🏿‍🎓', '👨‍🎓', '👨🏻‍🎓', '👨🏼‍🎓', '👨🏽‍🎓', '👨🏾‍🎓', '👨🏿‍🎓', '👩‍🎓', '👩🏻‍🎓', '👩🏼‍🎓', '👩🏽‍🎓', '👩🏾‍🎓', '👩🏿‍🎓' }
+        emotesDict['🧑‍💻'] = { '🧑🏻‍💻', '🧑🏼‍💻', '🧑🏽‍💻', '🧑🏾‍💻', '🧑🏿‍💻', '👨‍💻', '👨🏻‍💻', '👨🏼‍💻', '👨🏽‍💻', '👨🏾‍💻', '👨🏿‍💻', '👩‍💻', '👩🏻‍💻', '👩🏼‍💻', '👩🏽‍💻', '👩🏾‍💻', '👩🏿‍💻' }
+        emotesDict['🧑‍🔬'] = { '🧑🏻‍🔬', '🧑🏼‍🔬', '🧑🏽‍🔬', '🧑🏾‍🔬', '🧑🏿‍🔬', '👨‍🔬', '👨🏻‍🔬', '👨🏼‍🔬', '👨🏽‍🔬', '👨🏾‍🔬', '👨🏿‍🔬', '👩‍🔬', '👩🏻‍🔬', '👩🏼‍🔬', '👩🏽‍🔬', '👩🏾‍🔬', '👩🏿‍🔬' }
+        emotesDict['🧑‍🏫'] = { '🧑🏻‍🏫', '🧑🏼‍🏫', '🧑🏽‍🏫', '🧑🏾‍🏫', '🧑🏿‍🏫', '👨‍🏫', '👨🏻‍🏫', '👨🏼‍🏫', '👨🏽‍🏫', '👨🏾‍🏫', '👨🏿‍🏫', '👩‍🏫', '👩🏻‍🏫', '👩🏼‍🏫', '👩🏽‍🏫', '👩🏾‍🏫', '👩🏿‍🏫' }
+
+        return emotesDict
 
     async def getCurrentEmoteFor(self, twitchChannel: str) -> str:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
         emoteIndex = await self.__getCurrentEmoteIndexFor(twitchChannel)
-        return self.__emotes[emoteIndex]
+        return self.__emotesList[emoteIndex]
 
     async def __getCurrentEmoteIndexFor(self, twitchChannel: str) -> int:
         if not utils.isValidStr(twitchChannel):
@@ -73,7 +91,7 @@ class TriviaEmoteGenerator():
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
         emoteIndex = await self.__getCurrentEmoteIndexFor(twitchChannel)
-        emoteIndex = (emoteIndex + 1) % len(self.__emotes)
+        emoteIndex = (emoteIndex + 1) % len(self.__emotesDict)
 
         connection = await self.__getDatabaseConnection()
         await connection.execute(
@@ -88,10 +106,10 @@ class TriviaEmoteGenerator():
         await connection.commit()
         await connection.close()
 
-        return self.__emotes[emoteIndex]
+        return self.__emotesList[emoteIndex]
 
     def getRandomEmote(self) -> str:
-        return random.choice(self.__emotes)
+        return random.choice(self.__emotesList)
 
     async def getValidatedAndNormalizedEmote(self, emote: Optional[str]) -> Optional[str]:
         if not utils.isValidStr(emote):
@@ -99,27 +117,13 @@ class TriviaEmoteGenerator():
         elif not emoji.is_emoji(emote):
             return None
 
-        try:
-            emotesIndex = self.__emotes.index(emote)
-            return self.__emotes[emotesIndex]
-        except ValueError:
-            # this exception can be safely ignored
-            pass
+        if emote in self.__emotesDict:
+            return emote
 
-        # transforms "👩‍🎓" into ":woman_student:"
-        demojizedEmote: str = emoji.demojize(emote)
-        if not utils.isValidStr(demojizedEmote):
-            return None
-
-        # removes the ending ":" character
-        demojizedEmote = demojizedEmote[0:len(demojizedEmote) - 1]
-
-        for e in self.__emotes:
-            demojized: str = emoji.demojize(e)
-            demojized = demojized[0:len(demojized) - 1]
-
-            if demojizedEmote.startswith(demojized):
-                return e
+        for emoteKey, equivalentEmotes in self.__emotesDict.items():
+            if utils.hasItems(equivalentEmotes):
+                if emote in equivalentEmotes:
+                    return emoteKey
 
         return None
 
