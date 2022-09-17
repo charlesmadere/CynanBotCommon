@@ -1,7 +1,7 @@
 import csv
 import hashlib
 import sqlite3
-from typing import List
+from typing import List, Optional, Set
 
 try:
     import CynanBotCommon.utils as utils
@@ -45,7 +45,7 @@ def writeRowsToSqlite(databaseName: str, rows: List[List[str]]):
 
     connection = sqlite3.connect(databaseName)
     cursor = connection.cursor()
-
+    questionIds: Set[str] = set()
     rowNumber: int = 0
 
     for row in rows:
@@ -56,12 +56,16 @@ def writeRowsToSqlite(databaseName: str, rows: List[List[str]]):
 
         tdQuestionId: str = utils.cleanStr(row[0])
         category: str = utils.cleanStr(row[1])
-        difficulty: int = int(row[2])
         question: str = utils.cleanStr(row[3])
         wrongAnswer1: str = utils.cleanStr(row[4])
         wrongAnswer2: str = utils.cleanStr(row[5])
         wrongAnswer3: str = utils.cleanStr(row[6])
         correctAnswer: str = utils.cleanStr(row[7])
+
+        try:
+            difficulty: Optional[int] = int(row[2])
+        except ValueError:
+            pass
 
         if not utils.isValidStr(tdQuestionId):
             raise ValueError(f'tdQuestionId at row #{rowNumber} is malformed: \"{tdQuestionId}\"')
@@ -83,13 +87,21 @@ def writeRowsToSqlite(databaseName: str, rows: List[List[str]]):
         questionId: str = f'{tdQuestionId}:{category}:{difficulty}:{question}:{wrongAnswer1}:{wrongAnswer2}:{wrongAnswer3}:{correctAnswer}'
         questionId = hashlib.sha224(questionId.encode('utf-8')).hexdigest()
 
-        cursor.execute(
-            '''
-                INSERT INTO tdQuestions (category, correctAnswer, difficulty, question, questionId, tdQuestionId, wrongAnswer1, wrongAnswer2, wrongAnswer3)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''',
-            ( category, correctAnswer, difficulty, question, questionId, tdQuestionId, wrongAnswer1, wrongAnswer2, wrongAnswer3 )
-        )
+        if questionId in questionIds:
+            raise RuntimeError(f'questionId collision: \"{questionId}\"')
+
+        questionIds.add(questionId)
+
+        try:
+            cursor.execute(
+                '''
+                    INSERT INTO tdQuestions (category, correctAnswer, difficulty, question, questionId, tdQuestionId, wrongAnswer1, wrongAnswer2, wrongAnswer3)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ''',
+                ( category, correctAnswer, difficulty, question, questionId, tdQuestionId, wrongAnswer1, wrongAnswer2, wrongAnswer3 )
+            )
+        except sqlite3.IntegrityError as e:
+            raise RuntimeError(f'Unable to insert question into DB: {e}\ncategory=\"{category}\" correctAnswer=\"{correctAnswer}\" difficulty=\"{difficulty}\" question=\"{question}\" questionId=\"{questionId}\" tdQuestionId=\"{tdQuestionId}\" wrongAnswer1=\"{wrongAnswer1}\" wrongAnswer2=\"{wrongAnswer2}\" wrongAnswer3=\"{wrongAnswer3}\"')
 
     connection.commit()
     cursor.close()
@@ -97,8 +109,8 @@ def writeRowsToSqlite(databaseName: str, rows: List[List[str]]):
 
     print(f'Wrote {rowNumber} rows into \"{databaseName}\" database')
 
-blueOcean = readInCsvRows('CynanBotCommon/Blue Ocean.csv')
-writeRowsToSqlite('CynanBotCommon/triviaDatabaseTriviaQuestionRepository.sqlite', blueOcean)
+basketball = readInCsvRows('CynanBotCommon/basketball.csv')
+writeRowsToSqlite('CynanBotCommon/trivia/triviaDatabaseTriviaQuestionRepository.sqlite', basketball)
 
-twentyThreeCategories = readInCsvRows('CynanBotCommon/23 Categories.csv')
-writeRowsToSqlite('CynanBotCommon/triviaDatabaseTriviaQuestionRepository.sqlite', twentyThreeCategories)
+nineties = readInCsvRows('CynanBotCommon/90s.csv')
+writeRowsToSqlite('CynanBotCommon/trivia/triviaDatabaseTriviaQuestionRepository.sqlite', nineties)
