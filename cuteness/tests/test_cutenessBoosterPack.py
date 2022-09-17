@@ -1,5 +1,5 @@
 try:
-    from ...cuteness.cutenessBoosterPack import CutenessBoosterPack
+    from ..cutenessBoosterPack import CutenessBoosterPack
 except:
     from cuteness.cutenessBoosterPack import CutenessBoosterPack
 
