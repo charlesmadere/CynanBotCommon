@@ -125,7 +125,7 @@ class TestTriviaSource():
         result = TriviaSource.OPEN_TRIVIA_QA.toStr()
         assert result == 'OPEN_TRIVIA_QA'
 
-    def test_toStr_withOpenTriviaQa(self):
+    def test_toStr_withQuizApi(self):
         result = TriviaSource.QUIZ_API.toStr()
         assert result == 'QUIZ_API'
 
