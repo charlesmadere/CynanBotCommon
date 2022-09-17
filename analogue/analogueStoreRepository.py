@@ -1,6 +1,6 @@
 from asyncio import TimeoutError
 from datetime import datetime, timedelta, timezone
-from typing import List
+from typing import List, Optional
 
 import aiohttp
 from lxml import html
@@ -48,6 +48,48 @@ class AnalogueStoreRepository():
         self.__cacheTime = datetime.now(timezone.utc) - cacheTimeDelta
         self.__storeStock: AnalogueStoreStock = None
 
+    async def __buildProduct(self, productTree) -> Optional[AnalogueStoreEntry]:
+        if productTree is None:
+            raise ValueError(f'productTree argument is malformed: \"{productTree}\"')
+
+        productTrees = productTree.find_class('product-title')
+        if productTrees is None or len(productTrees) != 1:
+            return None
+
+        nameAndPrice = utils.cleanStr(productTrees[0].text_content())
+        if len(nameAndPrice) == 0:
+            return None
+        elif '8BitDo'.lower() in nameAndPrice.lower():
+            # don't show 8BitDo products in the final stock listing
+            return None
+
+        name: str = None
+        price: str = None
+        indexOfDollar: int = nameAndPrice.find('$')
+
+        if indexOfDollar == -1:
+            name = utils.cleanStr(nameAndPrice)
+        else:
+            name = utils.cleanStr(nameAndPrice[0:indexOfDollar])
+            price = utils.cleanStr(nameAndPrice[indexOfDollar:len(nameAndPrice)])
+
+        if name[len(name) - 1] == '1':
+            name = name[0:len(name) - 1]
+
+        productType = AnalogueProductType.fromStr(name)
+
+        inStock: bool = True
+        outOfStockElement = productTree.find_class('product-button button--disabled')
+        if utils.hasItems(outOfStockElement):
+            inStock = False
+
+        return AnalogueStoreEntry(
+            productType = productType,
+            inStock = inStock,
+            name = name,
+            price = price
+        )
+
     async def clearCaches(self):
         self.__storeStock = None
         self.__timber.log('AnalogueStoreRepository', 'Caches cleared')
@@ -89,42 +131,7 @@ class AnalogueStoreRepository():
         products: List[AnalogueStoreEntry] = list()
 
         for productTree in productTrees:
-            productTrees = productTree.find_class('product-title')
-            if productTrees is None or len(productTrees) != 1:
-                continue
-
-            nameAndPrice = utils.cleanStr(productTrees[0].text_content())
-            if len(nameAndPrice) == 0:
-                continue
-            elif '8BitDo'.lower() in nameAndPrice.lower():
-                # don't show 8BitDo products in the final stock listing
-                continue
-
-            name = None
-            price = None
-            indexOfDollar = nameAndPrice.find('$')
-
-            if indexOfDollar == -1:
-                name = utils.cleanStr(nameAndPrice)
-            else:
-                name = utils.cleanStr(nameAndPrice[0:indexOfDollar])
-                price = utils.cleanStr(nameAndPrice[indexOfDollar:len(nameAndPrice)])
-
-            if name[len(name) - 1] == '1':
-                name = name[0:len(name) - 1]
-
-            productType = AnalogueProductType.fromStr(name)
-
-            inStock = True
-            outOfStockElement = productTree.find_class('product-button button--disabled')
-            if utils.hasItems(outOfStockElement):
-                inStock = False
-
-            products.append(AnalogueStoreEntry(
-                productType = productType,
-                inStock = inStock,
-                name = name,
-                price = price
-            ))
+            product = await self.__buildProduct(productTree)
+            products.append(product)
 
         return AnalogueStoreStock(products = products)
