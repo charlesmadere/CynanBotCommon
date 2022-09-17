@@ -64,11 +64,11 @@ class UtilsTest():
         assert result is False
 
     def test_containsUrl_withRandomNoise1(self):
-        result = utils.containsUrl('Qd19u(KAyCuZ~qNQkd-iy\%\E|KxRc')
+        result = utils.containsUrl('Qd19u(KAyCuZ~qNQkd-iy\\%\\E|KxRc')
         assert result is False
 
     def test_containsUrl_withRandomNoise2(self):
-        result = utils.containsUrl('.s*&Sxwa}RZ\'AIkvD6:&OkVT#_YA`')
+        result = utils.containsUrl('.s*&Sxwa}RZ\\\'AIkvD6:&OkVT#_YA`')
         assert result is False
 
     def test_copyList_withEmptyList(self):
