@@ -42,6 +42,8 @@ try:
     from CynanBotCommon.trivia.outOfTimeSuperTriviaEvent import \
         OutOfTimeSuperTriviaEvent
     from CynanBotCommon.trivia.outOfTimeTriviaEvent import OutOfTimeTriviaEvent
+    from CynanBotCommon.trivia.queuedTriviaGameStore import \
+        QueuedTriviaGameStore
     from CynanBotCommon.trivia.startNewSuperTriviaGameAction import \
         StartNewSuperTriviaGameAction
     from CynanBotCommon.trivia.startNewTriviaGameAction import \
@@ -99,6 +101,7 @@ except:
         OutOfTimeCheckSuperAnswerTriviaEvent
     from trivia.outOfTimeSuperTriviaEvent import OutOfTimeSuperTriviaEvent
     from trivia.outOfTimeTriviaEvent import OutOfTimeTriviaEvent
+    from trivia.queuedTriviaGameStore import QueuedTriviaGameStore
     from trivia.startNewSuperTriviaGameAction import \
         StartNewSuperTriviaGameAction
     from trivia.startNewTriviaGameAction import StartNewTriviaGameAction
@@ -127,6 +130,7 @@ class TriviaGameMachine():
     def __init__(
         self,
         eventLoop: AbstractEventLoop,
+        queuedTriviaGameStore: QueuedTriviaGameStore,
         timber: Timber,
         triviaAnswerChecker: TriviaAnswerChecker,
         triviaGameStore: TriviaGameStore,
@@ -136,6 +140,8 @@ class TriviaGameMachine():
     ):
         if eventLoop is None:
             raise ValueError(f'eventLoop argument is malformed: \"{eventLoop}\"')
+        elif queuedTriviaGameStore is None:
+            raise ValueError(f'queuedTriviaGameStore argument is malformed: \"{queuedTriviaGameStore}\"')
         elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif triviaAnswerChecker is None:
@@ -151,6 +157,7 @@ class TriviaGameMachine():
         elif sleepTimeSeconds < 0.25 or sleepTimeSeconds > 2:
             raise ValueError(f'sleepTimeSeconds argument is out of bounds: {sleepTimeSeconds}')
 
+        self.__queuedTriviaGameStore: QueuedTriviaGameStore = queuedTriviaGameStore
         self.__timber: Timber = timber
         self.__triviaAnswerChecker: TriviaAnswerChecker = triviaAnswerChecker
         self.__triviaGameStore: TriviaGameStore = triviaGameStore
