@@ -1,6 +1,6 @@
 import math
 import re
-from typing import Dict, Generator, List, Pattern
+from typing import Any, Dict, Generator, List, Optional, Pattern
 
 import polyleven
 
@@ -89,8 +89,9 @@ class TriviaAnswerChecker():
 
     async def checkAnswer(
         self,
-        answer: str,
-        triviaQuestion: AbsTriviaQuestion
+        answer: Optional[str],
+        triviaQuestion: AbsTriviaQuestion,
+        extras: Optional[Dict[str, Any]] = None
     ) -> TriviaAnswerCheckResult:
         if triviaQuestion is None:
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
@@ -101,7 +102,7 @@ class TriviaAnswerChecker():
         if triviaQuestion.getTriviaType() is TriviaType.MULTIPLE_CHOICE:
             return await self.__checkAnswerMultipleChoice(answer, triviaQuestion)
         elif triviaQuestion.getTriviaType() is TriviaType.QUESTION_ANSWER:
-            return await self.__checkAnswerQuestionAnswer(answer, triviaQuestion)
+            return await self.__checkAnswerQuestionAnswer(answer, triviaQuestion, extras)
         elif triviaQuestion.getTriviaType() is TriviaType.TRUE_FALSE:
             return await self.__checkAnswerTrueFalse(answer, triviaQuestion)
         else:
@@ -109,7 +110,7 @@ class TriviaAnswerChecker():
 
     async def __checkAnswerMultipleChoice(
         self,
-        answer: str,
+        answer: Optional[str],
         triviaQuestion: MultipleChoiceTriviaQuestion
     ) -> TriviaAnswerCheckResult:
         if triviaQuestion is None:
@@ -145,8 +146,9 @@ class TriviaAnswerChecker():
 
     async def __checkAnswerQuestionAnswer(
         self,
-        answer: str,
-        triviaQuestion: QuestionAnswerTriviaQuestion
+        answer: Optional[str],
+        triviaQuestion: QuestionAnswerTriviaQuestion,
+        extras: Optional[Dict[str, Any]] = None
     ) -> TriviaAnswerCheckResult:
         if triviaQuestion is None:
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
@@ -161,7 +163,7 @@ class TriviaAnswerChecker():
         correctAnswers = triviaQuestion.getCorrectAnswers()
         cleanedCorrectAnswers = triviaQuestion.getCleanedCorrectAnswers()
 
-        self.__timber.log('TriviaAnswerChecker', f'answer:\"{answer}\", cleanedAnswers:\"{cleanedAnswers}\", correctAnswers:\"{correctAnswers}\", cleanedCorrectAnswers:\"{cleanedCorrectAnswers}\"')
+        self.__timber.log('TriviaAnswerChecker', f'answer:\"{answer}\", cleanedAnswers:\"{cleanedAnswers}\", correctAnswers:\"{correctAnswers}\", cleanedCorrectAnswers:\"{cleanedCorrectAnswers}\", extras:\"{extras}\"')
 
         for cleanedCorrectAnswer in cleanedCorrectAnswers:
             for cleanedAnswer in cleanedAnswers:
@@ -189,7 +191,7 @@ class TriviaAnswerChecker():
 
     async def __checkAnswerTrueFalse(
         self,
-        answer: str,
+        answer: Optional[str],
         triviaQuestion: TrueFalseTriviaQuestion
     ) -> TriviaAnswerCheckResult:
         if triviaQuestion is None:
