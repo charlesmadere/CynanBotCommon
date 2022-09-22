@@ -1,5 +1,5 @@
 import re
-from typing import List, Pattern, Set
+from typing import List, Optional, Pattern, Set
 
 import roman
 from num2words import num2words
@@ -67,7 +67,7 @@ class TriviaAnswerCompiler():
 
         self.__combiningDiacriticsRegEx = re.compile(r'[\u0300-\u036f\u1ab0-\u1aff\u1dc0-\u1dff\u20d0-\u20ff\ufe20-\ufe2f]')
 
-    async def compileBoolAnswer(self, answer: str) -> str:
+    async def compileBoolAnswer(self, answer: Optional[str]) -> bool:
         cleanedAnswer = await self.compileTextAnswer(answer)
 
         try:
@@ -75,7 +75,7 @@ class TriviaAnswerCompiler():
         except ValueError:
             raise BadTriviaAnswerException(f'answer can\'t be compiled to bool (answer:{answer}) (cleanedAnswer:{cleanedAnswer})')
 
-    async def compileTextAnswer(self, answer: str) -> str:
+    async def compileTextAnswer(self, answer: Optional[str]) -> str:
         if not utils.isValidStr(answer):
             return ''
 
@@ -101,7 +101,11 @@ class TriviaAnswerCompiler():
 
         return answer
 
-    async def compileTextAnswersList(self, answers: List[str], expandParentheses: bool = True) -> List[str]:
+    async def compileTextAnswersList(
+        self,
+        answers: List[Optional[str]],
+        expandParentheses: bool = True
+    ) -> List[str]:
         if not utils.hasItems(answers):
             return list()
 
@@ -155,7 +159,7 @@ class TriviaAnswerCompiler():
                 split[i] = await self.__getArabicNumeralSubstitutes(match.group(1))
         return list(set(''.join(item) for item in utils.permuteSubArrays(split)))
 
-    async def compileTextAnswerToMultipleChoiceOrdinal(self, answer: str) -> int:
+    async def compileTextAnswerToMultipleChoiceOrdinal(self, answer: Optional[str]) -> int:
         cleanedAnswer = await self.compileTextAnswer(answer)
 
         if not utils.isValidStr(cleanedAnswer) or len(cleanedAnswer) != 1 or self.__multipleChoiceAnswerRegEx.fullmatch(cleanedAnswer) is None:

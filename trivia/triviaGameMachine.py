@@ -3,7 +3,7 @@ import queue
 from asyncio import AbstractEventLoop
 from datetime import datetime, timezone
 from queue import SimpleQueue
-from typing import List
+from typing import Any, Dict, List, Optional
 
 try:
     import CynanBotCommon.utils as utils
@@ -164,11 +164,16 @@ class TriviaGameMachine():
         eventLoop.create_task(self.__startActionLoop())
         eventLoop.create_task(self.__startEventLoop())
 
-    async def __checkAnswer(self, answer: str, triviaQuestion: AbsTriviaQuestion) -> TriviaAnswerCheckResult:
+    async def __checkAnswer(
+        self,
+        answer: Optional[str],
+        triviaQuestion: AbsTriviaQuestion,
+        extras: Optional[Dict[str, Any]] = None
+    ) -> TriviaAnswerCheckResult:
         if triviaQuestion is None:
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
 
-        return await self.__triviaAnswerChecker.checkAnswer(answer, triviaQuestion)
+        return await self.__triviaAnswerChecker.checkAnswer(answer, triviaQuestion, extras)
 
     async def __handleActionCheckAnswer(self, action: CheckAnswerTriviaAction):
         if action is None:
@@ -299,7 +304,17 @@ class TriviaGameMachine():
             return
 
         state.incrementAnswerCount(action.getUserName())
-        checkResult = await self.__checkAnswer(action.getAnswer(), state.getTriviaQuestion())
+
+        checkResult = await self.__checkAnswer(
+            answer = action.getAnswer(),
+            triviaQuestion = state.getTriviaQuestion(),
+            extras = {
+                'actionId': action.getActionId(),
+                'twitchChannel': action.getTwitchChannel(),
+                'userId': action.getUserId(),
+                'userName': action.getUserName()
+            }
+        )
 
         # Below, we're intentionally ignoring TriviaAnswerCheckResult values that are not CORRECT.
 
