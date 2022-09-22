@@ -99,6 +99,32 @@ class TestUtils():
         assert result is not original
         assert result == original
 
+    def test_getCleanedSplits_withEmptyString(self):
+        original: str = ''
+        result: List[str] = utils.getCleanedSplits(original)
+        assert result is not None
+        assert len(result) == 0
+
+    def test_getCleanedSplits_withHelloWorld(self):
+        original: str = 'Hello, World!'
+        result: List[str] = utils.getCleanedSplits(original)
+        assert result is not None
+        assert len(result) == 2
+        assert result[0] == 'Hello,'
+        assert result[1] == 'World!'
+
+    def test_getCleanedSplits_withNone(self):
+        original: str = None
+        result: List[str] = utils.getCleanedSplits(original)
+        assert result is not None
+        assert len(result) == 0
+
+    def test_getCleanedSplits_withWhitespaceString(self):
+        original: str = ' '
+        result: List[str] = utils.getCleanedSplits(original)
+        assert result is not None
+        assert len(result) == 0
+
     def test_isValidBool_withFalse(self):
         result: bool = utils.isValidBool(False)
         assert result is True
