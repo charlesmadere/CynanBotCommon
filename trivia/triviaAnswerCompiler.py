@@ -94,7 +94,7 @@ class TriviaAnswerCompiler():
         answer = self.__ampersandRegEx.sub(' and ', answer).strip()
 
         # convert special characters to latin where possible
-        answer = self.__fancyToLatin(answer)
+        answer = self.__fancyToLatin(answer).strip()
 
         # removes all special characters
         answer = self.__phraseAnswerRegEx.sub('', answer).strip()
