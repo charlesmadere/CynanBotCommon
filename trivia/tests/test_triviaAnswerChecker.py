@@ -46,7 +46,6 @@ class TestTriviaAnswerChecker():
     )
     triviaAnswerCompiler: TriviaAnswerCompiler = TriviaAnswerCompiler()
     triviaSettingsRepository: TriviaSettingsRepository = TriviaSettingsRepository()
-
     triviaAnswerChecker: TriviaAnswerChecker = TriviaAnswerChecker(
         timber = timber,
         triviaAnswerCompiler = triviaAnswerCompiler,
@@ -480,6 +479,45 @@ class TestTriviaAnswerChecker():
             assert result is TriviaAnswerCheckResult.CORRECT
 
             result = await self.triviaAnswerChecker.checkAnswer('x = 5.0', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+    @pytest.mark.asyncio
+    async def test_checkAnswer_withQuestionAnswerQuestion_withTheNewMath(self):
+        with mock.patch.object(TriviaSettingsRepository, '_TriviaSettingsRepository__readJson', mockSettingsJSON):
+            question: AbsTriviaQuestion = QuestionAnswerTriviaQuestion(
+                correctAnswers=['The New Math'],
+                cleanedCorrectAnswers=['new math'],
+                category='Test Category',
+                categoryId=None,
+                emote = '🏫',
+                question='Something about math',
+                triviaId='abc123',
+                triviaDifficulty=TriviaDifficulty.UNKNOWN,
+                triviaSource=TriviaSource.J_SERVICE,
+            )
+
+            result = await self.triviaAnswerChecker.checkAnswer('new math', question)
+            assert result is TriviaAnswerCheckResult.CORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('the new math', question)
+            assert result is TriviaAnswerCheckResult.CORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('the', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('math', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('new', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('math new', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('the math', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('the new', question)
             assert result is TriviaAnswerCheckResult.INCORRECT
 
     def test_sanity(self):

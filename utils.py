@@ -361,25 +361,30 @@ def strToBool(s: Optional[str]) -> bool:
     else:
         return False
 
-def strsToBools(l: List[Optional[str]]) -> List[bool]:
+def strsToBools(l: Optional[List[Optional[str]]]) -> List[bool]:
     newList: List[bool] = list()
+
+    if not hasItems(l):
+        return newList
 
     for s in l:
         newList.append(strToBool(s))
 
     return newList
 
-def permuteSubArrays(array: List[Any], pos=0) -> Generator[List[Any], None, None]:
+def permuteSubArrays(array: List[Any], pos: int = 0) -> Generator[List[Any], None, None]:
+    if not isValidNum(pos):
+        raise ValueError(f'pos argument is malformed: \"{pos}\"')
+
     if pos >= len(array):
         yield []
     elif all(not isinstance(item, list) for item in array):
         for item in array:
             yield [item]
+    elif isinstance(array[pos], list):
+        for subArray in permuteSubArrays(array[pos]):
+            for nextSubArray in permuteSubArrays(array, pos + 1):
+                yield subArray + list(nextSubArray)
     else:
-        if isinstance(array[pos], list):
-            for subArray in permuteSubArrays(array[pos]):
-                for nextSubArray in permuteSubArrays(array, pos + 1):
-                    yield subArray + list(nextSubArray)
-        else:
-            for subArray in permuteSubArrays(array, pos + 1):
-                yield [array[pos]] + list(subArray)
+        for subArray in permuteSubArrays(array, pos + 1):
+            yield [array[pos]] + list(subArray)
