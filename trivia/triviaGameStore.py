@@ -102,9 +102,9 @@ class TriviaGameStore():
         twitchChannel = twitchChannel.lower()
         userName = userName.lower()
 
-        for state in normalGames:
+        for index, state in enumerate(normalGames):
             if twitchChannel == state.getTwitchChannel().lower() and userName == state.getUserName().lower():
-                self.__normalGameStates.remove(state)
+                del self.__normalGameStates[state]
                 return True
 
         return False
@@ -116,9 +116,9 @@ class TriviaGameStore():
         superGames = await self.getSuperGames()
         twitchChannel = twitchChannel.lower()
 
-        for state in superGames:
+        for index, state in enumerate(superGames):
             if twitchChannel == state.getTwitchChannel().lower():
-                self.__superGameStates.remove(state)
+                del self.__superGameStates[index]
                 return True
 
         return False
