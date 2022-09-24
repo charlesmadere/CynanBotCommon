@@ -514,9 +514,12 @@ class TriviaGameMachine():
             else:
                 raise UnknownTriviaGameTypeException(f'Unknown TriviaGameType (gameId=\"{state.getGameId()}\") (twitchChannel=\"{state.getTwitchChannel()}\"): \"{state.getTriviaGameType()}\"')
 
-        # TODO check trivia game store for a list of channels with active super games
-        # send the list of channels with active super games to QueuedTriviaGameStore
-        # with the returned list, put these new games into play
+        activeChannels = await self.__triviaGameStore.getTwitchChannelsWithActiveSuperGames()
+        queuedSuperGames = await self.__queuedTriviaGameStore.popQueuedSuperGames(activeChannels)
+
+        for queuedSuperGame in queuedSuperGames:
+            self.__timber.log('TriviaGameMachine', f'Starting new queued super trivia game for \"{queuedSuperGame.getTwitchChannel()}\"')
+            await self.__handleActionStartNewSuperTriviaGame(queuedSuperGame)
 
     def setEventListener(self, listener):
         self.__eventListener = listener

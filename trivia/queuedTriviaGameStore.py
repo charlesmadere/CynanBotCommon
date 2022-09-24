@@ -52,7 +52,7 @@ class QueuedTriviaGameStore():
                 continue
             elif queuedSuperGames.empty():
                 continue
-            else:
-                superGames.append(queuedSuperGames.get())
+
+            superGames.append(queuedSuperGames.get())
 
         return superGames
