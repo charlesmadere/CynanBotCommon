@@ -1,14 +1,13 @@
-from typing import List, Optional
+from collections import defaultdict
+from queue import SimpleQueue
+from typing import Dict, List, Set
 
 try:
-    import CynanBotCommon.utils as utils
     from CynanBotCommon.trivia.startNewSuperTriviaGameAction import \
         StartNewSuperTriviaGameAction
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
 except:
-    import utils
-
     from trivia.startNewSuperTriviaGameAction import \
         StartNewSuperTriviaGameAction
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
@@ -21,34 +20,39 @@ class QueuedTriviaGameStore():
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
 
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
-        self.__queuedSuperGames: List[StartNewSuperTriviaGameAction] = list()
+        self.__queuedSuperGames: Dict[str, SimpleQueue[StartNewSuperTriviaGameAction]] = defaultdict(lambda: SimpleQueue())
 
-    async def add(self, action: StartNewSuperTriviaGameAction) -> bool:
+    async def addSuperGame(self, action: StartNewSuperTriviaGameAction) -> bool:
         if action is None:
             raise ValueError(f'action argument is malformed: \"{action}\"')
 
         maxSuperGameQueueSize = await self.__triviaSettingsRepository.getMaxSuperGameQueueSize()
-        currentQueueSize: int = 0
 
-        for queuedSuperGame in self.__queuedSuperGames:
-            if action.getTwitchChannel() == queuedSuperGame.getTwitchChannel():
-                currentQueueSize = currentQueueSize + 1
+        if maxSuperGameQueueSize <= 0:
+            return False
 
-        if currentQueueSize < maxSuperGameQueueSize:
-            self.__queuedSuperGames.append(action)
+        twitchChannel = action.getTwitchChannel().lower()
+        queuedSuperGames = self.__queuedSuperGames[twitchChannel]
+
+        if queuedSuperGames.qsize() < maxSuperGameQueueSize:
+            queuedSuperGames.put(action)
             return True
         else:
             return False
 
-    async def popQueuedSuperGame(self, twitchChannel: str) -> Optional[StartNewSuperTriviaGameAction]:
-        if not utils.isValidStr(twitchChannel):
-            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+    async def popQueuedSuperGames(self, activeChannels: Set[str]) -> List[StartNewSuperTriviaGameAction]:
+        workingActiveChannels: Set[str] = set()
+        for activeChannel in activeChannels:
+            workingActiveChannels.add(activeChannel.lower())
 
-        twitchChannel = twitchChannel.lower()
+        superGames: List[StartNewSuperTriviaGameAction] = list()
 
-        for index, queuedSuperGame in enumerate(self.__queuedSuperGames):
-            if twitchChannel == queuedSuperGame.getTwitchChannel():
-                del self.__queuedSuperGames[index]
-                return queuedSuperGame
+        for twitchChannel, queuedSuperGames in self.__queuedSuperGames.items():
+            if twitchChannel.lower() in workingActiveChannels:
+                continue
+            elif queuedSuperGames.empty():
+                continue
+            else:
+                superGames.append(queuedSuperGames.get())
 
-        return None
+        return superGames
