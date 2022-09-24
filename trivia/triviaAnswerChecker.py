@@ -163,7 +163,7 @@ class TriviaAnswerChecker():
         correctAnswers = triviaQuestion.getCorrectAnswers()
         cleanedCorrectAnswers = triviaQuestion.getCleanedCorrectAnswers()
 
-        self.__timber.log('TriviaAnswerChecker', f'answer:\"{answer}\", cleanedAnswers:\"{cleanedAnswers}\", correctAnswers:\"{correctAnswers}\", cleanedCorrectAnswers:\"{cleanedCorrectAnswers}\", extras:\"{extras}\"')
+        self.__timber.log('TriviaAnswerChecker', f'answer:\"{answer}\", cleanedAnswers:\"{cleanedAnswers}\", correctAnswers:\"{correctAnswers}\", cleanedCorrectAnswers:\"{cleanedCorrectAnswers}\", extras:{extras}')
 
         for cleanedCorrectAnswer in cleanedCorrectAnswers:
             for cleanedAnswer in cleanedAnswers:
