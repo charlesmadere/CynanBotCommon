@@ -104,7 +104,7 @@ class TriviaGameStore():
 
         for index, state in enumerate(normalGames):
             if twitchChannel == state.getTwitchChannel().lower() and userName == state.getUserName().lower():
-                del self.__normalGameStates[state]
+                del self.__normalGameStates[index]
                 return True
 
         return False
