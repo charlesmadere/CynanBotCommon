@@ -12,6 +12,7 @@ class TriviaEventType(Enum):
     INCORRECT_SUPER_ANSWER = auto()
     INVALID_ANSWER_INPUT = auto()
     NEW_GAME = auto()
+    NEW_QUEUED_SUPER_GAME = auto()
     NEW_SUPER_GAME = auto()
     SUPER_GAME_ALREADY_IN_PROGRESS = auto()
     SUPER_GAME_CORRECT_ANSWER = auto()

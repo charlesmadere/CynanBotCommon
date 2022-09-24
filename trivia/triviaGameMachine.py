@@ -32,6 +32,8 @@ try:
         IncorrectSuperAnswerTriviaEvent
     from CynanBotCommon.trivia.invalidAnswerInputTriviaEvent import \
         InvalidAnswerInputTriviaEvent
+    from CynanBotCommon.trivia.newQueuedSuperTriviaGameEvent import \
+        NewQueuedSuperTriviaGameEvent
     from CynanBotCommon.trivia.newSuperTriviaGameEvent import \
         NewSuperTriviaGameEvent
     from CynanBotCommon.trivia.newTriviaGameEvent import NewTriviaGameEvent
@@ -48,8 +50,6 @@ try:
         StartNewSuperTriviaGameAction
     from CynanBotCommon.trivia.startNewTriviaGameAction import \
         StartNewTriviaGameAction
-    from CynanBotCommon.trivia.superGameAlreadyInProgressTriviaEvent import \
-        SuperGameAlreadyInProgressTriviaEvent
     from CynanBotCommon.trivia.superGameNotReadyCheckAnswerTriviaEvent import \
         SuperGameNotReadyCheckAnswerTriviaEvent
     from CynanBotCommon.trivia.superTriviaGameState import SuperTriviaGameState
@@ -93,6 +93,8 @@ except:
         IncorrectSuperAnswerTriviaEvent
     from trivia.invalidAnswerInputTriviaEvent import \
         InvalidAnswerInputTriviaEvent
+    from trivia.newQueuedSuperTriviaGameEvent import \
+        NewQueuedSuperTriviaGameEvent
     from trivia.newSuperTriviaGameEvent import NewSuperTriviaGameEvent
     from trivia.newTriviaGameEvent import NewTriviaGameEvent
     from trivia.outOfTimeCheckAnswerTriviaEvent import \
@@ -105,8 +107,6 @@ except:
     from trivia.startNewSuperTriviaGameAction import \
         StartNewSuperTriviaGameAction
     from trivia.startNewTriviaGameAction import StartNewTriviaGameAction
-    from trivia.superGameAlreadyInProgressTriviaEvent import \
-        SuperGameAlreadyInProgressTriviaEvent
     from trivia.superGameNotReadyCheckAnswerTriviaEvent import \
         SuperGameNotReadyCheckAnswerTriviaEvent
     from trivia.superTriviaGameState import SuperTriviaGameState
@@ -423,10 +423,18 @@ class TriviaGameMachine():
         now = datetime.now(timezone.utc)
 
         if state is not None and state.getEndTime() >= now:
-            self.__eventQueue.put(SuperGameAlreadyInProgressTriviaEvent(
-                gameId = state.getGameId(),
-                twitchChannel = action.getTwitchChannel()
-            ))
+            if self.__queuedTriviaGameStore.addSuperGame(action):
+                self.__timber.log('TriviaGameMachine', f'Queued new Super Trivia game for \"{action.getTwitchChannel()}\"')
+
+                self.__eventQueue.put(NewQueuedSuperTriviaGameEvent(
+                    pointsForWinning = action.getPointsForWinning(),
+                    pointsMultiplier = action.getPointsMultiplier(),
+                    secondsToLive = action.getSecondsToLive(),
+                    twitchChannel = action.getTwitchChannel()
+                ))
+            else:
+                self.__timber.log('TriviaGameMachine', f'Dropped new Super Trivia game for \"{action.getTwitchChannel()}\"')
+
             return
 
         triviaQuestion: AbsTriviaQuestion = None
@@ -462,20 +470,13 @@ class TriviaGameMachine():
         ))
 
     async def __refreshStatusOfGames(self):
-        gameStates = await self.__triviaGameStore.getAll()
-
-        if not utils.hasItems(gameStates):
-            return
-
         now = datetime.now(timezone.utc)
+        gameStates = await self.__triviaGameStore.getAll()
         gameStatesToRemove: List[AbsTriviaGameState] = list()
 
         for state in gameStates:
             if state.getEndTime() < now:
                 gameStatesToRemove.append(state)
-
-        if not utils.hasItems(gameStatesToRemove):
-            return
 
         for state in gameStatesToRemove:
             if state.getTriviaGameType() is TriviaGameType.NORMAL:
@@ -512,6 +513,10 @@ class TriviaGameMachine():
                 ))
             else:
                 raise UnknownTriviaGameTypeException(f'Unknown TriviaGameType (gameId=\"{state.getGameId()}\") (twitchChannel=\"{state.getTwitchChannel()}\"): \"{state.getTriviaGameType()}\"')
+
+        # TODO check trivia game store for a list of channels with active super games
+        # send the list of channels with active super games to QueuedTriviaGameStore
+        # with the returned list, put these new games into play
 
     def setEventListener(self, listener):
         self.__eventListener = listener
