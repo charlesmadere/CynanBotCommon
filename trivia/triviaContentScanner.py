@@ -65,6 +65,8 @@ class TriviaContentScanner():
 
                         if utils.isValidStr(line):
                             bannedWordsSet.add(line)
+
+            self.__timber.log('TriviaContentScanner' f'Read in {len(bannedWordsSet)} banned word(s) from \"{self.__bannedWordsFile}\"')
         else:
             self.__timber.log('TriviaContentScanner', f'Not attempting to read in any banned words due to the file missing: \"{self.__bannedWordsFile}\"')
 
