@@ -423,7 +423,7 @@ class TriviaGameMachine():
         now = datetime.now(timezone.utc)
 
         if state is not None and state.getEndTime() >= now:
-            if self.__queuedTriviaGameStore.addSuperGame(action):
+            if await self.__queuedTriviaGameStore.addSuperGame(action):
                 self.__timber.log('TriviaGameMachine', f'Queued new Super Trivia game for \"{action.getTwitchChannel()}\"')
 
                 self.__eventQueue.put(NewQueuedSuperTriviaGameEvent(
