@@ -40,7 +40,7 @@ class QueuedTriviaGameStore():
         else:
             return False
 
-    async def popQueuedSuperGames(self, activeChannels: Set[str]) -> List[StartNewSuperTriviaGameAction]:
+    async def popQueuedSuperGames(self, activeChannels: List[str]) -> List[StartNewSuperTriviaGameAction]:
         workingActiveChannels: Set[str] = set()
         for activeChannel in activeChannels:
             workingActiveChannels.add(activeChannel.lower())
