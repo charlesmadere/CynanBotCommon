@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Set
 
 try:
     import CynanBotCommon.utils as utils
@@ -91,6 +91,15 @@ class TriviaGameStore():
 
     async def getSuperGames(self) -> List[SuperTriviaGameState]:
         return utils.copyList(self.__superGameStates)
+
+    async def getTwitchChannelsWithActiveSuperGames(self) -> Set[str]:
+        superGames = await self.getSuperGames()
+        twitchChannels: Set[str] = set()
+
+        for state in superGames:
+            twitchChannels.add(state.getTwitchChannel().lower())
+
+        return twitchChannels
 
     async def removeNormalGame(self, twitchChannel: str, userName: str) -> bool:
         if not utils.isValidStr(twitchChannel):
