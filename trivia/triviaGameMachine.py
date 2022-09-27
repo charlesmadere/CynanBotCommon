@@ -12,6 +12,7 @@ try:
     from CynanBotCommon.trivia.absTriviaEvent import AbsTriviaEvent
     from CynanBotCommon.trivia.absTriviaGameState import AbsTriviaGameState
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
+    from CynanBotCommon.trivia.addQueuedGamesResult import AddQueuedGamesResult
     from CynanBotCommon.trivia.checkAnswerTriviaAction import \
         CheckAnswerTriviaAction
     from CynanBotCommon.trivia.correctAnswerTriviaEvent import \
@@ -76,6 +77,7 @@ except:
     from trivia.absTriviaEvent import AbsTriviaEvent
     from trivia.absTriviaGameState import AbsTriviaGameState
     from trivia.absTriviaQuestion import AbsTriviaQuestion
+    from trivia.addQueuedGamesResult import AddQueuedGamesResult
     from trivia.checkAnswerTriviaAction import CheckAnswerTriviaAction
     from trivia.correctAnswerTriviaEvent import CorrectAnswerTriviaEvent
     from trivia.correctSuperAnswerTriviaEvent import \
@@ -170,6 +172,14 @@ class TriviaGameMachine():
         self.__eventQueue: SimpleQueue[AbsTriviaEvent] = SimpleQueue()
         eventLoop.create_task(self.__startActionLoop())
         eventLoop.create_task(self.__startEventLoop())
+
+    async def __beginQueuedGames(self):
+        activeChannels = await self.__triviaGameStore.getTwitchChannelsWithActiveSuperGames()
+        queuedSuperGames = await self.__queuedTriviaGameStore.popQueuedSuperGames(activeChannels)
+
+        for queuedSuperGame in queuedSuperGames:
+            self.__timber.log('TriviaGameMachine', f'Starting new queued super trivia game for \"{queuedSuperGame.getTwitchChannel()}\"')
+            await self.__handleActionStartNewSuperTriviaGame(queuedSuperGame)
 
     async def __checkAnswer(
         self,
@@ -423,8 +433,10 @@ class TriviaGameMachine():
         now = datetime.now(timezone.utc)
 
         if state is not None and state.getEndTime() >= now:
-            if await self.__queuedTriviaGameStore.addSuperGame(action):
-                self.__timber.log('TriviaGameMachine', f'Queued new Super Trivia game for \"{action.getTwitchChannel()}\"')
+            result = await self.__queuedTriviaGameStore.addSuperGames(action)
+
+            if result.getAmountAdded() >= 1:
+                self.__timber.log('TriviaGameMachine', f'Queued new Super Trivia game(s) for \"{action.getTwitchChannel()}\": {result.toStr()}')
 
                 self.__eventQueue.put(NewQueuedSuperTriviaGameEvent(
                     pointsForWinning = action.getPointsForWinning(),
@@ -470,6 +482,10 @@ class TriviaGameMachine():
         ))
 
     async def __refreshStatusOfGames(self):
+        await self.__removeDeadGames()
+        await self.__beginQueuedGames()
+
+    async def __removeDeadGames(self):
         now = datetime.now(timezone.utc)
         gameStates = await self.__triviaGameStore.getAll()
         gameStatesToRemove: List[AbsTriviaGameState] = list()
@@ -513,13 +529,6 @@ class TriviaGameMachine():
                 ))
             else:
                 raise UnknownTriviaGameTypeException(f'Unknown TriviaGameType (gameId=\"{state.getGameId()}\") (twitchChannel=\"{state.getTwitchChannel()}\"): \"{state.getTriviaGameType()}\"')
-
-        activeChannels = await self.__triviaGameStore.getTwitchChannelsWithActiveSuperGames()
-        queuedSuperGames = await self.__queuedTriviaGameStore.popQueuedSuperGames(activeChannels)
-
-        for queuedSuperGame in queuedSuperGames:
-            self.__timber.log('TriviaGameMachine', f'Starting new queued super trivia game for \"{queuedSuperGame.getTwitchChannel()}\"')
-            await self.__handleActionStartNewSuperTriviaGame(queuedSuperGame)
 
     def setEventListener(self, listener):
         self.__eventListener = listener
