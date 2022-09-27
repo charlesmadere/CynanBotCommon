@@ -21,12 +21,13 @@ class TriviaAnswerCompiler():
         self.__newLineRegEx: Pattern = re.compile(r'(\n)+', re.IGNORECASE)
         self.__parenGroupRegEx: Pattern = re.compile(r'(\(.*?\))', re.IGNORECASE)
         self.__phraseAnswerRegEx: Pattern = re.compile(r'[^A-Za-z0-9 ]|(?<=\s)\s+', re.IGNORECASE)
-        self.__prefixRegEx: Pattern = re.compile(r'^(a|an|and|or|the)\s+', re.IGNORECASE)
+        self.__prefixRegEx: Pattern = re.compile(r'^(a|an|and|or|sir|the|this)\s+', re.IGNORECASE)
         self.__tagRemovalRegEx: Pattern = re.compile(r'[<\[]\/?\w+[>\]]', re.IGNORECASE)
         self.__whiteSpaceRegEx: Pattern = re.compile(r'\s\s*', re.IGNORECASE)
 
         # RegEx pattern for arabic and roman numerals, returning only one capturing group
         self.__numeralRegEx: Pattern = re.compile(r'\b(\d+(?:st|nd|rd|th)?|[IVXLCDM]+(?:st|nd|rd|th)?)\b', re.IGNORECASE)
+
         # RegEx patterns for arabic and roman numerals, returning separate capturing groups for digits and ordinals
         self.__groupedNumeralRegEx: Pattern = re.compile(r'\b(?:(\d+)|([IVXLCDM]+))(st|nd|rd|th)?\b', re.IGNORECASE)
 
