@@ -17,6 +17,7 @@ class StartNewSuperTriviaGameAction(AbsTriviaAction):
 
     def __init__(
         self,
+        numberOfGames: int,
         perUserAttempts: int,
         pointsForWinning: int,
         pointsMultiplier: int,
@@ -26,7 +27,11 @@ class StartNewSuperTriviaGameAction(AbsTriviaAction):
     ):
         super().__init__(triviaActionType = TriviaActionType.START_NEW_SUPER_GAME)
 
-        if not utils.isValidNum(perUserAttempts):
+        if not utils.isValidNum(numberOfGames):
+            raise ValueError(f'numberOfGames argument is malformed: \"{numberOfGames}\"')
+        elif numberOfGames < 1:
+            raise ValueError(f'numberOfGames argument is out of bounds: {numberOfGames}')
+        elif not utils.isValidNum(perUserAttempts):
             raise ValueError(f'perUserAttempts argument is malformed: \"{perUserAttempts}\"')
         elif perUserAttempts < 1 or perUserAttempts > 5:
             raise ValueError(f'perUserAttempts argument is out of bounds: {perUserAttempts}')
@@ -47,12 +52,19 @@ class StartNewSuperTriviaGameAction(AbsTriviaAction):
         elif triviaFetchOptions is None:
             raise ValueError(f'triviaFetchOptions argument is malformed: \"{triviaFetchOptions}\"')
 
+        self.__numberOfGames: int = numberOfGames
         self.__perUserAttempts: int = perUserAttempts
         self.__pointsForWinning: int = pointsForWinning
         self.__pointsMultiplier: int = pointsMultiplier
         self.__secondsToLive: int = secondsToLive
         self.__twitchChannel: str = twitchChannel
         self.__triviaFetchOptions: TriviaFetchOptions = triviaFetchOptions
+
+    def getNumberOfGames(self) -> int:
+        return self.__numberOfGames
+
+    def getNumberOfGamesStr(self) -> str:
+        return locale.format_string("%d", self.__numberOfGames, grouping = True)
 
     def getPerUserAttempts(self) -> int:
         return self.__perUserAttempts
