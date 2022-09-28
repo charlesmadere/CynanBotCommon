@@ -59,7 +59,6 @@ class TriviaAnswerChecker():
         self.__triviaAnswerCompiler: TriviaAnswerCompiler = triviaAnswerCompiler
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
 
-        self.__digitPattern: Pattern = re.compile(r'(\d+)')
         self.__whitespacePattern: Pattern = re.compile(r'\s\s+')
 
         self.__irregular_nouns: Dict[str, str] = {
