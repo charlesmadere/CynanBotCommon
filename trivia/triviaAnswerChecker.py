@@ -245,7 +245,7 @@ class TriviaAnswerChecker():
             yield word
             # pluralizations
             if any(word.endswith(s) for s in ('ss', 'sh', 'ch', 'x', 'z', 's', 'o')):
-                yield word+'es'
+                yield word + 'es'
             if word[-1] in 'sz':
                 yield word + word[-1] + 'es'
             elif word.endswith('f'):
@@ -266,27 +266,60 @@ class TriviaAnswerChecker():
                 yield word + 's'
 
             # titles
+            if word == 'atty':
+                yield 'attorney'
+            if word == 'dr':
+                yield 'doctor'
+            if word == 'esq':
+                yield 'esquire'
             if word == 'jr':
                 yield 'junior'
-            if word == 'sr':
-                yield 'senior'
             if word == 'mr':
                 yield 'mister'
-            if word == 'ms':
-                yield 'miss'
             if word == 'mrs':
                 yield 'missus'
+            if word == 'ms':
+                yield 'miss'
+            if word == 'sr':
+                yield 'senior'
 
             # streets
+            if word == 'aly':
+                yield 'alley'
             if word == 'ave':
                 yield 'avenue'
+            if word == 'bch':
+                yield 'beach'
             if word == 'blvd':
                 yield 'boulevard'
+            if word == 'brg':
+                yield 'bridge'
+            if word == 'byu':
+                yield 'bayou'
             if word in ('ct', 'crt'):
                 yield 'court'
+            if word == 'crk':
+                yield 'creek'
+            if word == 'cyn':
+                yield 'canyon'
             if word == 'dr':
                 yield 'drive'
-                yield 'doctor'
+            if word == 'est':
+                yield 'estate'
+            if word == 'fld':
+                yield 'field'
+            if word == 'ft':
+                yield 'fort'
+            if word == 'gdn':
+                yield 'garden'
+            if word == 'hwy':
+                yield 'highway'
+            if word in ('ht' or 'hgt'):
+                yield 'height'
+            if word == 'lk':
+                yield 'lake'
+            if word == 'ln':
+                yield 'lane'
             if word == 'st':
                 yield 'street'
                 yield 'saint'
@@ -298,6 +331,10 @@ class TriviaAnswerChecker():
                 yield 'square'
             if word == 'stn':
                 yield 'station'
+            if word == 'vlg':
+                yield 'village'
+            if word == 'vw':
+                yield 'view'
 
             # directions
             if word == 'n':
@@ -324,5 +361,14 @@ class TriviaAnswerChecker():
                 yield 'number'
             if word == 'vs':
                 yield 'versus'
+
+            # geographical features
+            if word == 'cty':
+                yield 'city'
+            if word == 'glf':
+                yield 'gulf'
+            if word in ('is', 'isl'):
+                yield 'island'
             if word == 'mt':
                 yield 'mount'
+                yield 'mountain'
