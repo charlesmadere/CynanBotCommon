@@ -163,16 +163,16 @@ class TriviaAnswerChecker():
         correctAnswers = triviaQuestion.getCorrectAnswers()
         cleanedCorrectAnswers = triviaQuestion.getCleanedCorrectAnswers()
 
-        self.__timber.log('TriviaAnswerChecker', f'answer:\"{answer}\", cleanedAnswers:\"{cleanedAnswers}\", correctAnswers:\"{correctAnswers}\", cleanedCorrectAnswers:\"{cleanedCorrectAnswers}\", extras:{extras}')
+        self.__timber.log('TriviaAnswerChecker', f'answer:\"{answer}\", cleanedAnswers:\"{cleanedAnswers}\", correctAnswers:\"{correctAnswers}\", cleanedCorrectAnswers:\"{cleanedCorrectAnswers}\", extras:\"{extras}\"')
 
         for cleanedCorrectAnswer in cleanedCorrectAnswers:
             for cleanedAnswer in cleanedAnswers:
                 for guess in await self.__triviaAnswerCompiler.expandNumerals(cleanedAnswer):
                     if guess == cleanedCorrectAnswer:
                         return TriviaAnswerCheckResult.CORRECT
+
                     guessWords = self.__whitespacePattern.sub(' ', guess).split(' ')
                     answerWords = self.__whitespacePattern.sub(' ', cleanedCorrectAnswer).split(' ')
-
                     minWords = min(len(guessWords), len(answerWords))
 
                     for gWords in self.__mergeWords(guessWords, minWords):
