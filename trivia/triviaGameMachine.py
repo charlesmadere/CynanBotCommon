@@ -255,7 +255,7 @@ class TriviaGameMachine():
         )
 
         if checkResult is TriviaAnswerCheckResult.INCORRECT:
-            triviaScoreResult = await self.__triviaScoreRepository.incrementTotalLosses(
+            triviaScoreResult = await self.__triviaScoreRepository.incrementTriviaLosses(
                 twitchChannel = action.getTwitchChannel(),
                 userId = action.getUserId()
             )
@@ -271,8 +271,7 @@ class TriviaGameMachine():
             ))
             return
 
-        triviaScoreResult = await self.__triviaScoreRepository.incrementTotalWins(
-            alsoIncrementSuperTriviaWins = False,
+        triviaScoreResult = await self.__triviaScoreRepository.incrementTriviaWins(
             twitchChannel = action.getTwitchChannel(),
             userId = action.getUserId()
         )
@@ -348,8 +347,7 @@ class TriviaGameMachine():
 
         await self.__triviaGameStore.removeSuperGame(action.getTwitchChannel())
 
-        triviaScoreResult = await self.__triviaScoreRepository.incrementTotalWins(
-            alsoIncrementSuperTriviaWins = True,
+        triviaScoreResult = await self.__triviaScoreRepository.incrementSuperTriviaWins(
             twitchChannel = action.getTwitchChannel(),
             userId = action.getUserId()
         )
@@ -503,7 +501,7 @@ class TriviaGameMachine():
                     userName = normalGameState.getUserName()
                 )
 
-                triviaScoreResult = await self.__triviaScoreRepository.incrementTotalLosses(
+                triviaScoreResult = await self.__triviaScoreRepository.incrementTriviaLosses(
                     twitchChannel = normalGameState.getTwitchChannel(),
                     userId = normalGameState.getUserId()
                 )
