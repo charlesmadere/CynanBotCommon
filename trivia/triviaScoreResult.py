@@ -12,8 +12,8 @@ class TriviaScoreResult():
         self,
         streak: int,
         superTriviaWins: int,
-        totalLosses: int,
-        totalWins: int,
+        triviaLosses: int,
+        triviaWins: int,
         twitchChannel: str,
         userId: str
     ):
@@ -21,10 +21,16 @@ class TriviaScoreResult():
             raise ValueError(f'streak argument is malformed: \"{streak}\"')
         elif not utils.isValidNum(superTriviaWins):
             raise ValueError(f'superTriviaWins argument is malformed: \"{superTriviaWins}\"')
-        elif not utils.isValidNum(totalLosses):
-            raise ValueError(f'totalLosses argument is malformed: \"{totalLosses}\"')
-        elif not utils.isValidNum(totalWins):
-            raise ValueError(f'totalWins argument is malformed: \"{totalWins}\"')
+        elif superTriviaWins < 0:
+            raise ValueError(f'superTriviaWins argument is out of bounds: {superTriviaWins}')
+        elif not utils.isValidNum(triviaLosses):
+            raise ValueError(f'triviaLosses argument is malformed: \"{triviaLosses}\"')
+        elif triviaLosses < 0:
+            raise ValueError(f'triviaLosses argument is out of bounds: {triviaLosses}')
+        elif not utils.isValidNum(triviaWins):
+            raise ValueError(f'triviaWins argument is malformed: \"{triviaWins}\"')
+        elif triviaWins < 0:
+            raise ValueError(f'triviaWins argument is out of bounds: {triviaWins}')
         elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
         elif not utils.isValidStr(userId):
@@ -32,8 +38,8 @@ class TriviaScoreResult():
 
         self.__streak: int = streak
         self.__superTriviaWins: int = superTriviaWins
-        self.__totalLosses: int = totalLosses
-        self.__totalWins: int = totalWins
+        self.__triviaLosses: int = triviaLosses
+        self.__triviaWins: int = triviaWins
         self.__twitchChannel: str = twitchChannel
         self.__userId: str = userId
 
@@ -56,22 +62,22 @@ class TriviaScoreResult():
         return locale.format_string("%d", self.__superTriviaWins, grouping = True)
 
     def getTotal(self) -> int:
-        return self.__totalLosses + self.__totalWins
+        return self.__triviaLosses + self.__triviaWins
 
     def getTotalStr(self) -> str:
         return locale.format_string("%d", self.getTotal(), grouping = True)
 
-    def getTotalLosses(self) -> int:
-        return self.__totalLosses
+    def getTriviaLosses(self) -> int:
+        return self.__triviaLosses
 
-    def getTotalLossesStr(self) -> str:
-        return locale.format_string("%d", self.__totalLosses, grouping = True)
+    def getTriviaLossesStr(self) -> str:
+        return locale.format_string("%d", self.__triviaLosses, grouping = True)
 
-    def getTotalWins(self) -> int:
-        return self.__totalWins
+    def getTriviaWins(self) -> int:
+        return self.__triviaWins
 
-    def getTotalWinsStr(self) -> str:
-        return locale.format_string("%d", self.__totalWins, grouping = True)
+    def getTriviaWinsStr(self) -> str:
+        return locale.format_string("%d", self.__triviaWins, grouping = True)
 
     def getTwitchChannel(self) -> str:
         return self.__twitchChannel
@@ -85,7 +91,7 @@ class TriviaScoreResult():
         if total == 0:
             return float(0)
 
-        winPercent = float(self.__totalWins) / float(total)
+        winPercent = float(self.__triviaWins) / float(total)
 
         if winPercent < 0:
             return float(0)
