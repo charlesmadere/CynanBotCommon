@@ -17,8 +17,8 @@ class NonceRepository():
         if timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
 
-        self.__cache: Dict[str, str] = dict()
         self.__timber: Timber = timber
+        self.__cache: Dict[str, str] = dict()
 
     def getNonce(self, key: str) -> str:
         if not utils.isValidStr(key):
