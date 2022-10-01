@@ -4,7 +4,7 @@ import queue
 from asyncio import AbstractEventLoop
 from datetime import datetime, timedelta, timezone
 from queue import SimpleQueue
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import aiofiles
 import aiofiles.ospath
@@ -60,14 +60,22 @@ class WebsocketConnectionServer():
         self.__websocketSettingsFile: str = websocketSettingsFile
         self.__eventTimeToLive: timedelta = eventTimeToLive
 
+        self.__cache: Optional[Dict[str, Any]] = None
         self.__eventQueue: SimpleQueue[WebsocketEvent] = SimpleQueue()
         eventLoop.create_task(self.__startEventLoop())
+
+    async def clearCaches(self):
+        self.__cache = None
+        self.__timber.log('WebsocketConnectionServer', 'Caches cleared')
 
     async def __isDebugLoggingEnabled(self) -> bool:
         jsonContents = await self.__readJson()
         return utils.getBoolFromDict(jsonContents, 'debugLoggingEnabled', False)
 
     async def __readJson(self) -> Dict[str, Any]:
+        if self.__cache is not None:
+            return self.__cache
+
         if not await aiofiles.ospath.exists(self.__websocketSettingsFile):
             raise FileNotFoundError(f'Websocket settings file not found: \"{self.__websocketSettingsFile}\"')
 
@@ -80,6 +88,7 @@ class WebsocketConnectionServer():
         elif len(jsonContents) == 0:
             raise ValueError(f'JSON contents of Websocket settings file \"{self.__websocketSettingsFile}\" is empty')
 
+        self.__cache = jsonContents
         return jsonContents
 
     async def sendEvent(
