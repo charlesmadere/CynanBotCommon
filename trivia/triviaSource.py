@@ -40,7 +40,7 @@ class TriviaSource(Enum):
             return TriviaSource.LORD_OF_THE_RINGS
         elif text == 'millionaire':
             return TriviaSource.MILLIONAIRE
-        elif text == 'open_trivia':
+        elif text == 'open_trivia' or text == 'open_trivia_database':
             return TriviaSource.OPEN_TRIVIA_DATABASE
         elif text == 'open_trivia_qa':
             return TriviaSource.OPEN_TRIVIA_QA
