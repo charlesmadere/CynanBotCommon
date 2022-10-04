@@ -109,8 +109,5 @@ def writeRowsToSqlite(databaseName: str, rows: List[List[str]]):
 
     print(f'Wrote {rowNumber} rows into \"{databaseName}\" database')
 
-basketball = readInCsvRows('CynanBotCommon/basketball.csv')
-writeRowsToSqlite('CynanBotCommon/trivia/triviaDatabaseTriviaQuestionRepository.sqlite', basketball)
-
-nineties = readInCsvRows('CynanBotCommon/90s.csv')
-writeRowsToSqlite('CynanBotCommon/trivia/triviaDatabaseTriviaQuestionRepository.sqlite', nineties)
+netflix = readInCsvRows('CynanBotCommon/netflix.csv')
+writeRowsToSqlite('CynanBotCommon/trivia/triviaDatabaseTriviaQuestionRepository.sqlite', netflix)
