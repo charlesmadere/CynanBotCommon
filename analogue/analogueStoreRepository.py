@@ -96,10 +96,10 @@ class AnalogueStoreRepository():
 
     async def fetchStoreStock(self) -> AnalogueStoreStock:
         if self.__cacheTime + self.__cacheTimeDelta < datetime.now(timezone.utc) or self.__storeStock is None:
-            self.__storeStock = self.__fetchStoreStock()
+            self.__storeStock = await self.__fetchStoreStock()
             self.__cacheTime = datetime.now(timezone.utc)
 
-        return await self.__storeStock
+        return self.__storeStock
 
     async def __fetchStoreStock(self) -> AnalogueStoreStock:
         self.__timber.log('AnalogueStoreRepository', f'Fetching Analogue store stock...')
@@ -132,6 +132,8 @@ class AnalogueStoreRepository():
 
         for productTree in productTrees:
             product = await self.__buildProduct(productTree)
-            products.append(product)
+
+            if product is not None:
+                products.append(product)
 
         return AnalogueStoreStock(products = products)
