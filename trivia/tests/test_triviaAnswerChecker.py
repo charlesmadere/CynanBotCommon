@@ -351,7 +351,7 @@ class TestTriviaAnswerChecker():
                 triviaSource=TriviaSource.J_SERVICE,
             )
 
-            result: bool = await self.triviaAnswerChecker.checkAnswer('1984', question)
+            result = await self.triviaAnswerChecker.checkAnswer('1984', question)
             assert result is TriviaAnswerCheckResult.CORRECT
 
             result = await self.triviaAnswerChecker.checkAnswer('nineteen eightyfour', question)
