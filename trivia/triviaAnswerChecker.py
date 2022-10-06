@@ -243,6 +243,7 @@ class TriviaAnswerChecker():
             yield word
         else:
             yield word
+
             # pluralizations
             if any(word.endswith(s) for s in ('ss', 'sh', 'ch', 'x', 'z', 's', 'o')):
                 yield word + 'es'
@@ -268,24 +269,34 @@ class TriviaAnswerChecker():
             # titles
             if word == 'atty':
                 yield 'attorney'
+            if word == 'do':
+                yield 'doctor of osteopathy'
             if word == 'dr':
                 yield 'doctor'
             if word == 'esq':
                 yield 'esquire'
             if word == 'jr':
                 yield 'junior'
+            if word == 'md':
+                yield 'doctor of medicine'
             if word == 'mr':
                 yield 'mister'
             if word == 'mrs':
                 yield 'missus'
             if word == 'ms':
                 yield 'miss'
+            if word == 'np':
+                yield 'nurse practitioner'
+            if word == 'pa':
+                yield 'physician assistant'
             if word == 'sr':
                 yield 'senior'
 
-            # streets
+            # geographical features/streets
             if word == 'aly':
                 yield 'alley'
+            if word == 'arc':
+                yield 'arcade'
             if word == 'ave':
                 yield 'avenue'
             if word == 'bch':
@@ -294,32 +305,57 @@ class TriviaAnswerChecker():
                 yield 'boulevard'
             if word == 'brg':
                 yield 'bridge'
+            if word == 'brk':
+                yield 'brook'
             if word == 'byu':
                 yield 'bayou'
+            if word == 'cty':
+                yield 'city'
             if word in ('ct', 'crt'):
                 yield 'court'
             if word == 'crk':
                 yield 'creek'
-            if word == 'cyn':
+            if word in ('canyn', 'cnyn'):
                 yield 'canyon'
+            if word == 'cswy':
+                yield 'causeway'
+            if word in ('cen', 'cntr', 'ctr'):
+                yield 'center'
+            if word in ('cir', 'circ', 'crcl'):
+                yield 'circle'
+            if word == 'cv':
+                yield 'cove'
             if word == 'dr':
                 yield 'drive'
             if word == 'est':
                 yield 'estate'
             if word == 'fld':
                 yield 'field'
-            if word == 'ft':
+            if word == 'frd':
+                yield 'ford'
+            if word in ('frt', 'ft'):
                 yield 'fort'
             if word == 'gdn':
                 yield 'garden'
+            if word == 'glf':
+                yield 'gulf'
+            if word == 'grn':
+                yield 'green'
+            if word == 'grv':
+                yield 'grove'
             if word == 'hwy':
                 yield 'highway'
-            if word in ('ht' or 'hgt'):
+            if word in ('ht', 'hgt'):
                 yield 'height'
+            if word in ('is', 'isl'):
+                yield 'island'
             if word == 'lk':
                 yield 'lake'
             if word == 'ln':
                 yield 'lane'
+            if word == 'mt':
+                yield 'mount'
+                yield 'mountain'
             if word == 'st':
                 yield 'street'
                 yield 'saint'
@@ -335,6 +371,8 @@ class TriviaAnswerChecker():
                 yield 'village'
             if word == 'vw':
                 yield 'view'
+            if word in ('crssng', 'xing'):
+                yield 'crossing'
 
             # directions
             if word == 'n':
@@ -361,14 +399,9 @@ class TriviaAnswerChecker():
                 yield 'number'
             if word == 'vs':
                 yield 'versus'
-
-            # geographical features
-            if word == 'cty':
-                yield 'city'
-            if word == 'glf':
-                yield 'gulf'
-            if word in ('is', 'isl'):
-                yield 'island'
-            if word == 'mt':
-                yield 'mount'
-                yield 'mountain'
+            if word == 'wr':
+                yield 'world record'
+            if word == 'ww':
+                yield 'world war'
+            if word == 'www':
+                yield 'world wide web'
