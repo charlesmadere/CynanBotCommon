@@ -291,6 +291,8 @@ class TriviaAnswerChecker():
                 yield 'physician assistant'
             if word == 'sr':
                 yield 'senior'
+            if word == 'st':
+                yield 'saint'
 
             # geographical features/streets
             if word == 'aly':
@@ -309,6 +311,8 @@ class TriviaAnswerChecker():
                 yield 'brook'
             if word == 'byu':
                 yield 'bayou'
+            if word == 'clb':
+                yield 'club'
             if word == 'cty':
                 yield 'city'
             if word in ('ct', 'crt'):
@@ -345,26 +349,41 @@ class TriviaAnswerChecker():
                 yield 'grove'
             if word == 'hwy':
                 yield 'highway'
-            if word in ('ht', 'hgt'):
+            if word in ('ht', 'hgt', 'hts'):
                 yield 'height'
             if word in ('is', 'isl'):
                 yield 'island'
+            if word in ('ldg', 'ldge'):
+                yield 'lodge'
             if word == 'lk':
                 yield 'lake'
             if word == 'ln':
                 yield 'lane'
+            if word == 'mdw':
+                yield 'meadow'
+            if word == 'mnr':
+                yield 'manor'
             if word == 'mt':
                 yield 'mount'
                 yield 'mountain'
-            if word == 'st':
-                yield 'street'
-                yield 'saint'
-            if word == 'rd':
-                yield 'road'
+            if word == 'mtwy':
+                yield 'motorway'
+            if word == 'orch':
+                yield 'orchard'
+            if word in ('pkwy', 'pkway', 'pky'):
+                yield 'parkway'
             if word == 'pl':
                 yield 'place'
+            if word == 'rd':
+                yield 'road'
+            if word in ('riv', 'rvr', 'rivr'):
+                yield 'river'
+            if word == 'rd':
+                yield 'road'
             if word == 'sq':
                 yield 'square'
+            if word in ('st', 'str', 'strt'):
+                yield 'street'
             if word == 'stn':
                 yield 'station'
             if word == 'vlg':
