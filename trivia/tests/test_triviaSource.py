@@ -60,6 +60,9 @@ class TestTriviaSource():
         result = TriviaSource.fromStr('open_trivia')
         assert result is TriviaSource.OPEN_TRIVIA_DATABASE
 
+        result = TriviaSource.fromStr('open_trivia_database')
+        assert result is TriviaSource.OPEN_TRIVIA_DATABASE
+
     def test_fromStr_withOpenTriviaQaString(self):
         result = TriviaSource.fromStr('open_trivia_qa')
         assert result is TriviaSource.OPEN_TRIVIA_QA
@@ -74,6 +77,9 @@ class TestTriviaSource():
 
     def test_fromStr_withWillFryTriviaString(self):
         result = TriviaSource.fromStr('will_fry_trivia')
+        assert result is TriviaSource.WILL_FRY_TRIVIA
+
+        result = TriviaSource.fromStr('will_fry_trivia_api')
         assert result is TriviaSource.WILL_FRY_TRIVIA
 
     def test_fromStr_withWwtbamString(self):
