@@ -12,7 +12,6 @@ try:
     from CynanBotCommon.trivia.absTriviaEvent import AbsTriviaEvent
     from CynanBotCommon.trivia.absTriviaGameState import AbsTriviaGameState
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
-    from CynanBotCommon.trivia.addQueuedGamesResult import AddQueuedGamesResult
     from CynanBotCommon.trivia.checkAnswerTriviaAction import \
         CheckAnswerTriviaAction
     from CynanBotCommon.trivia.correctAnswerTriviaEvent import \
@@ -77,7 +76,6 @@ except:
     from trivia.absTriviaEvent import AbsTriviaEvent
     from trivia.absTriviaGameState import AbsTriviaGameState
     from trivia.absTriviaQuestion import AbsTriviaQuestion
-    from trivia.addQueuedGamesResult import AddQueuedGamesResult
     from trivia.checkAnswerTriviaAction import CheckAnswerTriviaAction
     from trivia.correctAnswerTriviaEvent import CorrectAnswerTriviaEvent
     from trivia.correctSuperAnswerTriviaEvent import \
