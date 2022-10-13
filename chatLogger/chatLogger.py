@@ -115,7 +115,7 @@ class ChatLogger():
             raise ValueError(f'message argument is malformed: \"{message}\"')
 
         sdt = message.getSimpleDateTime()
-        messageDirectory = f'{self.__logRootDirectory}/{message.getTwitchChannel()}/{sdt.getYearStr()}/{sdt.getMonthStr()}'
+        messageDirectory = f'{self.__logRootDirectory}/{message.getTwitchChannel().lower()}/{sdt.getYearStr()}/{sdt.getMonthStr()}'
         messageFile = f'{messageDirectory}/{sdt.getDayStr()}.log'
 
         if not await aiofiles.ospath.exists(messageDirectory):
