@@ -20,11 +20,11 @@ try:
     from CynanBotCommon.cuteness.cutenessLeaderboardResult import \
         CutenessLeaderboardResult
     from CynanBotCommon.cuteness.cutenessResult import CutenessResult
-    from CynanBotCommon.userIdsRepository import UserIdsRepository
+    from CynanBotCommon.users.userIdsRepository import UserIdsRepository
 except:
     import utils
     from backingDatabase import BackingDatabase
-    from userIdsRepository import UserIdsRepository
+    from users.userIdsRepository import UserIdsRepository
 
     from cuteness.cutenessChampionsResult import CutenessChampionsResult
     from cuteness.cutenessDate import CutenessDate
