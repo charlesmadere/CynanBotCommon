@@ -1,10 +1,12 @@
 import asyncio
 import random
+from datetime import timedelta
 from typing import Dict, List, Optional, Set
 
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.timedDict import TimedDict
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.absTriviaQuestionRepository import \
         AbsTriviaQuestionRepository
@@ -46,6 +48,7 @@ try:
 except:
     import utils
     from timber.timber import Timber
+    from timedDict import TimedDict
 
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.absTriviaQuestionRepository import AbsTriviaQuestionRepository
@@ -100,7 +103,8 @@ class TriviaRepository():
         triviaVerifier: TriviaVerifier,
         willFryTriviaQuestionRepository: WillFryTriviaQuestionRepository,
         wwtbamTriviaQuestionRepository: WwtbamTriviaQuestionRepository,
-        sleepTimeSeconds: float = 0.25
+        sleepTimeSeconds: float = 0.25,
+        triviaSourceInstabilityCooldown: timedelta = timedelta(minutes = 30)
     ):
         if bongoTriviaQuestionRepository is None:
             raise ValueError(f'bongoTriviaQuestionRepository argument is malformed: \"{bongoTriviaQuestionRepository}\"')
@@ -157,31 +161,11 @@ class TriviaRepository():
             raise ValueError(f'triviaFetchOptions argument is malformed: \"{triviaFetchOptions}\"')
 
         triviaSourcesAndWeights: Dict[TriviaSource, int] = await self.__triviaSettingsRepository.getAvailableTriviaSourcesAndWeights()
-        triviaSourcesToRemove: Set[TriviaSource] = set()
+        triviaSourcesToRemove: Set[TriviaSource] = await self.__getCurrentlyInvalidTriviaSources(triviaFetchOptions)
 
-        if not triviaFetchOptions.areQuestionAnswerTriviaQuestionsEnabled():
-            for triviaSource, triviaQuestionRepository in self.__triviaSourceToRepositoryMap.items():
-                if TriviaType.QUESTION_ANSWER in triviaQuestionRepository.getSupportedTriviaTypes():
-                    triviaSourcesToRemove.add(triviaSource)
-
-        if not triviaFetchOptions.isJokeTriviaRepositoryEnabled():
-            triviaSourcesToRemove.add(TriviaSource.JOKE_TRIVIA_REPOSITORY)
-
-        if triviaFetchOptions.requireQuestionAnswerTriviaQuestion():
-            for triviaSource, triviaQuestionRepository in self.__triviaSourceToRepositoryMap.items():
-                if TriviaType.QUESTION_ANSWER not in triviaQuestionRepository.getSupportedTriviaTypes():
-                    triviaSourcesToRemove.add(triviaSource)
-
-        if not await self.__isJokeTriviaQuestionRepositoryAvailable():
-            triviaSourcesToRemove.add(TriviaSource.JOKE_TRIVIA_REPOSITORY)
-
-        if not await self.__isQuizApiTriviaQuestionRepositoryAvailable():
-            triviaSourcesToRemove.add(TriviaSource.QUIZ_API)
-
-        if utils.hasItems(triviaSourcesToRemove):
-            for triviaSourceToRemove in triviaSourcesToRemove:
-                if triviaSourceToRemove in triviaSourcesAndWeights:
-                    del triviaSourcesAndWeights[triviaSourceToRemove]
+        for triviaSourceToRemove in triviaSourcesToRemove:
+            if triviaSourceToRemove in triviaSourcesAndWeights:
+                del triviaSourcesAndWeights[triviaSourceToRemove]
 
         if not utils.hasItems(triviaSourcesAndWeights):
             raise RuntimeError(f'There are no trivia sources available to be fetched from! TriviaFetchOptions are: {triviaFetchOptions}')
@@ -258,6 +242,43 @@ class TriviaRepository():
             await asyncio.sleep(self.__sleepTimeSeconds * float(retryCount))
 
         raise TooManyTriviaFetchAttemptsException(f'Unable to fetch trivia from {attemptedTriviaSources} after {retryCount} attempts (max attempts is {maxRetryCount})')
+
+    async def __getCurrentlyInvalidTriviaSources(self, triviaFetchOptions: TriviaFetchOptions) -> Set[TriviaSource]:
+        if triviaFetchOptions is None:
+            raise ValueError(f'triviaFetchOptions argument is malformed: \"{triviaFetchOptions}\"')
+
+        currentlyInvalidTriviaSources: Set[TriviaSource] = set()
+
+        if not triviaFetchOptions.areQuestionAnswerTriviaQuestionsEnabled():
+            for triviaSource, triviaQuestionRepository in self.__triviaSourceToRepositoryMap.items():
+                if TriviaType.QUESTION_ANSWER in triviaQuestionRepository.getSupportedTriviaTypes():
+                    currentlyInvalidTriviaSources.add(triviaSource)
+
+        if not triviaFetchOptions.isJokeTriviaRepositoryEnabled():
+            currentlyInvalidTriviaSources.add(TriviaSource.JOKE_TRIVIA_REPOSITORY)
+
+        if triviaFetchOptions.requireQuestionAnswerTriviaQuestion():
+            for triviaSource, triviaQuestionRepository in self.__triviaSourceToRepositoryMap.items():
+                if TriviaType.QUESTION_ANSWER not in triviaQuestionRepository.getSupportedTriviaTypes():
+                    currentlyInvalidTriviaSources.add(triviaSource)
+
+        if not await self.__isJokeTriviaQuestionRepositoryAvailable():
+            currentlyInvalidTriviaSources.add(TriviaSource.JOKE_TRIVIA_REPOSITORY)
+
+        if not await self.__isQuizApiTriviaQuestionRepositoryAvailable():
+            currentlyInvalidTriviaSources.add(TriviaSource.QUIZ_API)
+
+        unstableTriviaSources = await self.__getCurrentlyUnstableTriviaSources()
+        currentlyInvalidTriviaSources.update(unstableTriviaSources)
+
+        return currentlyInvalidTriviaSources
+
+    async def __getCurrentlyUnstableTriviaSources(self) -> Set[TriviaSource]:
+        unstableTriviaSources: Set[TriviaSource] = set()
+
+        # TODO
+
+        return unstableTriviaSources
 
     async def __isJokeTriviaQuestionRepositoryAvailable(self) -> bool:
         return self.__jokeTriviaQuestionRepository is not None
