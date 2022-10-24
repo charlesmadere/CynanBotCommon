@@ -229,14 +229,16 @@ class TriviaRepository():
 
         while retryCount < maxRetryCount:
             triviaQuestionRepository = await self.__chooseRandomTriviaSource(triviaFetchOptions)
-            attemptedTriviaSources.append(triviaQuestionRepository.getTriviaSource())
+            triviaSource = triviaQuestionRepository.getTriviaSource()
+            attemptedTriviaSources.append(triviaSource)
 
             try:
                 triviaQuestion = await triviaQuestionRepository.fetchTriviaQuestion(triviaFetchOptions.getTwitchChannel())
             except (NoTriviaCorrectAnswersException, NoTriviaMultipleChoiceResponsesException, NoTriviaQuestionException) as e:
-                self.__timber.log('TriviaRepository', f'Failed to fetch trivia question due to malformed data (trivia source was \"{triviaQuestionRepository.getTriviaSource()}\"): {e}')
+                self.__timber.log('TriviaRepository', f'Failed to fetch trivia question due to malformed data (trivia source was \"{triviaSource}\"): {e}')
             except Exception as e:
-                self.__timber.log('TriviaRepository', f'Encountered unknown Exception when fetching trivia question (trivia source was \"{triviaQuestionRepository.getTriviaSource()}\"): {e}')
+                errorCount = self.__triviaSourceInstabilityDict.incrementErrorCount(triviaSource)
+                self.__timber.log('TriviaRepository', f'Encountered unknown Exception when fetching trivia question (trivia source was \"{triviaSource}\") (new error count is {errorCount}): {e}')
 
             if await self.__verifyGoodTriviaQuestion(triviaQuestion, triviaFetchOptions):
                 return triviaQuestion
