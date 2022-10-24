@@ -228,7 +228,7 @@ class TriviaRepository():
         attemptedTriviaSources: List[TriviaSource] = list()
 
         while retryCount < maxRetryCount:
-            triviaQuestionRepository: AbsTriviaQuestionRepository = await self.__chooseRandomTriviaSource(triviaFetchOptions)
+            triviaQuestionRepository = await self.__chooseRandomTriviaSource(triviaFetchOptions)
             attemptedTriviaSources.append(triviaQuestionRepository.getTriviaSource())
 
             try:
