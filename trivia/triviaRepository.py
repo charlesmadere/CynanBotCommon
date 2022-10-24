@@ -277,10 +277,12 @@ class TriviaRepository():
         return currentlyInvalidTriviaSources
 
     async def __getCurrentlyUnstableTriviaSources(self) -> Set[TriviaSource]:
-        threshold = await self.__triviaSettingsRepository.getTriviaSourceInstabilityThreshold()
+        instabilityThreshold = await self.__triviaSettingsRepository.getTriviaSourceInstabilityThreshold()
         unstableTriviaSources: Set[TriviaSource] = set()
 
-        # TODO
+        for triviaSource in TriviaSource:
+            if self.__triviaSourceInstabilityDict[triviaSource] >= instabilityThreshold:
+                unstableTriviaSources.add(triviaSource)
 
         return unstableTriviaSources
 
