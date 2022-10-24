@@ -6,7 +6,6 @@ from typing import Dict, List, Optional, Set
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.timber.timber import Timber
-    from CynanBotCommon.timedDict import TimedDict
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.absTriviaQuestionRepository import \
         AbsTriviaQuestionRepository
@@ -31,6 +30,7 @@ try:
     from CynanBotCommon.trivia.triviaContentCode import TriviaContentCode
     from CynanBotCommon.trivia.triviaDatabaseTriviaQuestionRepository import \
         TriviaDatabaseTriviaQuestionRepository
+    from CynanBotCommon.trivia.triviaErrorDict import TriviaErrorDict
     from CynanBotCommon.trivia.triviaExceptions import (
         NoTriviaCorrectAnswersException,
         NoTriviaMultipleChoiceResponsesException, NoTriviaQuestionException,
@@ -48,7 +48,6 @@ try:
 except:
     import utils
     from timber.timber import Timber
-    from timedDict import TimedDict
 
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.absTriviaQuestionRepository import AbsTriviaQuestionRepository
@@ -71,6 +70,7 @@ except:
     from trivia.triviaContentCode import TriviaContentCode
     from trivia.triviaDatabaseTriviaQuestionRepository import \
         TriviaDatabaseTriviaQuestionRepository
+    from trivia.triviaErrorDict import TriviaErrorDict
     from trivia.triviaExceptions import (
         NoTriviaCorrectAnswersException,
         NoTriviaMultipleChoiceResponsesException, NoTriviaQuestionException,
@@ -136,6 +136,8 @@ class TriviaRepository():
             raise ValueError(f'sleepTimeSeconds argument is malformed: \"{sleepTimeSeconds}\"')
         elif sleepTimeSeconds < 0.1 or sleepTimeSeconds > 3:
             raise ValueError(f'sleepTimeSeconds argument is out of bounds: {sleepTimeSeconds}')
+        elif triviaSourceInstabilityCooldown is None:
+            raise ValueError(f'triviaSourceInstabilityCooldown argument is malformed: \"{triviaSourceInstabilityCooldown}\"')
 
         self.__bongoTriviaQuestionRepository: AbsTriviaQuestionRepository = bongoTriviaQuestionRepository
         self.__funtoonTriviaQuestionRepository: AbsTriviaQuestionRepository = funtoonTriviaQuestionRepository
@@ -155,6 +157,7 @@ class TriviaRepository():
         self.__sleepTimeSeconds: float = sleepTimeSeconds
 
         self.__triviaSourceToRepositoryMap: Dict[TriviaSource, AbsTriviaQuestionRepository] = self.__createTriviaSourceToRepositoryMap()
+        self.__triviaSourceInstabilityDict: TriviaErrorDict = TriviaErrorDict(triviaSourceInstabilityCooldown)
 
     async def __chooseRandomTriviaSource(self, triviaFetchOptions: TriviaFetchOptions) -> AbsTriviaQuestionRepository:
         if triviaFetchOptions is None:
@@ -274,6 +277,7 @@ class TriviaRepository():
         return currentlyInvalidTriviaSources
 
     async def __getCurrentlyUnstableTriviaSources(self) -> Set[TriviaSource]:
+        threshold = await self.__triviaSettingsRepository.getTriviaSourceInstabilityThreshold()
         unstableTriviaSources: Set[TriviaSource] = set()
 
         # TODO
