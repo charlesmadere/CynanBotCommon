@@ -445,7 +445,28 @@ class TriviaGameMachine():
 
             return
 
-        triviaQuestion: AbsTriviaQuestion = None
+        if action.getNumberOfGames() >= 2:
+            result = await self.__queuedTriviaGameStore.addSuperGames(StartNewSuperTriviaGameAction(
+                numberOfGames = action.getNumberOfGames() - 1,
+                perUserAttempts = action.getPerUserAttempts(),
+                pointsForWinning = action.getPointsForWinning(),
+                pointsMultiplier = action.getPointsMultiplier(),
+                secondsToLive = action.getSecondsToLive(),
+                twitchChannel = action.getTwitchChannel(),
+                triviaFetchOptions = action.getTriviaFetchOptions()
+            ))
+
+            if result.getAmountAdded() >= 1:
+                self.__timber.log('TriviaGameMachine', f'Queued new Super Trivia game(s) for \"{action.getTwitchChannel()}\": {result.toStr()}')
+
+                self.__eventQueue.put(NewQueuedSuperTriviaGameEvent(
+                    pointsForWinning = action.getPointsForWinning(),
+                    pointsMultiplier = action.getPointsMultiplier(),
+                    secondsToLive = action.getSecondsToLive(),
+                    twitchChannel = action.getTwitchChannel()
+                ))
+
+        triviaQuestion: Optional[AbsTriviaQuestion] = None
         try:
             triviaQuestion = await self.__triviaRepository.fetchTrivia(action.getTriviaFetchOptions())
         except TooManyTriviaFetchAttemptsException as e:
