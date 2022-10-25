@@ -32,6 +32,7 @@ try:
         TriviaDatabaseTriviaQuestionRepository
     from CynanBotCommon.trivia.triviaErrorDict import TriviaErrorDict
     from CynanBotCommon.trivia.triviaExceptions import (
+        GenericTriviaNetworkException, MalformedTriviaJsonException,
         NoTriviaCorrectAnswersException,
         NoTriviaMultipleChoiceResponsesException, NoTriviaQuestionException,
         TooManyTriviaFetchAttemptsException)
@@ -72,6 +73,7 @@ except:
         TriviaDatabaseTriviaQuestionRepository
     from trivia.triviaErrorDict import TriviaErrorDict
     from trivia.triviaExceptions import (
+        GenericTriviaNetworkException, MalformedTriviaJsonException,
         NoTriviaCorrectAnswersException,
         NoTriviaMultipleChoiceResponsesException, NoTriviaQuestionException,
         TooManyTriviaFetchAttemptsException)
@@ -212,19 +214,19 @@ class TriviaRepository():
 
         return triviaSourceToRepositoryMap
 
-    async def fetchTrivia(self, triviaFetchOptions: TriviaFetchOptions) -> AbsTriviaQuestion:
+    async def fetchTrivia(self, triviaFetchOptions: TriviaFetchOptions) -> Optional[AbsTriviaQuestion]:
         if triviaFetchOptions is None:
             raise ValueError(f'triviaFetchOptions argument is malformed: \"{triviaFetchOptions}\"')
 
         return await self.__fetchTrivia(triviaFetchOptions)
 
-    async def __fetchTrivia(self, triviaFetchOptions: TriviaFetchOptions) -> AbsTriviaQuestion:
+    async def __fetchTrivia(self, triviaFetchOptions: TriviaFetchOptions) -> Optional[AbsTriviaQuestion]:
         if triviaFetchOptions is None:
             raise ValueError(f'triviaFetchOptions argument is malformed: \"{triviaFetchOptions}\"')
 
-        triviaQuestion: AbsTriviaQuestion = None
+        triviaQuestion: Optional[AbsTriviaQuestion] = None
         retryCount: int = 0
-        maxRetryCount: int = await self.__triviaSettingsRepository.getMaxRetryCount()
+        maxRetryCount = await self.__triviaSettingsRepository.getMaxRetryCount()
         attemptedTriviaSources: List[TriviaSource] = list()
 
         while retryCount < maxRetryCount:
@@ -236,6 +238,9 @@ class TriviaRepository():
                 triviaQuestion = await triviaQuestionRepository.fetchTriviaQuestion(triviaFetchOptions.getTwitchChannel())
             except (NoTriviaCorrectAnswersException, NoTriviaMultipleChoiceResponsesException, NoTriviaQuestionException) as e:
                 self.__timber.log('TriviaRepository', f'Failed to fetch trivia question due to malformed data (trivia source was \"{triviaSource}\"): {e}')
+            except (GenericTriviaNetworkException, MalformedTriviaJsonException) as e:
+                errorCount = self.__triviaSourceInstabilityDict.incrementErrorCount(triviaSource)
+                self.__timber.log('TriviaRepository', f'Encountered bad API Exception when fetching trivia question (trivia source was \"{triviaSource}\") (new error count is {errorCount}): {e}')
             except Exception as e:
                 errorCount = self.__triviaSourceInstabilityDict.incrementErrorCount(triviaSource)
                 self.__timber.log('TriviaRepository', f'Encountered unknown Exception when fetching trivia question (trivia source was \"{triviaSource}\") (new error count is {errorCount}): {e}')

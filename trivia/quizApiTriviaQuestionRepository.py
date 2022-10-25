@@ -15,6 +15,7 @@ try:
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
     from CynanBotCommon.trivia.triviaEmoteGenerator import TriviaEmoteGenerator
     from CynanBotCommon.trivia.triviaExceptions import (
+        GenericTriviaNetworkException, MalformedTriviaJsonException,
         NoTriviaCorrectAnswersException, UnsupportedTriviaTypeException)
     from CynanBotCommon.trivia.triviaIdGenerator import TriviaIdGenerator
     from CynanBotCommon.trivia.triviaSettingsRepository import \
@@ -34,7 +35,9 @@ except:
         MultipleChoiceTriviaQuestion
     from trivia.triviaDifficulty import TriviaDifficulty
     from trivia.triviaEmoteGenerator import TriviaEmoteGenerator
-    from trivia.triviaExceptions import (NoTriviaCorrectAnswersException,
+    from trivia.triviaExceptions import (GenericTriviaNetworkException,
+                                         MalformedTriviaJsonException,
+                                         NoTriviaCorrectAnswersException,
                                          UnsupportedTriviaTypeException)
     from trivia.triviaIdGenerator import TriviaIdGenerator
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
@@ -87,11 +90,11 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
             )
         except (aiohttp.ClientError, TimeoutError) as e:
             self.__timber.log('QuizApiTriviaQuestionRepository', f'Encountered network error: {e}')
-            return None
+            raise GenericTriviaNetworkException(self.getTriviaSource(), e)
 
         if response.status != 200:
             self.__timber.log('QuizApiTriviaQuestionRepository', f'Encountered non-200 HTTP status code: \"{response.status}\"')
-            return None
+            raise GenericTriviaNetworkException(self.getTriviaSource())
 
         jsonResponse: List[Dict[str, Any]] = await response.json()
         response.close()
@@ -101,12 +104,12 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         if not utils.hasItems(jsonResponse):
             self.__timber.log('QuizApiTriviaQuestionRepository', f'Rejecting Quiz API\'s JSON data due to null/empty contents: {jsonResponse}')
-            raise ValueError(f'Rejecting Quiz API JSON data due to null/empty contents: {jsonResponse}')
+            raise MalformedTriviaJsonException(f'Rejecting Quiz API JSON data due to null/empty contents: {jsonResponse}')
 
         triviaJson: Dict[str, Any] = jsonResponse[0]
         if not utils.hasItems(triviaJson):
             self.__timber.log('QuizApiTriviaQuestionRepository', f'Rejecting Quiz API\'s JSON data due to null/empty contents: {jsonResponse}')
-            raise ValueError(f'Rejecting Quiz API\'s JSON data due to null/empty contents: {jsonResponse}')
+            raise MalformedTriviaJsonException(f'Rejecting Quiz API\'s JSON data due to null/empty contents: {jsonResponse}')
 
         triviaDifficulty = TriviaDifficulty.fromStr(utils.getStrFromDict(triviaJson, 'difficulty', fallback = ''))
         category = utils.getStrFromDict(triviaJson, 'category', fallback = '', clean = True)
@@ -132,7 +135,7 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
         correctAnswersList.sort(key = lambda entry: entry[0].lower())
 
         if not utils.hasItems(answersList) or not utils.hasItems(correctAnswersList) or len(answersList) != len(correctAnswersList):
-            raise ValueError(f'Rejecting Quiz API\'s data due to malformed \"answers\" and/or \"correct_answers\" data: {jsonResponse}')
+            raise MalformedTriviaJsonException(f'Rejecting Quiz API\'s data due to malformed \"answers\" and/or \"correct_answers\" data: {jsonResponse}')
 
         correctAnswers: List[str] = list()
         filteredAnswers: List[str] = list()
