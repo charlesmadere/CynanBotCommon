@@ -91,7 +91,7 @@ class WillFryTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         if response.status != 200:
             self.__timber.log('WillFryTriviaQuestionRepository', f'Encountered non-200 HTTP status code: \"{response.status}\"')
-            raise GenericTriviaNetworkException(self.getTriviaSource(), e)
+            raise GenericTriviaNetworkException(self.getTriviaSource())
 
         jsonResponse: Dict[str, Any] = await response.json()
         response.close()
