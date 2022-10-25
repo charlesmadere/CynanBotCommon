@@ -240,6 +240,167 @@ class TestTriviaAnswerChecker():
             assert result is TriviaAnswerCheckResult.INCORRECT
 
     @pytest.mark.asyncio
+    async def test_checkAnswer_withQuestionAnswerQuestion_withDecades(self):
+        with mock.patch.object(TriviaSettingsRepository, '_TriviaSettingsRepository__readJson', mockSettingsJSON):
+            question: AbsTriviaQuestion = QuestionAnswerTriviaQuestion(
+                correctAnswers=['1950s'],
+                cleanedCorrectAnswers=[
+                    'one thousand nine hundred fifty'
+                ],
+                category='Test Category',
+                categoryId=None,
+                emote = '🏫',
+                question='In what decade did that one thing come out?',
+                triviaId='abc123',
+                triviaDifficulty=TriviaDifficulty.UNKNOWN,
+                triviaSource=TriviaSource.J_SERVICE,
+            )
+
+            result = await self.triviaAnswerChecker.checkAnswer('1850', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1850s', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1900', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1900s', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1910', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1910s', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1920', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1920s', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1930', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1930s', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1940', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1940s', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1948', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1948s', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1949', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1949s', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1950', question)
+            assert result is TriviaAnswerCheckResult.CORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1950s', question)
+            assert result is TriviaAnswerCheckResult.CORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1951', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1951s', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1952', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1952s', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1953', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1953s', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1954', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1954s', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1955', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1955s', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1956', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1956s', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1957', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1957s', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1958', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1958s', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1959', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1959s', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1960', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1960s', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1970', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1970s', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1980', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1980s', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1990', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('1990s', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('2000', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('2000s', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('2050', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+            result = await self.triviaAnswerChecker.checkAnswer('2050s', question)
+            assert result is TriviaAnswerCheckResult.INCORRECT
+
+    @pytest.mark.asyncio
     async def test_checkAnswer_withQuestionAnswerQuestion_withDigits(self):
         with mock.patch.object(TriviaSettingsRepository, '_TriviaSettingsRepository__readJson', mockSettingsJSON):
             question: AbsTriviaQuestion = QuestionAnswerTriviaQuestion(
