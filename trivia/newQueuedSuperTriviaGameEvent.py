@@ -13,6 +13,7 @@ class NewQueuedSuperTriviaGameEvent(AbsTriviaEvent):
 
     def __init__(
         self,
+        numberOfGames: int,
         pointsMultiplier: int,
         pointsForWinning: int,
         secondsToLive: int,
@@ -20,7 +21,11 @@ class NewQueuedSuperTriviaGameEvent(AbsTriviaEvent):
     ):
         super().__init__(triviaEventType = TriviaEventType.NEW_QUEUED_SUPER_GAME)
 
-        if not utils.isValidNum(pointsForWinning):
+        if not utils.isValidNum(numberOfGames):
+            raise ValueError(f'numberOfGames argument is malformed: \"{numberOfGames}\"')
+        elif numberOfGames < 1:
+            raise ValueError(f'numberOfGames argument is out of bounds: \"{numberOfGames}\"')
+        elif not utils.isValidNum(pointsForWinning):
             raise ValueError(f'pointsForWinning argument is malformed: \"{pointsForWinning}\"')
         elif pointsForWinning < 1:
             raise ValueError(f'pointsForWinning argument is out of bounds: {pointsForWinning}')
@@ -35,10 +40,14 @@ class NewQueuedSuperTriviaGameEvent(AbsTriviaEvent):
         elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
+        self.__numberOfGames: int = numberOfGames
         self.__pointsMultiplier: int = pointsMultiplier
         self.__pointsForWinning: int = pointsForWinning
         self.__secondsToLive: int = secondsToLive
         self.__twitchChannel: str = twitchChannel
+
+    def getNumberOfGames(self) -> int:
+        return self.__numberOfGames
 
     def getPointsMultiplier(self) -> int:
         return self.__pointsMultiplier

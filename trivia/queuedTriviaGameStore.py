@@ -4,6 +4,7 @@ from queue import SimpleQueue
 from typing import Dict, List, Set
 
 try:
+    import CynanBotCommon.utils as utils
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.addQueuedGamesResult import AddQueuedGamesResult
     from CynanBotCommon.trivia.startNewSuperTriviaGameAction import \
@@ -11,6 +12,7 @@ try:
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
 except:
+    import utils
     from timber.timber import Timber
 
     from trivia.addQueuedGamesResult import AddQueuedGamesResult
@@ -35,26 +37,52 @@ class QueuedTriviaGameStore():
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
         self.__queuedSuperGames: Dict[str, SimpleQueue[StartNewSuperTriviaGameAction]] = defaultdict(lambda: SimpleQueue())
 
-    async def addSuperGames(self, action: StartNewSuperTriviaGameAction) -> AddQueuedGamesResult:
-        if action is None:
+    async def addSuperGames(
+        self,
+        isSuperTriviaGameInProgress: bool,
+        action: StartNewSuperTriviaGameAction
+    ) -> AddQueuedGamesResult:
+        if not utils.isValidBool(isSuperTriviaGameInProgress):
+            raise ValueError(f'isSuperTriviaGameInProgress argument is malformed: \"{isSuperTriviaGameInProgress}\"')
+        elif action is None:
             raise ValueError(f'action argument is malformed: \"{action}\"')
 
         twitchChannel = action.getTwitchChannel().lower()
         queuedSuperGames = self.__queuedSuperGames[twitchChannel]
         oldQueueSize = queuedSuperGames.qsize()
 
-        maxSuperGameQueueSize = await self.__triviaSettingsRepository.getMaxSuperGameQueueSize()
-
-        if maxSuperGameQueueSize <= 0:
+        if not action.hasNumberOfGames() or action.isNumberOfGamesConsumed():
             return AddQueuedGamesResult(
                 amountAdded = 0,
                 newQueueSize = oldQueueSize,
                 oldQueueSize = oldQueueSize
             )
 
+        action.consumeNumberOfGames()
+        maxSuperGameQueueSize = await self.__triviaSettingsRepository.getMaxSuperGameQueueSize()
+
+        if maxSuperGameQueueSize < 1:
+            return AddQueuedGamesResult(
+                amountAdded = 0,
+                newQueueSize = oldQueueSize,
+                oldQueueSize = oldQueueSize
+            )
+
+        numberOfGames = action.getNumberOfGames()
+
+        if not isSuperTriviaGameInProgress:
+            numberOfGames = numberOfGames - 1
+
+            if numberOfGames < 1:
+                return AddQueuedGamesResult(
+                    amountAdded = 0,
+                    newQueueSize = oldQueueSize,
+                    oldQueueSize = oldQueueSize
+                )
+
         amountAdded: int = 0
 
-        for _ in range(action.getNumberOfGames()):
+        for _ in range(numberOfGames):
             if queuedSuperGames.qsize() < maxSuperGameQueueSize:
                 queuedSuperGames.put(action)
                 amountAdded = amountAdded + 1
