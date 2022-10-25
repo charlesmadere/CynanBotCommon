@@ -388,7 +388,7 @@ class TriviaGameMachine():
         try:
             triviaQuestion = await self.__triviaRepository.fetchTrivia(action.getTriviaFetchOptions())
         except TooManyTriviaFetchAttemptsException as e:
-            self.__timber.log('TriviaGameMachine', f'Reached limit on trivia fetch attempts without being able to successfully retrieve a question: {e}')
+            self.__timber.log('TriviaGameMachine', f'Reached limit on trivia fetch attempts without being able to successfully retrieve a trivia question for \"{action.getTwitchChannel()}\": {e}')
 
         if triviaQuestion is None:
             self.__eventQueue.put(FailedToFetchQuestionTriviaEvent(
@@ -425,52 +425,31 @@ class TriviaGameMachine():
         elif action.getTriviaActionType() is not TriviaActionType.START_NEW_SUPER_GAME:
             raise RuntimeError(f'TriviaActionType is not {TriviaActionType.START_NEW_SUPER_GAME}: \"{action.getTriviaActionType()}\"')
 
-        state = await self.__triviaGameStore.getSuperGame(action.getTwitchChannel())
         now = datetime.now(timezone.utc)
+        state = await self.__triviaGameStore.getSuperGame(action.getTwitchChannel())
+        isSuperTriviaGameInProgress = state is not None and state.getEndTime() >= now
 
-        if state is not None and state.getEndTime() >= now:
-            result = await self.__queuedTriviaGameStore.addSuperGames(action)
+        queueResult = await self.__queuedTriviaGameStore.addSuperGames(
+            isSuperTriviaGameInProgress = isSuperTriviaGameInProgress,
+            action = action
+        )
 
-            if result.getAmountAdded() >= 1:
-                self.__timber.log('TriviaGameMachine', f'Queued new Super Trivia game(s) for \"{action.getTwitchChannel()}\": {result.toStr()}')
+        if queueResult.getAmountAdded() >= 1:
+            self.__timber.log('TriviaGameMachine', f'Queued new Super Trivia game(s) for \"{action.getTwitchChannel()}\": {queueResult.toStr()}')
 
-                self.__eventQueue.put(NewQueuedSuperTriviaGameEvent(
-                    pointsForWinning = action.getPointsForWinning(),
-                    pointsMultiplier = action.getPointsMultiplier(),
-                    secondsToLive = action.getSecondsToLive(),
-                    twitchChannel = action.getTwitchChannel()
-                ))
-            else:
-                self.__timber.log('TriviaGameMachine', f'Dropped new Super Trivia game for \"{action.getTwitchChannel()}\"')
-
-            return
-
-        if action.getNumberOfGames() >= 2:
-            result = await self.__queuedTriviaGameStore.addSuperGames(StartNewSuperTriviaGameAction(
-                numberOfGames = action.getNumberOfGames() - 1,
-                perUserAttempts = action.getPerUserAttempts(),
+            self.__eventQueue.put(NewQueuedSuperTriviaGameEvent(
+                numberOfGames = queueResult.getAmountAdded(),
                 pointsForWinning = action.getPointsForWinning(),
                 pointsMultiplier = action.getPointsMultiplier(),
                 secondsToLive = action.getSecondsToLive(),
-                twitchChannel = action.getTwitchChannel(),
-                triviaFetchOptions = action.getTriviaFetchOptions()
+                twitchChannel = action.getTwitchChannel()
             ))
-
-            if result.getAmountAdded() >= 1:
-                self.__timber.log('TriviaGameMachine', f'Queued new Super Trivia game(s) for \"{action.getTwitchChannel()}\": {result.toStr()}')
-
-                self.__eventQueue.put(NewQueuedSuperTriviaGameEvent(
-                    pointsForWinning = action.getPointsForWinning(),
-                    pointsMultiplier = action.getPointsMultiplier(),
-                    secondsToLive = action.getSecondsToLive(),
-                    twitchChannel = action.getTwitchChannel()
-                ))
 
         triviaQuestion: Optional[AbsTriviaQuestion] = None
         try:
             triviaQuestion = await self.__triviaRepository.fetchTrivia(action.getTriviaFetchOptions())
         except TooManyTriviaFetchAttemptsException as e:
-            self.__timber.log('TriviaGameMachine', f'Reached limit on trivia fetch attempts without being able to successfully retrieve a question: {e}')
+            self.__timber.log('TriviaGameMachine', f'Reached limit on trivia fetch attempts without being able to successfully retrieve a super trivia question for \"{action.getTwitchChannel()}\": {e}')
 
         if triviaQuestion is None:
             self.__eventQueue.put(FailedToFetchQuestionSuperTriviaEvent(
