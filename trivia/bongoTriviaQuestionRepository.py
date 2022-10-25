@@ -14,8 +14,9 @@ try:
         MultipleChoiceTriviaQuestion
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
     from CynanBotCommon.trivia.triviaEmoteGenerator import TriviaEmoteGenerator
-    from CynanBotCommon.trivia.triviaExceptions import \
-        UnsupportedTriviaTypeException
+    from CynanBotCommon.trivia.triviaExceptions import (
+        GenericTriviaNetworkException, MalformedTriviaJsonException,
+        UnsupportedTriviaTypeException)
     from CynanBotCommon.trivia.triviaIdGenerator import TriviaIdGenerator
     from CynanBotCommon.trivia.triviaQuestionCompiler import \
         TriviaQuestionCompiler
@@ -36,7 +37,9 @@ except:
         MultipleChoiceTriviaQuestion
     from trivia.triviaDifficulty import TriviaDifficulty
     from trivia.triviaEmoteGenerator import TriviaEmoteGenerator
-    from trivia.triviaExceptions import UnsupportedTriviaTypeException
+    from trivia.triviaExceptions import (GenericTriviaNetworkException,
+                                         MalformedTriviaJsonException,
+                                         UnsupportedTriviaTypeException)
     from trivia.triviaIdGenerator import TriviaIdGenerator
     from trivia.triviaQuestionCompiler import TriviaQuestionCompiler
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
@@ -84,11 +87,11 @@ class BongoTriviaQuestionRepository(AbsTriviaQuestionRepository):
             response = await clientSession.get('https://beta-trivia.bongo.best/?limit=1')
         except (aiohttp.ClientError, TimeoutError) as e:
             self.__timber.log('BongoTriviaQuestionRepository', f'Encountered network error: {e}')
-            return None
+            raise GenericTriviaNetworkException(self.getTriviaSource(), e)
 
         if response.status != 200:
             self.__timber.log('BongoTriviaQuestionRepository', f'Encountered non-200 HTTP status code: {response.status}')
-            return None
+            raise GenericTriviaNetworkException(self.getTriviaSource())
 
         jsonResponse: List[Dict[str, Any]] = await response.json()
         response.close()
@@ -98,12 +101,12 @@ class BongoTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         if not utils.hasItems(jsonResponse):
             self.__timber.log('BongoTriviaQuestionRepository', f'Rejecting JSON data due to null/empty contents: {jsonResponse}')
-            raise ValueError(f'Rejecting Bongo\'s JSON data due to null/empty contents: {jsonResponse}')
+            raise MalformedTriviaJsonException(f'Rejecting Bongo\'s JSON data due to null/empty contents: {jsonResponse}')
 
         triviaJson: Dict[str, Any] = jsonResponse[0]
         if not utils.hasItems(triviaJson):
             self.__timber.log('BongoTriviaQuestionRepository', f'Rejecting JSON data due to null/empty contents: {jsonResponse}')
-            raise ValueError(f'Rejecting Bongo\'s JSON data due to null/empty contents: {jsonResponse}')
+            raise MalformedTriviaJsonException(f'Rejecting Bongo\'s JSON data due to null/empty contents: {jsonResponse}')
 
         triviaDifficulty = TriviaDifficulty.fromStr(utils.getStrFromDict(triviaJson, 'difficulty', fallback = ''))
         triviaType = TriviaType.fromStr(utils.getStrFromDict(triviaJson, 'type'))

@@ -15,6 +15,8 @@ try:
     from CynanBotCommon.trivia.triviaAnswerCompiler import TriviaAnswerCompiler
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
     from CynanBotCommon.trivia.triviaEmoteGenerator import TriviaEmoteGenerator
+    from CynanBotCommon.trivia.triviaExceptions import (
+        GenericTriviaNetworkException, MalformedTriviaJsonException)
     from CynanBotCommon.trivia.triviaIdGenerator import TriviaIdGenerator
     from CynanBotCommon.trivia.triviaQuestionCompiler import \
         TriviaQuestionCompiler
@@ -34,6 +36,8 @@ except:
     from trivia.triviaAnswerCompiler import TriviaAnswerCompiler
     from trivia.triviaDifficulty import TriviaDifficulty
     from trivia.triviaEmoteGenerator import TriviaEmoteGenerator
+    from trivia.triviaExceptions import (GenericTriviaNetworkException,
+                                         MalformedTriviaJsonException)
     from trivia.triviaIdGenerator import TriviaIdGenerator
     from trivia.triviaQuestionCompiler import TriviaQuestionCompiler
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
@@ -100,11 +104,11 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
             response = await clientSession.get(f'https://jservice.io/api/random?count={count}')
         except (aiohttp.ClientError, TimeoutError) as e:
             self.__timber.log('JServiceTriviaQuestionRepository', f'Encountered network error: {e}')
-            return None
+            raise GenericTriviaNetworkException(self.getTriviaSource(), e)
 
         if response.status != 200:
             self.__timber.log('JServiceTriviaQuestionRepository', f'Encountered non-200 HTTP status code: \"{response.status}\"')
-            return None
+            raise GenericTriviaNetworkException(self.getTriviaSource())
 
         jsonResponse: List[Dict[str, Any]] = await response.json()
         response.close()
@@ -114,14 +118,14 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         if not utils.hasItems(jsonResponse):
             self.__timber.log('JServiceTriviaQuestionRepository', f'Rejecting jService\'s JSON data due to null/empty contents: {jsonResponse}')
-            raise ValueError(f'Rejecting jService\'s JSON data due to null/empty contents: {jsonResponse}')
+            raise MalformedTriviaJsonException(f'Rejecting jService\'s JSON data due to null/empty contents: {jsonResponse}')
 
         questions: List[AbsTriviaQuestion] = list()
 
         for triviaJson in jsonResponse:
             if not utils.hasItems(triviaJson) or 'category' not in triviaJson:
                 self.__timber.log('JServiceTriviaQuestionRepository', f'Rejecting jService\'s JSON data due to null/empty contents: {jsonResponse}')
-                raise ValueError(f'Rejecting jService\'s JSON data due to null/empty contents: {jsonResponse}')
+                raise MalformedTriviaJsonException(f'Rejecting jService\'s JSON data due to null/empty contents: {jsonResponse}')
 
             category = utils.getStrFromDict(triviaJson['category'], 'title', fallback = '')
             category = await self.__triviaQuestionCompiler.compileCategory(category)
