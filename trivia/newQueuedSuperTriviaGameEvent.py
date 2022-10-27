@@ -23,8 +23,8 @@ class NewQueuedSuperTriviaGameEvent(AbsTriviaEvent):
 
         if not utils.isValidNum(numberOfGames):
             raise ValueError(f'numberOfGames argument is malformed: \"{numberOfGames}\"')
-        elif numberOfGames < 1:
-            raise ValueError(f'numberOfGames argument is out of bounds: \"{numberOfGames}\"')
+        elif numberOfGames < 1 or numberOfGames > utils.getIntMaxSafeSize():
+            raise ValueError(f'numberOfGames argument is out of bounds: {numberOfGames}')
         elif not utils.isValidNum(pointsForWinning):
             raise ValueError(f'pointsForWinning argument is malformed: \"{pointsForWinning}\"')
         elif pointsForWinning < 1:

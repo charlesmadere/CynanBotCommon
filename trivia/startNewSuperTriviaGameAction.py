@@ -48,8 +48,11 @@ class StartNewSuperTriviaGameAction(AbsTriviaAction):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
         elif triviaFetchOptions is None:
             raise ValueError(f'triviaFetchOptions argument is malformed: \"{triviaFetchOptions}\"')
-        elif utils.isValidNum(numberOfGames) and numberOfGames < 1:
-            raise ValueError(f'numberOfGames argument is malformed: \"{numberOfGames}\"')
+        elif numberOfGames is not None:
+            if not utils.isValidNum(numberOfGames):
+                raise ValueError(f'numberOfGames argument is malformed: \"{numberOfGames}\"')
+            elif numberOfGames < 1 or numberOfGames > utils.getIntMaxSafeSize():
+                raise ValueError(f'numberOfGames argument is out of bounds: {numberOfGames}')
 
         self.__perUserAttempts: int = perUserAttempts
         self.__pointsForWinning: int = pointsForWinning
