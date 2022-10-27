@@ -1,6 +1,5 @@
 import asyncio
 import random
-from datetime import timedelta
 from typing import Dict, List, Optional, Set
 
 try:
