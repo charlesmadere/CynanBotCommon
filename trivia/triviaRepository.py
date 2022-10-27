@@ -93,7 +93,7 @@ class TriviaRepository():
         funtoonTriviaQuestionRepository: FuntoonTriviaQuestionRepository,
         jokeTriviaQuestionRepository: Optional[JokeTriviaQuestionRepository],
         jServiceTriviaQuestionRepository: JServiceTriviaQuestionRepository,
-        lotrTriviaQuestionsRepository: LotrTriviaQuestionRepository,
+        lotrTriviaQuestionRepository: Optional[LotrTriviaQuestionRepository],
         millionaireTriviaQuestionRepository: MillionaireTriviaQuestionRepository,
         quizApiTriviaQuestionRepository: Optional[QuizApiTriviaQuestionRepository],
         openTriviaDatabaseTriviaQuestionRepository: OpenTriviaDatabaseTriviaQuestionRepository,
@@ -113,8 +113,6 @@ class TriviaRepository():
             raise ValueError(f'funtoonTriviaQuestionRepository argument is malformed: \"{funtoonTriviaQuestionRepository}\"')
         elif jServiceTriviaQuestionRepository is None:
             raise ValueError(f'jServiceTriviaQuestionRepository argument is malformed: \"{jServiceTriviaQuestionRepository}\"')
-        elif lotrTriviaQuestionsRepository is None:
-            raise ValueError(f'lotrTriviaQuestionsRepository argument is malformed: \"{lotrTriviaQuestionsRepository}\"')
         elif millionaireTriviaQuestionRepository is None:
             raise ValueError(f'millionaireTriviaQuestionRepository argument is malformed: \"{millionaireTriviaQuestionRepository}\"')
         elif openTriviaDatabaseTriviaQuestionRepository is None:
@@ -144,7 +142,7 @@ class TriviaRepository():
         self.__funtoonTriviaQuestionRepository: AbsTriviaQuestionRepository = funtoonTriviaQuestionRepository
         self.__jokeTriviaQuestionRepository: Optional[AbsTriviaQuestionRepository] = jokeTriviaQuestionRepository
         self.__jServiceTriviaQuestionRepository: AbsTriviaQuestionRepository = jServiceTriviaQuestionRepository
-        self.__lotrTriviaQuestionsRepository: AbsTriviaQuestionRepository = lotrTriviaQuestionsRepository
+        self.__lotrTriviaQuestionRepository: Optional[AbsTriviaQuestionRepository] = lotrTriviaQuestionRepository
         self.__millionaireTriviaQuestionRepository: AbsTriviaQuestionRepository = millionaireTriviaQuestionRepository
         self.__openTriviaDatabaseTriviaQuestionRepository: AbsTriviaQuestionRepository = openTriviaDatabaseTriviaQuestionRepository
         self.__openTriviaQaTriviaQuestionRepository: OpenTriviaQaTriviaQuestionRepository = openTriviaQaTriviaQuestionRepository
@@ -198,7 +196,7 @@ class TriviaRepository():
             TriviaSource.FUNTOON: self.__funtoonTriviaQuestionRepository,
             TriviaSource.JOKE_TRIVIA_REPOSITORY: self.__jokeTriviaQuestionRepository,
             TriviaSource.J_SERVICE: self.__jServiceTriviaQuestionRepository,
-            TriviaSource.LORD_OF_THE_RINGS: self.__lotrTriviaQuestionsRepository,
+            TriviaSource.LORD_OF_THE_RINGS: self.__lotrTriviaQuestionRepository,
             TriviaSource.MILLIONAIRE: self.__millionaireTriviaQuestionRepository,
             TriviaSource.OPEN_TRIVIA_DATABASE: self.__openTriviaDatabaseTriviaQuestionRepository,
             TriviaSource.OPEN_TRIVIA_QA: self.__openTriviaQaTriviaQuestionRepository,
@@ -274,6 +272,9 @@ class TriviaRepository():
         if not await self.__isJokeTriviaQuestionRepositoryAvailable():
             currentlyInvalidTriviaSources.add(TriviaSource.JOKE_TRIVIA_REPOSITORY)
 
+        if not await self.__isLotrTriviaQuestionRepositoryAvailable():
+            currentlyInvalidTriviaSources.add(TriviaSource.LORD_OF_THE_RINGS)
+
         if not await self.__isQuizApiTriviaQuestionRepositoryAvailable():
             currentlyInvalidTriviaSources.add(TriviaSource.QUIZ_API)
 
@@ -294,6 +295,9 @@ class TriviaRepository():
 
     async def __isJokeTriviaQuestionRepositoryAvailable(self) -> bool:
         return self.__jokeTriviaQuestionRepository is not None
+
+    async def __isLotrTriviaQuestionRepositoryAvailable(self) -> bool:
+        return self.__lotrTriviaQuestionRepository is not None
 
     async def __isQuizApiTriviaQuestionRepositoryAvailable(self) -> bool:
         return self.__quizApiTriviaQuestionRepository is not None
