@@ -100,12 +100,12 @@ class TriviaRepository():
         openTriviaQaTriviaQuestionRepository: OpenTriviaQaTriviaQuestionRepository,
         timber: Timber,
         triviaDatabaseTriviaQuestionRepository: TriviaDatabaseTriviaQuestionRepository,
+        triviaSourceInstabilityDict: TriviaErrorDict,
         triviaSettingsRepository: TriviaSettingsRepository,
         triviaVerifier: TriviaVerifier,
         willFryTriviaQuestionRepository: WillFryTriviaQuestionRepository,
         wwtbamTriviaQuestionRepository: WwtbamTriviaQuestionRepository,
-        sleepTimeSeconds: float = 0.25,
-        triviaSourceInstabilityCooldown: timedelta = timedelta(minutes = 30)
+        sleepTimeSeconds: float = 0.25
     ):
         if bongoTriviaQuestionRepository is None:
             raise ValueError(f'bongoTriviaQuestionRepository argument is malformed: \"{bongoTriviaQuestionRepository}\"')
@@ -125,6 +125,8 @@ class TriviaRepository():
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif triviaDatabaseTriviaQuestionRepository is None:
             raise ValueError(f'triviaDatabaseTriviaQuestionRepository argument is malformed: \"{triviaDatabaseTriviaQuestionRepository}\"')
+        elif triviaSourceInstabilityDict is None:
+            raise ValueError(f'triviaSourceInstabilityDict argument is malformed: \"{triviaSourceInstabilityDict}\"')
         elif triviaSettingsRepository is None:
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
         elif triviaVerifier is None:
@@ -137,8 +139,6 @@ class TriviaRepository():
             raise ValueError(f'sleepTimeSeconds argument is malformed: \"{sleepTimeSeconds}\"')
         elif sleepTimeSeconds < 0.1 or sleepTimeSeconds > 3:
             raise ValueError(f'sleepTimeSeconds argument is out of bounds: {sleepTimeSeconds}')
-        elif triviaSourceInstabilityCooldown is None:
-            raise ValueError(f'triviaSourceInstabilityCooldown argument is malformed: \"{triviaSourceInstabilityCooldown}\"')
 
         self.__bongoTriviaQuestionRepository: AbsTriviaQuestionRepository = bongoTriviaQuestionRepository
         self.__funtoonTriviaQuestionRepository: AbsTriviaQuestionRepository = funtoonTriviaQuestionRepository
@@ -151,6 +151,7 @@ class TriviaRepository():
         self.__quizApiTriviaQuestionRepository: Optional[AbsTriviaQuestionRepository] = quizApiTriviaQuestionRepository
         self.__timber: Timber = timber
         self.__triviaDatabaseTriviaQuestionRepository: AbsTriviaQuestionRepository = triviaDatabaseTriviaQuestionRepository
+        self.__triviaSourceInstabilityDict: TriviaErrorDict = triviaSourceInstabilityDict
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
         self.__triviaVerifier: TriviaVerifier = triviaVerifier
         self.__willFryTriviaQuestionRepository: AbsTriviaQuestionRepository = willFryTriviaQuestionRepository
@@ -158,7 +159,6 @@ class TriviaRepository():
         self.__sleepTimeSeconds: float = sleepTimeSeconds
 
         self.__triviaSourceToRepositoryMap: Dict[TriviaSource, AbsTriviaQuestionRepository] = self.__createTriviaSourceToRepositoryMap()
-        self.__triviaSourceInstabilityDict: TriviaErrorDict = TriviaErrorDict(triviaSourceInstabilityCooldown)
 
     async def __chooseRandomTriviaSource(self, triviaFetchOptions: TriviaFetchOptions) -> AbsTriviaQuestionRepository:
         if triviaFetchOptions is None:
