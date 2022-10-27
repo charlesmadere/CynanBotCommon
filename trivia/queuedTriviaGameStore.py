@@ -39,11 +39,11 @@ class QueuedTriviaGameStore():
 
     async def addSuperGames(
         self,
-        isSuperTriviaGameInProgress: bool,
+        isSuperTriviaGameCurrentlyInProgress: bool,
         action: StartNewSuperTriviaGameAction
     ) -> AddQueuedGamesResult:
-        if not utils.isValidBool(isSuperTriviaGameInProgress):
-            raise ValueError(f'isSuperTriviaGameInProgress argument is malformed: \"{isSuperTriviaGameInProgress}\"')
+        if not utils.isValidBool(isSuperTriviaGameCurrentlyInProgress):
+            raise ValueError(f'isSuperTriviaGameCurrentlyInProgress argument is malformed: \"{isSuperTriviaGameCurrentlyInProgress}\"')
         elif action is None:
             raise ValueError(f'action argument is malformed: \"{action}\"')
 
@@ -70,7 +70,7 @@ class QueuedTriviaGameStore():
 
         numberOfGames = action.getNumberOfGames()
 
-        if not isSuperTriviaGameInProgress:
+        if not isSuperTriviaGameCurrentlyInProgress:
             numberOfGames = numberOfGames - 1
 
             if numberOfGames < 1:
