@@ -258,7 +258,9 @@ class TriviaRepository():
 
         if not triviaFetchOptions.areQuestionAnswerTriviaQuestionsEnabled():
             for triviaSource, triviaQuestionRepository in self.__triviaSourceToRepositoryMap.items():
-                if TriviaType.QUESTION_ANSWER in triviaQuestionRepository.getSupportedTriviaTypes():
+                if triviaQuestionRepository is None:
+                    continue
+                elif TriviaType.QUESTION_ANSWER in triviaQuestionRepository.getSupportedTriviaTypes():
                     currentlyInvalidTriviaSources.add(triviaSource)
 
         if not triviaFetchOptions.isJokeTriviaRepositoryEnabled():
@@ -266,7 +268,9 @@ class TriviaRepository():
 
         if triviaFetchOptions.requireQuestionAnswerTriviaQuestion():
             for triviaSource, triviaQuestionRepository in self.__triviaSourceToRepositoryMap.items():
-                if TriviaType.QUESTION_ANSWER not in triviaQuestionRepository.getSupportedTriviaTypes():
+                if triviaQuestionRepository is None:
+                    continue
+                elif TriviaType.QUESTION_ANSWER not in triviaQuestionRepository.getSupportedTriviaTypes():
                     currentlyInvalidTriviaSources.add(triviaSource)
 
         if not await self.__isJokeTriviaQuestionRepositoryAvailable():
