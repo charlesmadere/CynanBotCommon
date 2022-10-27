@@ -33,20 +33,23 @@ class TriviaEmoteGenerator():
         emotesDict['🧮'] = None
         emotesDict['👽'] = None
         emotesDict['🎒'] = None
+        emotesDict['🍌'] = None
         emotesDict['📚'] = None
         emotesDict['🚌'] = None
         emotesDict['🖍️'] = None
         emotesDict['🧬'] = None
-        emotesDict['📓'] = None
-        emotesDict['📒'] = None
-        emotesDict['📎'] = None
-        emotesDict['📏'] = None
-        emotesDict['🍎'] = None
         emotesDict['🧐'] = None
+        emotesDict['🍏'] = None
+        emotesDict['📒'] = None
         emotesDict['🤓'] = None
+        emotesDict['📓'] = None
+        emotesDict['📎'] = None
+        emotesDict['🍎'] = None
+        emotesDict['📏'] = None
         emotesDict['✏️'] = None
         emotesDict['🏫'] = None
         emotesDict['🤔'] = None
+        emotesDict['📐'] = None
 
         # Disabling the following emotes for now as the code for normalizing against these has
         # proven to be very unreliable and frustrating. However, in the long run, I think it would
