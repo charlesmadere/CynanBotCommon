@@ -447,6 +447,9 @@ class TriviaGameMachine():
                 twitchChannel = action.getTwitchChannel()
             ))
 
+        if isSuperTriviaGameCurrentlyInProgress:
+            return
+
         triviaQuestion: Optional[AbsTriviaQuestion] = None
         try:
             triviaQuestion = await self.__triviaRepository.fetchTrivia(action.getTriviaFetchOptions())
