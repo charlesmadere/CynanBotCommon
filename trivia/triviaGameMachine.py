@@ -57,6 +57,7 @@ try:
     from CynanBotCommon.trivia.triviaAnswerChecker import TriviaAnswerChecker
     from CynanBotCommon.trivia.triviaAnswerCheckResult import \
         TriviaAnswerCheckResult
+    from CynanBotCommon.trivia.triviaEventListener import TriviaEventListener
     from CynanBotCommon.trivia.triviaExceptions import (
         TooManyTriviaFetchAttemptsException, UnknownTriviaActionTypeException,
         UnknownTriviaGameTypeException)
@@ -113,6 +114,7 @@ except:
     from trivia.triviaActionType import TriviaActionType
     from trivia.triviaAnswerChecker import TriviaAnswerChecker
     from trivia.triviaAnswerCheckResult import TriviaAnswerCheckResult
+    from trivia.triviaEventListener import TriviaEventListener
     from trivia.triviaExceptions import (TooManyTriviaFetchAttemptsException,
                                          UnknownTriviaActionTypeException,
                                          UnknownTriviaGameTypeException)
@@ -165,7 +167,7 @@ class TriviaGameMachine():
         self.__triviaScoreRepository: TriviaScoreRepository = triviaScoreRepository
         self.__sleepTimeSeconds: float = sleepTimeSeconds
 
-        self.__eventListener = None
+        self.__eventListener: Optional[TriviaEventListener] = None
         self.__actionQueue: SimpleQueue[AbsTriviaAction] = SimpleQueue()
         self.__eventQueue: SimpleQueue[AbsTriviaEvent] = SimpleQueue()
         eventLoop.create_task(self.__startActionLoop())
@@ -526,7 +528,7 @@ class TriviaGameMachine():
             else:
                 raise UnknownTriviaGameTypeException(f'Unknown TriviaGameType (gameId=\"{state.getGameId()}\") (twitchChannel=\"{state.getTwitchChannel()}\"): \"{state.getTriviaGameType()}\"')
 
-    def setEventListener(self, listener):
+    def setEventListener(self, listener: Optional[TriviaEventListener]):
         self.__eventListener = listener
 
     async def __startActionLoop(self):
@@ -561,7 +563,7 @@ class TriviaGameMachine():
                 try:
                     while not self.__eventQueue.empty():
                         event = self.__eventQueue.get_nowait()
-                        await eventListener(event)
+                        await eventListener.onNewTriviaEvent(event)
                 except queue.Empty as e:
                     self.__timber.log('TriviaGameMachine', f'Encountered queue.Empty when looping through events (queue size: {self.__eventQueue.qsize()}): {repr(e)}')
                 except Exception as e:
