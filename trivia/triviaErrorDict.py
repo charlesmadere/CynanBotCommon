@@ -10,7 +10,7 @@ except:
 
 class TriviaErrorDict():
 
-    def __init__(self, fallOffTimeDelta: timedelta):
+    def __init__(self, fallOffTimeDelta: timedelta = timedelta(hours = 1)):
         if fallOffTimeDelta is None:
             raise ValueError(f'fallOffTimeDelta argument is malformed: \"{fallOffTimeDelta}\"')
 
