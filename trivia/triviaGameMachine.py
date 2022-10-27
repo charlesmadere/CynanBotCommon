@@ -427,10 +427,10 @@ class TriviaGameMachine():
 
         now = datetime.now(timezone.utc)
         state = await self.__triviaGameStore.getSuperGame(action.getTwitchChannel())
-        isSuperTriviaGameInProgress = state is not None and state.getEndTime() >= now
+        isSuperTriviaGameCurrentlyInProgress = state is not None and state.getEndTime() >= now
 
         queueResult = await self.__queuedTriviaGameStore.addSuperGames(
-            isSuperTriviaGameInProgress = isSuperTriviaGameInProgress,
+            isSuperTriviaGameCurrentlyInProgress = isSuperTriviaGameCurrentlyInProgress,
             action = action
         )
 
