@@ -156,7 +156,7 @@ class TriviaRepository():
         self.__wwtbamTriviaQuestionRepository: AbsTriviaQuestionRepository = wwtbamTriviaQuestionRepository
         self.__sleepTimeSeconds: float = sleepTimeSeconds
 
-        self.__triviaSourceToRepositoryMap: Dict[TriviaSource, AbsTriviaQuestionRepository] = self.__createTriviaSourceToRepositoryMap()
+        self.__triviaSourceToRepositoryMap: Dict[TriviaSource, Optional[AbsTriviaQuestionRepository]] = self.__createTriviaSourceToRepositoryMap()
 
     async def __chooseRandomTriviaSource(self, triviaFetchOptions: TriviaFetchOptions) -> AbsTriviaQuestionRepository:
         if triviaFetchOptions is None:
@@ -190,8 +190,8 @@ class TriviaRepository():
         randomlyChosenTriviaSource = randomChoices[0]
         return self.__triviaSourceToRepositoryMap[randomlyChosenTriviaSource]
 
-    def __createTriviaSourceToRepositoryMap(self) -> Dict[TriviaSource, AbsTriviaQuestionRepository]:
-        triviaSourceToRepositoryMap: Dict[TriviaSource, AbsTriviaQuestionRepository] = {
+    def __createTriviaSourceToRepositoryMap(self) -> Dict[TriviaSource, Optional[AbsTriviaQuestionRepository]]:
+        triviaSourceToRepositoryMap: Dict[TriviaSource, Optional[AbsTriviaQuestionRepository]] = {
             TriviaSource.BONGO: self.__bongoTriviaQuestionRepository,
             TriviaSource.FUNTOON: self.__funtoonTriviaQuestionRepository,
             TriviaSource.JOKE_TRIVIA_REPOSITORY: self.__jokeTriviaQuestionRepository,
