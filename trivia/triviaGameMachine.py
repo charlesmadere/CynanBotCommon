@@ -370,12 +370,11 @@ class TriviaGameMachine():
         elif action.getTriviaActionType() is not TriviaActionType.START_NEW_GAME:
             raise RuntimeError(f'TriviaActionType is not {TriviaActionType.START_NEW_GAME}: \"{action.getTriviaActionType()}\"')
 
+        now = datetime.now(timezone.utc)
         state = await self.__triviaGameStore.getNormalGame(
             twitchChannel = action.getTwitchChannel(),
             userName = action.getUserName()
         )
-
-        now = datetime.now(timezone.utc)
 
         if state is not None and state.getEndTime() >= now:
             self.__eventQueue.put(GameAlreadyInProgressTriviaEvent(
