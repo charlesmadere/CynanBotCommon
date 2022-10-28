@@ -92,7 +92,7 @@ class TriviaRepository():
         bongoTriviaQuestionRepository: BongoTriviaQuestionRepository,
         funtoonTriviaQuestionRepository: FuntoonTriviaQuestionRepository,
         jokeTriviaQuestionRepository: Optional[JokeTriviaQuestionRepository],
-        jServiceTriviaQuestionRepository: JServiceTriviaQuestionRepository,
+        jServiceTriviaQuestionRepository: Optional[JServiceTriviaQuestionRepository],
         lotrTriviaQuestionRepository: Optional[LotrTriviaQuestionRepository],
         millionaireTriviaQuestionRepository: MillionaireTriviaQuestionRepository,
         quizApiTriviaQuestionRepository: Optional[QuizApiTriviaQuestionRepository],
@@ -105,14 +105,12 @@ class TriviaRepository():
         triviaVerifier: TriviaVerifier,
         willFryTriviaQuestionRepository: WillFryTriviaQuestionRepository,
         wwtbamTriviaQuestionRepository: WwtbamTriviaQuestionRepository,
-        sleepTimeSeconds: float = 0.25
+        sleepTimeSeconds: float = 0.5
     ):
         if bongoTriviaQuestionRepository is None:
             raise ValueError(f'bongoTriviaQuestionRepository argument is malformed: \"{bongoTriviaQuestionRepository}\"')
         elif funtoonTriviaQuestionRepository is None:
             raise ValueError(f'funtoonTriviaQuestionRepository argument is malformed: \"{funtoonTriviaQuestionRepository}\"')
-        elif jServiceTriviaQuestionRepository is None:
-            raise ValueError(f'jServiceTriviaQuestionRepository argument is malformed: \"{jServiceTriviaQuestionRepository}\"')
         elif millionaireTriviaQuestionRepository is None:
             raise ValueError(f'millionaireTriviaQuestionRepository argument is malformed: \"{millionaireTriviaQuestionRepository}\"')
         elif openTriviaDatabaseTriviaQuestionRepository is None:
@@ -135,13 +133,13 @@ class TriviaRepository():
             raise ValueError(f'wwtbamTriviaQuestionRepository argument is malformed: \"{wwtbamTriviaQuestionRepository}\"')
         elif not utils.isValidNum(sleepTimeSeconds):
             raise ValueError(f'sleepTimeSeconds argument is malformed: \"{sleepTimeSeconds}\"')
-        elif sleepTimeSeconds < 0.1 or sleepTimeSeconds > 3:
+        elif sleepTimeSeconds < 0.25 or sleepTimeSeconds > 3:
             raise ValueError(f'sleepTimeSeconds argument is out of bounds: {sleepTimeSeconds}')
 
         self.__bongoTriviaQuestionRepository: AbsTriviaQuestionRepository = bongoTriviaQuestionRepository
         self.__funtoonTriviaQuestionRepository: AbsTriviaQuestionRepository = funtoonTriviaQuestionRepository
         self.__jokeTriviaQuestionRepository: Optional[AbsTriviaQuestionRepository] = jokeTriviaQuestionRepository
-        self.__jServiceTriviaQuestionRepository: AbsTriviaQuestionRepository = jServiceTriviaQuestionRepository
+        self.__jServiceTriviaQuestionRepository: Optional[AbsTriviaQuestionRepository] = jServiceTriviaQuestionRepository
         self.__lotrTriviaQuestionRepository: Optional[AbsTriviaQuestionRepository] = lotrTriviaQuestionRepository
         self.__millionaireTriviaQuestionRepository: AbsTriviaQuestionRepository = millionaireTriviaQuestionRepository
         self.__openTriviaDatabaseTriviaQuestionRepository: AbsTriviaQuestionRepository = openTriviaDatabaseTriviaQuestionRepository
@@ -254,27 +252,31 @@ class TriviaRepository():
         if triviaFetchOptions is None:
             raise ValueError(f'triviaFetchOptions argument is malformed: \"{triviaFetchOptions}\"')
 
+        availableTriviaSourcesMap: Dict[TriviaSource, AbsTriviaQuestionRepository] = dict()
+        for triviaSource, triviaQuestionRepository in self.__triviaSourceToRepositoryMap.items():
+            if triviaQuestionRepository is not None:
+                availableTriviaSourcesMap[triviaSource] = triviaQuestionRepository
+
         currentlyInvalidTriviaSources: Set[TriviaSource] = set()
 
         if not triviaFetchOptions.areQuestionAnswerTriviaQuestionsEnabled():
-            for triviaSource, triviaQuestionRepository in self.__triviaSourceToRepositoryMap.items():
-                if triviaQuestionRepository is None:
-                    continue
-                elif TriviaType.QUESTION_ANSWER in triviaQuestionRepository.getSupportedTriviaTypes():
+            for triviaSource, triviaQuestionRepository in availableTriviaSourcesMap.items():
+                if TriviaType.QUESTION_ANSWER in triviaQuestionRepository.getSupportedTriviaTypes():
                     currentlyInvalidTriviaSources.add(triviaSource)
 
         if not triviaFetchOptions.isJokeTriviaRepositoryEnabled():
             currentlyInvalidTriviaSources.add(TriviaSource.JOKE_TRIVIA_REPOSITORY)
 
         if triviaFetchOptions.requireQuestionAnswerTriviaQuestion():
-            for triviaSource, triviaQuestionRepository in self.__triviaSourceToRepositoryMap.items():
-                if triviaQuestionRepository is None:
-                    continue
-                elif TriviaType.QUESTION_ANSWER not in triviaQuestionRepository.getSupportedTriviaTypes():
+            for triviaSource, triviaQuestionRepository in availableTriviaSourcesMap.items():
+                if TriviaType.QUESTION_ANSWER not in triviaQuestionRepository.getSupportedTriviaTypes():
                     currentlyInvalidTriviaSources.add(triviaSource)
 
         if not await self.__isJokeTriviaQuestionRepositoryAvailable():
             currentlyInvalidTriviaSources.add(TriviaSource.JOKE_TRIVIA_REPOSITORY)
+
+        if not await self.__isJServiceTriviaQuestionRepositoryAvailable():
+            currentlyInvalidTriviaSources.add(TriviaSource.J_SERVICE)
 
         if not await self.__isLotrTriviaQuestionRepositoryAvailable():
             currentlyInvalidTriviaSources.add(TriviaSource.LORD_OF_THE_RINGS)
@@ -299,6 +301,9 @@ class TriviaRepository():
 
     async def __isJokeTriviaQuestionRepositoryAvailable(self) -> bool:
         return self.__jokeTriviaQuestionRepository is not None
+
+    async def __isJServiceTriviaQuestionRepositoryAvailable(self) -> bool:
+        return self.__jServiceTriviaQuestionRepository is not None
 
     async def __isLotrTriviaQuestionRepositoryAvailable(self) -> bool:
         return self.__lotrTriviaQuestionRepository is not None
