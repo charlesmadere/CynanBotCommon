@@ -374,6 +374,8 @@ class TriviaAnswerChecker():
                 yield 'parkway'
             if word == 'pl':
                 yield 'place'
+            if word == 'px':
+                yield 'post exchange'
             if word == 'rd':
                 yield 'road'
             if word in ('riv', 'rvr', 'rivr'):
@@ -411,6 +413,35 @@ class TriviaAnswerChecker():
             if word == 'se':
                 yield 'southeast'
 
+            # weird latin things
+            if word == 'eg':
+                yield 'exempli gratia'
+            if word == 'ie':
+                yield 'id est'
+                yield 'in other words'
+
+            # technology
+            if word == 'ff':
+                yield 'firefox'
+            if word == 'goog':
+                yield 'google'
+            if word == 'ie':
+                yield 'internet explorer'
+            if word == 'http':
+                yield 'hypertext transfer protocol'
+            if word == 'https':
+                yield 'hypertext transfer protocol secure'
+            if word == 'ms':
+                yield 'microsoft'
+            if word == 'px':
+                yield 'pixel'
+            if word == 'rgb':
+                yield 'red green blue'
+            if word == 'url':
+                yield 'uniform resource locator'
+            if word == 'www':
+                yield 'world wide web'
+
             # other
             if word == 'dept':
                 yield 'department'
@@ -422,5 +453,3 @@ class TriviaAnswerChecker():
                 yield 'world record'
             if word == 'ww':
                 yield 'world war'
-            if word == 'www':
-                yield 'world wide web'
