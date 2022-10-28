@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Set
 
 import aiosqlite
 
@@ -82,15 +82,15 @@ class LotrTriviaQuestionRepository(AbsTriviaQuestionRepository):
         correctAnswers = await self.__triviaQuestionCompiler.compileResponses(triviaDict['correctAnswers'])
         cleanedCorrectAnswers = await self.__triviaAnswerCompiler.compileTextAnswersList(triviaDict['correctAnswers'])
 
-        expandedCorrectAnswers: List[str] = list()
+        expandedCorrectAnswers: Set[str] = set()
         for answer in cleanedCorrectAnswers:
-            expandedCorrectAnswers.extend(await self.__triviaAnswerCompiler.expandNumerals(answer))
+            expandedCorrectAnswers.update(await self.__triviaAnswerCompiler.expandNumerals(answer))
 
         emote = await self.__triviaEmoteGenerator.getNextEmoteFor(twitchChannel)
 
         return QuestionAnswerTriviaQuestion(
             correctAnswers = correctAnswers,
-            cleanedCorrectAnswers = expandedCorrectAnswers,
+            cleanedCorrectAnswers = list(expandedCorrectAnswers),
             category = 'Lord of the Rings',
             categoryId = None,
             emote = emote,
