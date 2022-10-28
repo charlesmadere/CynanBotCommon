@@ -46,12 +46,12 @@ class WordOfTheDayRepository():
         elif not languageEntry.hasWotdApiCode():
             raise ValueError(f'the given languageEntry is not supported for Word Of The Day: \"{languageEntry.getName()}\"')
 
-        cacheValue = self.__cache[languageEntry]
+        cacheValue = self.__cache[languageEntry.getName()]
         if cacheValue is not None:
             return cacheValue
 
         wotd = await self.__fetchWotd(languageEntry)
-        self.__cache[languageEntry] = wotd
+        self.__cache[languageEntry.getName()] = wotd
 
         return wotd
 
