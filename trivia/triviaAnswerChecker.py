@@ -154,19 +154,19 @@ class TriviaAnswerChecker():
         elif triviaQuestion.getTriviaType() is not TriviaType.QUESTION_ANSWER:
             raise RuntimeError(f'TriviaType is not {TriviaType.QUESTION_ANSWER}: \"{triviaQuestion.getTriviaType()}\"')
 
-        cleanedAnswers = await self.__triviaAnswerCompiler.compileTextAnswersList([answer], False)
+        cleanedAnswers = await self.__triviaAnswerCompiler.compileTextAnswersList([ answer ], False)
 
         if not all(utils.isValidStr(cleanedAnswer) for cleanedAnswer in cleanedAnswers):
             return TriviaAnswerCheckResult.INCORRECT
 
-        correctAnswers = triviaQuestion.getCorrectAnswers()
         cleanedCorrectAnswers = triviaQuestion.getCleanedCorrectAnswers()
-
-        self.__timber.log('TriviaAnswerChecker', f'answer:\"{answer}\", cleanedAnswers:\"{cleanedAnswers}\", correctAnswers:\"{correctAnswers}\", cleanedCorrectAnswers:\"{cleanedCorrectAnswers}\", extras:\"{extras}\"')
+        self.__timber.log('TriviaAnswerChecker', f'answer:\"{answer}\", cleanedAnswers:\"{cleanedAnswers}\", correctAnswers:\"{triviaQuestion.getCorrectAnswers()}\", cleanedCorrectAnswers:\"{cleanedCorrectAnswers}\", extras:\"{extras}\"')
 
         for cleanedCorrectAnswer in cleanedCorrectAnswers:
             for cleanedAnswer in cleanedAnswers:
-                for guess in await self.__triviaAnswerCompiler.expandNumerals(cleanedAnswer):
+                expandedGuesses = await self.__triviaAnswerCompiler.expandNumerals(cleanedAnswer)
+
+                for guess in expandedGuesses:
                     if guess == cleanedCorrectAnswer:
                         return TriviaAnswerCheckResult.CORRECT
 
