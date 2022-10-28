@@ -1,5 +1,5 @@
 from asyncio import TimeoutError
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Set
 
 import aiohttp
 
@@ -145,15 +145,15 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
             cleanedCorrectAnswers.append(utils.getStrFromDict(triviaJson, 'answer'))
             cleanedCorrectAnswers = await self.__triviaAnswerCompiler.compileTextAnswersList(cleanedCorrectAnswers)
 
-            expandedCorrectAnswers: List[str] = list()
+            expandedCorrectAnswers: Set[str] = set()
             for answer in cleanedCorrectAnswers:
-                expandedCorrectAnswers.extend(await self.__triviaAnswerCompiler.expandNumerals(answer))
+                expandedCorrectAnswers.update(await self.__triviaAnswerCompiler.expandNumerals(answer))
 
             emote = await self.__triviaEmoteGenerator.getNextEmoteFor(twitchChannel)
 
             questions.append(QuestionAnswerTriviaQuestion(
                 correctAnswers = correctAnswers,
-                cleanedCorrectAnswers = expandedCorrectAnswers,
+                cleanedCorrectAnswers = list(expandedCorrectAnswers),
                 category = category,
                 categoryId = None,
                 emote = emote,

@@ -1,5 +1,5 @@
 from asyncio import TimeoutError
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Set
 
 import aiohttp
 
@@ -119,9 +119,9 @@ class FuntoonTriviaQuestionRepository(AbsTriviaQuestionRepository):
         cleanedCorrectAnswers.append(utils.getStrFromDict(jsonResponse, 'answer'))
         cleanedCorrectAnswers = await self.__triviaAnswerCompiler.compileTextAnswersList(cleanedCorrectAnswers)
 
-        expandedCorrectAnswers: List[str] = list()
+        expandedCorrectAnswers: Set[str] = set()
         for answer in cleanedCorrectAnswers:
-            expandedCorrectAnswers.extend(await self.__triviaAnswerCompiler.expandNumerals(answer))
+            expandedCorrectAnswers.update(await self.__triviaAnswerCompiler.expandNumerals(answer))
 
         # TODO In the future, we will also check some additional fields (`formatted_answer` and
         # `format_type`). These will assist in providing computer-readable answer logic.
@@ -130,7 +130,7 @@ class FuntoonTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         return QuestionAnswerTriviaQuestion(
             correctAnswers = correctAnswers,
-            cleanedCorrectAnswers = expandedCorrectAnswers,
+            cleanedCorrectAnswers = list(expandedCorrectAnswers),
             category = category,
             categoryId = categoryId,
             emote = emote,
