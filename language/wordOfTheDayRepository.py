@@ -40,6 +40,9 @@ class WordOfTheDayRepository():
         self.__timber: Timber = timber
         self.__cache: TimedDict = TimedDict(timeDelta = cacheTimeDelta)
 
+    async def clearCaches(self):
+        self.__cache.clear()
+
     async def fetchWotd(self, languageEntry: LanguageEntry) -> WordOfTheDayResponse:
         if languageEntry is None:
             raise ValueError(f'languageEntry argument is malformed: \"{languageEntry}\"')
