@@ -51,14 +51,14 @@ class QueuedTriviaGameStore():
         queuedSuperGames = self.__queuedSuperGames[twitchChannel]
         oldQueueSize = queuedSuperGames.qsize()
 
-        if not action.hasNumberOfGames() or action.isNumberOfGamesConsumed():
+        if action.isQueueActionConsumed():
             return AddQueuedGamesResult(
                 amountAdded = 0,
                 newQueueSize = oldQueueSize,
                 oldQueueSize = oldQueueSize
             )
 
-        action.consumeNumberOfGames()
+        action.consumeQueueAction()
         maxSuperGameQueueSize = await self.__triviaSettingsRepository.getMaxSuperGameQueueSize()
 
         if maxSuperGameQueueSize < 1:

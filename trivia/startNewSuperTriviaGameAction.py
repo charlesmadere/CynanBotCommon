@@ -1,5 +1,4 @@
 import locale
-from typing import Optional
 
 try:
     import CynanBotCommon.utils as utils
@@ -18,17 +17,24 @@ class StartNewSuperTriviaGameAction(AbsTriviaAction):
 
     def __init__(
         self,
+        isQueueActionConsumed: bool,
+        numberOfGames: int,
         perUserAttempts: int,
         pointsForWinning: int,
         pointsMultiplier: int,
         secondsToLive: int,
         twitchChannel: str,
-        triviaFetchOptions: TriviaFetchOptions,
-        numberOfGames: Optional[int] = None
+        triviaFetchOptions: TriviaFetchOptions
     ):
         super().__init__(triviaActionType = TriviaActionType.START_NEW_SUPER_GAME)
 
-        if not utils.isValidNum(perUserAttempts):
+        if not utils.isValidBool(isQueueActionConsumed):
+            raise ValueError(f'isQueueActionConsumed argument is malformed: \"{isQueueActionConsumed}\"')
+        elif not utils.isValidNum(numberOfGames):
+            raise ValueError(f'numberOfGames argument is malformed: \"{numberOfGames}\"')
+        elif numberOfGames < 1 or numberOfGames > utils.getIntMaxSafeSize():
+            raise ValueError(f'numberOfGames argument is out of bounds: {numberOfGames}')
+        elif not utils.isValidNum(perUserAttempts):
             raise ValueError(f'perUserAttempts argument is malformed: \"{perUserAttempts}\"')
         elif perUserAttempts < 1 or perUserAttempts > 5:
             raise ValueError(f'perUserAttempts argument is out of bounds: {perUserAttempts}')
@@ -48,23 +54,18 @@ class StartNewSuperTriviaGameAction(AbsTriviaAction):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
         elif triviaFetchOptions is None:
             raise ValueError(f'triviaFetchOptions argument is malformed: \"{triviaFetchOptions}\"')
-        elif numberOfGames is not None:
-            if not utils.isValidNum(numberOfGames):
-                raise ValueError(f'numberOfGames argument is malformed: \"{numberOfGames}\"')
-            elif numberOfGames < 1 or numberOfGames > utils.getIntMaxSafeSize():
-                raise ValueError(f'numberOfGames argument is out of bounds: {numberOfGames}')
 
+        self.__isQueueActionConsumed: bool = isQueueActionConsumed
+        self.__numberOfGames: int = numberOfGames
         self.__perUserAttempts: int = perUserAttempts
         self.__pointsForWinning: int = pointsForWinning
         self.__pointsMultiplier: int = pointsMultiplier
         self.__secondsToLive: int = secondsToLive
         self.__twitchChannel: str = twitchChannel
         self.__triviaFetchOptions: TriviaFetchOptions = triviaFetchOptions
-        self.__numberOfGames: Optional[int] = numberOfGames
-        self.__isNumberOfGamesConsumed: bool = False
 
-    def consumeNumberOfGames(self):
-        self.__isNumberOfGamesConsumed = True
+    def consumeQueueAction(self):
+        self.__isQueueActionConsumed = True
 
     def getNumberOfGames(self) -> int:
         return self.__numberOfGames
@@ -99,8 +100,5 @@ class StartNewSuperTriviaGameAction(AbsTriviaAction):
     def getTwitchChannel(self) -> str:
         return self.__twitchChannel
 
-    def hasNumberOfGames(self) -> bool:
-        return utils.isValidNum(self.__numberOfGames) and self.__numberOfGames >= 1
-
-    def isNumberOfGamesConsumed(self) -> bool:
-        return self.__isNumberOfGamesConsumed
+    def isQueueActionConsumed(self) -> bool:
+        return self.__isQueueActionConsumed
