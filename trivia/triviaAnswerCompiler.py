@@ -17,7 +17,7 @@ class TriviaAnswerCompiler():
 
     def __init__(self):
         self.__ampersandRegEx: Pattern = re.compile(r'(^&\s+)|(\s+&\s+)|(\s+&$)', re.IGNORECASE)
-        self.__decadeRegEx: Pattern = re.compile(r'\d{4}\'?s', re.IGNORECASE)
+        self.__decadeRegEx: Pattern = re.compile(r'(\d{4})\'?s', re.IGNORECASE)
         self.__multipleChoiceAnswerRegEx: Pattern = re.compile(r'[a-z]', re.IGNORECASE)
         self.__newLineRegEx: Pattern = re.compile(r'(\n)+', re.IGNORECASE)
         self.__parenGroupRegEx: Pattern = re.compile(r'(\(.*?\))', re.IGNORECASE)
@@ -103,8 +103,9 @@ class TriviaAnswerCompiler():
 
         # Special case: check for an answer that is all digits except for an ending "s" character.
         # If this is the case, remove the ending "s" character.
-        if self.__decadeRegEx.fullmatch(answer) is not None:
-            answer = answer[0:len(answer) - 1]
+        decadeRegExMatch = self.__decadeRegEx.fullmatch(answer)
+        if decadeRegExMatch is not None:
+            answer = decadeRegExMatch.group(1)
 
         return answer
 
