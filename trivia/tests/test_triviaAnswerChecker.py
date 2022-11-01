@@ -242,11 +242,11 @@ class TestTriviaAnswerChecker():
     @pytest.mark.asyncio
     async def test_checkAnswer_withQuestionAnswerQuestion_withDecades(self):
         with mock.patch.object(TriviaSettingsRepository, '_TriviaSettingsRepository__readJson', mockSettingsJSON):
+            correctAnswer = await self.triviaAnswerCompiler.compileTextAnswer('1950s')
+
             question: AbsTriviaQuestion = QuestionAnswerTriviaQuestion(
-                correctAnswers=['1950s'],
-                cleanedCorrectAnswers=[
-                    'one thousand nine hundred fifty'
-                ],
+                correctAnswers=[correctAnswer],
+                cleanedCorrectAnswers=await self.triviaAnswerCompiler.expandNumerals(correctAnswer),
                 category='Test Category',
                 categoryId=None,
                 emote = '🏫',
