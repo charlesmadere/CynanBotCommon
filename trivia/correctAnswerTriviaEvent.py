@@ -19,6 +19,7 @@ class CorrectAnswerTriviaEvent(AbsTriviaEvent):
         self,
         triviaQuestion: AbsTriviaQuestion,
         pointsForWinning: int,
+        actionId: str,
         answer: str,
         gameId: str,
         twitchChannel: str,
@@ -26,7 +27,10 @@ class CorrectAnswerTriviaEvent(AbsTriviaEvent):
         userName: str,
         triviaScoreResult: TriviaScoreResult
     ):
-        super().__init__(triviaEventType = TriviaEventType.CORRECT_ANSWER)
+        super().__init__(
+            actionId = actionId,
+            triviaEventType = TriviaEventType.CORRECT_ANSWER
+        )
 
         if triviaQuestion is None:
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')

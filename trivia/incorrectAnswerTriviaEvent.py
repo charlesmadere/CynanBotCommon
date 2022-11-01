@@ -18,6 +18,7 @@ class IncorrectAnswerTriviaEvent(AbsTriviaEvent):
     def __init__(
         self,
         triviaQuestion: AbsTriviaQuestion,
+        actionId: str,
         answer: str,
         gameId: str,
         twitchChannel: str,
@@ -25,7 +26,10 @@ class IncorrectAnswerTriviaEvent(AbsTriviaEvent):
         userName: str,
         triviaScoreResult: TriviaScoreResult
     ):
-        super().__init__(triviaEventType = TriviaEventType.INCORRECT_ANSWER)
+        super().__init__(
+            actionId = actionId,
+            triviaEventType = TriviaEventType.INCORRECT_ANSWER
+        )
 
         if triviaQuestion is None:
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')

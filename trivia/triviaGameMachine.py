@@ -37,10 +37,6 @@ try:
     from CynanBotCommon.trivia.newSuperTriviaGameEvent import \
         NewSuperTriviaGameEvent
     from CynanBotCommon.trivia.newTriviaGameEvent import NewTriviaGameEvent
-    from CynanBotCommon.trivia.outOfTimeCheckAnswerTriviaEvent import \
-        OutOfTimeCheckAnswerTriviaEvent
-    from CynanBotCommon.trivia.outOfTimeCheckSuperAnswerTriviaEvent import \
-        OutOfTimeCheckSuperAnswerTriviaEvent
     from CynanBotCommon.trivia.outOfTimeSuperTriviaEvent import \
         OutOfTimeSuperTriviaEvent
     from CynanBotCommon.trivia.outOfTimeTriviaEvent import OutOfTimeTriviaEvent
@@ -53,6 +49,10 @@ try:
     from CynanBotCommon.trivia.superGameNotReadyCheckAnswerTriviaEvent import \
         SuperGameNotReadyCheckAnswerTriviaEvent
     from CynanBotCommon.trivia.superTriviaGameState import SuperTriviaGameState
+    from CynanBotCommon.trivia.tooLateToAnswerCheckAnswerTriviaEvent import \
+        TooLateToAnswerCheckAnswerTriviaEvent
+    from CynanBotCommon.trivia.tooLateToAnswerCheckSuperAnswerTriviaEvent import \
+        TooLateToAnswerCheckSuperAnswerTriviaEvent
     from CynanBotCommon.trivia.triviaActionType import TriviaActionType
     from CynanBotCommon.trivia.triviaAnswerChecker import TriviaAnswerChecker
     from CynanBotCommon.trivia.triviaAnswerCheckResult import \
@@ -98,10 +98,6 @@ except:
         NewQueuedSuperTriviaGameEvent
     from trivia.newSuperTriviaGameEvent import NewSuperTriviaGameEvent
     from trivia.newTriviaGameEvent import NewTriviaGameEvent
-    from trivia.outOfTimeCheckAnswerTriviaEvent import \
-        OutOfTimeCheckAnswerTriviaEvent
-    from trivia.outOfTimeCheckSuperAnswerTriviaEvent import \
-        OutOfTimeCheckSuperAnswerTriviaEvent
     from trivia.outOfTimeSuperTriviaEvent import OutOfTimeSuperTriviaEvent
     from trivia.outOfTimeTriviaEvent import OutOfTimeTriviaEvent
     from trivia.queuedTriviaGameStore import QueuedTriviaGameStore
@@ -111,6 +107,10 @@ except:
     from trivia.superGameNotReadyCheckAnswerTriviaEvent import \
         SuperGameNotReadyCheckAnswerTriviaEvent
     from trivia.superTriviaGameState import SuperTriviaGameState
+    from trivia.tooLateToAnswerCheckAnswerTriviaEvent import \
+        TooLateToAnswerCheckAnswerTriviaEvent
+    from trivia.tooLateToAnswerCheckSuperAnswerTriviaEvent import \
+        TooLateToAnswerCheckSuperAnswerTriviaEvent
     from trivia.triviaActionType import TriviaActionType
     from trivia.triviaAnswerChecker import TriviaAnswerChecker
     from trivia.triviaAnswerCheckResult import TriviaAnswerCheckResult
@@ -217,6 +217,7 @@ class TriviaGameMachine():
         if state.getUserId() != action.getUserId():
             self.__eventQueue.put(WrongUserCheckAnswerTriviaEvent(
                 triviaQuestion = state.getTriviaQuestion(),
+                actionId = action.getActionId(),
                 answer = action.getAnswer(),
                 gameId = state.getGameId(),
                 twitchChannel = action.getTwitchChannel(),
@@ -226,21 +227,37 @@ class TriviaGameMachine():
             return
 
         if state.getEndTime() < now:
-            self.__eventQueue.put(OutOfTimeCheckAnswerTriviaEvent(
+            await self.__triviaGameStore.removeNormalGame(
+                twitchChannel = action.getTwitchChannel(),
+                userName = action.getUserName()
+            )
+
+            triviaScoreResult = await self.__triviaScoreRepository.incrementTriviaLosses(
+                twitchChannel = action.getTwitchChannel(),
+                userId = action.getUserId()
+            )
+
+            self.__eventQueue.put(TooLateToAnswerCheckAnswerTriviaEvent(
                 triviaQuestion = state.getTriviaQuestion(),
+                actionId = action.getActionId(),
                 answer = action.getAnswer(),
                 gameId = state.getGameId(),
                 twitchChannel = action.getTwitchChannel(),
                 userId = action.getUserId(),
-                userName = action.getUserName()
+                userName = action.getUserName(),
+                triviaScoreResult = triviaScoreResult
             ))
             return
 
-        checkResult = await self.__checkAnswer(action.getAnswer(), state.getTriviaQuestion())
+        checkResult = await self.__checkAnswer(
+            answer = action.getAnswer(),
+            triviaQuestion = state.getTriviaQuestion()
+        )
 
         if checkResult is TriviaAnswerCheckResult.INVALID_INPUT:
             self.__eventQueue.put(InvalidAnswerInputTriviaEvent(
                 triviaQuestion = state.getTriviaQuestion(),
+                actionId = action.getActionId(),
                 answer = action.getAnswer(),
                 gameId = state.getGameId(),
                 twitchChannel = action.getTwitchChannel(),
@@ -262,6 +279,7 @@ class TriviaGameMachine():
 
             self.__eventQueue.put(IncorrectAnswerTriviaEvent(
                 triviaQuestion = state.getTriviaQuestion(),
+                actionId = action.getActionId(),
                 answer = action.getAnswer(),
                 gameId = state.getGameId(),
                 twitchChannel = action.getTwitchChannel(),
@@ -279,6 +297,7 @@ class TriviaGameMachine():
         self.__eventQueue.put(CorrectAnswerTriviaEvent(
             triviaQuestion = state.getTriviaQuestion(),
             pointsForWinning = state.getPointsForWinning(),
+            actionId = action.getActionId(),
             answer = action.getAnswer(),
             gameId = state.getGameId(),
             twitchChannel = action.getTwitchChannel(),
@@ -298,6 +317,7 @@ class TriviaGameMachine():
 
         if state is None:
             self.__eventQueue.put(SuperGameNotReadyCheckAnswerTriviaEvent(
+                actionId = action.getActionId(),
                 answer = action.getAnswer(),
                 twitchChannel = action.getTwitchChannel(),
                 userId = action.getUserId(),
@@ -306,8 +326,9 @@ class TriviaGameMachine():
             return
 
         if state.getEndTime() < now:
-            self.__eventQueue.put(OutOfTimeCheckSuperAnswerTriviaEvent(
+            self.__eventQueue.put(TooLateToAnswerCheckSuperAnswerTriviaEvent(
                 triviaQuestion = state.getTriviaQuestion(),
+                actionId = action.getActionId(),
                 answer = action.getAnswer(),
                 gameId = state.getGameId(),
                 twitchChannel = action.getTwitchChannel(),
@@ -337,6 +358,7 @@ class TriviaGameMachine():
         if checkResult is not TriviaAnswerCheckResult.CORRECT:
             self.__eventQueue.put(IncorrectSuperAnswerTriviaEvent(
                 triviaQuestion = state.getTriviaQuestion(),
+                actionId = action.getActionId(),
                 answer = action.getAnswer(),
                 gameId = state.getGameId(),
                 twitchChannel = action.getTwitchChannel(),
@@ -356,6 +378,7 @@ class TriviaGameMachine():
             triviaQuestion = state.getTriviaQuestion(),
             pointsForWinning = state.getPointsForWinning(),
             pointsMultiplier = state.getPointsMultiplier(),
+            actionId = action.getActionId(),
             answer = action.getAnswer(),
             gameId = state.getGameId(),
             twitchChannel = action.getTwitchChannel(),
@@ -379,13 +402,14 @@ class TriviaGameMachine():
         if state is not None and state.getEndTime() >= now:
             self.__eventQueue.put(GameAlreadyInProgressTriviaEvent(
                 gameId = state.getGameId(),
+                actionId = action.getActionId(),
                 twitchChannel = action.getTwitchChannel(),
                 userId = action.getUserId(),
                 userName = action.getUserName()
             ))
             return
 
-        triviaQuestion: AbsTriviaQuestion = None
+        triviaQuestion: Optional[AbsTriviaQuestion] = None
         try:
             triviaQuestion = await self.__triviaRepository.fetchTrivia(action.getTriviaFetchOptions())
         except TooManyTriviaFetchAttemptsException as e:
@@ -393,6 +417,7 @@ class TriviaGameMachine():
 
         if triviaQuestion is None:
             self.__eventQueue.put(FailedToFetchQuestionTriviaEvent(
+                actionId = action.getActionId(),
                 twitchChannel = action.getTwitchChannel(),
                 userId = action.getUserId(),
                 userName = action.getUserName()
@@ -403,6 +428,7 @@ class TriviaGameMachine():
             triviaQuestion = triviaQuestion,
             pointsForWinning = action.getPointsForWinning(),
             secondsToLive = action.getSecondsToLive(),
+            actionId = action.getActionId(),
             twitchChannel = action.getTwitchChannel(),
             userId = action.getUserId(),
             userName = action.getUserName()
@@ -414,6 +440,7 @@ class TriviaGameMachine():
             triviaQuestion = triviaQuestion,
             pointsForWinning = action.getPointsForWinning(),
             secondsToLive = action.getSecondsToLive(),
+            actionId = action.getActionId(),
             gameId = state.getGameId(),
             twitchChannel = action.getTwitchChannel(),
             userId = action.getUserId(),
@@ -443,6 +470,7 @@ class TriviaGameMachine():
                 pointsForWinning = action.getPointsForWinning(),
                 pointsMultiplier = action.getPointsMultiplier(),
                 secondsToLive = action.getSecondsToLive(),
+                actionId = action.getActionId(),
                 twitchChannel = action.getTwitchChannel()
             ))
 
@@ -457,6 +485,7 @@ class TriviaGameMachine():
 
         if triviaQuestion is None:
             self.__eventQueue.put(FailedToFetchQuestionSuperTriviaEvent(
+                actionId = action.getActionId(),
                 twitchChannel = action.getTwitchChannel()
             ))
             return
@@ -467,6 +496,7 @@ class TriviaGameMachine():
             pointsForWinning = action.getPointsForWinning(),
             pointsMultiplier = action.getPointsMultiplier(),
             secondsToLive = action.getSecondsToLive(),
+            actionId = action.getActionId(),
             twitchChannel = action.getTwitchChannel()
         )
 
@@ -477,6 +507,7 @@ class TriviaGameMachine():
             pointsForWinning = action.getPointsForWinning(),
             pointsMultiplier = action.getPointsMultiplier(),
             secondsToLive = action.getSecondsToLive(),
+            actionId = action.getActionId(),
             gameId = state.getGameId(),
             twitchChannel = action.getTwitchChannel(),
         ))
@@ -510,6 +541,7 @@ class TriviaGameMachine():
 
                 self.__eventQueue.put(OutOfTimeTriviaEvent(
                     triviaQuestion = normalGameState.getTriviaQuestion(),
+                    actionId = normalGameState.getActionId(),
                     gameId = normalGameState.getGameId(),
                     twitchChannel = normalGameState.getTwitchChannel(),
                     userId = normalGameState.getUserId(),
@@ -524,6 +556,7 @@ class TriviaGameMachine():
                     triviaQuestion = superGameState.getTriviaQuestion(),
                     pointsForWinning = superGameState.getPointsForWinning(),
                     pointsMultiplier = superGameState.getPointsMultiplier(),
+                    actionId = superGameState.getActionId(),
                     gameId = superGameState.getGameId(),
                     twitchChannel = superGameState.getTwitchChannel()
                 ))
@@ -550,9 +583,9 @@ class TriviaGameMachine():
                     else:
                         raise UnknownTriviaActionTypeException(f'Unknown TriviaActionType: \"{action.getTriviaActionType()}\"')
             except queue.Empty as e:
-                self.__timber.log('TriviaGameMachine', f'Encountered queue.Empty when looping through actions (queue size: {self.__actionQueue.qsize()}): {repr(e)}')
+                self.__timber.log('TriviaGameMachine', f'Encountered queue.Empty when looping through actions (queue size: {self.__actionQueue.qsize()}): {e}\n{repr(e)}')
             except Exception as e:
-                self.__timber.log('TriviaGameMachine', f'Encountered unknown Exception when looping through actions (queue size: {self.__actionQueue.qsize()}): {repr(e)}')
+                self.__timber.log('TriviaGameMachine', f'Encountered unknown Exception when looping through actions (queue size: {self.__actionQueue.qsize()}): {e}\n{repr(e)}')
 
             await self.__refreshStatusOfGames()
             await asyncio.sleep(self.__sleepTimeSeconds)
@@ -567,9 +600,9 @@ class TriviaGameMachine():
                         event = self.__eventQueue.get_nowait()
                         await eventListener.onNewTriviaEvent(event)
                 except queue.Empty as e:
-                    self.__timber.log('TriviaGameMachine', f'Encountered queue.Empty when looping through events (queue size: {self.__eventQueue.qsize()}): {repr(e)}')
+                    self.__timber.log('TriviaGameMachine', f'Encountered queue.Empty when looping through events (queue size: {self.__eventQueue.qsize()}): {e}\n{repr(e)}')
                 except Exception as e:
-                    self.__timber.log('TriviaGameMachine', f'Encountered unknown Exception when looping through events (queue size: {self.__eventQueue.qsize()}): {repr(e)}')
+                    self.__timber.log('TriviaGameMachine', f'Encountered unknown Exception when looping through events (queue size: {self.__eventQueue.qsize()}): {e}\n{repr(e)}')
 
             await asyncio.sleep(self.__sleepTimeSeconds)
 

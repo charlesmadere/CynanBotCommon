@@ -11,18 +11,22 @@ except:
     from trivia.triviaEventType import TriviaEventType
 
 
-class OutOfTimeCheckSuperAnswerTriviaEvent(AbsTriviaEvent):
+class TooLateToAnswerCheckSuperAnswerTriviaEvent(AbsTriviaEvent):
 
     def __init__(
         self,
         triviaQuestion: AbsTriviaQuestion,
+        actionId: str,
         answer: str,
         gameId: str,
         twitchChannel: str,
         userId: str,
         userName: str
     ):
-        super().__init__(triviaEventType = TriviaEventType.SUPER_GAME_TOO_LATE_TO_ANSWER)
+        super().__init__(
+            actionId = actionId,
+            triviaEventType = TriviaEventType.SUPER_GAME_TOO_LATE_TO_ANSWER
+        )
 
         if triviaQuestion is None:
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')

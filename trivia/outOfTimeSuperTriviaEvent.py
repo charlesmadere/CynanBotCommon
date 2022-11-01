@@ -20,10 +20,14 @@ class OutOfTimeSuperTriviaEvent(AbsTriviaEvent):
         triviaQuestion: AbsTriviaQuestion,
         pointsForWinning: int,
         pointsMultiplier: int,
+        actionId: str,
         gameId: str,
         twitchChannel: str
     ):
-        super().__init__(triviaEventType = TriviaEventType.SUPER_GAME_OUT_OF_TIME)
+        super().__init__(
+            actionId = actionId,
+            triviaEventType = TriviaEventType.SUPER_GAME_OUT_OF_TIME
+        )
 
         if triviaQuestion is None:
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')

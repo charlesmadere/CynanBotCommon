@@ -21,6 +21,7 @@ class AbsTriviaGameState(ABC):
         triviaQuestion: AbsTriviaQuestion,
         pointsForWinning: int,
         secondsToLive: int,
+        actionId: str,
         twitchChannel: str,
         triviaGameType: TriviaGameType
     ):
@@ -32,8 +33,10 @@ class AbsTriviaGameState(ABC):
             raise ValueError(f'pointsForWinning argument is out of bounds: {pointsForWinning}')
         elif not utils.isValidNum(secondsToLive):
             raise ValueError(f'secondsToLive argument is malformed: \"{secondsToLive}\"')
-        elif secondsToLive < 1:
+        elif secondsToLive < 1 or secondsToLive > utils.getIntMaxSafeSize():
             raise ValueError(f'secondsToLive argument is out of bounds: {secondsToLive}')
+        elif not utils.isValidStr(actionId):
+            raise ValueError(f'actionId argument is malformed: \"{actionId}\"')
         elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
         elif triviaGameType is None:
@@ -42,11 +45,15 @@ class AbsTriviaGameState(ABC):
         self.__triviaQuestion: AbsTriviaQuestion = triviaQuestion
         self.__pointsForWinning: int = pointsForWinning
         self.__secondsToLive: int = secondsToLive
+        self.__actionId: str = actionId
         self.__twitchChannel: str = twitchChannel
         self.__triviaGameType: TriviaGameType = triviaGameType
 
         self.__endTime: datetime = datetime.now(timezone.utc) + timedelta(seconds = secondsToLive)
         self.__gameId: str = ''.join(random.choice(string.ascii_lowercase) for _ in range(12))
+
+    def getActionId(self) -> str:
+        return self.__actionId
 
     def getEndTime(self) -> datetime:
         return self.__endTime

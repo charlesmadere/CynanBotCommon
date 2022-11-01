@@ -16,13 +16,17 @@ class InvalidAnswerInputTriviaEvent(AbsTriviaEvent):
     def __init__(
         self,
         triviaQuestion: AbsTriviaQuestion,
+        actionId: str,
         answer: str,
         gameId: str,
         twitchChannel: str,
         userId: str,
         userName: str
     ):
-        super().__init__(triviaEventType = TriviaEventType.INVALID_ANSWER_INPUT)
+        super().__init__(
+            actionId = actionId,
+            triviaEventType = TriviaEventType.INVALID_ANSWER_INPUT
+        )
 
         if triviaQuestion is None:
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')

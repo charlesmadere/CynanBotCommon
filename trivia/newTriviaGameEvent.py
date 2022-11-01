@@ -20,12 +20,16 @@ class NewTriviaGameEvent(AbsTriviaEvent):
         triviaQuestion: AbsTriviaQuestion,
         pointsForWinning: int,
         secondsToLive: int,
+        actionId: str,
         gameId: str,
         twitchChannel: str,
         userId: str,
         userName: str
     ):
-        super().__init__(triviaEventType = TriviaEventType.NEW_GAME)
+        super().__init__(
+            actionId = actionId,
+            triviaEventType = TriviaEventType.NEW_GAME
+        )
 
         if triviaQuestion is None:
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')

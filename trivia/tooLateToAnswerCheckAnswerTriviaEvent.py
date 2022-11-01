@@ -1,27 +1,39 @@
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.trivia.absTriviaEvent import AbsTriviaEvent
+    from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.triviaEventType import TriviaEventType
+    from CynanBotCommon.trivia.triviaScoreResult import TriviaScoreResult
 except:
     import utils
 
     from trivia.absTriviaEvent import AbsTriviaEvent
+    from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.triviaEventType import TriviaEventType
+    from trivia.triviaScoreResult import TriviaScoreResult
 
 
 class TooLateToAnswerCheckAnswerTriviaEvent(AbsTriviaEvent):
 
     def __init__(
         self,
+        triviaQuestion: AbsTriviaQuestion,
+        actionId: str,
         answer: str,
         gameId: str,
         twitchChannel: str,
         userId: str,
-        userName: str
+        userName: str,
+        triviaScoreResult: TriviaScoreResult
     ):
-        super().__init__(triviaEventType = TriviaEventType.TOO_LATE_TO_ANSWER)
+        super().__init__(
+            actionId = actionId,
+            triviaEventType = TriviaEventType.TOO_LATE_TO_ANSWER
+        )
 
-        if not utils.isValidStr(answer):
+        if triviaQuestion is None:
+            raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
+        elif not utils.isValidStr(answer):
             raise ValueError(f'answer argument is malformed: \"{answer}\"')
         elif not utils.isValidStr(gameId):
             raise ValueError(f'gameId argument is malformed: \"{gameId}\"')
@@ -31,18 +43,28 @@ class TooLateToAnswerCheckAnswerTriviaEvent(AbsTriviaEvent):
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
         elif not utils.isValidStr(userName):
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
+        elif triviaScoreResult is None:
+            raise ValueError(f'triviaScoreResult argument is malformed: \"{triviaScoreResult}\"')
 
+        self.__triviaQuestion: AbsTriviaQuestion = triviaQuestion
         self.__answer: str = answer
         self.__gameId: str = gameId
         self.__twitchChannel: str = twitchChannel
         self.__userId: str = userId
         self.__userName: str = userName
+        self.__triviaScoreResult: TriviaScoreResult = triviaScoreResult
 
     def getAnswer(self) -> str:
         return self.__answer
 
     def getGameId(self) -> str:
         return self.__gameId
+
+    def getTriviaQuestion(self) -> AbsTriviaQuestion:
+        return self.__triviaQuestion
+
+    def getTriviaScoreResult(self) -> TriviaScoreResult:
+        return self.__triviaScoreResult
 
     def getTwitchChannel(self) -> str:
         return self.__twitchChannel
