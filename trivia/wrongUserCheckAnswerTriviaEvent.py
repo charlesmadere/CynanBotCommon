@@ -16,13 +16,17 @@ class WrongUserCheckAnswerTriviaEvent(AbsTriviaEvent):
     def __init__(
         self,
         triviaQuestion: AbsTriviaQuestion,
+        actionId: str,
         answer: str,
         gameId: str,
         twitchChannel: str,
         userId: str,
         userName: str
     ):
-        super().__init__(triviaEventType = TriviaEventType.WRONG_USER)
+        super().__init__(
+            actionId = actionId,
+            triviaEventType = TriviaEventType.WRONG_USER
+        )
 
         if triviaQuestion is None:
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')

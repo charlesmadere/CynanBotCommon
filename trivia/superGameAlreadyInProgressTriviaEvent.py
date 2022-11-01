@@ -13,10 +13,14 @@ class SuperGameAlreadyInProgressTriviaEvent(AbsTriviaEvent):
 
     def __init__(
         self,
+        actionId: str,
         gameId: str,
         twitchChannel: str
     ):
-        super().__init__(triviaEventType = TriviaEventType.SUPER_GAME_ALREADY_IN_PROGRESS)
+        super().__init__(
+            actionId = actionId,
+            triviaEventType = TriviaEventType.SUPER_GAME_ALREADY_IN_PROGRESS
+        )
 
         if not utils.isValidStr(gameId):
             raise ValueError(f'gameId argument is malformed: \"{gameId}\"')

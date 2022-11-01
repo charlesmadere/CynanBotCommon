@@ -23,12 +23,14 @@ class SuperTriviaGameState(AbsTriviaGameState):
         pointsForWinning: int,
         pointsMultiplier: int,
         secondsToLive: int,
+        actionId: str,
         twitchChannel: str
     ):
         super().__init__(
             triviaQuestion = triviaQuestion,
             pointsForWinning = pointsForWinning,
             secondsToLive = secondsToLive,
+            actionId = actionId,
             twitchChannel = twitchChannel,
             triviaGameType = TriviaGameType.SUPER
         )
@@ -39,7 +41,7 @@ class SuperTriviaGameState(AbsTriviaGameState):
             raise ValueError(f'perUserAttempts argument is out of bounds: {perUserAttempts}')
         elif not utils.isValidNum(pointsMultiplier):
             raise ValueError(f'pointsMultiplier argument is malformed: \"{pointsMultiplier}\"')
-        elif pointsMultiplier < 1:
+        elif pointsMultiplier < 1 or pointsMultiplier > utils.getIntMaxSafeSize():
             raise ValueError(f'pointsMultiplier argument is out of bounds: {pointsMultiplier}')
 
         self.__perUserAttempts: int = perUserAttempts

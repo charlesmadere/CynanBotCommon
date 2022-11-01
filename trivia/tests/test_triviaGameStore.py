@@ -91,6 +91,7 @@ class TriviaGameStoreTests():
         triviaQuestion = normalQuestion1,
         pointsForWinning = 5,
         secondsToLive = 60,
+        actionId = 'abc123',
         twitchChannel = 'smCharles',
         userId = '111111',
         userName = 'Eddie'
@@ -100,6 +101,7 @@ class TriviaGameStoreTests():
         triviaQuestion = normalQuestion2,
         pointsForWinning = 5,
         secondsToLive = 60,
+        actionId = 'abc123',
         twitchChannel = 'smCharles',
         userId = '222222',
         userName = 'stashiocat'
@@ -109,6 +111,7 @@ class TriviaGameStoreTests():
         triviaQuestion = normalQuestion3,
         pointsForWinning = 5,
         secondsToLive = 60,
+        actionId = 'abc123',
         twitchChannel = 'Imyt',
         userId = '222222',
         userName = 'stashiocat'
@@ -120,6 +123,7 @@ class TriviaGameStoreTests():
         pointsForWinning = 25,
         pointsMultiplier = 5,
         secondsToLive = 60,
+        actionId = 'abc123'
         twitchChannel = 'smCharles'
     )
 
@@ -129,6 +133,7 @@ class TriviaGameStoreTests():
         pointsForWinning = 25,
         pointsMultiplier = 5,
         secondsToLive = 60,
+        actionId = 'abc123'
         twitchChannel = 'Imyt'
     )
 

@@ -17,9 +17,13 @@ class NewQueuedSuperTriviaGameEvent(AbsTriviaEvent):
         pointsMultiplier: int,
         pointsForWinning: int,
         secondsToLive: int,
+        actionId: str,
         twitchChannel: str
     ):
-        super().__init__(triviaEventType = TriviaEventType.NEW_QUEUED_SUPER_GAME)
+        super().__init__(
+            actionId = actionId,
+            triviaEventType = TriviaEventType.NEW_QUEUED_SUPER_GAME
+        )
 
         if not utils.isValidNum(numberOfGames):
             raise ValueError(f'numberOfGames argument is malformed: \"{numberOfGames}\"')

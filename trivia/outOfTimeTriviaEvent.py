@@ -18,13 +18,17 @@ class OutOfTimeTriviaEvent(AbsTriviaEvent):
     def __init__(
         self,
         triviaQuestion: AbsTriviaQuestion,
+        actionId: str,
         gameId: str,
         twitchChannel: str,
         userId: str,
         userName: str,
         triviaScoreResult: TriviaScoreResult
     ):
-        super().__init__(triviaEventType = TriviaEventType.GAME_OUT_OF_TIME)
+        super().__init__(
+            actionId = actionId,
+            triviaEventType = TriviaEventType.GAME_OUT_OF_TIME
+        )
 
         if triviaQuestion is None:
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')

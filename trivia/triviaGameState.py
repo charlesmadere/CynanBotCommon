@@ -18,6 +18,7 @@ class TriviaGameState(AbsTriviaGameState):
         triviaQuestion: AbsTriviaQuestion,
         pointsForWinning: int,
         secondsToLive: int,
+        actionId: str,
         twitchChannel: str,
         userId: str,
         userName: str
@@ -26,6 +27,7 @@ class TriviaGameState(AbsTriviaGameState):
             triviaQuestion = triviaQuestion,
             pointsForWinning = pointsForWinning,
             secondsToLive = secondsToLive,
+            actionId = actionId,
             twitchChannel = twitchChannel,
             triviaGameType = TriviaGameType.NORMAL
         )

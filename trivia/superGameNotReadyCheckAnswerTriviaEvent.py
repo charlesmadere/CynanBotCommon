@@ -13,12 +13,16 @@ class SuperGameNotReadyCheckAnswerTriviaEvent(AbsTriviaEvent):
 
     def __init__(
         self,
+        actionId: str,
         answer: str,
         twitchChannel: str,
         userId: str,
         userName: str
     ):
-        super().__init__(triviaEventType = TriviaEventType.SUPER_GAME_NOT_READY)
+        super().__init__(
+            actionId = actionId,
+            triviaEventType = TriviaEventType.SUPER_GAME_NOT_READY
+        )
 
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
