@@ -88,7 +88,7 @@ class WordOfTheDayRepository():
             self.__timber.log('WordOfTheDayRepository', f'xmlTree for \"{languageEntry.getName()}\" is malformed: {xmlTree}')
             raise RuntimeError(f'xmlTree for \"{languageEntry.getName()}\" is malformed: {xmlTree}')
 
-        wordsTree = xmlTree['xml']['words']
+        wordsTree: Dict[str, Any] = xmlTree['xml']['words']
         word = utils.getStrFromDict(wordsTree, 'word', clean = True)
         definition = utils.getStrFromDict(wordsTree, 'translation', clean = True)
         englishExample = utils.getStrFromDict(wordsTree, 'enphrase', fallback = '', clean = True)
