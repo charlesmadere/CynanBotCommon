@@ -123,7 +123,7 @@ class TriviaGameStoreTests():
         pointsForWinning = 25,
         pointsMultiplier = 5,
         secondsToLive = 60,
-        actionId = 'abc123'
+        actionId = 'abc123',
         twitchChannel = 'smCharles'
     )
 
@@ -133,7 +133,7 @@ class TriviaGameStoreTests():
         pointsForWinning = 25,
         pointsMultiplier = 5,
         secondsToLive = 60,
-        actionId = 'abc123'
+        actionId = 'abc123',
         twitchChannel = 'Imyt'
     )
 
