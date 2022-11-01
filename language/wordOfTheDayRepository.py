@@ -1,4 +1,5 @@
 from datetime import timedelta
+from typing import Any, Dict
 
 import aiohttp
 import xmltodict
@@ -42,6 +43,7 @@ class WordOfTheDayRepository():
 
     async def clearCaches(self):
         self.__cache.clear()
+        self.__timber.log('WordOfTheDayRepository', 'Caches cleared')
 
     async def fetchWotd(self, languageEntry: LanguageEntry) -> WordOfTheDayResponse:
         if languageEntry is None:
