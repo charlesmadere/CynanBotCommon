@@ -44,7 +44,7 @@ class WebsocketConnectionServer():
             raise ValueError(f'sleepTimeSeconds argument is too aggressive: {sleepTimeSeconds}')
         elif not utils.isValidNum(port):
             raise ValueError(f'port argument is malformed: \"{port}\"')
-        elif port <= 100:
+        elif port <= 1000:
             raise ValueError(f'port argument is out of bounds: \"{port}\"')
         elif not utils.isValidStr(host):
             raise ValueError(f'host argument is malformed: \"{host}\"')
