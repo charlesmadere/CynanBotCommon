@@ -508,11 +508,11 @@ class CutenessRepository():
         cursor = await connection.execute(
             '''
                 SELECT DISTINCT utcYearAndMonth FROM cuteness
-                WHERE twitchChannel = ?
+                WHERE twitchChannel = ? AND utcYearAndMonth != ?
                 ORDER BY utcYearAndMonth DESC
                 LIMIT ?
             ''',
-            ( twitchChannel, self.__historyLeaderboardSize )
+            ( twitchChannel, CutenessDate().getStr(), self.__historyLeaderboardSize )
         )
 
         rows = await cursor.fetchmany(self.__historyLeaderboardSize)
