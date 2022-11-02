@@ -123,10 +123,6 @@ class TriviaSettingsRepository():
 
         return minMultipleChoiceResponses
 
-    async def getSuperGameQueueGameDelaySeconds(self) -> int:
-        jsonContents = await self.__readJson()
-        return utils.getIntFromDict(jsonContents, 'super_game_queue_game_delay_seconds', 5)
-
     async def getTriviaSourceInstabilityThreshold(self) -> int:
         jsonContents = await self.__readJson()
         return utils.getIntFromDict(jsonContents, 'trivia_source_instability_threshold', 3)
