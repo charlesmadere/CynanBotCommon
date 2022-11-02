@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Optional
 
 try:
     import CynanBotCommon.utils as utils
@@ -10,30 +10,35 @@ except:
 
 class NonceRepository():
 
-    def __init__(
-        self,
-        timber: Timber
-    ):
+    def __init__(self, timber: Timber):
         if timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
 
         self.__timber: Timber = timber
-        self.__cache: Dict[str, str] = dict()
+        self.__nonces: Dict[str, Optional[str]] = dict()
 
-    def getNonce(self, key: str) -> str:
+    def __delitem__(self, key: str):
         if not utils.isValidStr(key):
             raise ValueError(f'key argument is malformed: \"{key}\"')
 
         key = key.lower()
-        return self.__cache.get(key)
+        previousValue = self.__nonces.get(key, None)
+        self.__nonces.pop(key, None)
+        self.__timber.log('NonceRepository', f'Key \"{key}\" has been deleted, previous value was \"{previousValue}\".')
 
-    def setNonce(self, key: str, nonce: str):
+    def __getitem__(self, key: str) -> Optional[str]:
         if not utils.isValidStr(key):
             raise ValueError(f'key argument is malformed: \"{key}\"')
 
-        if utils.isValidStr(nonce):
-            key = key.lower()
-            self.__cache[key] = nonce
+        return self.__nonces.get(key.lower(), None)
+
+    def __setitem__(self, key: str, value: Optional[str]):
+        if not utils.isValidStr(key):
+            raise ValueError(f'key argument is malformed: \"{key}\"')
+
+        key = key.lower()
+
+        if utils.isValidStr(value):
+            self.__nonces[key] = value
         else:
-            self.__timber.log('NonceRepository', f'key \"{key}\" has an invalid nonce: \"{nonce}\"')
-            self.__cache.pop(key, None)
+            self.__delitem__(key)
