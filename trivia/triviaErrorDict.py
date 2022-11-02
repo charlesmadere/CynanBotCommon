@@ -1,6 +1,6 @@
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
-from typing import Dict
+from typing import Dict, Optional
 
 try:
     from CynanBotCommon.trivia.triviaSource import TriviaSource
@@ -15,7 +15,7 @@ class TriviaErrorDict():
             raise ValueError(f'fallOffTimeDelta argument is malformed: \"{fallOffTimeDelta}\"')
 
         self.__fallOffTimeDelta: timedelta = fallOffTimeDelta
-        self.__times: Dict[TriviaSource, datetime] = dict()
+        self.__times: Dict[TriviaSource, Optional[datetime]] = dict()
         self.__values: Dict[TriviaSource, int] = defaultdict(lambda: 0)
 
     def __delitem__(self, key: TriviaSource):

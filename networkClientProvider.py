@@ -20,7 +20,7 @@ class NetworkClientProvider():
             raise ValueError(f'eventLoop argument is malformed: \"{eventLoop}\"')
         elif not utils.isValidNum(timeoutSeconds):
             raise ValueError(f'timeoutSeconds argument is malformed: \"{timeoutSeconds}\"')
-        elif timeoutSeconds < 2 or timeoutSeconds > 15:
+        elif timeoutSeconds < 2 or timeoutSeconds > 16:
             raise ValueError(f'timeoutSeconds argument is out of bounds: {timeoutSeconds}')
 
         self.__eventLoop: AbstractEventLoop = eventLoop
