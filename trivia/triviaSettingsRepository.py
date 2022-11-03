@@ -87,7 +87,7 @@ class TriviaSettingsRepository():
 
     async def getMaxPhraseAnswerLength(self) -> int:
         jsonContents = await self.__readJson()
-        return utils.getIntFromDict(jsonContents, 'max_phrase_answer_length', 22)
+        return utils.getIntFromDict(jsonContents, 'max_phrase_answer_length', 32)
 
     async def getMaxRetryCount(self) -> int:
         jsonContents = await self.__readJson()
