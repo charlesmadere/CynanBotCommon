@@ -168,7 +168,7 @@ class TriviaGameMachine():
         self.__triviaScoreRepository: TriviaScoreRepository = triviaScoreRepository
         self.__sleepTimeSeconds: float = sleepTimeSeconds
 
-        self.__mostRecentSuperTrivia: Dict[str, datetime] = defaultdict(lambda: datetime.now(timezone.utc) - timedelta(hours = 1))
+        self.__mostRecentSuperTrivia: Dict[str, datetime] = defaultdict(lambda: datetime.now(timezone.utc) - timedelta(days = 1))
         self.__eventListener: Optional[TriviaEventListener] = None
         self.__actionQueue: SimpleQueue[AbsTriviaAction] = SimpleQueue()
         self.__eventQueue: SimpleQueue[AbsTriviaEvent] = SimpleQueue()
