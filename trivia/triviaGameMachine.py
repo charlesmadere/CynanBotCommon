@@ -73,7 +73,6 @@ try:
 except:
     import utils
     from timber.timber import Timber
-
     from trivia.absTriviaAction import AbsTriviaAction
     from trivia.absTriviaEvent import AbsTriviaEvent
     from trivia.absTriviaGameState import AbsTriviaGameState
@@ -571,10 +570,16 @@ class TriviaGameMachine():
 
     async def __startActionLoop(self):
         while True:
+            actions: List[AbsTriviaAction] = list()
+
             try:
                 while not self.__actionQueue.empty():
-                    action = self.__actionQueue.get_nowait()
+                    actions.append(self.__actionQueue.get_nowait())
+            except queue.Empty as e:
+                self.__timber.log('TriviaGameMachine', f'Encountered queue.Empty when building up actions list (queue size: {self.__actionQueue.qsize()}) (actions size: {len(actions)}): {e}\n{repr(e)}')
 
+            try:
+                for action in actions:
                     if action.getTriviaActionType() is TriviaActionType.CHECK_ANSWER:
                         await self.__handleActionCheckAnswer(action)
                     elif action.getTriviaActionType() is TriviaActionType.CHECK_SUPER_ANSWER:
@@ -585,10 +590,8 @@ class TriviaGameMachine():
                         await self.__handleActionStartNewSuperTriviaGame(action)
                     else:
                         raise UnknownTriviaActionTypeException(f'Unknown TriviaActionType: \"{action.getTriviaActionType()}\"')
-            except queue.Empty as e:
-                self.__timber.log('TriviaGameMachine', f'Encountered queue.Empty when looping through actions (queue size: {self.__actionQueue.qsize()}): {e}\n{repr(e)}')
             except Exception as e:
-                self.__timber.log('TriviaGameMachine', f'Encountered unknown Exception when looping through actions (queue size: {self.__actionQueue.qsize()}): {e}\n{repr(e)}')
+                self.__timber.log('TriviaGameMachine', f'Encountered unknown Exception when looping through actions (queue size: {self.__actionQueue.qsize()}) (actions size: {len(actions)}): {e}\n{repr(e)}')
 
             await self.__refreshStatusOfGames()
             await asyncio.sleep(self.__sleepTimeSeconds)
