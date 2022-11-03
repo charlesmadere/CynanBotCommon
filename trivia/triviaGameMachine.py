@@ -209,6 +209,7 @@ class TriviaGameMachine():
 
         if state is None:
             self.__eventQueue.put(GameNotReadyCheckAnswerTriviaEvent(
+                actionId = action.getActionId(),
                 answer = action.getAnswer(),
                 twitchChannel = action.getTwitchChannel(),
                 userId = action.getUserId(),
