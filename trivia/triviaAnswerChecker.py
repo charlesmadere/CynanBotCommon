@@ -214,16 +214,14 @@ class TriviaAnswerChecker():
     # example: words = ["a", "b", "c", "d"], target_length = 2
     #          generates ["abc", "d"], ["ab", "cd"], ["a", "bcd"]
     def __mergeWords(self, wordList: List[str], target_length: int) -> Generator[List[str], None, None]:
-        if len(wordList) <= target_length:
+        if target_length == 1:
+            yield [''.join(wordList)]
+        elif len(wordList) <= target_length:
             yield wordList
         else:
-            for i in range(len(wordList) - 1):
-                # merge the ith and i+1th word
-                w = wordList[:]
-                p = w.pop(i+1)
-                w[i] += p
-                # recurse on the new merged set until target length is reached
-                yield from self.__mergeWords(w, target_length)
+            for i in range(len(wordList) - target_length + 1):
+                for w in self.__mergeWords(wordList[i+1:], target_length - 1):
+                    yield [''.join(wordList[0:i+1])] + w
 
     # compare two individual words, returns true if any valid variants match between the two words
     async def __compareWords(self, word1: str, word2: str) -> bool:
