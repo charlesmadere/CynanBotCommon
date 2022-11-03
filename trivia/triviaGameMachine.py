@@ -1,7 +1,8 @@
 import asyncio
 import queue
 from asyncio import AbstractEventLoop
-from datetime import datetime, timezone
+from collections import defaultdict
+from datetime import datetime, timedelta, timezone
 from queue import SimpleQueue
 from typing import Any, Dict, List, Optional
 
@@ -167,6 +168,7 @@ class TriviaGameMachine():
         self.__triviaScoreRepository: TriviaScoreRepository = triviaScoreRepository
         self.__sleepTimeSeconds: float = sleepTimeSeconds
 
+        self.__mostRecentSuperTrivia: Dict[str, datetime] = defaultdict(lambda: datetime.now(timezone.utc) - timedelta(hours = 1))
         self.__eventListener: Optional[TriviaEventListener] = None
         self.__actionQueue: SimpleQueue[AbsTriviaAction] = SimpleQueue()
         self.__eventQueue: SimpleQueue[AbsTriviaEvent] = SimpleQueue()
