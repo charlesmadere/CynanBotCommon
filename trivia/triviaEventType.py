@@ -17,6 +17,7 @@ class TriviaEventType(Enum):
     SUPER_GAME_ALREADY_IN_PROGRESS = auto()
     SUPER_GAME_CORRECT_ANSWER = auto()
     SUPER_GAME_FAILED_TO_FETCH_QUESTION = auto()
+    SUPER_GAME_LAUNCHPAD = auto()
     SUPER_GAME_OUT_OF_TIME = auto()
     SUPER_GAME_NOT_READY = auto()
     SUPER_GAME_TOO_LATE_TO_ANSWER = auto()
