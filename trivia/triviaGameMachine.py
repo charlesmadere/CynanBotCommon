@@ -333,7 +333,7 @@ class TriviaGameMachine():
         now = datetime.now(timezone.utc)
 
         if state is None:
-            self.__eventQueue.put(SuperGameNotReadyCheckAnswerTriviaEvent(
+            await self.__submitEvent(SuperGameNotReadyCheckAnswerTriviaEvent(
                 actionId = action.getActionId(),
                 answer = action.getAnswer(),
                 twitchChannel = action.getTwitchChannel(),
@@ -343,7 +343,7 @@ class TriviaGameMachine():
             return
 
         if state.getEndTime() < now:
-            self.__eventQueue.put(TooLateToAnswerCheckSuperAnswerTriviaEvent(
+            await self.__submitEvent(TooLateToAnswerCheckSuperAnswerTriviaEvent(
                 triviaQuestion = state.getTriviaQuestion(),
                 actionId = action.getActionId(),
                 answer = action.getAnswer(),
@@ -373,7 +373,7 @@ class TriviaGameMachine():
         # Below, we're intentionally ignoring TriviaAnswerCheckResult values that are not CORRECT.
 
         if checkResult is not TriviaAnswerCheckResult.CORRECT:
-            self.__eventQueue.put(IncorrectSuperAnswerTriviaEvent(
+            await self.__submitEvent(IncorrectSuperAnswerTriviaEvent(
                 triviaQuestion = state.getTriviaQuestion(),
                 actionId = action.getActionId(),
                 answer = action.getAnswer(),
@@ -391,7 +391,7 @@ class TriviaGameMachine():
             userId = action.getUserId()
         )
 
-        self.__eventQueue.put(CorrectSuperAnswerTriviaEvent(
+        await self.__submitEvent(CorrectSuperAnswerTriviaEvent(
             triviaQuestion = state.getTriviaQuestion(),
             pointsForWinning = state.getPointsForWinning(),
             pointsMultiplier = state.getPointsMultiplier(),
@@ -417,7 +417,7 @@ class TriviaGameMachine():
         )
 
         if state is not None and state.getEndTime() >= now:
-            self.__eventQueue.put(GameAlreadyInProgressTriviaEvent(
+            await self.__submitEvent(GameAlreadyInProgressTriviaEvent(
                 gameId = state.getGameId(),
                 actionId = action.getActionId(),
                 twitchChannel = action.getTwitchChannel(),
@@ -433,7 +433,7 @@ class TriviaGameMachine():
             self.__timber.log('TriviaGameMachine', f'Reached limit on trivia fetch attempts without being able to successfully retrieve a trivia question for \"{action.getTwitchChannel()}\": {e}')
 
         if triviaQuestion is None:
-            self.__eventQueue.put(FailedToFetchQuestionTriviaEvent(
+            await self.__submitEvent(FailedToFetchQuestionTriviaEvent(
                 actionId = action.getActionId(),
                 twitchChannel = action.getTwitchChannel(),
                 userId = action.getUserId(),
@@ -453,7 +453,7 @@ class TriviaGameMachine():
 
         await self.__triviaGameStore.add(state)
 
-        self.__eventQueue.put(NewTriviaGameEvent(
+        await self.__submitEvent(NewTriviaGameEvent(
             triviaQuestion = triviaQuestion,
             pointsForWinning = action.getPointsForWinning(),
             secondsToLive = action.getSecondsToLive(),
@@ -482,7 +482,7 @@ class TriviaGameMachine():
         if queueResult.getAmountAdded() >= 1:
             self.__timber.log('TriviaGameMachine', f'Queued new Super Trivia game(s) for \"{action.getTwitchChannel()}\": {queueResult.toStr()}')
 
-            self.__eventQueue.put(NewQueuedSuperTriviaGameEvent(
+            await self.__submitEvent(NewQueuedSuperTriviaGameEvent(
                 numberOfGames = queueResult.getAmountAdded(),
                 pointsForWinning = action.getPointsForWinning(),
                 pointsMultiplier = action.getPointsMultiplier(),
@@ -514,7 +514,7 @@ class TriviaGameMachine():
             self.__timber.log('TriviaGameMachine', f'Reached limit on trivia fetch attempts without being able to successfully retrieve a super trivia question for \"{action.getTwitchChannel()}\": {e}')
 
         if triviaQuestion is None:
-            self.__eventQueue.put(FailedToFetchQuestionSuperTriviaEvent(
+            await self.__submitEvent(FailedToFetchQuestionSuperTriviaEvent(
                 actionId = action.getActionId(),
                 twitchChannel = action.getTwitchChannel()
             ))
@@ -532,7 +532,7 @@ class TriviaGameMachine():
 
         await self.__triviaGameStore.add(state)
 
-        self.__eventQueue.put(NewSuperTriviaGameEvent(
+        await self.__submitEvent(NewSuperTriviaGameEvent(
             triviaQuestion = triviaQuestion,
             pointsForWinning = action.getPointsForWinning(),
             pointsMultiplier = action.getPointsMultiplier(),
@@ -569,7 +569,7 @@ class TriviaGameMachine():
                     userId = normalGameState.getUserId()
                 )
 
-                self.__eventQueue.put(OutOfTimeTriviaEvent(
+                await self.__submitEvent(OutOfTimeTriviaEvent(
                     triviaQuestion = normalGameState.getTriviaQuestion(),
                     actionId = normalGameState.getActionId(),
                     gameId = normalGameState.getGameId(),
@@ -582,7 +582,7 @@ class TriviaGameMachine():
                 superGameState: SuperTriviaGameState = state
                 await self.__removeSuperTriviaGame(superGameState.getTwitchChannel())
 
-                self.__eventQueue.put(OutOfTimeSuperTriviaEvent(
+                await self.__submitEvent(OutOfTimeSuperTriviaEvent(
                     triviaQuestion = superGameState.getTriviaQuestion(),
                     pointsForWinning = superGameState.getPointsForWinning(),
                     pointsMultiplier = superGameState.getPointsMultiplier(),
