@@ -55,6 +55,7 @@ class StartNewSuperTriviaGameAction(AbsTriviaAction):
         elif triviaFetchOptions is None:
             raise ValueError(f'triviaFetchOptions argument is malformed: \"{triviaFetchOptions}\"')
 
+        self.__isLaunchpadAnnounceActionConsumed: bool = False
         self.__isQueueActionConsumed: bool = isQueueActionConsumed
         self.__numberOfGames: int = numberOfGames
         self.__perUserAttempts: int = perUserAttempts
@@ -63,6 +64,9 @@ class StartNewSuperTriviaGameAction(AbsTriviaAction):
         self.__secondsToLive: int = secondsToLive
         self.__twitchChannel: str = twitchChannel
         self.__triviaFetchOptions: TriviaFetchOptions = triviaFetchOptions
+
+    def consumeLaunchpadAnnounceAction(self):
+        self.__isLaunchpadAnnounceActionConsumed = True
 
     def consumeQueueAction(self):
         self.__isQueueActionConsumed = True
@@ -99,6 +103,9 @@ class StartNewSuperTriviaGameAction(AbsTriviaAction):
 
     def getTwitchChannel(self) -> str:
         return self.__twitchChannel
+
+    def isLaunchpadAnnounceActionConsumed(self) -> bool:
+        return self.__isLaunchpadAnnounceActionConsumed
 
     def isQueueActionConsumed(self) -> bool:
         return self.__isQueueActionConsumed
