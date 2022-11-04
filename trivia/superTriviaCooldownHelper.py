@@ -1,6 +1,6 @@
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
-from typing import Dict
+from typing import Dict, List, Set
 
 try:
     import CynanBotCommon.utils as utils
@@ -20,19 +20,29 @@ class SuperTriviaCooldownHelper():
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
         self.__values: Dict[str, datetime] = defaultdict(lambda: datetime.now(timezone.utc) - timedelta(days = 1))
 
-    def __getitem__(self, key: str) -> bool:
-        if not utils.isValidStr(key):
-            raise ValueError(f'key argument is malformed: \"{key}\"')
+    def __getitem__(self, twitchChannel: str) -> bool:
+        if not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
         now = datetime.now(timezone.utc)
-        return now > self.__values[key.lower()]
+        return now > self.__values[twitchChannel.lower()]
 
-    async def update(self, key: str):
-        if not utils.isValidStr(key):
-            raise ValueError(f'key argument is malformed: \"{key}\"')
+    async def getTwitchChannelsInCooldown(self) -> List[str]:
+        twitchChannels: Set[str] = set()
+        now = datetime.now(timezone.utc)
+
+        for twitchChannel, cooldown in self.__values.items():
+            if cooldown > now:
+                twitchChannels.add(twitchChannel.lower())
+
+        return list(twitchChannels)
+
+    async def update(self, twitchChannel: str):
+        if not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
         cooldownSeconds = await self.__triviaSettingsRepository.getSuperTriviaCooldownSeconds()
         cooldown = timedelta(seconds = cooldownSeconds)
         now = datetime.now(timezone.utc)
 
-        self.__values[key.lower()] = now + cooldown
+        self.__values[twitchChannel.lower()] = now + cooldown
