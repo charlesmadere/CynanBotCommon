@@ -648,14 +648,19 @@ class TriviaGameMachine():
             eventListener = self.__eventListener
 
             if eventListener is not None:
+                events: List[AbsTriviaEvent] = list()
+
                 try:
                     while not self.__eventQueue.empty():
-                        event = self.__eventQueue.get_nowait()
-                        await eventListener.onNewTriviaEvent(event)
+                        events.append(self.__eventQueue.get_nowait())
                 except queue.Empty as e:
-                    self.__timber.log('TriviaGameMachine', f'Encountered queue.Empty when looping through events (queue size: {self.__eventQueue.qsize()}): {e}\n{repr(e)}')
+                    self.__timber.log('TriviaGameMachine', f'Encountered queue.Empty when building up events list (queue size: {self.__eventQueue.qsize()}) (events size: {len(events)}): {e}')
+
+                try:
+                    for event in events:
+                        await eventListener.onNewTriviaEvent(event)
                 except Exception as e:
-                    self.__timber.log('TriviaGameMachine', f'Encountered unknown Exception when looping through events (queue size: {self.__eventQueue.qsize()}): {e}\n{repr(e)}')
+                    self.__timber.log('TriviaGameMachine', f'Encountered unknown Exception when looping through events (queue size: {self.__eventQueue.qsize()}): {e}')
 
             await asyncio.sleep(self.__sleepTimeSeconds)
 
