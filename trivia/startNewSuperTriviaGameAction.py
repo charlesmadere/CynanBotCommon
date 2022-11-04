@@ -7,7 +7,6 @@ try:
     from CynanBotCommon.trivia.triviaFetchOptions import TriviaFetchOptions
 except:
     import utils
-
     from trivia.absTriviaAction import AbsTriviaAction
     from trivia.triviaActionType import TriviaActionType
     from trivia.triviaFetchOptions import TriviaFetchOptions
