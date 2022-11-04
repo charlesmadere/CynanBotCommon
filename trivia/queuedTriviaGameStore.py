@@ -25,15 +25,22 @@ class QueuedTriviaGameStore():
     def __init__(
         self,
         timber: Timber,
-        triviaSettingsRepository: TriviaSettingsRepository
+        triviaSettingsRepository: TriviaSettingsRepository,
+        queueTimeoutSeconds: int = 3
     ):
         if timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif triviaSettingsRepository is None:
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
+        elif not utils.isValidNum(queueTimeoutSeconds):
+            raise ValueError(f'queueTimeoutSeconds argument is malformed: \"{queueTimeoutSeconds}\"')
+        elif queueTimeoutSeconds < 1 or queueTimeoutSeconds > 5:
+            raise ValueError(f'queueTimeoutSeconds argument is out of bounds: {queueTimeoutSeconds}')
 
         self.__timber: Timber = timber
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
+        self.__queueTimeoutSeconds: int = queueTimeoutSeconds
+
         self.__queuedSuperGames: Dict[str, SimpleQueue[StartNewSuperTriviaGameAction]] = defaultdict(lambda: SimpleQueue())
 
     async def addSuperGames(
@@ -115,7 +122,7 @@ class QueuedTriviaGameStore():
                 continue
 
             try:
-                superGames.append(queuedSuperGames.get_nowait())
+                superGames.append(queuedSuperGames.get(block = True, timeout = self.__queueTimeoutSeconds))
             except queue.Empty as e:
                 self.__timber.log('QueuedTriviaGameStore', f'Unable to get queued super game for \"{twitchChannel}\" (queue size: {queuedSuperGames.qsize()}): {repr(e)}')
 
