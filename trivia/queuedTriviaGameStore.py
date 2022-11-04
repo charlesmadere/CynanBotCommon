@@ -14,7 +14,6 @@ try:
 except:
     import utils
     from timber.timber import Timber
-
     from trivia.addQueuedGamesResult import AddQueuedGamesResult
     from trivia.startNewSuperTriviaGameAction import \
         StartNewSuperTriviaGameAction
@@ -94,6 +93,13 @@ class QueuedTriviaGameStore():
             newQueueSize = queuedSuperGames.qsize(),
             oldQueueSize = oldQueueSize
         )
+
+    async def getQueuedSuperGamesSize(self, twitchChannel: str) -> int:
+        if not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+
+        twitchChannel = twitchChannel.lower()
+        return self.__queuedSuperGames[twitchChannel].qsize()
 
     async def popQueuedSuperGames(self, activeChannels: List[str]) -> List[StartNewSuperTriviaGameAction]:
         workingActiveChannels: Set[str] = set()
