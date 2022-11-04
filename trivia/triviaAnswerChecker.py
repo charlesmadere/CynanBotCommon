@@ -154,6 +154,11 @@ class TriviaAnswerChecker():
         elif triviaQuestion.getTriviaType() is not TriviaType.QUESTION_ANSWER:
             raise RuntimeError(f'TriviaType is not {TriviaType.QUESTION_ANSWER}: \"{triviaQuestion.getTriviaType()}\"')
 
+        # prevent potential answer insanity
+        maxPhraseGuessLength = await self.__triviaSettingsRepository.getMaxPhraseGuessLength()
+        if utils.isValidStr(answer) and len(answer) > maxPhraseGuessLength:
+            answer = answer[0:maxPhraseGuessLength]
+
         cleanedAnswers = await self.__triviaAnswerCompiler.compileTextAnswersList([ answer ], False)
 
         if not all(utils.isValidStr(cleanedAnswer) for cleanedAnswer in cleanedAnswers):
