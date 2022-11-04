@@ -3,7 +3,7 @@ import queue
 from asyncio import AbstractEventLoop
 from datetime import datetime, timezone
 from queue import SimpleQueue
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set
 
 try:
     import CynanBotCommon.utils as utils
@@ -190,8 +190,12 @@ class TriviaGameMachine():
         eventLoop.create_task(self.__startEventLoop())
 
     async def __beginQueuedTriviaGames(self):
-        activeChannels = await self.__triviaGameStore.getTwitchChannelsWithActiveSuperGames()
-        queuedSuperGames = await self.__queuedTriviaGameStore.popQueuedSuperGames(activeChannels)
+        activeChannelsSet: Set[str] = set()
+        activeChannelsSet.update(await self.__triviaGameStore.getTwitchChannelsWithActiveSuperGames())
+        activeChannelsSet.update(await self.__superTriviaCooldownHelper.getTwitchChannelsInCooldown())
+
+        activeChannelsList: List[str] = list(activeChannelsSet)
+        queuedSuperGames = await self.__queuedTriviaGameStore.popQueuedSuperGames(activeChannelsList)
 
         for queuedSuperGame in queuedSuperGames:
             remainingQueueSize = await self.__queuedTriviaGameStore.getQueuedSuperGamesSize(queuedSuperGame.getTwitchChannel())
