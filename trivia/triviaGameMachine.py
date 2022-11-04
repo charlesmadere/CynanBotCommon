@@ -505,7 +505,7 @@ class TriviaGameMachine():
                     twitchChannel = action.getTwitchChannel()
                 ))
 
-            self.__actionQueue.put(action)
+            self.submitAction(action)
             return
 
         triviaQuestion: Optional[AbsTriviaQuestion] = None
