@@ -480,7 +480,7 @@ class TriviaGameMachine():
         )
 
         if queueResult.getAmountAdded() >= 1:
-            self.__timber.log('TriviaGameMachine', f'Queued new Super Trivia game(s) for \"{action.getTwitchChannel()}\": {queueResult.toStr()}')
+            self.__timber.log('TriviaGameMachine', f'Queued new Super Trivia game(s) for \"{action.getTwitchChannel()}\" (actionId=\"{action.getActionId()}\"): {queueResult.toStr()}')
 
             await self.__submitEvent(NewQueuedSuperTriviaGameEvent(
                 numberOfGames = queueResult.getAmountAdded(),
