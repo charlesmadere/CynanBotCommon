@@ -179,7 +179,7 @@ class TriviaGameMachine():
         queuedSuperGames = await self.__queuedTriviaGameStore.popQueuedSuperGames(activeChannels)
 
         for queuedSuperGame in queuedSuperGames:
-            self.__timber.log('TriviaGameMachine', f'Starting new queued super trivia game for \"{queuedSuperGame.getTwitchChannel()}\"')
+            self.__timber.log('TriviaGameMachine', f'Starting new queued super trivia game for \"{queuedSuperGame.getTwitchChannel()}\" (actionId=\"{queuedSuperGame.getActionId()}\")')
             await self.__handleActionStartNewSuperTriviaGame(queuedSuperGame)
 
     async def __checkAnswer(
@@ -563,7 +563,7 @@ class TriviaGameMachine():
                     twitchChannel = superGameState.getTwitchChannel()
                 ))
             else:
-                raise UnknownTriviaGameTypeException(f'Unknown TriviaGameType (gameId=\"{state.getGameId()}\") (twitchChannel=\"{state.getTwitchChannel()}\"): \"{state.getTriviaGameType()}\"')
+                raise UnknownTriviaGameTypeException(f'Unknown TriviaGameType (gameId=\"{state.getGameId()}\") (twitchChannel=\"{state.getTwitchChannel()}\") (actionId=\"{state.getActionId()}\"): \"{state.getTriviaGameType()}\"')
 
     def setEventListener(self, listener: Optional[TriviaEventListener]):
         self.__eventListener = listener
@@ -616,4 +616,7 @@ class TriviaGameMachine():
         if action is None:
             raise ValueError(f'action argument is malformed: \"{action}\"')
 
-        self.__actionQueue.put(action)
+        try:
+            self.__actionQueue.put(action, block = True, timeout = self.__queueTimeoutSeconds)
+        except queue.Full as e:
+            self.__timber.log('TriviaGameMachine', f'Encountered queue.Full when submitting a new action ({action}) into the action queue (queue size: {self.__actionQueue.qsize()}): {e}\n{repr(e)}')
