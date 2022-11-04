@@ -53,8 +53,7 @@ class QueuedTriviaGameStore():
         elif action is None:
             raise ValueError(f'action argument is malformed: \"{action}\"')
 
-        twitchChannel = action.getTwitchChannel().lower()
-        queuedSuperGames = self.__queuedSuperGames[twitchChannel]
+        queuedSuperGames = self.__queuedSuperGames[action.getTwitchChannel().lower()]
         oldQueueSize = queuedSuperGames.qsize()
 
         if action.isQueueActionConsumed():
