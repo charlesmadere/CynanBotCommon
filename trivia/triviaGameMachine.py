@@ -194,7 +194,8 @@ class TriviaGameMachine():
         queuedSuperGames = await self.__queuedTriviaGameStore.popQueuedSuperGames(activeChannels)
 
         for queuedSuperGame in queuedSuperGames:
-            self.__timber.log('TriviaGameMachine', f'Starting new queued super trivia game for \"{queuedSuperGame.getTwitchChannel()}\" (actionId=\"{queuedSuperGame.getActionId()}\")')
+            remainingQueueSize = await self.__queuedTriviaGameStore.getQueuedSuperGamesSize(queuedSuperGame.getTwitchChannel())
+            self.__timber.log('TriviaGameMachine', f'Starting new queued super trivia game for \"{queuedSuperGame.getTwitchChannel()}\", with {remainingQueueSize} game(s) remaining in their queue (actionId=\"{queuedSuperGame.getActionId()}\")')
             await self.__handleActionStartNewSuperTriviaGame(queuedSuperGame)
 
     async def __checkAnswer(
@@ -622,7 +623,7 @@ class TriviaGameMachine():
                 while not self.__actionQueue.empty():
                     actions.append(self.__actionQueue.get_nowait())
             except queue.Empty as e:
-                self.__timber.log('TriviaGameMachine', f'Encountered queue.Empty when building up actions list (queue size: {self.__actionQueue.qsize()}) (actions size: {len(actions)}): {e}\n{repr(e)}')
+                self.__timber.log('TriviaGameMachine', f'Encountered queue.Empty when building up actions list (queue size: {self.__actionQueue.qsize()}) (actions size: {len(actions)}): {e}')
 
             try:
                 for action in actions:
@@ -637,7 +638,7 @@ class TriviaGameMachine():
                     else:
                         raise UnknownTriviaActionTypeException(f'Unknown TriviaActionType: \"{action.getTriviaActionType()}\"')
             except Exception as e:
-                self.__timber.log('TriviaGameMachine', f'Encountered unknown Exception when looping through actions (queue size: {self.__actionQueue.qsize()}) (actions size: {len(actions)}): {e}\n{repr(e)}')
+                self.__timber.log('TriviaGameMachine', f'Encountered unknown Exception when looping through actions (queue size: {self.__actionQueue.qsize()}) (actions size: {len(actions)}): {e}')
 
             await self.__refreshStatusOfTriviaGames()
             await asyncio.sleep(self.__sleepTimeSeconds)
@@ -665,7 +666,7 @@ class TriviaGameMachine():
         try:
             self.__actionQueue.put(action, block = True, timeout = self.__queueTimeoutSeconds)
         except queue.Full as e:
-            self.__timber.log('TriviaGameMachine', f'Encountered queue.Full when submitting a new action ({action}) into the action queue (queue size: {self.__actionQueue.qsize()}): {e}\n{repr(e)}')
+            self.__timber.log('TriviaGameMachine', f'Encountered queue.Full when submitting a new action ({action}) into the action queue (queue size: {self.__actionQueue.qsize()}): {e}')
 
     async def __submitEvent(self, event: AbsTriviaEvent):
         if event is None:
@@ -674,4 +675,4 @@ class TriviaGameMachine():
         try:
             self.__eventQueue.put(event, block = True, timeout = self.__queueTimeoutSeconds)
         except queue.Full as e:
-            self.__timber.log('TriviaGameMachine', f'Encountered queue.Full when submitting a new event ({event}) into the event queue (queue size: {self.__eventQueue.qsize()}): {e}\n{repr(e)}')
+            self.__timber.log('TriviaGameMachine', f'Encountered queue.Full when submitting a new event ({event}) into the event queue (queue size: {self.__eventQueue.qsize()}): {e}')
