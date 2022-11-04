@@ -89,7 +89,16 @@ class QueuedTriviaGameStore():
 
         for _ in range(numberOfGames):
             if queuedSuperGames.qsize() < maxSuperGameQueueSize:
-                queuedSuperGames.put(action)
+                queuedSuperGames.put(StartNewSuperTriviaGameAction(
+                    isQueueActionConsumed = True,
+                    numberOfGames = 1,
+                    perUserAttempts = action.getPerUserAttempts(),
+                    pointsForWinning = action.getPointsForWinning(),
+                    pointsMultiplier = action.getPointsMultiplier(),
+                    secondsToLive = action.getSecondsToLive(),
+                    twitchChannel = action.getTwitchChannel(),
+                    triviaFetchOptions = action.getTriviaFetchOptions()
+                ))
                 amountAdded = amountAdded + 1
             else:
                 break
