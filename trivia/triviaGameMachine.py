@@ -1,8 +1,7 @@
 import asyncio
 import queue
 from asyncio import AbstractEventLoop
-from collections import defaultdict
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from queue import SimpleQueue
 from typing import Any, Dict, List, Optional
 
@@ -47,8 +46,12 @@ try:
         StartNewSuperTriviaGameAction
     from CynanBotCommon.trivia.startNewTriviaGameAction import \
         StartNewTriviaGameAction
+    from CynanBotCommon.trivia.superGameLaunchpadTriviaEvent import \
+        SuperGameLaunchpadTriviaEvent
     from CynanBotCommon.trivia.superGameNotReadyCheckAnswerTriviaEvent import \
         SuperGameNotReadyCheckAnswerTriviaEvent
+    from CynanBotCommon.trivia.superTriviaCooldownHelper import \
+        SuperTriviaCooldownHelper
     from CynanBotCommon.trivia.superTriviaGameState import SuperTriviaGameState
     from CynanBotCommon.trivia.tooLateToAnswerCheckAnswerTriviaEvent import \
         TooLateToAnswerCheckAnswerTriviaEvent
@@ -104,8 +107,11 @@ except:
     from trivia.startNewSuperTriviaGameAction import \
         StartNewSuperTriviaGameAction
     from trivia.startNewTriviaGameAction import StartNewTriviaGameAction
+    from trivia.superGameLaunchpadTriviaEvent import \
+        SuperGameLaunchpadTriviaEvent
     from trivia.superGameNotReadyCheckAnswerTriviaEvent import \
         SuperGameNotReadyCheckAnswerTriviaEvent
+    from trivia.superTriviaCooldownHelper import SuperTriviaCooldownHelper
     from trivia.superTriviaGameState import SuperTriviaGameState
     from trivia.tooLateToAnswerCheckAnswerTriviaEvent import \
         TooLateToAnswerCheckAnswerTriviaEvent
@@ -133,17 +139,21 @@ class TriviaGameMachine():
         self,
         eventLoop: AbstractEventLoop,
         queuedTriviaGameStore: QueuedTriviaGameStore,
+        superTriviaCooldownHelper: SuperTriviaCooldownHelper,
         timber: Timber,
         triviaAnswerChecker: TriviaAnswerChecker,
         triviaGameStore: TriviaGameStore,
         triviaRepository: TriviaRepository,
         triviaScoreRepository: TriviaScoreRepository,
+        queueTimeoutSeconds: int = 3,
         sleepTimeSeconds: float = 0.5
     ):
         if eventLoop is None:
             raise ValueError(f'eventLoop argument is malformed: \"{eventLoop}\"')
         elif queuedTriviaGameStore is None:
             raise ValueError(f'queuedTriviaGameStore argument is malformed: \"{queuedTriviaGameStore}\"')
+        elif superTriviaCooldownHelper is None:
+            raise ValueError(f'superTriviaCooldownHelper argument is malformed: \"{superTriviaCooldownHelper}\"')
         elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif triviaAnswerChecker is None:
@@ -154,27 +164,32 @@ class TriviaGameMachine():
             raise ValueError(f'triviaRepository argument is malformed: \"{triviaRepository}\"')
         elif triviaScoreRepository is None:
             raise ValueError(f'triviaScoreRepository argument is malformed: \"{triviaScoreRepository}\"')
+        elif not utils.isValidNum(queueTimeoutSeconds):
+            raise ValueError(f'queueTimeoutSeconds argument is malformed: \"{queueTimeoutSeconds}\"')
+        elif queueTimeoutSeconds < 1 or queueTimeoutSeconds > 5:
+            raise ValueError(f'queueTimeoutSeconds argument is out of bounds: {queueTimeoutSeconds}')
         elif not utils.isValidNum(sleepTimeSeconds):
             raise ValueError(f'sleepTimeSeconds argument is malformed: \"{sleepTimeSeconds}\"')
         elif sleepTimeSeconds < 0.25 or sleepTimeSeconds > 2:
             raise ValueError(f'sleepTimeSeconds argument is out of bounds: {sleepTimeSeconds}')
 
         self.__queuedTriviaGameStore: QueuedTriviaGameStore = queuedTriviaGameStore
+        self.__superTriviaCooldownHelper: SuperTriviaCooldownHelper = superTriviaCooldownHelper
         self.__timber: Timber = timber
         self.__triviaAnswerChecker: TriviaAnswerChecker = triviaAnswerChecker
         self.__triviaGameStore: TriviaGameStore = triviaGameStore
         self.__triviaRepository: TriviaRepository = triviaRepository
         self.__triviaScoreRepository: TriviaScoreRepository = triviaScoreRepository
+        self.__queueTimeoutSeconds: int = queueTimeoutSeconds
         self.__sleepTimeSeconds: float = sleepTimeSeconds
 
-        self.__mostRecentSuperTrivia: Dict[str, datetime] = defaultdict(lambda: datetime.now(timezone.utc) - timedelta(days = 1))
         self.__eventListener: Optional[TriviaEventListener] = None
         self.__actionQueue: SimpleQueue[AbsTriviaAction] = SimpleQueue()
         self.__eventQueue: SimpleQueue[AbsTriviaEvent] = SimpleQueue()
         eventLoop.create_task(self.__startActionLoop())
         eventLoop.create_task(self.__startEventLoop())
 
-    async def __beginQueuedGames(self):
+    async def __beginQueuedTriviaGames(self):
         activeChannels = await self.__triviaGameStore.getTwitchChannelsWithActiveSuperGames()
         queuedSuperGames = await self.__queuedTriviaGameStore.popQueuedSuperGames(activeChannels)
 
@@ -207,7 +222,7 @@ class TriviaGameMachine():
         now = datetime.now(timezone.utc)
 
         if state is None:
-            self.__eventQueue.put(GameNotReadyCheckAnswerTriviaEvent(
+            await self.__submitEvent(GameNotReadyCheckAnswerTriviaEvent(
                 actionId = action.getActionId(),
                 answer = action.getAnswer(),
                 twitchChannel = action.getTwitchChannel(),
@@ -217,7 +232,7 @@ class TriviaGameMachine():
             return
 
         if state.getUserId() != action.getUserId():
-            self.__eventQueue.put(WrongUserCheckAnswerTriviaEvent(
+            await self.__submitEvent(WrongUserCheckAnswerTriviaEvent(
                 triviaQuestion = state.getTriviaQuestion(),
                 actionId = action.getActionId(),
                 answer = action.getAnswer(),
@@ -229,7 +244,7 @@ class TriviaGameMachine():
             return
 
         if state.getEndTime() < now:
-            await self.__triviaGameStore.removeNormalGame(
+            await self.__removeNormalTriviaGame(
                 twitchChannel = action.getTwitchChannel(),
                 userName = action.getUserName()
             )
@@ -239,7 +254,7 @@ class TriviaGameMachine():
                 userId = action.getUserId()
             )
 
-            self.__eventQueue.put(TooLateToAnswerCheckAnswerTriviaEvent(
+            await self.__submitEvent(TooLateToAnswerCheckAnswerTriviaEvent(
                 triviaQuestion = state.getTriviaQuestion(),
                 actionId = action.getActionId(),
                 answer = action.getAnswer(),
@@ -257,7 +272,7 @@ class TriviaGameMachine():
         )
 
         if checkResult is TriviaAnswerCheckResult.INVALID_INPUT:
-            self.__eventQueue.put(InvalidAnswerInputTriviaEvent(
+            await self.__submitEvent(InvalidAnswerInputTriviaEvent(
                 triviaQuestion = state.getTriviaQuestion(),
                 actionId = action.getActionId(),
                 answer = action.getAnswer(),
@@ -268,7 +283,7 @@ class TriviaGameMachine():
             ))
             return
 
-        await self.__triviaGameStore.removeNormalGame(
+        await self.__removeNormalTriviaGame(
             twitchChannel = action.getTwitchChannel(),
             userName = action.getUserName()
         )
@@ -279,7 +294,7 @@ class TriviaGameMachine():
                 userId = action.getUserId()
             )
 
-            self.__eventQueue.put(IncorrectAnswerTriviaEvent(
+            await self.__submitEvent(IncorrectAnswerTriviaEvent(
                 triviaQuestion = state.getTriviaQuestion(),
                 actionId = action.getActionId(),
                 answer = action.getAnswer(),
@@ -296,7 +311,7 @@ class TriviaGameMachine():
             userId = action.getUserId()
         )
 
-        self.__eventQueue.put(CorrectAnswerTriviaEvent(
+        await self.__submitEvent(CorrectAnswerTriviaEvent(
             triviaQuestion = state.getTriviaQuestion(),
             pointsForWinning = state.getPointsForWinning(),
             actionId = action.getActionId(),
@@ -369,7 +384,7 @@ class TriviaGameMachine():
             ))
             return
 
-        await self.__triviaGameStore.removeSuperGame(action.getTwitchChannel())
+        await self.__removeSuperTriviaGame(action.getTwitchChannel())
 
         triviaScoreResult = await self.__triviaScoreRepository.incrementSuperTriviaWins(
             twitchChannel = action.getTwitchChannel(),
@@ -478,6 +493,19 @@ class TriviaGameMachine():
 
         if isSuperTriviaGameCurrentlyInProgress:
             return
+        elif not self.__superTriviaCooldownHelper[action.getTwitchChannel()]:
+            if not action.isLaunchpadAnnounceActionConsumed():
+                action.consumeLaunchpadAnnounceAction()
+                remainingQueueSize = await self.__queuedTriviaGameStore.getQueuedSuperGamesSize(action.getTwitchChannel())
+
+                await self.__submitEvent(SuperGameLaunchpadTriviaEvent(
+                    remainingQueueSize = remainingQueueSize,
+                    actionId = action.getActionId(),
+                    twitchChannel = action.getTwitchChannel()
+                ))
+
+            self.__actionQueue.put(action)
+            return
 
         triviaQuestion: Optional[AbsTriviaQuestion] = None
         try:
@@ -514,11 +542,11 @@ class TriviaGameMachine():
             twitchChannel = action.getTwitchChannel(),
         ))
 
-    async def __refreshStatusOfGames(self):
-        await self.__removeDeadGames()
-        await self.__beginQueuedGames()
+    async def __refreshStatusOfTriviaGames(self):
+        await self.__removeDeadTriviaGames()
+        await self.__beginQueuedTriviaGames()
 
-    async def __removeDeadGames(self):
+    async def __removeDeadTriviaGames(self):
         now = datetime.now(timezone.utc)
         gameStates = await self.__triviaGameStore.getAll()
         gameStatesToRemove: List[AbsTriviaGameState] = list()
@@ -531,7 +559,7 @@ class TriviaGameMachine():
             if state.getTriviaGameType() is TriviaGameType.NORMAL:
                 normalGameState: TriviaGameState = state
 
-                await self.__triviaGameStore.removeNormalGame(
+                await self.__removeNormalTriviaGame(
                     twitchChannel = normalGameState.getTwitchChannel(),
                     userName = normalGameState.getUserName()
                 )
@@ -552,7 +580,7 @@ class TriviaGameMachine():
                 ))
             elif state.getTriviaGameType() is TriviaGameType.SUPER:
                 superGameState: SuperTriviaGameState = state
-                await self.__triviaGameStore.removeSuperGame(superGameState.getTwitchChannel())
+                await self.__removeSuperTriviaGame(superGameState.getTwitchChannel())
 
                 self.__eventQueue.put(OutOfTimeSuperTriviaEvent(
                     triviaQuestion = superGameState.getTriviaQuestion(),
@@ -564,6 +592,24 @@ class TriviaGameMachine():
                 ))
             else:
                 raise UnknownTriviaGameTypeException(f'Unknown TriviaGameType (gameId=\"{state.getGameId()}\") (twitchChannel=\"{state.getTwitchChannel()}\") (actionId=\"{state.getActionId()}\"): \"{state.getTriviaGameType()}\"')
+
+    async def __removeNormalTriviaGame(self, twitchChannel: str, userName: str):
+        if not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+        elif not utils.isValidStr(userName):
+            raise ValueError(f'userName argument is malformed: \"{userName}\"')
+
+        await self.__triviaGameStore.removeNormalGame(
+            twitchChannel = twitchChannel,
+            userName = userName
+        )
+
+    async def __removeSuperTriviaGame(self, twitchChannel: str):
+        if not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+
+        await self.__triviaGameStore.removeSuperGame(twitchChannel)
+        await self.__superTriviaCooldownHelper.update(twitchChannel)
 
     def setEventListener(self, listener: Optional[TriviaEventListener]):
         self.__eventListener = listener
@@ -593,7 +639,7 @@ class TriviaGameMachine():
             except Exception as e:
                 self.__timber.log('TriviaGameMachine', f'Encountered unknown Exception when looping through actions (queue size: {self.__actionQueue.qsize()}) (actions size: {len(actions)}): {e}\n{repr(e)}')
 
-            await self.__refreshStatusOfGames()
+            await self.__refreshStatusOfTriviaGames()
             await asyncio.sleep(self.__sleepTimeSeconds)
 
     async def __startEventLoop(self):
@@ -620,3 +666,12 @@ class TriviaGameMachine():
             self.__actionQueue.put(action, block = True, timeout = self.__queueTimeoutSeconds)
         except queue.Full as e:
             self.__timber.log('TriviaGameMachine', f'Encountered queue.Full when submitting a new action ({action}) into the action queue (queue size: {self.__actionQueue.qsize()}): {e}\n{repr(e)}')
+
+    async def __submitEvent(self, event: AbsTriviaEvent):
+        if event is None:
+            raise ValueError(f'event argument is malformed: \"{event}\"')
+
+        try:
+            self.__eventQueue.put(event, block = True, timeout = self.__queueTimeoutSeconds)
+        except queue.Full as e:
+            self.__timber.log('TriviaGameMachine', f'Encountered queue.Full when submitting a new event ({event}) into the event queue (queue size: {self.__eventQueue.qsize()}): {e}\n{repr(e)}')
