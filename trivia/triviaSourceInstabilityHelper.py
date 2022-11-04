@@ -8,7 +8,7 @@ except:
     from trivia.triviaSource import TriviaSource
 
 
-class TriviaErrorDict():
+class TriviaSourceInstabilityHelper():
 
     def __init__(self, fallOffTimeDelta: timedelta = timedelta(hours = 1)):
         if fallOffTimeDelta is None:
@@ -17,9 +17,6 @@ class TriviaErrorDict():
         self.__fallOffTimeDelta: timedelta = fallOffTimeDelta
         self.__times: Dict[TriviaSource, Optional[datetime]] = dict()
         self.__values: Dict[TriviaSource, int] = defaultdict(lambda: 0)
-
-    def __delitem__(self, key: TriviaSource):
-        raise RuntimeError(f'this method is not supported for TriviaErrorDict')
 
     def __getitem__(self, key: TriviaSource) -> int:
         if key is None or not isinstance(key, TriviaSource):
@@ -51,6 +48,3 @@ class TriviaErrorDict():
             self.__values[key] = newErrorCount
 
         return newErrorCount
-
-    def __setitem__(self, key: TriviaSource, value: int):
-        raise RuntimeError(f'this method is not supported for TriviaErrorDict')

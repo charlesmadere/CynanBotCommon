@@ -29,7 +29,6 @@ try:
     from CynanBotCommon.trivia.triviaContentCode import TriviaContentCode
     from CynanBotCommon.trivia.triviaDatabaseTriviaQuestionRepository import \
         TriviaDatabaseTriviaQuestionRepository
-    from CynanBotCommon.trivia.triviaErrorDict import TriviaErrorDict
     from CynanBotCommon.trivia.triviaExceptions import (
         GenericTriviaNetworkException, MalformedTriviaJsonException,
         NoTriviaCorrectAnswersException,
@@ -39,6 +38,8 @@ try:
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
     from CynanBotCommon.trivia.triviaSource import TriviaSource
+    from CynanBotCommon.trivia.triviaSourceInstabilityHelper import \
+        TriviaSourceInstabilityHelper
     from CynanBotCommon.trivia.triviaType import TriviaType
     from CynanBotCommon.trivia.triviaVerifier import TriviaVerifier
     from CynanBotCommon.trivia.willFryTriviaQuestionRepository import \
@@ -48,7 +49,6 @@ try:
 except:
     import utils
     from timber.timber import Timber
-
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.absTriviaQuestionRepository import AbsTriviaQuestionRepository
     from trivia.funtoonTriviaQuestionRepository import \
@@ -70,7 +70,6 @@ except:
     from trivia.triviaContentCode import TriviaContentCode
     from trivia.triviaDatabaseTriviaQuestionRepository import \
         TriviaDatabaseTriviaQuestionRepository
-    from trivia.triviaErrorDict import TriviaErrorDict
     from trivia.triviaExceptions import (
         GenericTriviaNetworkException, MalformedTriviaJsonException,
         NoTriviaCorrectAnswersException,
@@ -79,6 +78,8 @@ except:
     from trivia.triviaFetchOptions import TriviaFetchOptions
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
+    from trivia.triviaSourceInstabilityHelper import \
+        TriviaSourceInstabilityHelper
     from trivia.triviaType import TriviaType
     from trivia.triviaVerifier import TriviaVerifier
     from trivia.wwtbamTriviaQuestionRepository import \
@@ -100,8 +101,8 @@ class TriviaRepository():
         openTriviaQaTriviaQuestionRepository: OpenTriviaQaTriviaQuestionRepository,
         timber: Timber,
         triviaDatabaseTriviaQuestionRepository: TriviaDatabaseTriviaQuestionRepository,
-        triviaSourceInstabilityDict: TriviaErrorDict,
         triviaSettingsRepository: TriviaSettingsRepository,
+        triviaSourceInstabilityHelper: TriviaSourceInstabilityHelper,
         triviaVerifier: TriviaVerifier,
         willFryTriviaQuestionRepository: WillFryTriviaQuestionRepository,
         wwtbamTriviaQuestionRepository: WwtbamTriviaQuestionRepository,
@@ -121,10 +122,10 @@ class TriviaRepository():
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif triviaDatabaseTriviaQuestionRepository is None:
             raise ValueError(f'triviaDatabaseTriviaQuestionRepository argument is malformed: \"{triviaDatabaseTriviaQuestionRepository}\"')
-        elif triviaSourceInstabilityDict is None:
-            raise ValueError(f'triviaSourceInstabilityDict argument is malformed: \"{triviaSourceInstabilityDict}\"')
         elif triviaSettingsRepository is None:
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
+        elif triviaSourceInstabilityHelper is None:
+            raise ValueError(f'triviaSourceInstabilityHelper argument is malformed: \"{triviaSourceInstabilityHelper}\"')
         elif triviaVerifier is None:
             raise ValueError(f'triviaVerifier argument is malformed: \"{triviaVerifier}\"')
         elif willFryTriviaQuestionRepository is None:
@@ -147,8 +148,8 @@ class TriviaRepository():
         self.__quizApiTriviaQuestionRepository: Optional[AbsTriviaQuestionRepository] = quizApiTriviaQuestionRepository
         self.__timber: Timber = timber
         self.__triviaDatabaseTriviaQuestionRepository: AbsTriviaQuestionRepository = triviaDatabaseTriviaQuestionRepository
-        self.__triviaSourceInstabilityDict: TriviaErrorDict = triviaSourceInstabilityDict
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
+        self.__triviaSourceInstabilityHelper: TriviaSourceInstabilityHelper = triviaSourceInstabilityHelper
         self.__triviaVerifier: TriviaVerifier = triviaVerifier
         self.__willFryTriviaQuestionRepository: AbsTriviaQuestionRepository = willFryTriviaQuestionRepository
         self.__wwtbamTriviaQuestionRepository: AbsTriviaQuestionRepository = wwtbamTriviaQuestionRepository
@@ -234,10 +235,10 @@ class TriviaRepository():
             except (NoTriviaCorrectAnswersException, NoTriviaMultipleChoiceResponsesException, NoTriviaQuestionException) as e:
                 self.__timber.log('TriviaRepository', f'Failed to fetch trivia question due to malformed data (trivia source was \"{triviaSource}\"): {e}')
             except (GenericTriviaNetworkException, MalformedTriviaJsonException) as e:
-                errorCount = self.__triviaSourceInstabilityDict.incrementErrorCount(triviaSource)
+                errorCount = self.__triviaSourceInstabilityHelper.incrementErrorCount(triviaSource)
                 self.__timber.log('TriviaRepository', f'Encountered bad API Exception when fetching trivia question (trivia source was \"{triviaSource}\") (new error count is {errorCount}): {e}')
             except Exception as e:
-                errorCount = self.__triviaSourceInstabilityDict.incrementErrorCount(triviaSource)
+                errorCount = self.__triviaSourceInstabilityHelper.incrementErrorCount(triviaSource)
                 self.__timber.log('TriviaRepository', f'Encountered unknown Exception when fetching trivia question (trivia source was \"{triviaSource}\") (new error count is {errorCount}): {e}')
 
             if await self.__verifyGoodTriviaQuestion(triviaQuestion, triviaFetchOptions):
@@ -294,7 +295,7 @@ class TriviaRepository():
         unstableTriviaSources: Set[TriviaSource] = set()
 
         for triviaSource in TriviaSource:
-            if self.__triviaSourceInstabilityDict[triviaSource] >= instabilityThreshold:
+            if self.__triviaSourceInstabilityHelper[triviaSource] >= instabilityThreshold:
                 unstableTriviaSources.add(triviaSource)
 
         return unstableTriviaSources
