@@ -660,7 +660,7 @@ class TriviaGameMachine():
             await asyncio.sleep(self.__sleepTimeSeconds)
 
     def submitAction(self, action: AbsTriviaAction):
-        if action is None:
+        if not isinstance(action, AbsTriviaAction):
             raise ValueError(f'action argument is malformed: \"{action}\"')
 
         try:
@@ -669,7 +669,7 @@ class TriviaGameMachine():
             self.__timber.log('TriviaGameMachine', f'Encountered queue.Full when submitting a new action ({action}) into the action queue (queue size: {self.__actionQueue.qsize()}): {e}')
 
     async def __submitEvent(self, event: AbsTriviaEvent):
-        if event is None:
+        if not isinstance(event, AbsTriviaEvent):
             raise ValueError(f'event argument is malformed: \"{event}\"')
 
         try:
