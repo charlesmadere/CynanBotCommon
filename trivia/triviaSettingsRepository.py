@@ -9,7 +9,6 @@ try:
     from CynanBotCommon.trivia.triviaSource import TriviaSource
 except:
     import utils
-
     from trivia.triviaSource import TriviaSource
 
 
@@ -129,7 +128,7 @@ class TriviaSettingsRepository():
 
     async def getSuperTriviaCooldownSeconds(self) -> int:
         jsonContents = await self.__readJson()
-        return utils.getIntFromDict(jsonContents, 'super_trivia_cooldown_seconds', 6)
+        return utils.getIntFromDict(jsonContents, 'super_trivia_cooldown_seconds', 5)
 
     async def getTriviaSourceInstabilityThreshold(self) -> int:
         jsonContents = await self.__readJson()
