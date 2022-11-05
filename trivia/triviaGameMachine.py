@@ -46,8 +46,6 @@ try:
         StartNewSuperTriviaGameAction
     from CynanBotCommon.trivia.startNewTriviaGameAction import \
         StartNewTriviaGameAction
-    from CynanBotCommon.trivia.superGameLaunchpadTriviaEvent import \
-        SuperGameLaunchpadTriviaEvent
     from CynanBotCommon.trivia.superGameNotReadyCheckAnswerTriviaEvent import \
         SuperGameNotReadyCheckAnswerTriviaEvent
     from CynanBotCommon.trivia.superTriviaCooldownHelper import \
@@ -107,8 +105,6 @@ except:
     from trivia.startNewSuperTriviaGameAction import \
         StartNewSuperTriviaGameAction
     from trivia.startNewTriviaGameAction import StartNewTriviaGameAction
-    from trivia.superGameLaunchpadTriviaEvent import \
-        SuperGameLaunchpadTriviaEvent
     from trivia.superGameNotReadyCheckAnswerTriviaEvent import \
         SuperGameNotReadyCheckAnswerTriviaEvent
     from trivia.superTriviaCooldownHelper import SuperTriviaCooldownHelper
@@ -396,10 +392,15 @@ class TriviaGameMachine():
             userId = action.getUserId()
         )
 
+        remainingQueueSize = await self.__queuedTriviaGameStore.getQueuedSuperGamesSize(
+            twitchChannel = action.getTwitchChannel()
+        )
+
         await self.__submitEvent(CorrectSuperAnswerTriviaEvent(
             triviaQuestion = state.getTriviaQuestion(),
             pointsForWinning = state.getPointsForWinning(),
             pointsMultiplier = state.getPointsMultiplier(),
+            remainingQueueSize = remainingQueueSize,
             actionId = action.getActionId(),
             answer = action.getAnswer(),
             gameId = state.getGameId(),
@@ -499,16 +500,7 @@ class TriviaGameMachine():
         if isSuperTriviaGameCurrentlyInProgress:
             return
         elif not self.__superTriviaCooldownHelper[action.getTwitchChannel()]:
-            if not action.isLaunchpadAnnounceActionConsumed():
-                action.consumeLaunchpadAnnounceAction()
-                remainingQueueSize = await self.__queuedTriviaGameStore.getQueuedSuperGamesSize(action.getTwitchChannel())
-
-                await self.__submitEvent(SuperGameLaunchpadTriviaEvent(
-                    remainingQueueSize = remainingQueueSize,
-                    actionId = action.getActionId(),
-                    twitchChannel = action.getTwitchChannel()
-                ))
-
+            # re-add this action back into the queue to try processing again later, as we are on cooldown
             self.submitAction(action)
             return
 
@@ -587,10 +579,15 @@ class TriviaGameMachine():
                 superGameState: SuperTriviaGameState = state
                 await self.__removeSuperTriviaGame(superGameState.getTwitchChannel())
 
+                remainingQueueSize = await self.__queuedTriviaGameStore.getQueuedSuperGamesSize(
+                    twitchChannel = superGameState.getTwitchChannel()
+                )
+
                 await self.__submitEvent(OutOfTimeSuperTriviaEvent(
                     triviaQuestion = superGameState.getTriviaQuestion(),
                     pointsForWinning = superGameState.getPointsForWinning(),
                     pointsMultiplier = superGameState.getPointsMultiplier(),
+                    remainingQueueSize = remainingQueueSize,
                     actionId = superGameState.getActionId(),
                     gameId = superGameState.getGameId(),
                     twitchChannel = superGameState.getTwitchChannel()
