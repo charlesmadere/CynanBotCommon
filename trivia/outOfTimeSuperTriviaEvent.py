@@ -7,7 +7,6 @@ try:
     from CynanBotCommon.trivia.triviaEventType import TriviaEventType
 except:
     import utils
-
     from trivia.absTriviaEvent import AbsTriviaEvent
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.triviaEventType import TriviaEventType
@@ -20,6 +19,7 @@ class OutOfTimeSuperTriviaEvent(AbsTriviaEvent):
         triviaQuestion: AbsTriviaQuestion,
         pointsForWinning: int,
         pointsMultiplier: int,
+        remainingQueueSize: int,
         actionId: str,
         gameId: str,
         twitchChannel: str
@@ -39,6 +39,10 @@ class OutOfTimeSuperTriviaEvent(AbsTriviaEvent):
             raise ValueError(f'pointsMultiplier argument is malformed: \"{pointsMultiplier}\"')
         elif pointsMultiplier < 1:
             raise ValueError(f'pointsMultiplier argument is out of bounds: {pointsMultiplier}')
+        elif not utils.isValidNum(remainingQueueSize):
+            raise ValueError(f'remainingQueueSize argument is malformed: \"{remainingQueueSize}\"')
+        elif remainingQueueSize < 0:
+            raise ValueError(f'remainingQueueSize argument is out of bounds: {remainingQueueSize}')
         elif not utils.isValidStr(gameId):
             raise ValueError(f'gameId argument is malformed: \"{gameId}\"')
         elif not utils.isValidStr(twitchChannel):
@@ -47,6 +51,7 @@ class OutOfTimeSuperTriviaEvent(AbsTriviaEvent):
         self.__triviaQuestion: AbsTriviaQuestion = triviaQuestion
         self.__pointsForWinning: int = pointsForWinning
         self.__pointsMultiplier: int = pointsMultiplier
+        self.__remainingQueueSize: int = remainingQueueSize
         self.__gameId: str = gameId
         self.__twitchChannel: str = twitchChannel
 
@@ -64,6 +69,12 @@ class OutOfTimeSuperTriviaEvent(AbsTriviaEvent):
 
     def getPointsMultiplierStr(self) -> str:
         return locale.format_string("%d", self.__pointsMultiplier, grouping = True)
+
+    def getRemainingQueueSize(self) -> int:
+        return self.__remainingQueueSize
+
+    def getRemainingQueueSizeStr(self) -> str:
+        return locale.format_string("%d", self.__remainingQueueSize, grouping = True)
 
     def getTriviaQuestion(self) -> AbsTriviaQuestion:
         return self.__triviaQuestion
