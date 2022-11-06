@@ -11,7 +11,6 @@ try:
     from CynanBotCommon.trivia.triviaType import TriviaType
 except:
     import utils
-
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.triviaDifficulty import TriviaDifficulty
     from trivia.triviaExceptions import (
@@ -117,4 +116,4 @@ class MultipleChoiceTriviaQuestion(AbsTriviaQuestion):
         return f'{self.getQuestion()} {responsesStr}'
 
     def getResponses(self) -> List[str]:
-        return self.__multipleChoiceResponses
+        return utils.copyList(self.__multipleChoiceResponses)
