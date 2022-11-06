@@ -165,17 +165,17 @@ class UserIdsRepository():
         self.__isDatabaseReady = True
 
         connection = await self.__backingDatabase.getConnection()
-        cursor = await connection.execute(
-            '''
-                CREATE TABLE IF NOT EXISTS userIds (
-                    userId TEXT NOT NULL PRIMARY KEY COLLATE NOCASE,
-                    userName TEXT NOT NULL COLLATE NOCASE
-                )
-            '''
-        )
 
-        await connection.commit()
-        await cursor.close()
+        async with connection.transaction():
+            await connection.execute(
+                '''
+                    CREATE TABLE IF NOT EXISTS userIds (
+                        userId TEXT NOT NULL PRIMARY KEY COLLATE NOCASE,
+                        userName TEXT NOT NULL COLLATE NOCASE
+                    )
+                '''
+            )
+
         await connection.close()
 
     async def setUser(self, userId: str, userName: str):
