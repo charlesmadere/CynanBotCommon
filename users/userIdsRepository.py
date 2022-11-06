@@ -2,17 +2,17 @@ from asyncio import TimeoutError
 from typing import Any, Dict
 
 import aiohttp
-from aiosqlite import Connection
+from asyncpg import Connection
 
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.backingDatabase import BackingDatabase
     from CynanBotCommon.networkClientProvider import NetworkClientProvider
+    from CynanBotCommon.storage.backingPsqlDatabase import BackingPsqlDatabase
     from CynanBotCommon.timber.timber import Timber
 except:
     import utils
-    from backingDatabase import BackingDatabase
     from networkClientProvider import NetworkClientProvider
+    from storage.backingPsqlDatabase import BackingPsqlDatabase
     from timber.timber import Timber
 
 
@@ -20,7 +20,7 @@ class UserIdsRepository():
 
     def __init__(
         self,
-        backingDatabase: BackingDatabase,
+        backingDatabase: BackingPsqlDatabase,
         networkClientProvider: NetworkClientProvider,
         timber: Timber
     ):
@@ -31,7 +31,7 @@ class UserIdsRepository():
         elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
 
-        self.__backingDatabase: BackingDatabase = backingDatabase
+        self.__backingDatabase: BackingPsqlDatabase = backingDatabase
         self.__networkClientProvider: NetworkClientProvider = networkClientProvider
         self.__timber: Timber = timber
 
