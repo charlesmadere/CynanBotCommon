@@ -56,16 +56,16 @@ class BannedTriviaIdsRepository():
             raise ValueError(f'triviaSource argument is malformed: \"{triviaSource}\"')
 
         connection = await self.__getDatabaseConnection()
-        cursor = await connection.execute(
-            '''
-                INSERT OR IGNORE INTO bannedTriviaIds (triviaId, triviaSource)
-                VALUES (?, ?)
-            ''',
-            ( triviaId, triviaSource.toStr() )
-        )
 
-        await connection.commit()
-        await cursor.close()
+        async with connection.transaction():
+            await connection.execute(
+                '''
+                    INSERT OR IGNORE INTO bannedTriviaIds (triviaId, triviaSource)
+                    VALUES (?, ?)
+                ''',
+                triviaId, triviaSource.toStr()
+            )
+
         await connection.close()
 
     async def __getDatabaseConnection(self) -> Connection:
@@ -103,21 +103,18 @@ class BannedTriviaIdsRepository():
             return False
 
         connection = await self.__getDatabaseConnection()
-        cursor = await connection.execute(
+        record = await connection.fetchrow(
             '''
                 SELECT COUNT(1) FROM bannedTriviaIds
                 WHERE triviaId = ? AND triviaSource = ?
             ''',
-            ( triviaId, triviaSource.toStr() )
+            triviaId, triviaSource.toStr()
         )
 
-        row = await cursor.fetchone()
         count: Optional[int] = None
+        if record is not None:
+            count = record[0]
 
-        if row is not None:
-            count = row[0]
-
-        await cursor.close()
         await connection.close()
 
         if not utils.isValidNum(count) or count < 1:
@@ -138,14 +135,14 @@ class BannedTriviaIdsRepository():
             self.__timber.log('BannedTriviaIdsRepository', f'Unbanning trivia question (triviaId=\"{triviaId}\", triviaSource=\"{triviaSource}\")...')
 
         connection = await self.__getDatabaseConnection()
-        cursor = await connection.execute(
-            '''
-                DELETE FROM bannedTriviaIds
-                WHERE triviaId = ? AND triviaSource = ?
-            ''',
-            ( triviaId, triviaSource.toStr() )
-        )
 
-        await connection.commit()
-        await cursor.close()
+        async with connection.transaction():
+            await connection.execute(
+                '''
+                    DELETE FROM bannedTriviaIds
+                    WHERE triviaId = ? AND triviaSource = ?
+                ''',
+                triviaId, triviaSource.toStr()
+            )
+
         await connection.close()
