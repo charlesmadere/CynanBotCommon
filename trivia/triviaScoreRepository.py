@@ -32,42 +32,37 @@ class TriviaScoreRepository():
             raise ValueError(f'userId argument is an illegal value: \"{userId}\"')
 
         connection = await self.__getDatabaseConnection()
-        cursor = await connection.execute(
+        record = await connection.fetchrow(
             '''
                 SELECT streak, superTriviaWins, triviaLosses, triviaWins, twitchChannel, userId FROM triviaScores
                 WHERE twitchChannel = ? AND userId = ?
             ''',
-            ( twitchChannel, userId )
+            twitchChannel, userId
         )
 
-        row = await cursor.fetchone()
-
-        if row is not None:
+        if record is not None:
             result = TriviaScoreResult(
-                streak = row[0],
-                superTriviaWins = row[1],
-                triviaLosses = row[2],
-                triviaWins = row[3],
-                twitchChannel = row[4],
-                userId = row[5]
+                streak = record[0],
+                superTriviaWins = record[1],
+                triviaLosses = record[2],
+                triviaWins = record[3],
+                twitchChannel = record[4],
+                userId = record[5]
             )
 
-            await cursor.close()
             await connection.close()
             return result
 
-        await cursor.execute(
-            '''
-                INSERT INTO triviaScores (streak, superTriviaWins, triviaLosses, triviaWins, twitchChannel, userId)
-                VALUES (?, ?, ?, ?, ?, ?)
-            ''',
-            ( 0, 0, 0, 0, twitchChannel, userId )
-        )
+        async with connection.transaction():
+            await connection.execute(
+                '''
+                    INSERT INTO triviaScores (streak, superTriviaWins, triviaLosses, triviaWins, twitchChannel, userId)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                ''',
+                0, 0, 0, 0, twitchChannel, userId
+            )
 
-        await connection.commit()
-        await cursor.close()
         await connection.close()
-
         return TriviaScoreResult(
             streak = 0,
             superTriviaWins = 0,
@@ -266,15 +261,15 @@ class TriviaScoreRepository():
             raise ValueError(f'userId argument is an illegal value: \"{userId}\"')
 
         connection = await self.__backingDatabase.getConnection()
-        cursor = await connection.execute(
-            '''
-                INSERT INTO triviaScores (streak, superTriviaWins, triviaLosses, triviaWins, twitchChannel, userId)
-                VALUES (?, ?, ?, ?, ?, ?)
-                ON CONFLICT (twitchChannel, userId) DO UPDATE SET streak = excluded.streak, superTriviaWins = excluded.superTriviaWins, triviaLosses = excluded.triviaLosses, triviaWins = excluded.triviaWins
-            ''',
-            ( newStreak, newSuperTriviaWins, newTriviaLosses, newTriviaWins, twitchChannel, userId )
-        )
 
-        await connection.commit()
-        await cursor.close()
+        async with connection.transaction():
+            await connection.execute(
+                '''
+                    INSERT INTO triviaScores (streak, superTriviaWins, triviaLosses, triviaWins, twitchChannel, userId)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                    ON CONFLICT (twitchChannel, userId) DO UPDATE SET streak = excluded.streak, superTriviaWins = excluded.superTriviaWins, triviaLosses = excluded.triviaLosses, triviaWins = excluded.triviaWins
+                ''',
+                newStreak, newSuperTriviaWins, newTriviaLosses, newTriviaWins, twitchChannel, userId
+            )
+
         await connection.close()
