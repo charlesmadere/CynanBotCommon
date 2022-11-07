@@ -71,22 +71,20 @@ class TriviaEmoteGenerator():
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
         connection = await self.__getDatabaseConnection()
-        cursor = await connection.execute(
+
+        record = await connection.execute(
             '''
                 SELECT emoteIndex FROM triviaEmotes
                 WHERE twitchChannel = ?
                 LIMIT 1
             ''',
-            ( twitchChannel, )
+            twitchChannel
         )
 
-        row = await cursor.fetchone()
         emoteIndex: Optional[int] = None
+        if record is not None:
+            emoteIndex = record[0]
 
-        if row is not None:
-            emoteIndex = row[0]
-
-        await cursor.close()
         await connection.close()
 
         if not utils.isValidNum(emoteIndex) or emoteIndex < 0:
@@ -106,18 +104,18 @@ class TriviaEmoteGenerator():
         emoteIndex = (emoteIndex + 1) % len(self.__emotesDict)
 
         connection = await self.__getDatabaseConnection()
-        await connection.execute(
-            '''
-                INSERT INTO triviaEmotes (emoteIndex, twitchChannel)
-                VALUES (?, ?)
-                ON CONFLICT (twitchChannel) DO UPDATE SET emoteIndex = excluded.emoteIndex
-            ''',
-            ( emoteIndex, twitchChannel )
-        )
 
-        await connection.commit()
+        async with connection.transaction():
+            await connection.execute(
+                '''
+                    INSERT INTO triviaEmotes (emoteIndex, twitchChannel)
+                    VALUES (?, ?)
+                    ON CONFLICT (twitchChannel) DO UPDATE SET emoteIndex = excluded.emoteIndex
+                ''',
+                emoteIndex, twitchChannel
+            )
+
         await connection.close()
-
         return self.__emotesList[emoteIndex]
 
     def getRandomEmote(self) -> str:
