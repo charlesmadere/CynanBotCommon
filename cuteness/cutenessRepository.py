@@ -194,7 +194,7 @@ class CutenessRepository():
                 ORDER BY SUM(cuteness.cuteness) DESC
                 LIMIT ?
             ''',
-            ( twitchChannel, twitchChannelUserId, self.__leaderboardSize )
+            twitchChannel, twitchChannelUserId, self.__leaderboardSize
         )
 
         if not utils.hasItems(records):
@@ -277,7 +277,7 @@ class CutenessRepository():
                 WHERE twitchChannel = ? AND userId = ? AND cuteness IS NOT NULL AND cuteness >= 1
                 LIMIT 1
             ''',
-            ( twitchChannel, userId )
+            twitchChannel, userId
         )
 
         totalCuteness: int = 0
@@ -293,7 +293,7 @@ class CutenessRepository():
                 ORDER BY cuteness DESC
                 LIMIT 1
             ''',
-            ( twitchChannel, userId )
+            twitchChannel, userId
         )
 
         bestCuteness: CutenessHistoryEntry = None
@@ -349,7 +349,7 @@ class CutenessRepository():
                 WHERE twitchChannel = ? AND userId = ? AND utcYearAndMonth = ?
                 LIMIT 1
             ''',
-            ( twitchChannel, userId, cutenessDate.getStr() )
+            twitchChannel, userId, cutenessDate.getStr()
         )
 
         oldCuteness: int = 0
@@ -371,7 +371,7 @@ class CutenessRepository():
                     VALUES (?, ?, ?, ?)
                     ON CONFLICT (twitchChannel, userId, utcYearAndMonth) DO UPDATE SET cuteness = excluded.cuteness
                 ''',
-                ( newCuteness, twitchChannel, userId, cutenessDate.getStr() )
+                newCuteness, twitchChannel, userId, cutenessDate.getStr()
             )
 
         await connection.close()
@@ -482,7 +482,7 @@ class CutenessRepository():
                 ORDER BY utcYearAndMonth DESC
                 LIMIT ?
             ''',
-            ( twitchChannel, CutenessDate().getStr(), self.__historyLeaderboardSize )
+            twitchChannel, CutenessDate().getStr(), self.__historyLeaderboardSize
         )
 
         if not utils.hasItems(records):
