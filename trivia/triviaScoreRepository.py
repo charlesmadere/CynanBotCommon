@@ -1,23 +1,22 @@
-from aiosqlite import Connection
+from asyncpg import Connection
 
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.backingDatabase import BackingDatabase
+    from CynanBotCommon.storage.backingPsqlDatabase import BackingPsqlDatabase
     from CynanBotCommon.trivia.triviaScoreResult import TriviaScoreResult
 except:
     import utils
-    from backingDatabase import BackingDatabase
-
+    from storage.backingPsqlDatabase import BackingPsqlDatabase
     from trivia.triviaScoreResult import TriviaScoreResult
 
 
 class TriviaScoreRepository():
 
-    def __init__(self, backingDatabase: BackingDatabase):
+    def __init__(self, backingDatabase: BackingPsqlDatabase):
         if backingDatabase is None:
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
 
-        self.__backingDatabase: BackingDatabase = backingDatabase
+        self.__backingDatabase: BackingPsqlDatabase = backingDatabase
         self.__isDatabaseReady: bool = False
 
     async def fetchTriviaScore(
@@ -77,6 +76,10 @@ class TriviaScoreRepository():
             twitchChannel = twitchChannel,
             userId = userId
         )
+
+    async def __getDatabaseConnection(self) -> Connection:
+        await self.__initDatabaseTable()
+        return await self.__backingDatabase.getConnection()
 
     async def incrementSuperTriviaWins(
         self,
@@ -207,10 +210,6 @@ class TriviaScoreRepository():
 
         return newResult
 
-    async def __getDatabaseConnection(self) -> Connection:
-        await self.__initDatabaseTable()
-        return await self.__backingDatabase.getConnection()
-
     async def __initDatabaseTable(self):
         if self.__isDatabaseReady:
             return
@@ -218,22 +217,22 @@ class TriviaScoreRepository():
         self.__isDatabaseReady = True
 
         connection = await self.__backingDatabase.getConnection()
-        cursor = await connection.execute(
-            '''
-                CREATE TABLE IF NOT EXISTS triviaScores (
-                    streak INTEGER NOT NULL DEFAULT 0,
-                    superTriviaWins INTEGER NOT NULL DEFAULT 0,
-                    triviaLosses INTEGER NOT NULL DEFAULT 0,
-                    triviaWins INTEGER NOT NULL DEFAULT 0,
-                    twitchChannel TEXT NOT NULL COLLATE NOCASE,
-                    userId TEXT NOT NULL COLLATE NOCASE,
-                    PRIMARY KEY (twitchChannel, userId)
-                )
-            '''
-        )
 
-        await connection.commit()
-        await cursor.close()
+        async with connection.transaction():
+            await connection.execute(
+                '''
+                    CREATE TABLE IF NOT EXISTS triviaScores (
+                        streak INTEGER NOT NULL DEFAULT 0,
+                        superTriviaWins INTEGER NOT NULL DEFAULT 0,
+                        triviaLosses INTEGER NOT NULL DEFAULT 0,
+                        triviaWins INTEGER NOT NULL DEFAULT 0,
+                        twitchChannel TEXT NOT NULL COLLATE NOCASE,
+                        userId TEXT NOT NULL COLLATE NOCASE,
+                        PRIMARY KEY (twitchChannel, userId)
+                    )
+                '''
+            )
+
         await connection.close()
 
     async def __updateTriviaScore(

@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-from aiosqlite import Connection
+from asyncpg import Connection
 
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.backingDatabase import BackingDatabase
+    from CynanBotCommon.storage.backingPsqlDatabase import BackingPsqlDatabase
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.triviaContentCode import TriviaContentCode
@@ -16,9 +16,8 @@ try:
     from CynanBotCommon.trivia.triviaSource import TriviaSource
 except:
     import utils
-    from backingDatabase import BackingDatabase
+    from storage.backingPsqlDatabase import BackingPsqlDatabase
     from timber.timber import Timber
-
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.triviaContentCode import TriviaContentCode
     from trivia.triviaQuestionReference import TriviaQuestionReference
@@ -30,7 +29,7 @@ class TriviaHistoryRepository():
 
     def __init__(
         self,
-        backingDatabase: BackingDatabase,
+        backingDatabase: BackingPsqlDatabase,
         timber: Timber,
         triviaSettingsRepository: TriviaSettingsRepository
     ):
@@ -41,7 +40,7 @@ class TriviaHistoryRepository():
         elif triviaSettingsRepository is None:
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
 
-        self.__backingDatabase: BackingDatabase = backingDatabase
+        self.__backingDatabase: BackingPsqlDatabase = backingDatabase
         self.__timber: Timber = timber
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
 
@@ -94,21 +93,21 @@ class TriviaHistoryRepository():
         self.__isDatabaseReady = True
 
         connection = await self.__backingDatabase.getConnection()
-        cursor = await connection.execute(
-            '''
-                CREATE TABLE IF NOT EXISTS triviaHistory (
-                    datetime TEXT NOT NULL,
-                    emote TEXT NOT NULL,
-                    triviaId TEXT NOT NULL COLLATE NOCASE,
-                    triviaSource TEXT NOT NULL COLLATE NOCASE,
-                    twitchChannel TEXT NOT NULL COLLATE NOCASE,
-                    PRIMARY KEY (triviaId, triviaSource, twitchChannel)
-                )
-            '''
-        )
 
-        await connection.commit()
-        await cursor.close()
+        async with connection.transaction():
+            await connection.execute(
+                '''
+                    CREATE TABLE IF NOT EXISTS triviaHistory (
+                        datetime TEXT NOT NULL,
+                        emote TEXT NOT NULL,
+                        triviaId TEXT NOT NULL COLLATE NOCASE,
+                        triviaSource TEXT NOT NULL COLLATE NOCASE,
+                        twitchChannel TEXT NOT NULL COLLATE NOCASE,
+                        PRIMARY KEY (triviaId, triviaSource, twitchChannel)
+                    )
+                '''
+            )
+
         await connection.close()
 
     async def verify(

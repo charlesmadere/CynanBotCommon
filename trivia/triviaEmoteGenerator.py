@@ -3,26 +3,26 @@ from collections import OrderedDict
 from typing import Dict, List, Optional, Set
 
 import emoji
-from aiosqlite import Connection
+from asyncpg import Connection
 
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.backingDatabase import BackingDatabase
+    from CynanBotCommon.storage.backingPsqlDatabase import BackingPsqlDatabase
 except:
     import utils
-    from backingDatabase import BackingDatabase
+    from storage.backingPsqlDatabase import BackingPsqlDatabase
 
 
 class TriviaEmoteGenerator():
 
     def __init__(
         self,
-        backingDatabase: BackingDatabase
+        backingDatabase: BackingPsqlDatabase
     ):
         if backingDatabase is None:
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
 
-        self.__backingDatabase: BackingDatabase = backingDatabase
+        self.__backingDatabase: BackingPsqlDatabase = backingDatabase
 
         self.__isDatabaseReady: bool = False
         self.__emotesDict: Dict[str, Optional[Set[str]]] = self.__createEmotesDict()
@@ -146,15 +146,15 @@ class TriviaEmoteGenerator():
         self.__isDatabaseReady = True
 
         connection = await self.__backingDatabase.getConnection()
-        cursor = await connection.execute(
-            '''
-                CREATE TABLE IF NOT EXISTS triviaEmotes (
-                    emoteIndex INTEGER NOT NULL DEFAULT 0,
-                    twitchChannel TEXT NOT NULL PRIMARY KEY COLLATE NOCASE
-                )
-            '''
-        )
 
-        await connection.commit()
-        await cursor.close()
+        async with connection.transaction():
+            await connection.execute(
+                '''
+                    CREATE TABLE IF NOT EXISTS triviaEmotes (
+                        emoteIndex SMALLINT NOT NULL DEFAULT 0,
+                        twitchChannel TEXT NOT NULL PRIMARY KEY COLLATE NOCASE
+                    )
+                '''
+            )
+
         await connection.close()

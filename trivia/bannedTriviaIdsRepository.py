@@ -1,19 +1,18 @@
 from typing import Optional
 
-from aiosqlite import Connection
+from asyncpg import Connection
 
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.backingDatabase import BackingDatabase
+    from CynanBotCommon.storage.backingPsqlDatabase import BackingPsqlDatabase
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
     from CynanBotCommon.trivia.triviaSource import TriviaSource
 except:
     import utils
-    from backingDatabase import BackingDatabase
+    from storage.backingPsqlDatabase import BackingPsqlDatabase
     from timber.timber import Timber
-
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
 
@@ -22,7 +21,7 @@ class BannedTriviaIdsRepository():
 
     def __init__(
         self,
-        backingDatabase: BackingDatabase,
+        backingDatabase: BackingPsqlDatabase,
         timber: Timber,
         triviaSettingsRepository: TriviaSettingsRepository
     ):
@@ -33,7 +32,7 @@ class BannedTriviaIdsRepository():
         elif triviaSettingsRepository is None:
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
 
-        self.__backingDatabase: BackingDatabase = backingDatabase
+        self.__backingDatabase: BackingPsqlDatabase = backingDatabase
         self.__timber: Timber = timber
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
 
@@ -80,18 +79,18 @@ class BannedTriviaIdsRepository():
         self.__isDatabaseReady = True
 
         connection = await self.__backingDatabase.getConnection()
-        cursor = await connection.execute(
-            '''
-                CREATE TABLE IF NOT EXISTS bannedTriviaIds (
-                    triviaId TEXT NOT NULL COLLATE NOCASE,
-                    triviaSource TEXT NOT NULL COLLATE NOCASE,
-                    PRIMARY KEY (triviaId, triviaSource)
-                )
-            '''
-        )
 
-        await connection.commit()
-        await cursor.close()
+        async with connection.transaction():
+            await connection.execute(
+                '''
+                    CREATE TABLE IF NOT EXISTS bannedTriviaIds (
+                        triviaId TEXT NOT NULL COLLATE NOCASE,
+                        triviaSource TEXT NOT NULL COLLATE NOCASE,
+                        PRIMARY KEY (triviaId, triviaSource)
+                    )
+                '''
+            )
+
         await connection.close()
 
     async def isBanned(self, triviaSource: TriviaSource, triviaId: str) -> bool:

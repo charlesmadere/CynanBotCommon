@@ -1,10 +1,9 @@
 from typing import List, Optional
 
-from aiosqlite import Connection
+from asyncpg import Connection
 
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.backingDatabase import BackingDatabase
     from CynanBotCommon.cuteness.cutenessChampionsResult import \
         CutenessChampionsResult
     from CynanBotCommon.cuteness.cutenessDate import CutenessDate
@@ -20,12 +19,10 @@ try:
     from CynanBotCommon.cuteness.cutenessLeaderboardResult import \
         CutenessLeaderboardResult
     from CynanBotCommon.cuteness.cutenessResult import CutenessResult
+    from CynanBotCommon.storage.backingPsqlDatabase import BackingPsqlDatabase
     from CynanBotCommon.users.userIdsRepository import UserIdsRepository
 except:
     import utils
-    from backingDatabase import BackingDatabase
-    from users.userIdsRepository import UserIdsRepository
-
     from cuteness.cutenessChampionsResult import CutenessChampionsResult
     from cuteness.cutenessDate import CutenessDate
     from cuteness.cutenessEntry import CutenessEntry
@@ -36,13 +33,16 @@ except:
         CutenessLeaderboardHistoryResult
     from cuteness.cutenessLeaderboardResult import CutenessLeaderboardResult
     from cuteness.cutenessResult import CutenessResult
+    from storage.backingPsqlDatabase import BackingPsqlDatabase
+
+    from users.userIdsRepository import UserIdsRepository
 
 
 class CutenessRepository():
 
     def __init__(
         self,
-        backingDatabase: BackingDatabase,
+        backingDatabase: BackingPsqlDatabase,
         userIdsRepository: UserIdsRepository,
         historyLeaderboardSize: int = 3,
         historySize: int = 5,
@@ -70,7 +70,7 @@ class CutenessRepository():
         elif localLeaderboardSize < 1 or localLeaderboardSize > 5:
             raise ValueError(f'localLeaderboardSize argument is out of bounds: {localLeaderboardSize}')
 
-        self.__backingDatabase: BackingDatabase = backingDatabase
+        self.__backingDatabase: BackingPsqlDatabase = backingDatabase
         self.__userIdsRepository: UserIdsRepository = userIdsRepository
         self.__historyLeaderboardSize: int = historyLeaderboardSize
         self.__historySize: int = historySize
@@ -577,18 +577,18 @@ class CutenessRepository():
         self.__isDatabaseReady = True
 
         connection = await self.__backingDatabase.getConnection()
-        cursor = await connection.execute(
-            '''
-                CREATE TABLE IF NOT EXISTS cuteness (
-                    cuteness INTEGER NOT NULL DEFAULT 0,
-                    twitchChannel TEXT NOT NULL COLLATE NOCASE,
-                    userId TEXT NOT NULL COLLATE NOCASE,
-                    utcYearAndMonth TEXT NOT NULL COLLATE NOCASE,
-                    PRIMARY KEY (twitchChannel, userId, utcYearAndMonth)
-                )
-            '''
-        )
 
-        await connection.commit()
-        await cursor.close()
+        async with connection.transaction():
+            await connection.execute(
+                '''
+                    CREATE TABLE IF NOT EXISTS cuteness (
+                        cuteness BIGINT NOT NULL DEFAULT 0,
+                        twitchChannel TEXT NOT NULL COLLATE NOCASE,
+                        userId TEXT NOT NULL COLLATE NOCASE,
+                        utcYearAndMonth TEXT NOT NULL COLLATE NOCASE,
+                        PRIMARY KEY (twitchChannel, userId, utcYearAndMonth)
+                    )
+                '''
+            )
+
         await connection.close()
