@@ -135,7 +135,7 @@ class UserIdsRepository():
                 SELECT userName FROM userIds
                 WHERE userId = ?
             ''',
-            ( userId, )
+            userId
         )
 
         if record is None:
@@ -189,7 +189,7 @@ class UserIdsRepository():
                     VALUES (?, ?)
                     ON CONFLICT (userId) DO UPDATE SET userName = excluded.userName
                 ''',
-                ( userId, userName )
+                userId, userName
             )
 
         await connection.close()
