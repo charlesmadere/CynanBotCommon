@@ -102,20 +102,17 @@ class CutenessRepository():
         cutenessDate = CutenessDate()
 
         connection = await self.__getDatabaseConnection()
-        cursor = await connection.execute(
+        record = await connection.fetchrow(
             '''
                 SELECT cuteness.cuteness, cuteness.userId, userIds.userName FROM cuteness
                 INNER JOIN userIds ON cuteness.userId = userIds.userId
                 WHERE cuteness.twitchChannel = ? AND cuteness.userId = ? AND cuteness.utcYearAndMonth = ?
                 LIMIT 1
             ''',
-            ( twitchChannel, userId, cutenessDate.getStr() )
+            twitchChannel, userId, cutenessDate.getStr()
         )
 
-        row = await cursor.fetchone()
-
-        if row is None:
-            await cursor.close()
+        if record is None:
             await connection.close()
             return CutenessResult(
                 cutenessDate = cutenessDate,
@@ -125,10 +122,9 @@ class CutenessRepository():
                 userName = userName
             )
 
-        cuteness: int = row[0]
+        cuteness: int = record[0]
 
         if not fetchLocalLeaderboard:
-            await cursor.close()
             await connection.close()
             return CutenessResult(
                 cutenessDate = cutenessDate,
@@ -140,7 +136,7 @@ class CutenessRepository():
 
         twitchChannelUserId = await self.__userIdsRepository.fetchUserId(userName = twitchChannel)
 
-        await cursor.execute(
+        records = await connection.fetch(
             '''
                 SELECT cuteness.cuteness, cuteness.userId, userIds.userName FROM cuteness
                 INNER JOIN userIds ON cuteness.userId = userIds.userId
@@ -148,13 +144,10 @@ class CutenessRepository():
                 ORDER BY ABS(? - ABS(cuteness.cuteness)) ASC
                 LIMIT ?
             ''',
-            ( twitchChannel, cutenessDate.getStr(), userId, twitchChannelUserId, cuteness, self.__localLeaderboardSize )
+            twitchChannel, cutenessDate.getStr(), userId, twitchChannelUserId, cuteness, self.__localLeaderboardSize
         )
 
-        rows = await cursor.fetchmany(size = self.__localLeaderboardSize)
-
-        if len(rows) == 0:
-            await cursor.close()
+        if not utils.hasItems(records):
             await connection.close()
             return CutenessResult(
                 cutenessDate = cutenessDate,
@@ -166,14 +159,13 @@ class CutenessRepository():
 
         localLeaderboard: List[CutenessEntry] = list()
 
-        for row in rows:
+        for record in records:
             localLeaderboard.append(CutenessEntry(
-                cuteness = row[0],
-                userId = row[1],
-                userName = row[2]
+                cuteness = record[0],
+                userId = record[1],
+                userName = record[2]
             ))
 
-        await cursor.close()
         await connection.close()
 
         # sorts cuteness into highest to lowest order
@@ -194,7 +186,7 @@ class CutenessRepository():
         twitchChannelUserId = await self.__userIdsRepository.fetchUserId(userName = twitchChannel)
 
         connection = await self.__getDatabaseConnection()
-        cursor = await connection.execute(
+        records = await connection.fetch(
             '''
                 SELECT cuteness.userId, userIds.userName, SUM(cuteness.cuteness) as totalCuteness FROM cuteness
                 INNER JOIN userIds on cuteness.userId = userIds.userId where cuteness.twitchChannel = ? AND cuteness.userId != ?
@@ -205,26 +197,22 @@ class CutenessRepository():
             ( twitchChannel, twitchChannelUserId, self.__leaderboardSize )
         )
 
-        rows = await cursor.fetchmany(size = self.__leaderboardSize)
-
-        if len(rows) == 0:
-            await cursor.close()
+        if not utils.hasItems(records):
             await connection.close()
             return CutenessChampionsResult(twitchChannel = twitchChannel)
 
         champions: List[CutenessLeaderboardEntry] = list()
         rank: int = 1
 
-        for row in rows:
+        for record in records:
             champions.append(CutenessLeaderboardEntry(
-                cuteness = row[2],
+                cuteness = record[2],
                 rank = rank,
-                userId = row[0],
-                userName = row[1]
+                userId = record[0],
+                userName = record[1]
             ))
             rank = rank + 1
 
-        await cursor.close()
         await connection.close()
 
         # sort cuteness into highest to lowest order
@@ -253,20 +241,17 @@ class CutenessRepository():
         await self.__userIdsRepository.setUser(userId = userId, userName = userName)
 
         connection = await self.__getDatabaseConnection()
-        cursor = await connection.execute(
+        records = await connection.fetch(
             '''
                 SELECT cuteness, utcYearAndMonth FROM cuteness
                 WHERE twitchChannel = ? AND userId = ? AND cuteness IS NOT NULL AND cuteness >= 1
                 ORDER BY utcYearAndMonth DESC
                 LIMIT ?
             ''',
-            ( twitchChannel, userId, self.__historySize )
+            twitchChannel, userId, self.__historySize
         )
 
-        rows = await cursor.fetchmany(self.__historySize)
-
-        if len(rows) == 0:
-            await cursor.close()
+        if not utils.hasItems(records):
             await connection.close()
             return CutenessHistoryResult(
                 userId = userId,
@@ -275,10 +260,10 @@ class CutenessRepository():
 
         entries: List[CutenessHistoryEntry] = list()
 
-        for row in rows:
+        for record in records:
             entries.append(CutenessHistoryEntry(
-                cutenessDate = CutenessDate(row[1]),
-                cuteness = row[0],
+                cutenessDate = CutenessDate(record[1]),
+                cuteness = record[0],
                 userId = userId,
                 userName = userName
             ))
@@ -286,9 +271,7 @@ class CutenessRepository():
         # sort entries into newest to oldest order
         entries.sort(key = lambda entry: entry.getCutenessDate(), reverse = True)
 
-        await cursor.close()
-
-        cursor = await connection.execute(
+        record = await connection.fetchrow(
             '''
                 SELECT SUM(cuteness) FROM cuteness
                 WHERE twitchChannel = ? AND userId = ? AND cuteness IS NOT NULL AND cuteness >= 1
@@ -297,16 +280,13 @@ class CutenessRepository():
             ( twitchChannel, userId )
         )
 
-        row = await cursor.fetchone()
         totalCuteness: int = 0
 
-        if row is not None:
+        if record is not None:
             # this should be impossible at this point, but let's just be safe
-            totalCuteness = row[0]
+            totalCuteness = record[0]
 
-        await cursor.close()
-
-        cursor = await connection.execute(
+        record = await connection.execute(
             '''
                 SELECT cuteness, utcYearAndMonth FROM cuteness
                 WHERE twitchChannel = ? AND userId = ? AND cuteness IS NOT NULL AND cuteness >= 1
@@ -316,21 +296,18 @@ class CutenessRepository():
             ( twitchChannel, userId )
         )
 
-        row = await cursor.fetchone()
         bestCuteness: CutenessHistoryEntry = None
 
-        if row is not None:
+        if record is not None:
             # again, this should be impossible here, but let's just be safe
             bestCuteness = CutenessHistoryEntry(
-                cutenessDate = CutenessDate(row[1]),
-                cuteness = row[0],
+                cutenessDate = CutenessDate(record[1]),
+                cuteness = record[0],
                 userId = userId,
                 userName = userName
             )
 
-        await cursor.close()
         await connection.close()
-
         return CutenessHistoryResult(
             userId = userId,
             userName = userName,
@@ -366,7 +343,7 @@ class CutenessRepository():
         cutenessDate = CutenessDate()
 
         connection = await self.__getDatabaseConnection()
-        cursor = await connection.execute(
+        record = await connection.fetchrow(
             '''
                 SELECT cuteness FROM cuteness
                 WHERE twitchChannel = ? AND userId = ? AND utcYearAndMonth = ?
@@ -375,13 +352,11 @@ class CutenessRepository():
             ( twitchChannel, userId, cutenessDate.getStr() )
         )
 
-        row = await cursor.fetchone()
         oldCuteness: int = 0
 
-        if row is not None:
-            oldCuteness = row[0]
+        if record is not None:
+            oldCuteness = record[0]
 
-        await cursor.close()
         newCuteness: int = oldCuteness + incrementAmount
 
         if newCuteness < 0:
@@ -389,17 +364,16 @@ class CutenessRepository():
         elif newCuteness > utils.getLongMaxSafeSize():
             raise OverflowError(f'New cuteness ({newCuteness}) would be too large (old cuteness = {oldCuteness}) (increment amount = {incrementAmount})')
 
-        await connection.execute(
-            '''
-                INSERT INTO cuteness (cuteness, twitchChannel, userId, utcYearAndMonth)
-                VALUES (?, ?, ?, ?)
-                ON CONFLICT (twitchChannel, userId, utcYearAndMonth) DO UPDATE SET cuteness = excluded.cuteness
-            ''',
-            ( newCuteness, twitchChannel, userId, cutenessDate.getStr() )
-        )
+        async with connection.transaction():
+            await connection.execute(
+                '''
+                    INSERT INTO cuteness (cuteness, twitchChannel, userId, utcYearAndMonth)
+                    VALUES (?, ?, ?, ?)
+                    ON CONFLICT (twitchChannel, userId, utcYearAndMonth) DO UPDATE SET cuteness = excluded.cuteness
+                ''',
+                ( newCuteness, twitchChannel, userId, cutenessDate.getStr() )
+            )
 
-        await connection.commit()
-        await cursor.close()
         await connection.close()
 
         return CutenessResult(
@@ -423,7 +397,7 @@ class CutenessRepository():
 
         cutenessDate = CutenessDate()
         connection = await self.__getDatabaseConnection()
-        cursor = await connection.execute(
+        records = await connection.fetch(
             '''
                 SELECT cuteness.cuteness, cuteness.userId, userIds.userName FROM cuteness
                 INNER JOIN userIds ON cuteness.userId = userIds.userId
@@ -431,29 +405,25 @@ class CutenessRepository():
                 ORDER BY cuteness.cuteness DESC
                 LIMIT ?
             ''',
-            ( twitchChannel, cutenessDate.getStr(), twitchChannelUserId, self.__leaderboardSize )
+            twitchChannel, cutenessDate.getStr(), twitchChannelUserId, self.__leaderboardSize
         )
 
-        rows = await cursor.fetchmany(size = self.__leaderboardSize)
-
-        if len(rows) == 0:
-            await cursor.close()
+        if not utils.hasItems(records):
             await connection.close()
             return CutenessLeaderboardResult(cutenessDate = cutenessDate)
 
         entries: List[CutenessLeaderboardEntry] = list()
         rank: int = 1
 
-        for row in rows:
+        for record in records:
             entries.append(CutenessLeaderboardEntry(
-                cuteness = row[0],
+                cuteness = record[0],
                 rank = rank,
-                userId = row[1],
-                userName = row[2]
+                userId = record[1],
+                userName = record[2]
             ))
             rank = rank + 1
 
-        await cursor.close()
         await connection.close()
 
         # sort cuteness into highest to lowest order
@@ -505,7 +475,7 @@ class CutenessRepository():
         twitchChannelUserId = await self.__userIdsRepository.fetchUserId(userName = twitchChannel)
 
         connection = await self.__getDatabaseConnection()
-        cursor = await connection.execute(
+        records = await connection.fetch(
             '''
                 SELECT DISTINCT utcYearAndMonth FROM cuteness
                 WHERE twitchChannel = ? AND utcYearAndMonth != ?
@@ -515,18 +485,15 @@ class CutenessRepository():
             ( twitchChannel, CutenessDate().getStr(), self.__historyLeaderboardSize )
         )
 
-        rows = await cursor.fetchmany(self.__historyLeaderboardSize)
-
-        if len(rows) == 0:
-            await cursor.close()
+        if not utils.hasItems(records):
             await connection.close()
             return CutenessLeaderboardHistoryResult(twitchChannel = twitchChannel)
 
         leaderboards: List[CutenessLeaderboardResult] = list()
 
-        for row in rows:
-            cutenessDate = CutenessDate(row[0])
-            cursor = await connection.execute(
+        for record in records:
+            cutenessDate = CutenessDate(record[0])
+            monthRecords = await connection.fetch(
                 '''
                     SELECT cuteness.cuteness, cuteness.userId, userIds.userName FROM cuteness
                     INNER JOIN userIds ON cuteness.userId = userIds.userId
@@ -534,30 +501,28 @@ class CutenessRepository():
                     ORDER BY cuteness.cuteness DESC
                     LIMIT ?
                 ''',
-                ( twitchChannel, twitchChannelUserId, cutenessDate.getStr(), self.__historyLeaderboardSize )
+                twitchChannel, twitchChannelUserId, cutenessDate.getStr(), self.__historyLeaderboardSize
             )
 
-            rows = await cursor.fetchmany(self.__historyLeaderboardSize)
+            if not utils.hasItems(monthRecords):
+                continue
 
-            if len(rows) >= 1:
-                entries: List[CutenessLeaderboardEntry] = list()
-                rank: int = 1
+            entries: List[CutenessLeaderboardEntry] = list()
+            rank: int = 1
 
-                for row in rows:
-                    entries.append(CutenessLeaderboardEntry(
-                        cuteness = row[0],
-                        rank = rank,
-                        userId = row[1],
-                        userName = row[2]
-                    ))
-                    rank = rank + 1
-
-                leaderboards.append(CutenessLeaderboardResult(
-                    cutenessDate = cutenessDate,
-                    entries = entries
+            for monthRecord in monthRecords:
+                entries.append(CutenessLeaderboardEntry(
+                    cuteness = monthRecord[0],
+                    rank = rank,
+                    userId = monthRecord[1],
+                    userName = monthRecord[2]
                 ))
+                rank = rank + 1
 
-            await cursor.close()
+            leaderboards.append(CutenessLeaderboardResult(
+                cutenessDate = cutenessDate,
+                entries = entries
+            ))
 
         await connection.close()
 
