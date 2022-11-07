@@ -26,11 +26,11 @@ class BackingPsqlDatabase():
         self.__psqlCredentialsProvider: PsqlCredentialsProvider = psqlCredentialsProvider
 
     async def getConnection(self) -> Connection:
-        database = await self.__psqlCredentialsProvider.requireDatabase()
+        databaseName = await self.__psqlCredentialsProvider.requireDatabaseName()
         user = await self.__psqlCredentialsProvider.requireUser()
 
         return await asyncpg.connect(
-            database = database,
+            database = databaseName,
             loop = self.__eventLoop,
             user = user
         )
