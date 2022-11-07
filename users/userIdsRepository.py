@@ -47,21 +47,18 @@ class UserIdsRepository():
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
 
         connection = await self.__getDatabaseConnection()
-        cursor = await connection.execute(
+        record = await connection.fetchrow(
             '''
                 SELECT userId FROM userIds
                 WHERE userName = ?
             ''',
-            ( userName, )
+            userName
         )
 
-        row = await cursor.fetchone()
-
         userId: str = None
-        if row is not None:
-            userId = row[0]
+        if record is not None:
+            userId = record[0]
 
-        await cursor.close()
         await connection.close()
 
         if userId is not None:
@@ -133,7 +130,7 @@ class UserIdsRepository():
             raise ValueError(f'userId argument is an illegal value: \"{userId}\"')
 
         connection = await self.__getDatabaseConnection()
-        cursor = await connection.execute(
+        record = await connection.fetchrow(
             '''
                 SELECT userName FROM userIds
                 WHERE userId = ?
@@ -141,16 +138,13 @@ class UserIdsRepository():
             ( userId, )
         )
 
-        row = await cursor.fetchone()
-
-        if row is None:
+        if record is None:
             raise RuntimeError(f'No userName for userId \"{userId}\" found')
 
-        userName: str = row[0]
+        userName: str = record[0]
         if not utils.isValidStr(userName):
             raise RuntimeError(f'userName for userId \"{userId}\" is malformed: \"{userName}\"')
 
-        await cursor.close()
         await connection.close()
         return userName
 
@@ -187,15 +181,15 @@ class UserIdsRepository():
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
 
         connection = await self.__getDatabaseConnection()
-        cursor = await connection.execute(
-            '''
-                INSERT INTO userIds (userId, userName)
-                VALUES (?, ?)
-                ON CONFLICT (userId) DO UPDATE SET userName = excluded.userName
-            ''',
-            ( userId, userName )
-        )
 
-        await connection.commit()
-        await cursor.close()
+        async with connection.transaction():
+            await connection.execute(
+                '''
+                    INSERT INTO userIds (userId, userName)
+                    VALUES (?, ?)
+                    ON CONFLICT (userId) DO UPDATE SET userName = excluded.userName
+                ''',
+                ( userId, userName )
+            )
+
         await connection.close()
