@@ -267,7 +267,7 @@ class TriviaScoreRepository():
                 '''
                     INSERT INTO triviaScores (streak, superTriviaWins, triviaLosses, triviaWins, twitchChannel, userId)
                     VALUES (?, ?, ?, ?, ?, ?)
-                    ON CONFLICT (twitchChannel, userId) DO UPDATE SET streak = excluded.streak, superTriviaWins = excluded.superTriviaWins, triviaLosses = excluded.triviaLosses, triviaWins = excluded.triviaWins
+                    ON CONFLICT (twitchChannel, userId) DO UPDATE SET streak = EXCLUDED.streak, superTriviaWins = EXCLUDED.superTriviaWins, triviaLosses = EXCLUDED.triviaLosses, triviaWins = EXCLUDED.triviaWins
                 ''',
                 newStreak, newSuperTriviaWins, newTriviaLosses, newTriviaWins, twitchChannel, userId
             )

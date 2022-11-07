@@ -110,7 +110,7 @@ class TriviaEmoteGenerator():
                 '''
                     INSERT INTO triviaEmotes (emoteIndex, twitchChannel)
                     VALUES (?, ?)
-                    ON CONFLICT (twitchChannel) DO UPDATE SET emoteIndex = excluded.emoteIndex
+                    ON CONFLICT (twitchChannel) DO UPDATE SET emoteIndex = EXCLUDED.emoteIndex
                 ''',
                 emoteIndex, twitchChannel
             )

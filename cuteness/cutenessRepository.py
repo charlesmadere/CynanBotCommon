@@ -369,7 +369,7 @@ class CutenessRepository():
                 '''
                     INSERT INTO cuteness (cuteness, twitchChannel, userId, utcYearAndMonth)
                     VALUES (?, ?, ?, ?)
-                    ON CONFLICT (twitchChannel, userId, utcYearAndMonth) DO UPDATE SET cuteness = excluded.cuteness
+                    ON CONFLICT (twitchChannel, userId, utcYearAndMonth) DO UPDATE SET cuteness = EXCLUDED.cuteness
                 ''',
                 newCuteness, twitchChannel, userId, cutenessDate.getStr()
             )
