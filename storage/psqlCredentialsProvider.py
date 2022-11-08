@@ -12,7 +12,7 @@ except:
 
 class PsqlCredentialsProvider():
 
-    def __init__(self, credentialsFile: str = 'CynanBotCommon/storage/credentials.json'):
+    def __init__(self, credentialsFile: str = 'CynanBotCommon/storage/psqlCredentials.json'):
         if not utils.isValidStr(credentialsFile):
             raise ValueError(f'credentialsFile argument is malformed: \"{credentialsFile}\"')
 
@@ -41,9 +41,9 @@ class PsqlCredentialsProvider():
         self.__jsonCache = jsonContents
         return jsonContents
 
-    async def requireDatabase(self) -> str:
+    async def requireDatabaseName(self) -> str:
         jsonContents = await self.__readJsonAsync()
-        return utils.getStrFromDict(jsonContents, 'database')
+        return utils.getStrFromDict(jsonContents, 'databaseName')
 
     async def requireUser(self) -> str:
         jsonContents = await self.__readJsonAsync()

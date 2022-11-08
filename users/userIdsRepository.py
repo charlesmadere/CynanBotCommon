@@ -2,17 +2,18 @@ from asyncio import TimeoutError
 from typing import Any, Dict
 
 import aiohttp
-from aiosqlite import Connection
 
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.backingDatabase import BackingDatabase
     from CynanBotCommon.networkClientProvider import NetworkClientProvider
+    from CynanBotCommon.storage.backingDatabase import BackingDatabase
+    from CynanBotCommon.storage.databaseConnection import DatabaseConnection
     from CynanBotCommon.timber.timber import Timber
 except:
     import utils
-    from backingDatabase import BackingDatabase
     from networkClientProvider import NetworkClientProvider
+    from storage.backingDatabase import BackingDatabase
+    from storage.databaseConnection import DatabaseConnection
     from timber.timber import Timber
 
 
@@ -47,21 +48,18 @@ class UserIdsRepository():
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
 
         connection = await self.__getDatabaseConnection()
-        cursor = await connection.execute(
+        record = await connection.fetchRow(
             '''
                 SELECT userId FROM userIds
                 WHERE userName = ?
             ''',
-            ( userName, )
+            userName
         )
 
-        row = await cursor.fetchone()
-
         userId: str = None
-        if row is not None:
-            userId = row[0]
+        if utils.hasItems(record):
+            userId = record[0]
 
-        await cursor.close()
         await connection.close()
 
         if userId is not None:
@@ -133,28 +131,25 @@ class UserIdsRepository():
             raise ValueError(f'userId argument is an illegal value: \"{userId}\"')
 
         connection = await self.__getDatabaseConnection()
-        cursor = await connection.execute(
+        record = await connection.fetchRow(
             '''
                 SELECT userName FROM userIds
                 WHERE userId = ?
             ''',
-            ( userId, )
+            userId
         )
 
-        row = await cursor.fetchone()
-
-        if row is None:
+        if not utils.hasItems(record):
             raise RuntimeError(f'No userName for userId \"{userId}\" found')
 
-        userName: str = row[0]
+        userName: str = record[0]
         if not utils.isValidStr(userName):
             raise RuntimeError(f'userName for userId \"{userId}\" is malformed: \"{userName}\"')
 
-        await cursor.close()
         await connection.close()
         return userName
 
-    async def __getDatabaseConnection(self) -> Connection:
+    async def __getDatabaseConnection(self) -> DatabaseConnection:
         await self.__initDatabaseTable()
         return await self.__backingDatabase.getConnection()
 
@@ -165,7 +160,7 @@ class UserIdsRepository():
         self.__isDatabaseReady = True
 
         connection = await self.__backingDatabase.getConnection()
-        cursor = await connection.execute(
+        await connection.execute(
             '''
                 CREATE TABLE IF NOT EXISTS userIds (
                     userId TEXT NOT NULL PRIMARY KEY COLLATE NOCASE,
@@ -174,8 +169,6 @@ class UserIdsRepository():
             '''
         )
 
-        await connection.commit()
-        await cursor.close()
         await connection.close()
 
     async def setUser(self, userId: str, userName: str):
@@ -187,15 +180,13 @@ class UserIdsRepository():
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
 
         connection = await self.__getDatabaseConnection()
-        cursor = await connection.execute(
+        await connection.execute(
             '''
                 INSERT INTO userIds (userId, userName)
                 VALUES (?, ?)
-                ON CONFLICT (userId) DO UPDATE SET userName = excluded.userName
+                ON CONFLICT (userId) DO UPDATE SET userName = EXCLUDED.userName
             ''',
-            ( userId, userName )
+            userId, userName
         )
 
-        await connection.commit()
-        await cursor.close()
         await connection.close()

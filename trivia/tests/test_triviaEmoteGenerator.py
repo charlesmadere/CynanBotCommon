@@ -1,17 +1,29 @@
+import asyncio
+from asyncio import AbstractEventLoop
+
 import emoji
 import pytest
 
 try:
-    from ...backingDatabase import BackingDatabase
+    from ...storage.backingPsqlDatabase import BackingPsqlDatabase
+    from ...storage.psqlCredentialsProvider import PsqlCredentialsProvider
     from ...trivia.triviaEmoteGenerator import TriviaEmoteGenerator
 except:
-    from backingDatabase import BackingDatabase
+    from storage.backingPsqlDatabase import BackingPsqlDatabase
+    from storage.psqlCredentialsProvider import PsqlCredentialsProvider
     from trivia.triviaEmoteGenerator import TriviaEmoteGenerator
 
 
 class TestTriviaEmoteGenerator():
 
-    triviaEmoteGenerator: TriviaEmoteGenerator = TriviaEmoteGenerator(BackingDatabase())
+    eventLoop: AbstractEventLoop = asyncio.get_event_loop()
+    backingDatabase: BackingPsqlDatabase = BackingPsqlDatabase(
+        eventLoop = eventLoop,
+        psqlCredentialsProvider = PsqlCredentialsProvider()
+    )
+    triviaEmoteGenerator: TriviaEmoteGenerator = TriviaEmoteGenerator(
+        backingDatabase = backingDatabase
+    )
 
     def test_getRandomEmote(self):
         for _ in range(100):
