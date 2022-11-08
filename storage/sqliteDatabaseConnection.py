@@ -69,7 +69,7 @@ class SqliteDatabaseConnection(DatabaseConnection):
 
         records: List[List[Any]] = list()
 
-        for record in records:
+        for record in rows:
             records.append(list(record))
 
         await cursor.close()
