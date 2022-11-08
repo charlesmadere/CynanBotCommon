@@ -1,19 +1,18 @@
 from typing import Optional
 
-from aiosqlite import Connection
-
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.backingDatabase import BackingDatabase
+    from CynanBotCommon.storage.backingDatabase import BackingDatabase
+    from CynanBotCommon.storage.databaseConnection import DatabaseConnection
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
     from CynanBotCommon.trivia.triviaSource import TriviaSource
 except:
     import utils
-    from backingDatabase import BackingDatabase
+    from storage.backingDatabase import BackingDatabase
+    from storage.databaseConnection import DatabaseConnection
     from timber.timber import Timber
-
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
 
@@ -57,19 +56,17 @@ class BannedTriviaIdsRepository():
             raise ValueError(f'triviaSource argument is malformed: \"{triviaSource}\"')
 
         connection = await self.__getDatabaseConnection()
-        cursor = await connection.execute(
+        await connection.execute(
             '''
                 INSERT OR IGNORE INTO bannedTriviaIds (triviaId, triviaSource)
                 VALUES (?, ?)
             ''',
-            ( triviaId, triviaSource.toStr() )
+            triviaId, triviaSource.toStr()
         )
 
-        await connection.commit()
-        await cursor.close()
         await connection.close()
 
-    async def __getDatabaseConnection(self) -> Connection:
+    async def __getDatabaseConnection(self) -> DatabaseConnection:
         await self.__initDatabaseTable()
         return await self.__backingDatabase.getConnection()
 
@@ -80,7 +77,7 @@ class BannedTriviaIdsRepository():
         self.__isDatabaseReady = True
 
         connection = await self.__backingDatabase.getConnection()
-        cursor = await connection.execute(
+        await connection.execute(
             '''
                 CREATE TABLE IF NOT EXISTS bannedTriviaIds (
                     triviaId TEXT NOT NULL COLLATE NOCASE,
@@ -90,8 +87,6 @@ class BannedTriviaIdsRepository():
             '''
         )
 
-        await connection.commit()
-        await cursor.close()
         await connection.close()
 
     async def isBanned(self, triviaSource: TriviaSource, triviaId: str) -> bool:
@@ -104,21 +99,18 @@ class BannedTriviaIdsRepository():
             return False
 
         connection = await self.__getDatabaseConnection()
-        cursor = await connection.execute(
+        record = await connection.fetchRow(
             '''
                 SELECT COUNT(1) FROM bannedTriviaIds
                 WHERE triviaId = ? AND triviaSource = ?
             ''',
-            ( triviaId, triviaSource.toStr() )
+            triviaId, triviaSource.toStr()
         )
 
-        row = await cursor.fetchone()
         count: Optional[int] = None
+        if utils.hasItems(record):
+            count = record[0]
 
-        if row is not None:
-            count = row[0]
-
-        await cursor.close()
         await connection.close()
 
         if not utils.isValidNum(count) or count < 1:
@@ -139,14 +131,12 @@ class BannedTriviaIdsRepository():
             self.__timber.log('BannedTriviaIdsRepository', f'Unbanning trivia question (triviaId=\"{triviaId}\", triviaSource=\"{triviaSource}\")...')
 
         connection = await self.__getDatabaseConnection()
-        cursor = await connection.execute(
+        await connection.execute(
             '''
                 DELETE FROM bannedTriviaIds
                 WHERE triviaId = ? AND triviaSource = ?
             ''',
-            ( triviaId, triviaSource.toStr() )
+            triviaId, triviaSource.toStr()
         )
 
-        await connection.commit()
-        await cursor.close()
         await connection.close()

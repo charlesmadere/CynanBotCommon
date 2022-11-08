@@ -3,14 +3,15 @@ from collections import OrderedDict
 from typing import Dict, List, Optional, Set
 
 import emoji
-from aiosqlite import Connection
 
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.backingDatabase import BackingDatabase
+    from CynanBotCommon.storage.backingDatabase import BackingDatabase
+    from CynanBotCommon.storage.databaseConnection import DatabaseConnection
 except:
     import utils
-    from backingDatabase import BackingDatabase
+    from storage.backingDatabase import BackingDatabase
+    from storage.databaseConnection import DatabaseConnection
 
 
 class TriviaEmoteGenerator():
@@ -74,22 +75,19 @@ class TriviaEmoteGenerator():
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
         connection = await self.__getDatabaseConnection()
-        cursor = await connection.execute(
+        record = await connection.fetchRow(
             '''
                 SELECT emoteIndex FROM triviaEmotes
                 WHERE twitchChannel = ?
                 LIMIT 1
             ''',
-            ( twitchChannel, )
+            twitchChannel
         )
 
-        row = await cursor.fetchone()
         emoteIndex: Optional[int] = None
+        if utils.hasItems(record):
+            emoteIndex = record[0]
 
-        if row is not None:
-            emoteIndex = row[0]
-
-        await cursor.close()
         await connection.close()
 
         if not utils.isValidNum(emoteIndex) or emoteIndex < 0:
@@ -97,7 +95,7 @@ class TriviaEmoteGenerator():
 
         return emoteIndex
 
-    async def __getDatabaseConnection(self) -> Connection:
+    async def __getDatabaseConnection(self) -> DatabaseConnection:
         await self.__initDatabaseTable()
         return await self.__backingDatabase.getConnection()
 
@@ -113,14 +111,12 @@ class TriviaEmoteGenerator():
             '''
                 INSERT INTO triviaEmotes (emoteIndex, twitchChannel)
                 VALUES (?, ?)
-                ON CONFLICT (twitchChannel) DO UPDATE SET emoteIndex = excluded.emoteIndex
+                ON CONFLICT (twitchChannel) DO UPDATE SET emoteIndex = EXCLUDED.emoteIndex
             ''',
-            ( emoteIndex, twitchChannel )
+            emoteIndex, twitchChannel
         )
 
-        await connection.commit()
         await connection.close()
-
         return self.__emotesList[emoteIndex]
 
     def getRandomEmote(self) -> str:
@@ -149,15 +145,13 @@ class TriviaEmoteGenerator():
         self.__isDatabaseReady = True
 
         connection = await self.__backingDatabase.getConnection()
-        cursor = await connection.execute(
+        await connection.execute(
             '''
                 CREATE TABLE IF NOT EXISTS triviaEmotes (
-                    emoteIndex INTEGER NOT NULL DEFAULT 0,
+                    emoteIndex SMALLINT NOT NULL DEFAULT 0,
                     twitchChannel TEXT NOT NULL PRIMARY KEY COLLATE NOCASE
                 )
             '''
         )
 
-        await connection.commit()
-        await cursor.close()
         await connection.close()
