@@ -12,7 +12,7 @@ except:
 
 class PsqlCredentialsProvider():
 
-    def __init__(self, credentialsFile: str = 'CynanBotCommon/storage/credentials.json'):
+    def __init__(self, credentialsFile: str = 'CynanBotCommon/storage/psqlCredentials.json'):
         if not utils.isValidStr(credentialsFile):
             raise ValueError(f'credentialsFile argument is malformed: \"{credentialsFile}\"')
 
