@@ -45,7 +45,7 @@ class SqliteDatabaseConnection(DatabaseConnection):
         cursor = await self.__connection.execute(query, args)
         row = await cursor.fetchone()
 
-        if row is None:
+        if not utils.hasItems(row):
             await cursor.close()
             return None
 
