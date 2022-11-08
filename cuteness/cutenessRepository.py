@@ -102,7 +102,7 @@ class CutenessRepository():
         cutenessDate = CutenessDate()
 
         connection = await self.__getDatabaseConnection()
-        record = await connection.fetchrow(
+        record = await connection.fetchRow(
             '''
                 SELECT cuteness.cuteness, cuteness.userId, userIds.userName FROM cuteness
                 INNER JOIN userIds ON cuteness.userId = userIds.userId
@@ -136,7 +136,7 @@ class CutenessRepository():
 
         twitchChannelUserId = await self.__userIdsRepository.fetchUserId(userName = twitchChannel)
 
-        records = await connection.fetch(
+        records = await connection.fetchRows(
             '''
                 SELECT cuteness.cuteness, cuteness.userId, userIds.userName FROM cuteness
                 INNER JOIN userIds ON cuteness.userId = userIds.userId
@@ -186,7 +186,7 @@ class CutenessRepository():
         twitchChannelUserId = await self.__userIdsRepository.fetchUserId(userName = twitchChannel)
 
         connection = await self.__getDatabaseConnection()
-        records = await connection.fetch(
+        records = await connection.fetchRows(
             '''
                 SELECT cuteness.userId, userIds.userName, SUM(cuteness.cuteness) as totalCuteness FROM cuteness
                 INNER JOIN userIds on cuteness.userId = userIds.userId where cuteness.twitchChannel = ? AND cuteness.userId != ?
