@@ -1,22 +1,22 @@
-from asyncpg import Connection
-
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.storage.backingPsqlDatabase import BackingPsqlDatabase
+    from CynanBotCommon.storage.backingDatabase import BackingDatabase
+    from CynanBotCommon.storage.databaseConnection import DatabaseConnection
     from CynanBotCommon.trivia.triviaScoreResult import TriviaScoreResult
 except:
     import utils
-    from storage.backingPsqlDatabase import BackingPsqlDatabase
+    from storage.backingDatabase import BackingDatabase
+    from storage.databaseConnection import DatabaseConnection
     from trivia.triviaScoreResult import TriviaScoreResult
 
 
 class TriviaScoreRepository():
 
-    def __init__(self, backingDatabase: BackingPsqlDatabase):
+    def __init__(self, backingDatabase: BackingDatabase):
         if backingDatabase is None:
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
 
-        self.__backingDatabase: BackingPsqlDatabase = backingDatabase
+        self.__backingDatabase: BackingDatabase = backingDatabase
         self.__isDatabaseReady: bool = False
 
     async def fetchTriviaScore(
@@ -32,7 +32,7 @@ class TriviaScoreRepository():
             raise ValueError(f'userId argument is an illegal value: \"{userId}\"')
 
         connection = await self.__getDatabaseConnection()
-        record = await connection.fetchrow(
+        record = await connection.fetchRow(
             '''
                 SELECT streak, superTriviaWins, triviaLosses, triviaWins, twitchChannel, userId FROM triviaScores
                 WHERE twitchChannel = ? AND userId = ?
@@ -40,7 +40,7 @@ class TriviaScoreRepository():
             twitchChannel, userId
         )
 
-        if record is not None:
+        if utils.hasItems(record):
             result = TriviaScoreResult(
                 streak = record[0],
                 superTriviaWins = record[1],
@@ -53,14 +53,13 @@ class TriviaScoreRepository():
             await connection.close()
             return result
 
-        async with connection.transaction():
-            await connection.execute(
-                '''
-                    INSERT INTO triviaScores (streak, superTriviaWins, triviaLosses, triviaWins, twitchChannel, userId)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                ''',
-                0, 0, 0, 0, twitchChannel, userId
-            )
+        await connection.execute(
+            '''
+                INSERT INTO triviaScores (streak, superTriviaWins, triviaLosses, triviaWins, twitchChannel, userId)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ''',
+            0, 0, 0, 0, twitchChannel, userId
+        )
 
         await connection.close()
         return TriviaScoreResult(
@@ -72,7 +71,7 @@ class TriviaScoreRepository():
             userId = userId
         )
 
-    async def __getDatabaseConnection(self) -> Connection:
+    async def __getDatabaseConnection(self) -> DatabaseConnection:
         await self.__initDatabaseTable()
         return await self.__backingDatabase.getConnection()
 
@@ -212,21 +211,19 @@ class TriviaScoreRepository():
         self.__isDatabaseReady = True
 
         connection = await self.__backingDatabase.getConnection()
-
-        async with connection.transaction():
-            await connection.execute(
-                '''
-                    CREATE TABLE IF NOT EXISTS triviaScores (
-                        streak INTEGER NOT NULL DEFAULT 0,
-                        superTriviaWins INTEGER NOT NULL DEFAULT 0,
-                        triviaLosses INTEGER NOT NULL DEFAULT 0,
-                        triviaWins INTEGER NOT NULL DEFAULT 0,
-                        twitchChannel TEXT NOT NULL COLLATE NOCASE,
-                        userId TEXT NOT NULL COLLATE NOCASE,
-                        PRIMARY KEY (twitchChannel, userId)
-                    )
-                '''
-            )
+        await connection.execute(
+            '''
+                CREATE TABLE IF NOT EXISTS triviaScores (
+                    streak INTEGER NOT NULL DEFAULT 0,
+                    superTriviaWins INTEGER NOT NULL DEFAULT 0,
+                    triviaLosses INTEGER NOT NULL DEFAULT 0,
+                    triviaWins INTEGER NOT NULL DEFAULT 0,
+                    twitchChannel TEXT NOT NULL COLLATE NOCASE,
+                    userId TEXT NOT NULL COLLATE NOCASE,
+                    PRIMARY KEY (twitchChannel, userId)
+                )
+            '''
+        )
 
         await connection.close()
 
@@ -261,15 +258,13 @@ class TriviaScoreRepository():
             raise ValueError(f'userId argument is an illegal value: \"{userId}\"')
 
         connection = await self.__backingDatabase.getConnection()
-
-        async with connection.transaction():
-            await connection.execute(
-                '''
-                    INSERT INTO triviaScores (streak, superTriviaWins, triviaLosses, triviaWins, twitchChannel, userId)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                    ON CONFLICT (twitchChannel, userId) DO UPDATE SET streak = EXCLUDED.streak, superTriviaWins = EXCLUDED.superTriviaWins, triviaLosses = EXCLUDED.triviaLosses, triviaWins = EXCLUDED.triviaWins
-                ''',
-                newStreak, newSuperTriviaWins, newTriviaLosses, newTriviaWins, twitchChannel, userId
-            )
+        await connection.execute(
+            '''
+                INSERT INTO triviaScores (streak, superTriviaWins, triviaLosses, triviaWins, twitchChannel, userId)
+                VALUES (?, ?, ?, ?, ?, ?)
+                ON CONFLICT (twitchChannel, userId) DO UPDATE SET streak = EXCLUDED.streak, superTriviaWins = EXCLUDED.superTriviaWins, triviaLosses = EXCLUDED.triviaLosses, triviaWins = EXCLUDED.triviaWins
+            ''',
+            newStreak, newSuperTriviaWins, newTriviaLosses, newTriviaWins, twitchChannel, userId
+        )
 
         await connection.close()

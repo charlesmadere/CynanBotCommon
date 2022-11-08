@@ -108,7 +108,7 @@ class BannedTriviaIdsRepository():
         )
 
         count: Optional[int] = None
-        if record is not None:
+        if utils.hasItems(record):
             count = record[0]
 
         await connection.close()

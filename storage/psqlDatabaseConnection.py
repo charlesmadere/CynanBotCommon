@@ -42,7 +42,7 @@ class PsqlDatabaseConnection(DatabaseConnection):
         self.__requireNotClosed()
         record = await self.__connection.fetchrow(query, args)
 
-        if record is None:
+        if not utils.hasItems(record):
             return None
 
         results: List[Any] = list()
