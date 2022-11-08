@@ -241,7 +241,7 @@ class CutenessRepository():
         await self.__userIdsRepository.setUser(userId = userId, userName = userName)
 
         connection = await self.__getDatabaseConnection()
-        records = await connection.fetchRow(
+        records = await connection.fetchRows(
             '''
                 SELECT cuteness, utcYearAndMonth FROM cuteness
                 WHERE twitchChannel = ? AND userId = ? AND cuteness IS NOT NULL AND cuteness >= 1
