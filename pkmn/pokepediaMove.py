@@ -33,11 +33,11 @@ class PokepediaMove():
         elif not utils.isValidStr(rawName):
             raise ValueError(f'rawName argument is malformed: \"{rawName}\"')
 
-        self.__generationMoves = generationMoves
-        self.__moveId = moveId
-        self.__description = description
-        self.__name = name
-        self.__rawName = rawName
+        self.__generationMoves: Dict[PokepediaGeneration, PokepediaMoveGeneration] = generationMoves
+        self.__moveId: int = moveId
+        self.__description: str = description
+        self.__name: str = name
+        self.__rawName: str = rawName
 
     def getDescription(self) -> str:
         return self.__description

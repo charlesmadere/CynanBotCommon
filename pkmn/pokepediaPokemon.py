@@ -41,12 +41,12 @@ class PokepediaPokemon():
         elif not utils.isValidStr(name):
             raise ValueError(f'name argument is malformed: \"{name}\"')
 
-        self.__generationElementTypes = generationElementTypes
-        self.__initialGeneration = initialGeneration
-        self.__height = height
-        self.__pokedexId = pokedexId
-        self.__weight = weight
-        self.__name = name
+        self.__generationElementTypes: Dict[PokepediaGeneration, List[PokepediaElementType]] = generationElementTypes
+        self.__initialGeneration: PokepediaGeneration = initialGeneration
+        self.__height: int = height
+        self.__pokedexId: int = pokedexId
+        self.__weight: int = weight
+        self.__name: str = name
 
     def __buildGenerationElementTypesWeaknessesAndResistancesStr(
         self,
