@@ -33,7 +33,10 @@ class PsqlDatabaseConnection(DatabaseConnection):
         self.__requireNotClosed()
 
         async with self.__connection.transaction():
-            await self.__connection.execute(query, args)
+            if args is None:
+                await self.__connection.execute(query)
+            else:
+                await self.__connection.execute(query, args)
 
     async def fetchRow(self, query: str, *args: Optional[Any]) -> Optional[List[Any]]:
         if not utils.isValidStr(query):
@@ -45,10 +48,10 @@ class PsqlDatabaseConnection(DatabaseConnection):
         if not utils.hasItems(record):
             return None
 
-        results: List[Any] = list()
-        results.extend(record)
+        row: List[Any] = list()
+        row.append(record)
 
-        return results
+        return row
 
     async def fetchRows(self, query: str, *args: Optional[Any]) -> Optional[List[List[Any]]]:
         if not utils.isValidStr(query):
@@ -60,12 +63,12 @@ class PsqlDatabaseConnection(DatabaseConnection):
         if not utils.hasItems(records):
             return None
 
-        records: List[List[Any]] = list()
+        rows: List[List[Any]] = list()
 
         for record in records:
-            records.append(list(record))
+            rows.append(list(record))
 
-        return records
+        return rows
 
     def getDatabaseType(self) -> DatabaseType:
         return DatabaseType.POSTGRESQL
