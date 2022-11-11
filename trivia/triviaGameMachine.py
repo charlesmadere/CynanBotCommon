@@ -641,7 +641,11 @@ class TriviaGameMachine():
             except Exception as e:
                 self.__timber.log('TriviaGameMachine', f'Encountered unknown Exception when looping through actions (queue size: {self.__actionQueue.qsize()}) (actions size: {len(actions)}): {e}')
 
-            await self.__refreshStatusOfTriviaGames()
+            try:
+                await self.__refreshStatusOfTriviaGames()
+            except Exception as e:
+                self.__timber.log('TriviaGameMachine', f'Encountered unknown Exception when refreshing status of trivia games: {e}')
+
             await asyncio.sleep(self.__sleepTimeSeconds)
 
     async def __startEventLoop(self):
@@ -657,11 +661,11 @@ class TriviaGameMachine():
                 except queue.Empty as e:
                     self.__timber.log('TriviaGameMachine', f'Encountered queue.Empty when building up events list (queue size: {self.__eventQueue.qsize()}) (events size: {len(events)}): {e}')
 
-                try:
-                    for event in events:
+                for event in events:
+                    try:
                         await eventListener.onNewTriviaEvent(event)
-                except Exception as e:
-                    self.__timber.log('TriviaGameMachine', f'Encountered unknown Exception when looping through events (queue size: {self.__eventQueue.qsize()}): {e}')
+                    except Exception as e:
+                        self.__timber.log('TriviaGameMachine', f'Encountered unknown Exception when looping through events (queue size: {self.__eventQueue.qsize()}) (event: {event}): {e}')
 
             await asyncio.sleep(self.__sleepTimeSeconds)
 
