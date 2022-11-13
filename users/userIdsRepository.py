@@ -85,7 +85,7 @@ class UserIdsRepository():
                 }
             )
         except (aiohttp.ClientError, TimeoutError) as e:
-            self.__timber.log('UserIdsRepository', f'Encountered network error when fetching userId for userName \"{userName}\": {e}')
+            self.__timber.log('UserIdsRepository', f'Encountered network error when fetching userId for userName \"{userName}\": {e}', e)
             raise RuntimeError(f'UserIdsRepository encountered network error when fetching userId for userName \"{userName}\": {e}')
 
         if response.status != 200:

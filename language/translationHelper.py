@@ -71,7 +71,7 @@ class TranslationHelper():
         try:
             response = await clientSession.get(requestUrl)
         except (aiohttp.ClientError, TimeoutError) as e:
-            self.__timber.log('TranslationHelper', f'Encountered network error when translating \"{text}\": {e}')
+            self.__timber.log('TranslationHelper', f'Encountered network error when translating \"{text}\": {e}', e)
             raise RuntimeError(f'Encountered network error when translating \"{text}\": {e}')
 
         if response.status != 200:

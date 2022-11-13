@@ -89,7 +89,7 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
                 }
             )
         except (aiohttp.ClientError, TimeoutError) as e:
-            self.__timber.log('QuizApiTriviaQuestionRepository', f'Encountered network error: {e}')
+            self.__timber.log('QuizApiTriviaQuestionRepository', f'Encountered network error: {e}', e)
             raise GenericTriviaNetworkException(self.getTriviaSource(), e)
 
         if response.status != 200:

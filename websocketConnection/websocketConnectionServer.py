@@ -129,7 +129,7 @@ class WebsocketConnectionServer():
 
                     await websocket.wait_closed()
             except Exception as e:
-                self.__timber.log('WebsocketConnectionServer', f'Encountered exception within `__start()`: {e}')
+                self.__timber.log('WebsocketConnectionServer', f'Encountered exception within `__start()`: {e}', e)
 
                 if str(e) == 'Event loop is closed':
                     # this annoying code provides us an escape from this infinite loop when using
@@ -167,7 +167,7 @@ class WebsocketConnectionServer():
                         else:
                             self.__timber.log('WebsocketConnectionServer', f'Discarded an event meant for \"{path}\"')
                 except queue.Empty as e:
-                    self.__timber.log('WebsocketConnectionServer', f'Encountered queue.Empty error when looping through events (qsize: {self.__eventQueue.qsize()}): {e}')
+                    self.__timber.log('WebsocketConnectionServer', f'Encountered queue.Empty error when looping through events (qsize: {self.__eventQueue.qsize()}): {e}', e)
 
             await asyncio.sleep(self.__sleepTimeSeconds)
 

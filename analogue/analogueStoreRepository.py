@@ -109,7 +109,7 @@ class AnalogueStoreRepository():
         try:
             response = await clientSession.get(self.__storeUrl)
         except (aiohttp.ClientError, TimeoutError) as e:
-            self.__timber.log('AnalogueStoreRepository', f'Encountered network error: {e}')
+            self.__timber.log('AnalogueStoreRepository', f'Encountered network error: {e}', e)
             raise RuntimeError(f'Encountered network error when fetching Analogue store stock: {e}')
 
         if response.status != 200:

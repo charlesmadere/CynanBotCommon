@@ -91,7 +91,7 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
             try:
                 response = await clientSession.get('https://opentdb.com/api_token.php?command=request')
             except (aiohttp.ClientError, TimeoutError) as e:
-                self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Encountered network error when fetching session token: {e}')
+                self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Encountered network error when fetching session token: {e}', e)
                 return None
 
             if response.status != 200:
@@ -135,7 +135,7 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
             else:
                 response = await clientSession.get('https://opentdb.com/api.php?amount=1')
         except (aiohttp.ClientError, TimeoutError) as e:
-            self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Encountered network error when fetching trivia question: {e}')
+            self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Encountered network error when fetching trivia question: {e}', e)
             return None
 
         if response.status != 200:
