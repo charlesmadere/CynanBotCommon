@@ -2,6 +2,7 @@ import asyncio
 import queue
 from asyncio import AbstractEventLoop
 from queue import SimpleQueue
+from typing import Optional
 
 import aiofiles
 import aiofiles.os
@@ -12,7 +13,6 @@ try:
     from CynanBotCommon.timber.timberEntry import TimberEntry
 except:
     import utils
-
     from timber.timberEntry import TimberEntry
 
 
@@ -43,6 +43,12 @@ class Timber():
         self.__entryQueue: SimpleQueue[TimberEntry] = SimpleQueue()
         eventLoop.create_task(self.__startEventLoop())
 
+    def __getErrorStatement(self, exception: Exception) -> str:
+        if exception is None:
+            raise ValueError(f'exception argument is malformed: \"{exception}\"')
+
+        return f'{exception}\n'
+
     def __getLogStatement(
         self,
         ensureNewLine: bool,
@@ -61,13 +67,17 @@ class Timber():
 
         return logStatement
 
-    def log(self, tag: str, msg: str):
+    def log(self, tag: str, msg: str, exception: Optional[Exception] = None):
         if not utils.isValidStr(tag):
             raise ValueError(f'tag argument is malformed: \"{tag}\"')
         elif not utils.isValidStr(msg):
             raise ValueError(f'msg argument is malformed: \"{msg}\"')
 
-        timberEntry = TimberEntry(tag, msg)
+        timberEntry = TimberEntry(
+            tag = tag,
+            msg = msg,
+            exception = exception
+        )
 
         if self.__alsoPrintToStandardOut:
             print(self.__getLogStatement(False, timberEntry))
@@ -106,3 +116,17 @@ class Timber():
 
         async with aiofiles.open(timberFile, mode = 'a') as file:
             await file.write(logStatement)
+
+        if not timberEntry.hasException():
+            return
+
+        timberErrorDirectory = f'{timberDirectory}/errors'
+        timberErrorFile = f'{timberErrorDirectory}/{sdt.getDayStr()}.log'
+
+        if not await aiofiles.ospath.exists(timberErrorDirectory):
+            await aiofiles.os.makedirs(timberErrorDirectory)
+
+        errorStatement = self.__getErrorStatement(timberEntry.getException())
+
+        async with aiofiles.open(timberErrorFile, mode = 'a') as file:
+            await file.write(errorStatement)
