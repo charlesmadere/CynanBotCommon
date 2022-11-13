@@ -266,7 +266,7 @@ class PokepediaRepository():
         try:
             response = await clientSession.get(f'https://pokeapi.co/api/v2/move/{name}/')
         except (aiohttp.ClientError, TimeoutError) as e:
-            self.__timber.log('PokepediaRepository', f'Encountered network error from PokeAPI when searching for \"{name}\" move: {e}')
+            self.__timber.log('PokepediaRepository', f'Encountered network error from PokeAPI when searching for \"{name}\" move: {e}', e)
             raise RuntimeError(f'Encountered network error from PokeAPI when searching for \"{name}\" move: {e}')
 
         if response.status != 200:
@@ -296,7 +296,7 @@ class PokepediaRepository():
         try:
             response = await clientSession.get(f'https://pokeapi.co/api/v2/pokemon/{name}/')
         except (aiohttp.ClientError, TimeoutError) as e:
-            self.__timber.log('PokepediaRepository', f'Encountered network error from PokeAPI when searching for \"{name}\" Pokemon: {e}')
+            self.__timber.log('PokepediaRepository', f'Encountered network error from PokeAPI when searching for \"{name}\" Pokemon: {e}', e)
             raise RuntimeError(f'Encountered network error from PokeAPI when searching for \"{name}\" Pokemon: {e}')
 
         if response.status != 200:

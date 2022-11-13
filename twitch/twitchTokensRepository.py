@@ -188,7 +188,7 @@ class TwitchTokensRepository():
                 }
             )
         except (aiohttp.ClientError, TimeoutError) as e:
-            self.__timber.log('TwitchTokensRepository', f'Encountered network error when requesting new Twitch tokens for \"{twitchHandle}\": {e}')
+            self.__timber.log('TwitchTokensRepository', f'Encountered network error when requesting new Twitch tokens for \"{twitchHandle}\": {e}', e)
             raise TwitchNetworkException(f'Encountered network error when requesting new Twitch tokens for \"{twitchHandle}\": {e}')
 
         if response.status != 200:
@@ -306,7 +306,7 @@ class TwitchTokensRepository():
                 }
             )
         except (aiohttp.ClientError, TimeoutError) as e:
-            self.__timber.log('TwitchTokensRepository', f'Encountered network error when validating Twitch access token for \"{twitchHandle}\": {e}')
+            self.__timber.log('TwitchTokensRepository', f'Encountered network error when validating Twitch access token for \"{twitchHandle}\": {e}', e)
             raise TwitchNetworkException(f'Encountered network error when validating Twitch access token for \"{twitchHandle}\": {e}')
 
         responseStatus: int = response.status

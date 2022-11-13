@@ -132,6 +132,6 @@ class QueuedTriviaGameStore():
             try:
                 superGames.append(queuedSuperGames.get(block = True, timeout = self.__queueTimeoutSeconds))
             except queue.Empty as e:
-                self.__timber.log('QueuedTriviaGameStore', f'Unable to get queued super game for \"{twitchChannel}\" (queue size: {queuedSuperGames.qsize()}): {repr(e)}')
+                self.__timber.log('QueuedTriviaGameStore', f'Unable to get queued super game for \"{twitchChannel}\" (queue size: {queuedSuperGames.qsize()}): {e}', e)
 
         return superGames

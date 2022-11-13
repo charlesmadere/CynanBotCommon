@@ -233,13 +233,13 @@ class TriviaRepository():
             try:
                 triviaQuestion = await triviaQuestionRepository.fetchTriviaQuestion(triviaFetchOptions.getTwitchChannel())
             except (NoTriviaCorrectAnswersException, NoTriviaMultipleChoiceResponsesException, NoTriviaQuestionException) as e:
-                self.__timber.log('TriviaRepository', f'Failed to fetch trivia question due to malformed data (trivia source was \"{triviaSource}\"): {e}')
+                self.__timber.log('TriviaRepository', f'Failed to fetch trivia question due to malformed data (trivia source was \"{triviaSource}\"): {e}', e)
             except (GenericTriviaNetworkException, MalformedTriviaJsonException) as e:
                 errorCount = self.__triviaSourceInstabilityHelper.incrementErrorCount(triviaSource)
-                self.__timber.log('TriviaRepository', f'Encountered bad API Exception when fetching trivia question (trivia source was \"{triviaSource}\") (new error count is {errorCount}): {e}')
+                self.__timber.log('TriviaRepository', f'Encountered bad API Exception when fetching trivia question (trivia source was \"{triviaSource}\") (new error count is {errorCount}): {e}', e)
             except Exception as e:
                 errorCount = self.__triviaSourceInstabilityHelper.incrementErrorCount(triviaSource)
-                self.__timber.log('TriviaRepository', f'Encountered unknown Exception when fetching trivia question (trivia source was \"{triviaSource}\") (new error count is {errorCount}): {e}')
+                self.__timber.log('TriviaRepository', f'Encountered unknown Exception when fetching trivia question (trivia source was \"{triviaSource}\") (new error count is {errorCount}): {e}', e)
 
             if await self.__verifyGoodTriviaQuestion(triviaQuestion, triviaFetchOptions):
                 return triviaQuestion
