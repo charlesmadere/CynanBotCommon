@@ -54,7 +54,7 @@ class FuntoonRepository():
         try:
             response = await clientSession.get(f'{self.__funtoonApiUrl}/trivia/review/{triviaId}')
         except (aiohttp.ClientError, TimeoutError) as e:
-            self.__timber.log('FuntoonRepository', f'Encountered network error when banning a trivia question (triviaId={triviaId}): {e}')
+            self.__timber.log('FuntoonRepository', f'Encountered network error when banning a trivia question (triviaId={triviaId}): {e}', e)
             return False
 
         responseStatus: Optional[int] = None
@@ -121,7 +121,7 @@ class FuntoonRepository():
                 json = jsonPayload
             )
         except (aiohttp.ClientError, TimeoutError) as e:
-            self.__timber.log('FuntoonRepository', f'Encountered network error for \"{twitchChannel}\" for event \"{event}\": {e}')
+            self.__timber.log('FuntoonRepository', f'Encountered network error for \"{twitchChannel}\" for event \"{event}\": {e}', e)
             return False
 
         responseStatus: Optional[int ] = None
