@@ -63,6 +63,13 @@ class TestTriviaEmoteGenerator():
         assert result == '🍌'
 
     @pytest.mark.asyncio
+    async def test_getValidatedAndNormalizedEmote_withBlueberry(self):
+        result = await self.triviaEmoteGenerator.getValidatedAndNormalizedEmote('🫐')
+        assert result is not None
+        assert emoji.is_emoji(result)
+        assert result == '🫐'
+
+    @pytest.mark.asyncio
     async def test_getValidatedAndNormalizedEmote_withCardIndex(self):
         result = await self.triviaEmoteGenerator.getValidatedAndNormalizedEmote('📇')
         assert result is not None
@@ -167,6 +174,13 @@ class TestTriviaEmoteGenerator():
         assert result is not None
         assert emoji.is_emoji(result)
         assert result == '🏫'
+
+    @pytest.mark.asyncio
+    async def test_getValidatedAndNormalizedEmote_withStrawberry(self):
+        result = await self.triviaEmoteGenerator.getValidatedAndNormalizedEmote('🍓')
+        assert result is not None
+        assert emoji.is_emoji(result)
+        assert result == '🍓'
 
     @pytest.mark.asyncio
     async def test_getValidatedAndNormalizedEmote_withStraightRuler(self):
