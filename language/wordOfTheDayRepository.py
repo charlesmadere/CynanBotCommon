@@ -76,7 +76,7 @@ class WordOfTheDayRepository():
         try:
             response = await clientSession.get(f'https://wotd.transparent.com/rss/{languageEntry.getWotdApiCode()}-widget.xml?t=0')
         except (aiohttp.ClientError, TimeoutError) as e:
-            self.__timber.log('WordOfTheDayRepository', f'Encountered network error when fetching Word Of The Day for \"{languageEntry.getName()}\": {e}')
+            self.__timber.log('WordOfTheDayRepository', f'Encountered network error when fetching Word Of The Day for \"{languageEntry.getName()}\": {e}', e)
             raise RuntimeError(f'Encountered network error when fetching Word Of The Day for \"{languageEntry.getName()}\": {e}')
 
         if response.status != 200:

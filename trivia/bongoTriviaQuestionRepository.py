@@ -86,7 +86,7 @@ class BongoTriviaQuestionRepository(AbsTriviaQuestionRepository):
         try:
             response = await clientSession.get('https://beta-trivia.bongo.best/?limit=1')
         except (aiohttp.ClientError, TimeoutError) as e:
-            self.__timber.log('BongoTriviaQuestionRepository', f'Encountered network error: {e}')
+            self.__timber.log('BongoTriviaQuestionRepository', f'Encountered network error: {e}', e)
             raise GenericTriviaNetworkException(self.getTriviaSource(), e)
 
         if response.status != 200:
