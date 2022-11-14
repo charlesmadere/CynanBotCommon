@@ -80,7 +80,7 @@ class TriviaEmoteGenerator():
         record = await connection.fetchRow(
             '''
                 SELECT emoteIndex FROM triviaEmotes
-                WHERE twitchChannel = ?
+                WHERE twitchChannel = $1
                 LIMIT 1
             ''',
             twitchChannel
