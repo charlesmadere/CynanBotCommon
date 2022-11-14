@@ -102,7 +102,7 @@ class BannedTriviaIdsRepository():
         record = await connection.fetchRow(
             '''
                 SELECT COUNT(1) FROM bannedTriviaIds
-                WHERE triviaId = ? AND triviaSource = ?
+                WHERE triviaId = $1 AND triviaSource = $2
             ''',
             triviaId, triviaSource.toStr()
         )
@@ -134,7 +134,7 @@ class BannedTriviaIdsRepository():
         await connection.execute(
             '''
                 DELETE FROM bannedTriviaIds
-                WHERE triviaId = ? AND triviaSource = ?
+                WHERE triviaId = $1 AND triviaSource = $2
             ''',
             triviaId, triviaSource.toStr()
         )

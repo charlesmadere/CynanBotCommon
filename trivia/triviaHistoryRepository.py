@@ -64,7 +64,7 @@ class TriviaHistoryRepository():
         record = await connection.fetchRow(
             '''
                 SELECT emote, triviaId, triviaSource FROM triviaHistory
-                WHERE emote IS NOT NULL AND emote = ? AND twitchChannel = ?
+                WHERE emote IS NOT NULL AND emote = $1 AND twitchChannel = $2
                 ORDER BY datetime DESC
                 LIMIT 1
             ''',
@@ -124,7 +124,7 @@ class TriviaHistoryRepository():
         record = await connection.fetchRow(
             '''
                 SELECT datetime FROM triviaHistory
-                WHERE triviaId = ? AND triviaSource = ? AND twitchChannel = ?
+                WHERE triviaId = $1 AND triviaSource = $2 AND twitchChannel = $3
             ''',
             triviaId, triviaSource, twitchChannel
         )
@@ -159,8 +159,8 @@ class TriviaHistoryRepository():
         await connection.execute(
             '''
                 UPDATE triviaHistory
-                SET datetime = ?, emote = ?
-                WHERE triviaId = ? AND triviaSource = ? AND twitchChannel = ?
+                SET datetime = $1, emote = $2
+                WHERE triviaId = $3 AND triviaSource = $4 AND twitchChannel = $5
             ''',
             nowDateTimeStr, emote, triviaId, triviaSource, twitchChannel
         )

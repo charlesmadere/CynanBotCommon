@@ -106,7 +106,7 @@ class CutenessRepository():
             '''
                 SELECT cuteness.cuteness, cuteness.userId, userIds.userName FROM cuteness
                 INNER JOIN userIds ON cuteness.userId = userIds.userId
-                WHERE cuteness.twitchChannel = ? AND cuteness.userId = ? AND cuteness.utcYearAndMonth = ?
+                WHERE cuteness.twitchChannel = $1 AND cuteness.userId = $2 AND cuteness.utcYearAndMonth = $3
                 LIMIT 1
             ''',
             twitchChannel, userId, cutenessDate.getStr()
@@ -140,9 +140,9 @@ class CutenessRepository():
             '''
                 SELECT cuteness.cuteness, cuteness.userId, userIds.userName FROM cuteness
                 INNER JOIN userIds ON cuteness.userId = userIds.userId
-                WHERE cuteness.twitchChannel = ? AND cuteness.utcYearAndMonth = ? AND cuteness.cuteness IS NOT NULL AND cuteness.cuteness >= 1 AND cuteness.userId != ? AND cuteness.userId != ?
-                ORDER BY ABS(? - ABS(cuteness.cuteness)) ASC
-                LIMIT ?
+                WHERE cuteness.twitchChannel = $1 AND cuteness.utcYearAndMonth = $2 AND cuteness.cuteness IS NOT NULL AND cuteness.cuteness >= 1 AND cuteness.userId != $3 AND cuteness.userId != $4
+                ORDER BY ABS($5 - ABS(cuteness.cuteness)) ASC
+                LIMIT $6
             ''',
             twitchChannel, cutenessDate.getStr(), userId, twitchChannelUserId, cuteness, self.__localLeaderboardSize
         )
@@ -189,10 +189,10 @@ class CutenessRepository():
         records = await connection.fetchRows(
             '''
                 SELECT cuteness.userId, userIds.userName, SUM(cuteness.cuteness) as totalCuteness FROM cuteness
-                INNER JOIN userIds on cuteness.userId = userIds.userId where cuteness.twitchChannel = ? AND cuteness.userId != ?
+                INNER JOIN userIds on cuteness.userId = userIds.userId where cuteness.twitchChannel = $1 AND cuteness.userId != $2
                 GROUP BY cuteness.userId
                 ORDER BY SUM(cuteness.cuteness) DESC
-                LIMIT ?
+                LIMIT $3
             ''',
             twitchChannel, twitchChannelUserId, self.__leaderboardSize
         )
@@ -244,9 +244,9 @@ class CutenessRepository():
         records = await connection.fetchRows(
             '''
                 SELECT cuteness, utcYearAndMonth FROM cuteness
-                WHERE twitchChannel = ? AND userId = ? AND cuteness IS NOT NULL AND cuteness >= 1
+                WHERE twitchChannel = $1 AND userId = $2 AND cuteness IS NOT NULL AND cuteness >= 1
                 ORDER BY utcYearAndMonth DESC
-                LIMIT ?
+                LIMIT $3
             ''',
             twitchChannel, userId, self.__historySize
         )
@@ -274,7 +274,7 @@ class CutenessRepository():
         record = await connection.fetchRow(
             '''
                 SELECT SUM(cuteness) FROM cuteness
-                WHERE twitchChannel = ? AND userId = ? AND cuteness IS NOT NULL AND cuteness >= 1
+                WHERE twitchChannel = $1 AND userId = $2 AND cuteness IS NOT NULL AND cuteness >= 1
                 LIMIT 1
             ''',
             twitchChannel, userId
@@ -289,7 +289,7 @@ class CutenessRepository():
         record = await connection.fetchRow(
             '''
                 SELECT cuteness, utcYearAndMonth FROM cuteness
-                WHERE twitchChannel = ? AND userId = ? AND cuteness IS NOT NULL AND cuteness >= 1
+                WHERE twitchChannel = $1 AND userId = $2 AND cuteness IS NOT NULL AND cuteness >= 1
                 ORDER BY cuteness DESC
                 LIMIT 1
             ''',
@@ -346,7 +346,7 @@ class CutenessRepository():
         record = await connection.fetchRow(
             '''
                 SELECT cuteness FROM cuteness
-                WHERE twitchChannel = ? AND userId = ? AND utcYearAndMonth = ?
+                WHERE twitchChannel = $1 AND userId = $2 AND utcYearAndMonth = $3
                 LIMIT 1
             ''',
             twitchChannel, userId, cutenessDate.getStr()
@@ -400,9 +400,9 @@ class CutenessRepository():
             '''
                 SELECT cuteness.cuteness, cuteness.userId, userIds.userName FROM cuteness
                 INNER JOIN userIds ON cuteness.userId = userIds.userId
-                WHERE cuteness.twitchChannel = ? AND cuteness.utcYearAndMonth = ? AND cuteness.cuteness IS NOT NULL AND cuteness.cuteness >= 1 AND cuteness.userId != ?
+                WHERE cuteness.twitchChannel = $1 AND cuteness.utcYearAndMonth = $2 AND cuteness.cuteness IS NOT NULL AND cuteness.cuteness >= 1 AND cuteness.userId != $3
                 ORDER BY cuteness.cuteness DESC
-                LIMIT ?
+                LIMIT $4
             ''',
             twitchChannel, cutenessDate.getStr(), twitchChannelUserId, self.__leaderboardSize
         )
@@ -477,7 +477,7 @@ class CutenessRepository():
         records = await connection.fetchRows(
             '''
                 SELECT DISTINCT utcYearAndMonth FROM cuteness
-                WHERE twitchChannel = ? AND utcYearAndMonth != ?
+                WHERE twitchChannel = $1 AND utcYearAndMonth != $2
                 ORDER BY utcYearAndMonth DESC
                 LIMIT ?
             ''',
@@ -496,9 +496,9 @@ class CutenessRepository():
                 '''
                     SELECT cuteness.cuteness, cuteness.userId, userIds.userName FROM cuteness
                     INNER JOIN userIds ON cuteness.userId = userIds.userId
-                    WHERE cuteness.cuteness IS NOT NULL AND cuteness.cuteness >= 1 AND cuteness.twitchChannel = ? AND cuteness.userId != ? AND cuteness.utcYearAndMonth = ?
+                    WHERE cuteness.cuteness IS NOT NULL AND cuteness.cuteness >= 1 AND cuteness.twitchChannel = $1 AND cuteness.userId != $2 AND cuteness.utcYearAndMonth = $3
                     ORDER BY cuteness.cuteness DESC
-                    LIMIT ?
+                    LIMIT $4
                 ''',
                 twitchChannel, twitchChannelUserId, cutenessDate.getStr(), self.__historyLeaderboardSize
             )
