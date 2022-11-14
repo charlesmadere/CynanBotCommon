@@ -51,7 +51,7 @@ class UserIdsRepository():
         record = await connection.fetchRow(
             '''
                 SELECT userId FROM userIds
-                WHERE userName = ?
+                WHERE userName = $1
             ''',
             userName
         )
@@ -134,7 +134,7 @@ class UserIdsRepository():
         record = await connection.fetchRow(
             '''
                 SELECT userName FROM userIds
-                WHERE userId = ?
+                WHERE userId = $1
             ''',
             userId
         )

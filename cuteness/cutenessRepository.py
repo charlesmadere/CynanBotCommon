@@ -479,7 +479,7 @@ class CutenessRepository():
                 SELECT DISTINCT utcYearAndMonth FROM cuteness
                 WHERE twitchChannel = $1 AND utcYearAndMonth != $2
                 ORDER BY utcYearAndMonth DESC
-                LIMIT ?
+                LIMIT $3
             ''',
             twitchChannel, CutenessDate().getStr(), self.__historyLeaderboardSize
         )
