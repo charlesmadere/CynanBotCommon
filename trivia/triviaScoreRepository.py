@@ -35,7 +35,7 @@ class TriviaScoreRepository():
         record = await connection.fetchRow(
             '''
                 SELECT streak, superTriviaWins, triviaLosses, triviaWins, twitchChannel, userId FROM triviaScores
-                WHERE twitchChannel = ? AND userId = ?
+                WHERE twitchChannel = $1 AND userId = $2
             ''',
             twitchChannel, userId
         )

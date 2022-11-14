@@ -33,10 +33,7 @@ class PsqlDatabaseConnection(DatabaseConnection):
         self.__requireNotClosed()
 
         async with self.__connection.transaction():
-            if args is None:
-                await self.__connection.execute(query)
-            else:
-                await self.__connection.execute(query, args)
+            await self.__connection.execute(query, args)
 
     async def fetchRow(self, query: str, *args: Optional[Any]) -> Optional[List[Any]]:
         if not utils.isValidStr(query):
