@@ -190,7 +190,7 @@ class CutenessRepository():
             '''
                 SELECT cuteness.userId, userIds.userName, SUM(cuteness.cuteness) as totalCuteness FROM cuteness
                 INNER JOIN userIds on cuteness.userId = userIds.userId where cuteness.twitchChannel = $1 AND cuteness.userId != $2
-                GROUP BY cuteness.userId
+                GROUP BY cuteness.userId, userIds.userName
                 ORDER BY SUM(cuteness.cuteness) DESC
                 LIMIT $3
             ''',
