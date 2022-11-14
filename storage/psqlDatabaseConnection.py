@@ -45,10 +45,7 @@ class PsqlDatabaseConnection(DatabaseConnection):
         if not utils.hasItems(record):
             return None
 
-        row: List[Any] = list()
-        row.append(record)
-
-        return row
+        return list(record)
 
     async def fetchRows(self, query: str, *args: Optional[Any]) -> Optional[List[List[Any]]]:
         if not utils.isValidStr(query):
