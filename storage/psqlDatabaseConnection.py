@@ -33,14 +33,14 @@ class PsqlDatabaseConnection(DatabaseConnection):
         self.__requireNotClosed()
 
         async with self.__connection.transaction():
-            await self.__connection.execute(query, args)
+            await self.__connection.execute(query, *args)
 
     async def fetchRow(self, query: str, *args: Optional[Any]) -> Optional[List[Any]]:
         if not utils.isValidStr(query):
             raise ValueError(f'query argument is malformed: \"{query}\"')
 
         self.__requireNotClosed()
-        record = await self.__connection.fetchrow(query, args)
+        record = await self.__connection.fetchrow(query, *args)
 
         if not utils.hasItems(record):
             return None
@@ -55,7 +55,7 @@ class PsqlDatabaseConnection(DatabaseConnection):
             raise ValueError(f'query argument is malformed: \"{query}\"')
 
         self.__requireNotClosed()
-        records = await self.__connection.fetch(query, args)
+        records = await self.__connection.fetch(query, *args)
 
         if not utils.hasItems(records):
             return None
