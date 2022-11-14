@@ -59,7 +59,7 @@ class BannedTriviaIdsRepository():
         await connection.execute(
             '''
                 INSERT OR IGNORE INTO bannedTriviaIds (triviaId, triviaSource)
-                VALUES (?, ?)
+                VALUES ($1, $2)
             ''',
             triviaId, triviaSource.toStr()
         )

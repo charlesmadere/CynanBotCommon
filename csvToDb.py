@@ -96,7 +96,7 @@ def writeRowsToSqlite(databaseName: str, rows: List[List[str]]):
             cursor.execute(
                 '''
                     INSERT INTO tdQuestions (category, correctAnswer, difficulty, question, questionId, tdQuestionId, wrongAnswer1, wrongAnswer2, wrongAnswer3)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
                 ''',
                 ( category, correctAnswer, difficulty, question, questionId, tdQuestionId, wrongAnswer1, wrongAnswer2, wrongAnswer3 )
             )

@@ -183,7 +183,7 @@ class UserIdsRepository():
         await connection.execute(
             '''
                 INSERT INTO userIds (userId, userName)
-                VALUES (?, ?)
+                VALUES ($1, $2)
                 ON CONFLICT (userId) DO UPDATE SET userName = EXCLUDED.userName
             ''',
             userId, userName

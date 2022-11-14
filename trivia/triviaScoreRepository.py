@@ -56,7 +56,7 @@ class TriviaScoreRepository():
         await connection.execute(
             '''
                 INSERT INTO triviaScores (streak, superTriviaWins, triviaLosses, triviaWins, twitchChannel, userId)
-                VALUES (?, ?, ?, ?, ?, ?)
+                VALUES ($1, $2, $3, $4, $5, $6)
             ''',
             0, 0, 0, 0, twitchChannel, userId
         )
@@ -261,7 +261,7 @@ class TriviaScoreRepository():
         await connection.execute(
             '''
                 INSERT INTO triviaScores (streak, superTriviaWins, triviaLosses, triviaWins, twitchChannel, userId)
-                VALUES (?, ?, ?, ?, ?, ?)
+                VALUES ($1, $2, $3, $4, $5, $6)
                 ON CONFLICT (twitchChannel, userId) DO UPDATE SET streak = EXCLUDED.streak, superTriviaWins = EXCLUDED.superTriviaWins, triviaLosses = EXCLUDED.triviaLosses, triviaWins = EXCLUDED.triviaWins
             ''',
             newStreak, newSuperTriviaWins, newTriviaLosses, newTriviaWins, twitchChannel, userId

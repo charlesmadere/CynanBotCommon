@@ -367,7 +367,7 @@ class CutenessRepository():
         await connection.execute(
             '''
                 INSERT INTO cuteness (cuteness, twitchChannel, userId, utcYearAndMonth)
-                VALUES (?, ?, ?, ?)
+                VALUES ($1, $2, $3, $4)
                 ON CONFLICT (twitchChannel, userId, utcYearAndMonth) DO UPDATE SET cuteness = EXCLUDED.cuteness
             ''',
             newCuteness, twitchChannel, userId, cutenessDate.getStr()

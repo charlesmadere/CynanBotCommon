@@ -83,4 +83,4 @@ class SqliteDatabaseConnection(DatabaseConnection):
 
     def __requireNotClosed(self):
         if self.__isClosed:
-            raise RuntimeError(f'This database connection has already been closed!')
+            raise RuntimeError(f'This database connection has already been closed! ({self.getDatabaseType()})')
