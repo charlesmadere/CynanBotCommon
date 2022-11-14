@@ -136,7 +136,7 @@ class TriviaHistoryRepository():
             await connection.execute(
                 '''
                     INSERT INTO triviaHistory (datetime, emote, triviaId, triviaSource, twitchChannel)
-                    VALUES (?, ?, ?, ?, ?)
+                    VALUES ($1, $2, $3, $4, $5)
                 ''',
                 nowDateTimeStr, emote, triviaId, triviaSource, twitchChannel
             )

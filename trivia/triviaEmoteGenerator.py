@@ -112,7 +112,7 @@ class TriviaEmoteGenerator():
         await connection.execute(
             '''
                 INSERT INTO triviaEmotes (emoteIndex, twitchChannel)
-                VALUES (?, ?)
+                VALUES ($1, $2)
                 ON CONFLICT (twitchChannel) DO UPDATE SET emoteIndex = EXCLUDED.emoteIndex
             ''',
             emoteIndex, twitchChannel

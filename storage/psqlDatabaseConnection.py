@@ -72,4 +72,4 @@ class PsqlDatabaseConnection(DatabaseConnection):
 
     def __requireNotClosed(self):
         if self.isClosed():
-            raise RuntimeError(f'This database connection has already been closed!')
+            raise RuntimeError(f'This database connection has already been closed! ({self.getDatabaseType()})')
