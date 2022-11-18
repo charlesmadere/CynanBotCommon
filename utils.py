@@ -284,6 +284,9 @@ def hasItems(l: Optional[List]) -> bool:
 def isValidBool(b: Optional[bool]) -> bool:
     return b is not None and isinstance(b, bool)
 
+def isValidInt(i: Optional[Number]) -> bool:
+    return isValidNum(i) and isinstance(i, int)
+
 def isValidNum(n: Optional[Number]) -> bool:
     return n is not None and isinstance(n, Number) and math.isfinite(n)
 

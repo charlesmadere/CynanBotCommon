@@ -137,6 +137,34 @@ class TestUtils():
         result: bool = utils.isValidBool(True)
         assert result is True
 
+    def test_isValidInt_withNan(self):
+        result: bool = utils.isValidInt(math.nan)
+        assert result is False
+
+    def test_isValidInt_withNegativeOne(self):
+        result: bool = utils.isValidInt(-1)
+        assert result is True
+
+    def test_isValidInt_withNone(self):
+        result: bool = utils.isValidInt(None)
+        assert result is False
+
+    def test_isValidInt_withOne(self):
+        result: bool = utils.isValidInt(1)
+        assert result is True
+
+    def test_isValidInt_withPi(self):
+        result: bool = utils.isValidInt(math.pi)
+        assert result is False
+
+    def test_isValidInt_withTwo(self):
+        result: bool = utils.isValidInt(2)
+        assert result is True
+
+    def test_isValidInt_withZero(self):
+        result: bool = utils.isValidInt(0)
+        assert result is True
+
     def test_isValidNum_withFloat(self):
         result: bool = utils.isValidNum(3.14)
         assert result is True
