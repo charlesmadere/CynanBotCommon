@@ -166,7 +166,7 @@ class TestUtils():
         assert result is True
 
     def test_isValidNum_withFloat(self):
-        result: bool = utils.isValidNum(3.14)
+        result: bool = utils.isValidNum(3.33)
         assert result is True
 
     def test_isValidNum_withInt(self):
@@ -180,6 +180,10 @@ class TestUtils():
     def test_isValidNum_withNone(self):
         result: bool = utils.isValidNum(None)
         assert result is False
+
+    def test_isValidNum_withPi(self):
+        result: bool = utils.isValidNum(math.pi)
+        assert result is True
 
     def test_isValidStr_withEmptyString(self):
         result: bool = utils.isValidStr('')
