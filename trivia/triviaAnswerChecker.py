@@ -25,7 +25,6 @@ try:
 except:
     import utils
     from timber.timber import Timber
-
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
@@ -117,7 +116,7 @@ class TriviaAnswerChecker():
         elif triviaQuestion.getTriviaType() is not TriviaType.MULTIPLE_CHOICE:
             raise RuntimeError(f'TriviaType is not {TriviaType.MULTIPLE_CHOICE}: \"{triviaQuestion.getTriviaType()}\"')
 
-        answerOrdinal: int = None
+        answerOrdinal: Optional[int] = None
         try:
             answerOrdinal = await self.__triviaAnswerCompiler.compileTextAnswerToMultipleChoiceOrdinal(answer)
         except BadTriviaAnswerException as e:
