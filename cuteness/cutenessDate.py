@@ -24,7 +24,7 @@ class CutenessDate():
 
     def __lt__(self, other: Any) -> bool:
         if isinstance(other, CutenessDate):
-            return self.__simpleDateTime.getDateTime() < other.__simpleDateTime.getDateTime()
+            return self.__simpleDateTime < other.__simpleDateTime
         else:
             return False
 
