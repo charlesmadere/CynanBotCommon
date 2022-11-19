@@ -74,8 +74,8 @@ class TriviaAnswerCompiler():
 
         try:
             return utils.strictStrToBool(cleanedAnswer)
-        except ValueError:
-            raise BadTriviaAnswerException(f'answer can\'t be compiled to bool (answer:{answer}) (cleanedAnswer:{cleanedAnswer})')
+        except ValueError as e:
+            raise BadTriviaAnswerException(f'answer can\'t be compiled to bool (answer=\"{answer}\") (cleanedAnswer=\"{cleanedAnswer}\"): {e}')
 
     async def compileTextAnswer(self, answer: Optional[str]) -> str:
         if not utils.isValidStr(answer):
@@ -171,7 +171,7 @@ class TriviaAnswerCompiler():
         cleanedAnswer = await self.compileTextAnswer(answer)
 
         if not utils.isValidStr(cleanedAnswer) or len(cleanedAnswer) != 1 or self.__multipleChoiceAnswerRegEx.fullmatch(cleanedAnswer) is None:
-            raise BadTriviaAnswerException(f'answer can\'t be compiled to multiple choice ordinal (answer:{answer}) (cleanedAnswer:{cleanedAnswer})')
+            raise BadTriviaAnswerException(f'answer can\'t be compiled to multiple choice ordinal (answer=\"{answer}\") (cleanedAnswer=\"{cleanedAnswer}\")')
 
         # this converts the answer 'A' into 0, 'B' into 1, 'C' into 2, and so on...
         return ord(cleanedAnswer.upper()) % 65
