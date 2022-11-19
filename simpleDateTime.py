@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from typing import Any
 
 
 class SimpleDateTime():
@@ -28,6 +29,9 @@ class SimpleDateTime():
     def getHourStr(self) -> str:
         return self.__now.strftime('%H')
 
+    def getIsoFormatStr(self) -> str:
+        return self.__now.isoformat()
+
     def getMinuteStr(self) -> str:
         return self.__now.strftime('%M')
 
@@ -51,3 +55,9 @@ class SimpleDateTime():
 
     def getYearMonthDayStr(self) -> str:
         return f'{self.getYearStr()}/{self.getMonthStr()}/{self.getDayStr()}'
+
+    def __lt__(self, other: Any) -> bool:
+        if isinstance(other, SimpleDateTime):
+            return self.__now < other.__now
+        else:
+            return False
