@@ -423,26 +423,48 @@ class TriviaAnswerChecker():
                 yield 'in other words'
 
             # technology
+            if word == 'cpu':
+                yield 'central processing unit'
+            if word in ('dp', 'dip'):
+                yield 'density independent pixels'
+            if word == 'dpi':
+                yield 'dots per inch'
             if word == 'ff':
                 yield 'firefox'
             if word == 'goog':
                 yield 'google'
-            if word == 'ie':
-                yield 'internet explorer'
+            if word == 'gpu':
+                yield 'graphics processing unit'
             if word == 'http':
                 yield 'hypertext transfer protocol'
             if word == 'https':
                 yield 'hypertext transfer protocol secure'
-            if word == 'ms':
+            if word == 'ie':
+                yield 'internet explorer'
+            if word == 'int':
+                yield 'integer'
+            if word in ('ms', 'msft'):
                 yield 'microsoft'
+            if word == 'pt':
+                yield 'point'
             if word == 'px':
                 yield 'pixel'
             if word == 'rgb':
                 yield 'red green blue'
+            if word == 'sp':
+                yield 'scaleable pixels'
+                yield 'scale independent pixels'
             if word == 'url':
                 yield 'uniform resource locator'
             if word == 'www':
                 yield 'world wide web'
+
+            # measurements
+            if word == 'ft':
+                yield 'foot'
+                yield 'feet'
+            if word == 'in':
+                yield 'inch'
 
             # other
             if word == 'dept':
@@ -455,3 +477,5 @@ class TriviaAnswerChecker():
                 yield 'world record'
             if word == 'ww':
                 yield 'world war'
+            if word == 'xmas':
+                yield 'christmas'
