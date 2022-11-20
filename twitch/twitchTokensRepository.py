@@ -72,7 +72,6 @@ class TwitchTokensRepository():
 
     async def clearCaches(self):
         self.__jsonCache = None
-        self.__timber.log('TwitchTokensRepository', f'Caches cleared')
 
     async def getAccessToken(self, twitchHandle: str) -> str:
         if not utils.isValidStr(twitchHandle):
@@ -111,7 +110,7 @@ class TwitchTokensRepository():
 
     async def __isDebugLoggingEnabled(self) -> bool:
         jsonContents = await self.__readAllJson()
-        return utils.getBoolFromDict(jsonContents, 'debugLoggingEnabled', fallback = False)
+        return utils.getBoolFromDict(jsonContents, 'debugLoggingEnabled', fallback = True)
 
     async def __isDynamicAdditionOfNewPubSubUsersEnabled(self) -> bool:
         jsonContents = await self.__readAllJson()
