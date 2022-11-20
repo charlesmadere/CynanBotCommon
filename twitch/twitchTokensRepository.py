@@ -10,7 +10,9 @@ import aiohttp
 
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.networkClientProvider import NetworkClientProvider
+    from CynanBotCommon.network.networkClientProvider import \
+        NetworkClientProvider
+    from CynanBotCommon.network.networkResponse import NetworkResponse
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.twitch.twitchAccessTokenMissingException import \
         TwitchAccessTokenMissingException
@@ -23,9 +25,9 @@ try:
         TwitchRefreshTokenMissingException
 except:
     import utils
-    from networkClientProvider import NetworkClientProvider
+    from network.networkClientProvider import NetworkClientProvider
+    from network.networkResponse import NetworkResponse
     from timber.timber import Timber
-
     from twitch.twitchAccessTokenMissingException import \
         TwitchAccessTokenMissingException
     from twitch.twitchExpiresInMissingException import \
@@ -176,6 +178,7 @@ class TwitchTokensRepository():
         self.__timber.log('TwitchTokensRepository', f'Refreshing Twitch tokens for \"{twitchHandle}\"...')
         clientSession = await self.__networkClientProvider.get()
 
+        response: NetworkResponse = None
         try:
             response = await clientSession.post(
                 url = self.__oauth2TokenUrl,
@@ -190,12 +193,12 @@ class TwitchTokensRepository():
             self.__timber.log('TwitchTokensRepository', f'Encountered network error when requesting new Twitch tokens for \"{twitchHandle}\": {e}', e)
             raise TwitchNetworkException(f'Encountered network error when requesting new Twitch tokens for \"{twitchHandle}\": {e}')
 
-        if response.status != 200:
+        if response.statusCode() != 200:
             self.__timber.log('TwitchTokensRepository', f'Encountered non-200 HTTP status code when requesting new Twitch tokens for \"{twitchHandle}\": {response.status}')
             raise TwitchNetworkException(f'Encountered non-200 HTTP status code when requesting new Twitch tokens for \"{twitchHandle}\": {response.status}')
 
         jsonResponse: Dict[str, Any] = await response.json()
-        response.close()
+        await response.close()
 
         if not utils.hasItems(jsonResponse):
             self.__timber.log('TwitchTokensRepository', f'Received malformed JSON response when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
@@ -308,9 +311,9 @@ class TwitchTokensRepository():
             self.__timber.log('TwitchTokensRepository', f'Encountered network error when validating Twitch access token for \"{twitchHandle}\": {e}', e)
             raise TwitchNetworkException(f'Encountered network error when validating Twitch access token for \"{twitchHandle}\": {e}')
 
-        responseStatus: int = response.status
+        responseStatus: int = response.statusCode()
         jsonResponse: Dict[str, Any] = await response.json()
-        response.close()
+        await response.close()
 
         clientId: str = None
         if jsonResponse is not None and utils.isValidStr(jsonResponse.get('client_id')):
