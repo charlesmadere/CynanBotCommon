@@ -16,7 +16,7 @@ except:
     from network.networkHandle import NetworkHandle
 
 
-class AioHtttpClientProvider(NetworkClientProvider):
+class AioHttpClientProvider(NetworkClientProvider):
 
     def __init__(
         self,

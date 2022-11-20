@@ -36,6 +36,9 @@ class AioHttpResponse(NetworkResponse):
         self.__isClosed = True
         self.__response.close()
 
+    def isClosed(self) -> bool:
+        return self.__isClosed
+
     def getNetworkClientType(self) -> NetworkClientType:
         return NetworkClientType.AIOHTTP
 
