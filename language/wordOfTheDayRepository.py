@@ -9,17 +9,17 @@ try:
     from CynanBotCommon.language.languageEntry import LanguageEntry
     from CynanBotCommon.language.wordOfTheDayResponse import \
         WordOfTheDayResponse
-    from CynanBotCommon.networkClientProvider import NetworkClientProvider
+    from CynanBotCommon.network.networkClientProvider import \
+        NetworkClientProvider
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.timedDict import TimedDict
 except:
     import utils
-    from networkClientProvider import NetworkClientProvider
-    from timber.timber import Timber
-    from timedDict import TimedDict
-
     from language.languageEntry import LanguageEntry
     from language.wordOfTheDayResponse import WordOfTheDayResponse
+    from network.networkClientProvider import NetworkClientProvider
+    from timber.timber import Timber
+    from timedDict import TimedDict
 
 
 class WordOfTheDayRepository():
@@ -79,12 +79,12 @@ class WordOfTheDayRepository():
             self.__timber.log('WordOfTheDayRepository', f'Encountered network error when fetching Word Of The Day for \"{languageEntry.getName()}\": {e}', e)
             raise RuntimeError(f'Encountered network error when fetching Word Of The Day for \"{languageEntry.getName()}\": {e}')
 
-        if response.status != 200:
-            self.__timber.log('WordOfTheDayRepository', f'Encountered non-200 HTTP status code when fetching Word Of The Day for \"{languageEntry.getName()}\" ({languageEntry.getWotdApiCode()}): {response.status}')
-            raise RuntimeError(f'Encountered non-200 HTTP status code when fetching Word Of The Day for \"{languageEntry.getName()}\" ({languageEntry.getWotdApiCode()}): {response.status}')
+        if response.getStatusCode() != 200:
+            self.__timber.log('WordOfTheDayRepository', f'Encountered non-200 HTTP status code when fetching Word Of The Day for \"{languageEntry.getName()}\" ({languageEntry.getWotdApiCode()}): {response.getStatusCode()}')
+            raise RuntimeError(f'Encountered non-200 HTTP status code when fetching Word Of The Day for \"{languageEntry.getName()}\" ({languageEntry.getWotdApiCode()}): {response.getStatusCode()}')
 
         xmlTree = xmltodict.parse(await response.read())
-        response.close()
+        await response.close()
 
         if not utils.hasItems(xmlTree):
             self.__timber.log('WordOfTheDayRepository', f'xmlTree for \"{languageEntry.getName()}\" is malformed: {xmlTree}')

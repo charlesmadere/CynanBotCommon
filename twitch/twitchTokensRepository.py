@@ -2,7 +2,7 @@ import json
 import locale
 from asyncio import TimeoutError
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List, Set
+from typing import Any, Dict, List, Optional, Set
 
 import aiofiles
 import aiofiles.ospath
@@ -28,6 +28,7 @@ except:
     from network.networkClientProvider import NetworkClientProvider
     from network.networkResponse import NetworkResponse
     from timber.timber import Timber
+
     from twitch.twitchAccessTokenMissingException import \
         TwitchAccessTokenMissingException
     from twitch.twitchExpiresInMissingException import \
@@ -193,11 +194,11 @@ class TwitchTokensRepository():
             self.__timber.log('TwitchTokensRepository', f'Encountered network error when requesting new Twitch tokens for \"{twitchHandle}\": {e}', e)
             raise TwitchNetworkException(f'Encountered network error when requesting new Twitch tokens for \"{twitchHandle}\": {e}')
 
-        if response.statusCode() != 200:
-            self.__timber.log('TwitchTokensRepository', f'Encountered non-200 HTTP status code when requesting new Twitch tokens for \"{twitchHandle}\": {response.status}')
-            raise TwitchNetworkException(f'Encountered non-200 HTTP status code when requesting new Twitch tokens for \"{twitchHandle}\": {response.status}')
+        if response.getStatusCode() != 200:
+            self.__timber.log('TwitchTokensRepository', f'Encountered non-200 HTTP status code when requesting new Twitch tokens for \"{twitchHandle}\": {response.getStatusCode()}')
+            raise TwitchNetworkException(f'Encountered non-200 HTTP status code when requesting new Twitch tokens for \"{twitchHandle}\": {response.getStatusCode()}')
 
-        jsonResponse: Dict[str, Any] = await response.json()
+        jsonResponse: Optional[Dict[str, Any]] = await response.json()
         await response.close()
 
         if not utils.hasItems(jsonResponse):
@@ -311,8 +312,8 @@ class TwitchTokensRepository():
             self.__timber.log('TwitchTokensRepository', f'Encountered network error when validating Twitch access token for \"{twitchHandle}\": {e}', e)
             raise TwitchNetworkException(f'Encountered network error when validating Twitch access token for \"{twitchHandle}\": {e}')
 
-        responseStatus: int = response.statusCode()
-        jsonResponse: Dict[str, Any] = await response.json()
+        responseStatus: int = response.getStatusCode()
+        jsonResponse: Optional[Dict[str, Any]] = await response.json()
         await response.close()
 
         clientId: str = None

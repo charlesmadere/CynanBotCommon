@@ -1,17 +1,18 @@
 from asyncio import TimeoutError
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import aiohttp
 
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.networkClientProvider import NetworkClientProvider
+    from CynanBotCommon.network.networkClientProvider import \
+        NetworkClientProvider
     from CynanBotCommon.storage.backingDatabase import BackingDatabase
     from CynanBotCommon.storage.databaseConnection import DatabaseConnection
     from CynanBotCommon.timber.timber import Timber
 except:
     import utils
-    from networkClientProvider import NetworkClientProvider
+    from network.networkClientProvider import NetworkClientProvider
     from storage.backingDatabase import BackingDatabase
     from storage.databaseConnection import DatabaseConnection
     from timber.timber import Timber
@@ -88,12 +89,12 @@ class UserIdsRepository():
             self.__timber.log('UserIdsRepository', f'Encountered network error when fetching userId for userName \"{userName}\": {e}', e)
             raise RuntimeError(f'UserIdsRepository encountered network error when fetching userId for userName \"{userName}\": {e}')
 
-        if response.status != 200:
-            self.__timber.log('UserIdsRepository', f'Encountered non-200 HTTP status code when fetching userId for userName \"{userName}\": \"{response.status}\"')
-            raise RuntimeError(f'UserIdsRepository encountered non-200 HTTP status code when fetching userId for userName \"{userName}\": \"{response.status}\"')
+        if response.getStatusCode() != 200:
+            self.__timber.log('UserIdsRepository', f'Encountered non-200 HTTP status code when fetching userId for userName \"{userName}\": \"{response.getStatusCode()}\"')
+            raise RuntimeError(f'UserIdsRepository encountered non-200 HTTP status code when fetching userId for userName \"{userName}\": \"{response.getStatusCode()}\"')
 
-        jsonResponse: Dict[str, Any] = await response.json()
-        response.close()
+        jsonResponse: Optional[Dict[str, Any]] = await response.json()
+        await response.close()
 
         if 'error' in jsonResponse and len(jsonResponse['error']) >= 1:
             self.__timber.log('UserIdsRepository', f'Received an error of some kind when fetching userId for userName \"{userName}\": {jsonResponse}')

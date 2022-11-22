@@ -1,11 +1,12 @@
 from asyncio import TimeoutError
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import aiohttp
 
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.networkClientProvider import NetworkClientProvider
+    from CynanBotCommon.network.networkClientProvider import \
+        NetworkClientProvider
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.absTriviaQuestionRepository import \
@@ -26,9 +27,8 @@ try:
         TrueFalseTriviaQuestion
 except:
     import utils
-    from networkClientProvider import NetworkClientProvider
+    from network.networkClientProvider import NetworkClientProvider
     from timber.timber import Timber
-
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.absTriviaQuestionRepository import AbsTriviaQuestionRepository
     from trivia.multipleChoiceTriviaQuestion import \
@@ -89,15 +89,15 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
                 }
             )
         except (aiohttp.ClientError, TimeoutError) as e:
-            self.__timber.log('QuizApiTriviaQuestionRepository', f'Encountered network error: {e}', e)
+            self.__timber.log('QuizApiTriviaQuestionRepository', f'Encountered network error when fetching trivia question: {e}', e)
             raise GenericTriviaNetworkException(self.getTriviaSource(), e)
 
-        if response.status != 200:
-            self.__timber.log('QuizApiTriviaQuestionRepository', f'Encountered non-200 HTTP status code: \"{response.status}\"')
+        if response.getStatusCode() != 200:
+            self.__timber.log('QuizApiTriviaQuestionRepository', f'Encountered non-200 HTTP status code when fetching trivia question: \"{response.getStatusCode()}\"')
             raise GenericTriviaNetworkException(self.getTriviaSource())
 
-        jsonResponse: List[Dict[str, Any]] = await response.json()
-        response.close()
+        jsonResponse: Optional[List[Dict[str, Any]]] = await response.json()
+        await response.close()
 
         if await self._triviaSettingsRepository.isDebugLoggingEnabled():
             self.__timber.log('QuizApiTriviaQuestionRepository', f'{jsonResponse}')
@@ -106,7 +106,7 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
             self.__timber.log('QuizApiTriviaQuestionRepository', f'Rejecting Quiz API\'s JSON data due to null/empty contents: {jsonResponse}')
             raise MalformedTriviaJsonException(f'Rejecting Quiz API JSON data due to null/empty contents: {jsonResponse}')
 
-        triviaJson: Dict[str, Any] = jsonResponse[0]
+        triviaJson: Optional[Dict[str, Any]] = jsonResponse[0]
         if not utils.hasItems(triviaJson):
             self.__timber.log('QuizApiTriviaQuestionRepository', f'Rejecting Quiz API\'s JSON data due to null/empty contents: {jsonResponse}')
             raise MalformedTriviaJsonException(f'Rejecting Quiz API\'s JSON data due to null/empty contents: {jsonResponse}')

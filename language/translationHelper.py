@@ -2,7 +2,7 @@ import json
 import random
 from asyncio import TimeoutError
 from json.decoder import JSONDecodeError
-from typing import Any, Dict
+from typing import Any, Dict, List, Optional
 
 import aiofiles
 import aiofiles.ospath
@@ -16,17 +16,17 @@ try:
     from CynanBotCommon.language.translationApiSource import \
         TranslationApiSource
     from CynanBotCommon.language.translationResponse import TranslationResponse
-    from CynanBotCommon.networkClientProvider import NetworkClientProvider
+    from CynanBotCommon.network.networkClientProvider import \
+        NetworkClientProvider
     from CynanBotCommon.timber.timber import Timber
 except:
     import utils
-    from networkClientProvider import NetworkClientProvider
-    from timber.timber import Timber
-
     from language.languageEntry import LanguageEntry
     from language.languagesRepository import LanguagesRepository
     from language.translationApiSource import TranslationApiSource
     from language.translationResponse import TranslationResponse
+    from network.networkClientProvider import NetworkClientProvider
+    from timber.timber import Timber
 
 
 class TranslationHelper():
@@ -74,22 +74,24 @@ class TranslationHelper():
             self.__timber.log('TranslationHelper', f'Encountered network error when translating \"{text}\": {e}', e)
             raise RuntimeError(f'Encountered network error when translating \"{text}\": {e}')
 
-        if response.status != 200:
-            self.__timber.log('TranslationHelper', f'Encountered non-200 HTTP status code when fetching translation from DeepL for \"{text}\": {response.status}')
-            raise RuntimeError(f'Encountered non-200 HTTP status code when fetching translation from DeepL for \"{text}\": {response.status}')
+        if response.getStatusCode() != 200:
+            self.__timber.log('TranslationHelper', f'Encountered non-200 HTTP status code when fetching translation from DeepL for \"{text}\": {response.getStatusCode()}')
+            raise RuntimeError(f'Encountered non-200 HTTP status code when fetching translation from DeepL for \"{text}\": {response.getStatusCode()}')
 
-        jsonResponse: Dict[str, Any] = await response.json()
-        response.close()
+        jsonResponse: Optional[Dict[str, Any]] = await response.json()
+        await response.close()
 
         if not utils.hasItems(jsonResponse):
             self.__timber.log('TranslationHelper', f'DeepL\'s JSON response is null/empty for \"{text}\": {jsonResponse}')
             raise ValueError(f'DeepL\'s JSON response is null/empty for \"{text}\": {jsonResponse}')
 
-        translationsJson: Dict = jsonResponse.get('translations')
+        translationsJson: Optional[List[Dict[str, Any]]] = jsonResponse.get('translations')
         if not utils.hasItems(translationsJson):
-            raise RuntimeError(f'DeepL\'s JSON response for \"{text}\" has missing or empty \"translations\" field: {jsonResponse}')
+            raise ValueError(f'DeepL\'s JSON response for \"{text}\" has missing or empty \"translations\" field: {jsonResponse}')
 
-        translationJson: Dict = translationsJson[0]
+        translationJson: Optional[Dict[str, Any]] = translationsJson[0]
+        if not utils.hasItems(translationJson):
+            raise ValueError(f'DeepL\'s JSON response for \"{text}\" has missing or empty \"translations\" list entry: {jsonResponse}')
 
         originalLanguage: LanguageEntry = None
         detectedSourceLanguage: str = translationJson.get('detected_source_language')
@@ -121,7 +123,7 @@ class TranslationHelper():
         self.__timber.log('TranslationHelper', f'Fetching translation from Google Translate...')
 
         googleTranslateClient = await self.__getGoogleTranslateClient()
-        translationResult = googleTranslateClient.translate(
+        translationResult: Optional[Dict[str, Any]] = googleTranslateClient.translate(
             text,
             target_language = targetLanguageEntry.getIso6391Code()
         )
@@ -154,8 +156,8 @@ class TranslationHelper():
         if not await aiofiles.ospath.exists(self.__googleServiceAccountFile):
             return False
 
-        jsonContents: Dict[str, Any] = None
-        exception: JSONDecodeError = None
+        jsonContents: Optional[Dict[str, Any]] = None
+        exception: Optional[JSONDecodeError] = None
 
         async with aiofiles.open(self.__googleServiceAccountFile, mode = 'r') as file:
             data = await file.read()

@@ -10,16 +10,16 @@ try:
     from CynanBotCommon.analogue.analogueProductType import AnalogueProductType
     from CynanBotCommon.analogue.analogueStoreEntry import AnalogueStoreEntry
     from CynanBotCommon.analogue.analogueStoreStock import AnalogueStoreStock
-    from CynanBotCommon.networkClientProvider import NetworkClientProvider
+    from CynanBotCommon.network.networkClientProvider import \
+        NetworkClientProvider
     from CynanBotCommon.timber.timber import Timber
 except:
     import utils
-    from networkClientProvider import NetworkClientProvider
-    from timber.timber import Timber
-
     from analogue.analogueProductType import AnalogueProductType
     from analogue.analogueStoreEntry import AnalogueStoreEntry
     from analogue.analogueStoreStock import AnalogueStoreStock
+    from network.networkClientProvider import NetworkClientProvider
+    from timber.timber import Timber
 
 
 class AnalogueStoreRepository():
@@ -112,12 +112,12 @@ class AnalogueStoreRepository():
             self.__timber.log('AnalogueStoreRepository', f'Encountered network error: {e}', e)
             raise RuntimeError(f'Encountered network error when fetching Analogue store stock: {e}')
 
-        if response.status != 200:
-            self.__timber.log('AnalogueStoreRepository', f'Encountered non-200 HTTP status code when fetching Analogue store stock: {response.status}')
-            raise RuntimeError(f'Encountered non-200 HTTP status code when fetching Analogue store stock: {response.status}')
+        if response.getStatusCode() != 200:
+            self.__timber.log('AnalogueStoreRepository', f'Encountered non-200 HTTP status code when fetching Analogue store stock: {response.getStatusCode()}')
+            raise RuntimeError(f'Encountered non-200 HTTP status code when fetching Analogue store stock: {response.getStatusCode()}')
 
         htmlTree = html.fromstring(await response.read())
-        response.close()
+        await response.close()
 
         if htmlTree is None:
             self.__timber.log('AnalogueStoreRepository', f'Analogue store\'s htmlTree is malformed: \"{htmlTree}\"')

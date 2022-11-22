@@ -1,11 +1,12 @@
 from asyncio import TimeoutError
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import aiohttp
 
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.networkClientProvider import NetworkClientProvider
+    from CynanBotCommon.network.networkClientProvider import \
+        NetworkClientProvider
     from CynanBotCommon.pkmn.pokepediaDamageClass import PokepediaDamageClass
     from CynanBotCommon.pkmn.pokepediaElementType import PokepediaElementType
     from CynanBotCommon.pkmn.pokepediaGeneration import PokepediaGeneration
@@ -16,7 +17,7 @@ try:
     from CynanBotCommon.timber.timber import Timber
 except:
     import utils
-    from networkClientProvider import NetworkClientProvider
+    from network.networkClientProvider import NetworkClientProvider
     from timber.timber import Timber
 
     from pkmn.pokepediaDamageClass import PokepediaDamageClass
@@ -269,12 +270,12 @@ class PokepediaRepository():
             self.__timber.log('PokepediaRepository', f'Encountered network error from PokeAPI when searching for \"{name}\" move: {e}', e)
             raise RuntimeError(f'Encountered network error from PokeAPI when searching for \"{name}\" move: {e}')
 
-        if response.status != 200:
-            self.__timber.log('PokepediaRepository', f'Encountered non-200 HTTP status code from PokeAPI when searching for \"{name}\" move: \"{response.status}\"')
-            raise RuntimeError(f'Exception occurred due to non-200 HTTP status code from PokeAPI when searching for \"{name}\" move: \"{response.status}\"')
+        if response.getStatusCode() != 200:
+            self.__timber.log('PokepediaRepository', f'Encountered non-200 HTTP status code from PokeAPI when searching for \"{name}\" move: \"{response.getStatusCode()}\"')
+            raise RuntimeError(f'Exception occurred due to non-200 HTTP status code from PokeAPI when searching for \"{name}\" move: \"{response.getStatusCode()}\"')
 
-        jsonResponse: Dict[str, Any] = await response.json()
-        response.close()
+        jsonResponse: Optional[Dict[str, Any]] = await response.json()
+        await response.close()
 
         return PokepediaMove(
             generationMoves = self.__getMoveGenerationDictionary(jsonResponse),
@@ -299,21 +300,22 @@ class PokepediaRepository():
             self.__timber.log('PokepediaRepository', f'Encountered network error from PokeAPI when searching for \"{name}\" Pokemon: {e}', e)
             raise RuntimeError(f'Encountered network error from PokeAPI when searching for \"{name}\" Pokemon: {e}')
 
-        if response.status != 200:
-            self.__timber.log('PokepediaRepository', f'Encountered non-200 HTTP status code from PokeAPI when searching for \"{name}\" Pokemon: \"{response.status}\"')
-            raise RuntimeError(f'Exception occurred due to non-200 HTTP status code from PokeAPI when searching for \"{name}\" Pokemon: \"{response.status}\"')
+        if response.getStatusCode() != 200:
+            self.__timber.log('PokepediaRepository', f'Encountered non-200 HTTP status code from PokeAPI when searching for \"{name}\" Pokemon: \"{response.getStatusCode()}\"')
+            raise RuntimeError(f'Exception occurred due to non-200 HTTP status code from PokeAPI when searching for \"{name}\" Pokemon: \"{response.getStatusCode()}\"')
 
-        jsonResponse: Dict[str, Any] = await response.json()
-        response.close()
+        jsonResponse: Optional[Dict[str, Any]] = await response.json()
+        await response.close()
 
-        pokedexId = utils.getIntFromDict(jsonResponse, 'id')
+        generationElementTypes = self.__getElementTypeGenerationDictionary(
+            jsonResponse = jsonResponse,
+            initialGeneration = initialGeneration
+        )
         initialGeneration = PokepediaGeneration.fromPokedexId(pokedexId)
+        pokedexId = utils.getIntFromDict(jsonResponse, 'id')
 
         return PokepediaPokemon(
-            generationElementTypes = self.__getElementTypeGenerationDictionary(
-                jsonResponse = jsonResponse,
-                initialGeneration = initialGeneration
-            ),
+            generationElementTypes = generationElementTypes,
             initialGeneration = initialGeneration,
             height = utils.getIntFromDict(jsonResponse, 'height'),
             pokedexId = pokedexId,

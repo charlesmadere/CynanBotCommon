@@ -5,7 +5,8 @@ import aiohttp
 
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.networkClientProvider import NetworkClientProvider
+    from CynanBotCommon.network.networkClientProvider import \
+        NetworkClientProvider
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.absTriviaQuestionRepository import \
@@ -25,9 +26,8 @@ try:
     from CynanBotCommon.trivia.triviaType import TriviaType
 except:
     import utils
-    from networkClientProvider import NetworkClientProvider
+    from network.networkClientProvider import NetworkClientProvider
     from timber.timber import Timber
-
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.absTriviaQuestionRepository import AbsTriviaQuestionRepository
     from trivia.questionAnswerTriviaQuestion import \
@@ -87,12 +87,12 @@ class FuntoonTriviaQuestionRepository(AbsTriviaQuestionRepository):
             self.__timber.log('FuntoonTriviaQuestionRepository', f'Encountered network error: {e}', e)
             raise GenericTriviaNetworkException(self.getTriviaSource(), e)
 
-        if response.status != 200:
-            self.__timber.log('FuntoonTriviaQuestionRepository', f'Encountered non-200 HTTP status code: \"{response.status}\"')
+        if response.getStatusCode() != 200:
+            self.__timber.log('FuntoonTriviaQuestionRepository', f'Encountered non-200 HTTP status code: \"{response.getStatusCode()}\"')
             raise GenericTriviaNetworkException(self.getTriviaSource())
 
         jsonResponse: List[Dict[str, Any]] = await response.json()
-        response.close()
+        await response.close()
 
         if await self._triviaSettingsRepository.isDebugLoggingEnabled():
             self.__timber.log('FuntoonTriviaQuestionRepository', f'{jsonResponse}')

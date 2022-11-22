@@ -7,7 +7,8 @@ import aiohttp
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.location.location import Location
-    from CynanBotCommon.networkClientProvider import NetworkClientProvider
+    from CynanBotCommon.network.networkClientProvider import \
+        NetworkClientProvider
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.timedDict import TimedDict
     from CynanBotCommon.weather.airQualityIndex import AirQualityIndex
@@ -16,10 +17,9 @@ try:
 except:
     import utils
     from location.location import Location
-    from networkClientProvider import NetworkClientProvider
+    from network.networkClientProvider import NetworkClientProvider
     from timber.timber import Timber
     from timedDict import TimedDict
-
     from weather.airQualityIndex import AirQualityIndex
     from weather.uvIndex import UvIndex
     from weather.weatherReport import WeatherReport
@@ -134,12 +134,12 @@ class WeatherRepository():
             self.__timber.log('WeatherRepository', f'Encountered network error when fetching air quality index for \"{location.getName()}\" ({location.getLocationId()}): {e}', e)
             return None
 
-        if response.status != 200:
-            self.__timber.log('WeatherRepository', f'Encountered non-200 HTTP status code when fetching air quality index for \"{location.getName()}\" ({location.getLocationId()}): {response.status}')
+        if response.getStatusCode() != 200:
+            self.__timber.log('WeatherRepository', f'Encountered non-200 HTTP status code when fetching air quality index for \"{location.getName()}\" ({location.getLocationId()}): {response.getStatusCode()}')
             return None
 
         jsonResponse: Dict[str, Any] = await response.json()
-        response.close()
+        await response.close()
 
         airQualityIndex = utils.getIntFromDict(
             d = jsonResponse['list'][0]['main'],
@@ -184,12 +184,12 @@ class WeatherRepository():
             self.__timber.log('WeatherRepository', f'Encountered network error when fetching weather for \"{location.getName()}\" ({location.getLocationId()}): {e}', e)
             raise RuntimeError(f'Encountered network error when fetching weather for \"{location.getName()}\" ({location.getLocationId()})')
 
-        if response.status != 200:
-            self.__timber.log('WeatherRepository', f'Encountered non-200 HTTP status code when fetching weather for \"{location.getName()}\" ({location.getLocationId()}): {response.status}')
+        if response.getStatusCode() != 200:
+            self.__timber.log('WeatherRepository', f'Encountered non-200 HTTP status code when fetching weather for \"{location.getName()}\" ({location.getLocationId()}): {response.getStatusCode()}')
             raise RuntimeError(f'Encountered network error when fetching weather for \"{location.getName()}\" ({location.getLocationId()})')
 
         jsonResponse: Dict[str, Any] = await response.json()
-        response.close()
+        await response.close()
 
         currentJson: Dict[str, Any] = jsonResponse['current']
         humidity = int(round(utils.getFloatFromDict(currentJson, 'humidity')))
