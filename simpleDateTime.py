@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 
@@ -20,12 +20,18 @@ class SimpleDateTime():
     def __add__(self, other: Any):
         if isinstance(other, SimpleDateTime):
             return self.__now + other.__now
+        elif isinstance(other, datetime):
+            return self.__now + other
+        elif isinstance(other, timedelta):
+            return self.__now + other
         else:
             raise ValueError(f'`other` is an unsupported type: \"{other}\"')
 
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, SimpleDateTime):
             return self.__now == other.__now
+        elif isinstance(other, datetime):
+            return self.__now == other
         else:
             raise ValueError(f'`other` is an unsupported type: \"{other}\"')
 
@@ -71,29 +77,41 @@ class SimpleDateTime():
     def __ge__(self, other: Any) -> bool:
         if isinstance(other, SimpleDateTime):
             return self.__now >= other.__now
+        elif isinstance(other, datetime):
+            return self.__now >= other
         else:
             raise ValueError(f'`other` is an unsupported type: \"{other}\"')
 
     def __gt__(self, other: Any) -> bool:
         if isinstance(other, SimpleDateTime):
             return self.__now > other.__now
+        elif isinstance(other, datetime):
+            return self.__now > other
         else:
             raise ValueError(f'`other` is an unsupported type: \"{other}\"')
 
     def __le__(self, other: Any) -> bool:
         if isinstance(other, SimpleDateTime):
             return self.__now <= other.__now
+        elif isinstance(other, datetime):
+            return self.__now <= other
         else:
             raise ValueError(f'`other` is an unsupported type: \"{other}\"')
 
     def __lt__(self, other: Any) -> bool:
         if isinstance(other, SimpleDateTime):
             return self.__now < other.__now
+        elif isinstance(other, datetime):
+            return self.__now < other
         else:
             raise ValueError(f'`other` is an unsupported type: \"{other}\"')
 
     def __sub__(self, other: Any):
         if isinstance(other, SimpleDateTime):
             return self.__now - other.__now
+        elif isinstance(other, datetime):
+            return self.__now - other
+        elif isinstance(other, timedelta):
+            return self.__now - other
         else:
             raise ValueError(f'`other` is an unsupported type: \"{other}\"')
