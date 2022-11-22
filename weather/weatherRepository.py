@@ -1,12 +1,10 @@
-from asyncio import TimeoutError
 from datetime import timedelta
 from typing import Any, Dict, List, Optional
-
-import aiohttp
 
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.location.location import Location
+    from CynanBotCommon.network.exceptions import GenericNetworkException
     from CynanBotCommon.network.networkClientProvider import \
         NetworkClientProvider
     from CynanBotCommon.timber.timber import Timber
@@ -17,6 +15,7 @@ try:
 except:
     import utils
     from location.location import Location
+    from network.exceptions import GenericNetworkException
     from network.networkClientProvider import NetworkClientProvider
     from timber.timber import Timber
     from timedDict import TimedDict
@@ -130,7 +129,7 @@ class WeatherRepository():
 
         try:
             response = await clientSession.get(requestUrl)
-        except (aiohttp.ClientError, TimeoutError) as e:
+        except GenericNetworkException as e:
             self.__timber.log('WeatherRepository', f'Encountered network error when fetching air quality index for \"{location.getName()}\" ({location.getLocationId()}): {e}', e)
             return None
 
@@ -180,7 +179,7 @@ class WeatherRepository():
 
         try:
             response = await clientSession.get(requestUrl)
-        except (aiohttp.ClientError, TimeoutError) as e:
+        except GenericNetworkException as e:
             self.__timber.log('WeatherRepository', f'Encountered network error when fetching weather for \"{location.getName()}\" ({location.getLocationId()}): {e}', e)
             raise RuntimeError(f'Encountered network error when fetching weather for \"{location.getName()}\" ({location.getLocationId()})')
 

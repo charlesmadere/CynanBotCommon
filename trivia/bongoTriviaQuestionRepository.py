@@ -1,10 +1,8 @@
-from asyncio import TimeoutError
 from typing import Any, Dict, List
-
-import aiohttp
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.network.exceptions import GenericNetworkException
     from CynanBotCommon.network.networkClientProvider import \
         NetworkClientProvider
     from CynanBotCommon.timber.timber import Timber
@@ -29,6 +27,7 @@ try:
         TrueFalseTriviaQuestion
 except:
     import utils
+    from network.exceptions import GenericNetworkException
     from network.networkClientProvider import NetworkClientProvider
     from timber.timber import Timber
     from trivia.absTriviaQuestion import AbsTriviaQuestion
@@ -85,7 +84,7 @@ class BongoTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         try:
             response = await clientSession.get('https://beta-trivia.bongo.best/?limit=1')
-        except (aiohttp.ClientError, TimeoutError) as e:
+        except GenericNetworkException as e:
             self.__timber.log('BongoTriviaQuestionRepository', f'Encountered network error: {e}', e)
             raise GenericTriviaNetworkException(self.getTriviaSource(), e)
 

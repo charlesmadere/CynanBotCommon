@@ -1,12 +1,10 @@
 import json
 import random
-from asyncio import TimeoutError
 from json.decoder import JSONDecodeError
 from typing import Any, Dict, List, Optional
 
 import aiofiles
 import aiofiles.ospath
-import aiohttp
 from google.cloud import translate_v2 as translate
 
 try:
@@ -16,6 +14,7 @@ try:
     from CynanBotCommon.language.translationApiSource import \
         TranslationApiSource
     from CynanBotCommon.language.translationResponse import TranslationResponse
+    from CynanBotCommon.network.exceptions import GenericNetworkException
     from CynanBotCommon.network.networkClientProvider import \
         NetworkClientProvider
     from CynanBotCommon.timber.timber import Timber
@@ -25,6 +24,7 @@ except:
     from language.languagesRepository import LanguagesRepository
     from language.translationApiSource import TranslationApiSource
     from language.translationResponse import TranslationResponse
+    from network.exceptions import GenericNetworkException
     from network.networkClientProvider import NetworkClientProvider
     from timber.timber import Timber
 
@@ -70,7 +70,7 @@ class TranslationHelper():
 
         try:
             response = await clientSession.get(requestUrl)
-        except (aiohttp.ClientError, TimeoutError) as e:
+        except GenericNetworkException as e:
             self.__timber.log('TranslationHelper', f'Encountered network error when translating \"{text}\": {e}', e)
             raise RuntimeError(f'Encountered network error when translating \"{text}\": {e}')
 

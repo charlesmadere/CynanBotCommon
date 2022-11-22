@@ -1,10 +1,8 @@
-from asyncio import TimeoutError
 from typing import Any, Dict, List, Set
-
-import aiohttp
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.network.exceptions import GenericNetworkException
     from CynanBotCommon.network.networkClientProvider import \
         NetworkClientProvider
     from CynanBotCommon.timber.timber import Timber
@@ -27,6 +25,7 @@ try:
     from CynanBotCommon.trivia.triviaType import TriviaType
 except:
     import utils
+    from network.exceptions import GenericNetworkException
     from network.networkClientProvider import NetworkClientProvider
     from timber.timber import Timber
     from trivia.absTriviaQuestion import AbsTriviaQuestion
@@ -102,7 +101,7 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         try:
             response = await clientSession.get(f'https://jservice.io/api/random?count={count}')
-        except (aiohttp.ClientError, TimeoutError) as e:
+        except GenericNetworkException as e:
             self.__timber.log('JServiceTriviaQuestionRepository', f'Encountered network error: {e}', e)
             raise GenericTriviaNetworkException(self.getTriviaSource(), e)
 

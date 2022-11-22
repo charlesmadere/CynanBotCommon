@@ -1,15 +1,14 @@
 import json
 import locale
-from asyncio import TimeoutError
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Set
 
 import aiofiles
 import aiofiles.ospath
-import aiohttp
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.network.exceptions import GenericNetworkException
     from CynanBotCommon.network.networkClientProvider import \
         NetworkClientProvider
     from CynanBotCommon.network.networkResponse import NetworkResponse
@@ -25,6 +24,7 @@ try:
         TwitchRefreshTokenMissingException
 except:
     import utils
+    from network.exceptions import GenericNetworkException
     from network.networkClientProvider import NetworkClientProvider
     from network.networkResponse import NetworkResponse
     from timber.timber import Timber
@@ -190,7 +190,7 @@ class TwitchTokensRepository():
                         'refresh_token': await self.requireRefreshToken(twitchHandle)
                 }
             )
-        except (aiohttp.ClientError, TimeoutError) as e:
+        except GenericNetworkException as e:
             self.__timber.log('TwitchTokensRepository', f'Encountered network error when requesting new Twitch tokens for \"{twitchHandle}\": {e}', e)
             raise TwitchNetworkException(f'Encountered network error when requesting new Twitch tokens for \"{twitchHandle}\": {e}')
 
@@ -308,7 +308,7 @@ class TwitchTokensRepository():
                     'Authorization': f'OAuth {await self.requireAccessToken(twitchHandle)}'
                 }
             )
-        except (aiohttp.ClientError, TimeoutError) as e:
+        except GenericNetworkException as e:
             self.__timber.log('TwitchTokensRepository', f'Encountered network error when validating Twitch access token for \"{twitchHandle}\": {e}', e)
             raise TwitchNetworkException(f'Encountered network error when validating Twitch access token for \"{twitchHandle}\": {e}')
 

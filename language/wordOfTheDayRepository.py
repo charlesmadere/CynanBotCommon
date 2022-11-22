@@ -1,7 +1,6 @@
 from datetime import timedelta
 from typing import Any, Dict
 
-import aiohttp
 import xmltodict
 
 try:
@@ -9,6 +8,7 @@ try:
     from CynanBotCommon.language.languageEntry import LanguageEntry
     from CynanBotCommon.language.wordOfTheDayResponse import \
         WordOfTheDayResponse
+    from CynanBotCommon.network.exceptions import GenericNetworkException
     from CynanBotCommon.network.networkClientProvider import \
         NetworkClientProvider
     from CynanBotCommon.timber.timber import Timber
@@ -17,6 +17,7 @@ except:
     import utils
     from language.languageEntry import LanguageEntry
     from language.wordOfTheDayResponse import WordOfTheDayResponse
+    from network.exceptions import GenericNetworkException
     from network.networkClientProvider import NetworkClientProvider
     from timber.timber import Timber
     from timedDict import TimedDict
@@ -75,7 +76,7 @@ class WordOfTheDayRepository():
 
         try:
             response = await clientSession.get(f'https://wotd.transparent.com/rss/{languageEntry.getWotdApiCode()}-widget.xml?t=0')
-        except (aiohttp.ClientError, TimeoutError) as e:
+        except GenericNetworkException as e:
             self.__timber.log('WordOfTheDayRepository', f'Encountered network error when fetching Word Of The Day for \"{languageEntry.getName()}\": {e}', e)
             raise RuntimeError(f'Encountered network error when fetching Word Of The Day for \"{languageEntry.getName()}\": {e}')
 

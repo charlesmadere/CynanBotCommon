@@ -1,23 +1,23 @@
 import json
-from asyncio import TimeoutError
 from typing import Any, Dict, Optional
 
 import aiofiles
 import aiofiles.ospath
-import aiohttp
 
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.funtoon.funtoonPkmnCatchType import \
         FuntoonPkmnCatchType
-    from CynanBotCommon.network.networkClientProvider import NetworkClientProvider
+    from CynanBotCommon.network.exceptions import GenericNetworkException
+    from CynanBotCommon.network.networkClientProvider import \
+        NetworkClientProvider
     from CynanBotCommon.timber.timber import Timber
 except:
     import utils
+    from funtoon.funtoonPkmnCatchType import FuntoonPkmnCatchType
+    from network.exceptions import GenericNetworkException
     from network.networkClientProvider import NetworkClientProvider
     from timber.timber import Timber
-
-    from funtoon.funtoonPkmnCatchType import FuntoonPkmnCatchType
 
 
 class FuntoonRepository():
@@ -53,7 +53,7 @@ class FuntoonRepository():
 
         try:
             response = await clientSession.get(f'{self.__funtoonApiUrl}/trivia/review/{triviaId}')
-        except (aiohttp.ClientError, TimeoutError) as e:
+        except GenericNetworkException as e:
             self.__timber.log('FuntoonRepository', f'Encountered network error when banning a trivia question (triviaId={triviaId}): {e}', e)
             return False
 
@@ -120,7 +120,7 @@ class FuntoonRepository():
                 },
                 json = jsonPayload
             )
-        except (aiohttp.ClientError, TimeoutError) as e:
+        except GenericNetworkException as e:
             self.__timber.log('FuntoonRepository', f'Encountered network error for \"{twitchChannel}\" for event \"{event}\": {e}', e)
             return False
 
