@@ -1,11 +1,12 @@
 from asyncio import TimeoutError
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import aiohttp
 
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.networkClientProvider import NetworkClientProvider
+    from CynanBotCommon.network.networkClientProvider import \
+        NetworkClientProvider
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.absTriviaQuestionRepository import \
@@ -14,8 +15,9 @@ try:
         MultipleChoiceTriviaQuestion
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
     from CynanBotCommon.trivia.triviaEmoteGenerator import TriviaEmoteGenerator
-    from CynanBotCommon.trivia.triviaExceptions import \
-        UnsupportedTriviaTypeException
+    from CynanBotCommon.trivia.triviaExceptions import (
+        BadTriviaSessionTokenException, GenericTriviaNetworkException,
+        UnsupportedTriviaTypeException)
     from CynanBotCommon.trivia.triviaIdGenerator import TriviaIdGenerator
     from CynanBotCommon.trivia.triviaQuestionCompiler import \
         TriviaQuestionCompiler
@@ -27,16 +29,17 @@ try:
         TrueFalseTriviaQuestion
 except:
     import utils
-    from networkClientProvider import NetworkClientProvider
+    from network.networkClientProvider import NetworkClientProvider
     from timber.timber import Timber
-
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.absTriviaQuestionRepository import AbsTriviaQuestionRepository
     from trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
     from trivia.triviaDifficulty import TriviaDifficulty
     from trivia.triviaEmoteGenerator import TriviaEmoteGenerator
-    from trivia.triviaExceptions import UnsupportedTriviaTypeException
+    from trivia.triviaExceptions import (BadTriviaSessionTokenException,
+                                         GenericTriviaNetworkException,
+                                         UnsupportedTriviaTypeException)
     from trivia.triviaIdGenerator import TriviaIdGenerator
     from trivia.triviaQuestionCompiler import TriviaQuestionCompiler
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
@@ -91,28 +94,28 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
             try:
                 response = await clientSession.get('https://opentdb.com/api_token.php?command=request')
             except (aiohttp.ClientError, TimeoutError) as e:
-                self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Encountered network error when fetching session token: {e}', e)
-                return None
+                self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Encountered network error when fetching Open Trivia Database\'s session token for twitchChannel: \"{twitchChannel}\": {e}', e)
+                raise BadTriviaSessionTokenException(f'Encountered network error when fetching Open Trivia Database\'s session token for twitchChannel: \"{twitchChannel}\": {e}')
 
-            if response.status != 200:
-                self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Encountered non-200 HTTP status code when fetching session token: \"{response.status}\"')
-                return None
+            if response.getStatusCode() != 200:
+                self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Encountered non-200 HTTP status code ({response.getStatusCode()}) when fetching Open Trivia Database\'s session token for twitchChannel: \"{twitchChannel}\"')
+                raise BadTriviaSessionTokenException(f'Encountered non-200 HTTP status code ({response.getStatusCode()}) when fetching Open Trivia Database\'s session token for twitchChannel: \"{twitchChannel}\"')
 
-            jsonResponse: Dict[str, Any] = await response.json()
-            response.close()
+            jsonResponse: Optional[Dict[str, Any]] = await response.json()
+            await response.close()
 
             if await self._triviaSettingsRepository.isDebugLoggingEnabled():
                 self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'{jsonResponse}')
 
             if not utils.hasItems(jsonResponse):
-                self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Rejecting Open Trivia Database\'s session token JSON data due to null/empty JSON contents: {jsonResponse}')
-                raise ValueError(f'Rejecting Open Trivia Database\'s session token JSON data due to null/empty JSON contents: {jsonResponse}')
+                self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Rejecting Open Trivia Database\'s session token JSON data for twitchChannel \"{twitchChannel}\" due to null/empty JSON contents: {jsonResponse}')
+                raise BadTriviaSessionTokenException(f'Rejecting Open Trivia Database\'s session token JSON data for twitchChannel \"{twitchChannel}\" due to null/empty JSON contents: {jsonResponse}')
             elif utils.getIntFromDict(jsonResponse, 'response_code', fallback = -1) != 0:
-                self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Rejecting Open Trivia Database\'s session token JSON data due to bad \"response_code\" value: {jsonResponse}')
-                raise ValueError(f'Rejecting Open Trivia Database\'s session token JSON data due to bad \"response_code\" value: {jsonResponse}')
+                self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Rejecting Open Trivia Database\'s session token JSON data for twitchChannel \"{twitchChannel}\" due to bad \"response_code\" value: {jsonResponse}')
+                raise BadTriviaSessionTokenException(f'Rejecting Open Trivia Database\'s session token JSON data for twitchChannel \"{twitchChannel}\" due to bad \"response_code\" value: {jsonResponse}')
             elif not utils.isValidStr(jsonResponse.get('token')):
-                self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Rejecting Open Trivia Database\'s session token JSON data due to bad \"token\" value: {jsonResponse}')
-                raise ValueError(f'Rejecting Open Trivia Database\'s session token JSON data due to bad \"token\" value: {jsonResponse}')
+                self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Rejecting Open Trivia Database\'s session token JSON data for twitchChannel \"{twitchChannel}\" due to bad \"token\" value: {jsonResponse}')
+                raise BadTriviaSessionTokenException(f'Rejecting Open Trivia Database\'s session token JSON data for twitchChannel \"{twitchChannel}\" due to bad \"token\" value: {jsonResponse}')
 
             sessionToken = utils.getStrFromDict(jsonResponse, 'token')
             self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Fetched new session token for \"{twitchChannel}\": \"{sessionToken}\"')
@@ -123,9 +126,12 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
     async def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
         self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Fetching trivia question... (twitchChannel={twitchChannel})')
 
-        sessionToken: str = None
+        sessionToken: Optional[str] = None
         if utils.isValidStr(twitchChannel):
-            sessionToken = await self.__fetchSessionToken(twitchChannel)
+            try:
+                sessionToken = await self.__fetchSessionToken(twitchChannel)
+            except BadTriviaSessionTokenException as e:
+                self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Unable to fetch Open Trivia Database session token for twitchChannel \"{twitchChannel}\", will continue without one', e)
 
         clientSession = await self.__networkClientProvider.get()
 
@@ -136,14 +142,14 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
                 response = await clientSession.get('https://opentdb.com/api.php?amount=1')
         except (aiohttp.ClientError, TimeoutError) as e:
             self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Encountered network error when fetching trivia question: {e}', e)
-            return None
+            raise GenericTriviaNetworkException(self.getTriviaSource(), e)
 
-        if response.status != 200:
-            self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Encountered non-200 HTTP status code when fetching trivia question: \"{response.status}\"')
-            return None
+        if response.getStatusCode() != 200:
+            self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Encountered non-200 HTTP status code when fetching trivia question: \"{response.getStatusCode()}\"')
+            raise GenericTriviaNetworkException(self.getTriviaSource())
 
-        jsonResponse: Dict[str, Any] = await response.json()
-        response.close()
+        jsonResponse: Optional[Dict[str, Any]] = await response.json()
+        await response.close()
 
         if await self._triviaSettingsRepository.isDebugLoggingEnabled():
             self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'{jsonResponse}')

@@ -10,11 +10,11 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.funtoon.funtoonPkmnCatchType import \
         FuntoonPkmnCatchType
-    from CynanBotCommon.networkClientProvider import NetworkClientProvider
+    from CynanBotCommon.network.networkClientProvider import NetworkClientProvider
     from CynanBotCommon.timber.timber import Timber
 except:
     import utils
-    from networkClientProvider import NetworkClientProvider
+    from network.networkClientProvider import NetworkClientProvider
     from timber.timber import Timber
 
     from funtoon.funtoonPkmnCatchType import FuntoonPkmnCatchType
@@ -59,8 +59,8 @@ class FuntoonRepository():
 
         responseStatus: Optional[int] = None
         if response is not None:
-            responseStatus = response.status
-            response.close()
+            responseStatus = response.getStatusCode()
+            await response.close()
 
         return utils.isValidNum(responseStatus) and responseStatus == 200
 
@@ -124,10 +124,10 @@ class FuntoonRepository():
             self.__timber.log('FuntoonRepository', f'Encountered network error for \"{twitchChannel}\" for event \"{event}\": {e}', e)
             return False
 
-        responseStatus: Optional[int ] = None
+        responseStatus: Optional[int] = None
         if response is not None:
-            responseStatus = response.status
-            response.close()
+            responseStatus = response.getStatusCode()
+            await response.close()
 
         if responseStatus == 200:
             if isDebugLoggingEnabled:

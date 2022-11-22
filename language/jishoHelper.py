@@ -1,5 +1,5 @@
 from asyncio import TimeoutError
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from urllib.parse import quote
 
 import aiohttp
@@ -8,15 +8,15 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.language.jishoResult import JishoResult
     from CynanBotCommon.language.jishoVariant import JishoVariant
-    from CynanBotCommon.networkClientProvider import NetworkClientProvider
+    from CynanBotCommon.network.networkClientProvider import \
+        NetworkClientProvider
     from CynanBotCommon.timber.timber import Timber
 except:
     import utils
-    from networkClientProvider import NetworkClientProvider
-    from timber.timber import Timber
-
     from language.jishoResult import JishoResult
     from language.jishoVariant import JishoVariant
+    from network.networkClientProvider import NetworkClientProvider
+    from timber.timber import Timber
 
 
 class JishoHelper():
@@ -61,12 +61,12 @@ class JishoHelper():
             self.__timber.log('JishoHelper', f'Encountered network error when searching Jisho for \"{query}\": {e}', e)
             raise RuntimeError(f'Encountered network error when searching Jisho for \"{query}\": {e}')
 
-        if response.status != 200:
-            self.__timber.log('JishoHelper', f'Encountered non-200 HTTP status code when searching Jisho for \"{query}\": {response.status}')
-            raise RuntimeError(f'Encountered non-200 HTTP status code when searching Jisho for \"{query}\": {response.status}')
+        if response.getStatusCode() != 200:
+            self.__timber.log('JishoHelper', f'Encountered non-200 HTTP status code when searching Jisho for \"{query}\": {response.getStatusCode()}')
+            raise RuntimeError(f'Encountered non-200 HTTP status code when searching Jisho for \"{query}\": {response.getStatusCode()}')
 
-        jsonResponse: Dict[str, Any] = await response.json()
-        response.close()
+        jsonResponse: Optional[Dict[str, Any]] = await response.json()
+        await response.close()
 
         if not utils.hasItems(jsonResponse):
             raise RuntimeError(f'Jisho\'s response for \"{query}\" has malformed or empty JSON: {jsonResponse}')

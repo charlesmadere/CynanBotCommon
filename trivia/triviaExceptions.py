@@ -12,6 +12,12 @@ class BadTriviaAnswerException(Exception):
         super().__init__(message)
 
 
+class BadTriviaSessionTokenException(Exception):
+
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
 class GenericTriviaNetworkException(Exception):
 
     def __init__(
