@@ -3,8 +3,7 @@ from typing import Any, Dict, Optional
 import aiohttp
 
 try:
-    from network.aioHttpResponse import AioHttpResponse
-
+    from CynanBotCommon.network.aioHttpResponse import AioHttpResponse
     from CynanBotCommon.network.exceptions import GenericNetworkException
     from CynanBotCommon.network.networkClientType import NetworkClientType
     from CynanBotCommon.network.networkHandle import NetworkHandle
