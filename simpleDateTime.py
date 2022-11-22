@@ -17,6 +17,18 @@ class SimpleDateTime():
         else:
             self.__now: datetime = now
 
+    def __add__(self, other: Any):
+        if isinstance(other, SimpleDateTime):
+            return self.__now + other.__now
+        else:
+            raise ValueError(f'`other` is an unsupported type: \"{other}\"')
+
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, SimpleDateTime):
+            return self.__now == other.__now
+        else:
+            raise ValueError(f'`other` is an unsupported type: \"{other}\"')
+
     def getDateTime(self) -> datetime:
         return self.__now
 
@@ -56,8 +68,32 @@ class SimpleDateTime():
     def getYearMonthDayStr(self) -> str:
         return f'{self.getYearStr()}/{self.getMonthStr()}/{self.getDayStr()}'
 
+    def __ge__(self, other: Any) -> bool:
+        if isinstance(other, SimpleDateTime):
+            return self.__now >= other.__now
+        else:
+            raise ValueError(f'`other` is an unsupported type: \"{other}\"')
+
+    def __gt__(self, other: Any) -> bool:
+        if isinstance(other, SimpleDateTime):
+            return self.__now > other.__now
+        else:
+            raise ValueError(f'`other` is an unsupported type: \"{other}\"')
+
+    def __le__(self, other: Any) -> bool:
+        if isinstance(other, SimpleDateTime):
+            return self.__now <= other.__now
+        else:
+            raise ValueError(f'`other` is an unsupported type: \"{other}\"')
+
     def __lt__(self, other: Any) -> bool:
         if isinstance(other, SimpleDateTime):
             return self.__now < other.__now
         else:
-            return False
+            raise ValueError(f'`other` is an unsupported type: \"{other}\"')
+
+    def __sub__(self, other: Any):
+        if isinstance(other, SimpleDateTime):
+            return self.__now - other.__now
+        else:
+            raise ValueError(f'`other` is an unsupported type: \"{other}\"')
