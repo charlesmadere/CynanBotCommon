@@ -291,6 +291,8 @@ class TriviaAnswerChecker():
                 yield 'nurse practitioner'
             if word == 'pa':
                 yield 'physician assistant'
+            if word == 'phd':
+                yield 'philosophiae doctor'
             if word == 'sr':
                 yield 'senior'
             if word == 'st':
@@ -416,17 +418,25 @@ class TriviaAnswerChecker():
                 yield 'southeast'
 
             # weird latin things
+            if word == 'cv':
+                yield 'curriculum vitae'
+            if word == 'etc':
+                yield 'et cetera'
             if word == 'eg':
                 yield 'exempli gratia'
             if word == 'ie':
                 yield 'id est'
                 yield 'in other words'
+            if word == 'sic':
+                yield 'sic erat scriptum'
 
             # technology
+            if word == 'cmyk':
+                yield 'cyan magenta yellow black'
             if word == 'cpu':
                 yield 'central processing unit'
             if word in ('dp', 'dip'):
-                yield 'density independent pixels'
+                yield 'density independent pixel'
             if word == 'dpi':
                 yield 'dots per inch'
             if word == 'ff':
@@ -435,6 +445,8 @@ class TriviaAnswerChecker():
                 yield 'google'
             if word == 'gpu':
                 yield 'graphics processing unit'
+            if word == 'hdd':
+                yield 'hard disk drive'
             if word == 'http':
                 yield 'hypertext transfer protocol'
             if word == 'https':
@@ -449,22 +461,96 @@ class TriviaAnswerChecker():
                 yield 'point'
             if word == 'px':
                 yield 'pixel'
+            if word == 'ram':
+                yield 'random access memory'
             if word == 'rgb':
                 yield 'red green blue'
             if word == 'sp':
                 yield 'scaleable pixels'
                 yield 'scale independent pixels'
+            if word == 'ssd':
+                yield 'solid state drive'
             if word == 'url':
                 yield 'uniform resource locator'
             if word == 'www':
                 yield 'world wide web'
 
-            # measurements
+            # measurements (imperial and metric)
+            if word == 'c':
+                yield 'celsius'
+            if word == 'cg':
+                yield 'centigram'
+            if word == 'cl':
+                yield 'centiliter'
+            if word == 'cm':
+                yield 'centimeter'
+            if word == 'dl':
+                yield 'deciliter'
+            if word == 'dm':
+                yield 'decimeter'
+            if word == 'eb':
+                yield 'exabyte'
+            if word == 'f':
+                yield 'fahrenheit'
             if word == 'ft':
                 yield 'foot'
                 yield 'feet'
+            if word == 'g':
+                yield 'gram'
+            if word == 'gb':
+                yield 'gigabyte'
+            if word == 'gw':
+                yield 'gigawatt'
+            if word == 'hg':
+                yield 'hectogram'
+            if word == 'hm':
+                yield 'hectometer'
             if word == 'in':
                 yield 'inch'
+            if word == 'k':
+                yield 'kelvin'
+            if word == 'kb':
+                yield 'kilobyte'
+            if word == 'kg':
+                yield 'kilogram'
+            if word == 'kl':
+                yield 'kiloliter'
+            if word == 'km':
+                yield 'kilometer'
+            if word == 'kph':
+                yield 'kilometers per hour'
+            if word == 'kw':
+                yield 'kilowatt'
+            if word == 'l':
+                yield 'liter'
+            if word in ('lb', 'lbs'):
+                yield 'pound'
+            if word == 'm':
+                yield 'meter'
+            if word == 'mb':
+                yield 'megabyte'
+            if word == 'mg':
+                yield 'milligram'
+            if word == 'mi':
+                yield 'mile'
+            if word == 'ml':
+                yield 'milliliter'
+            if word == 'mm':
+                yield 'millimeter'
+            if word == 'mph':
+                yield 'miles per hour'
+            if word == 'nmi':
+                yield 'nautical mile'
+            if word == 'oz':
+                yield 'ounce'
+            if word == 'pb':
+                yield 'petabyte'
+            if word == 'tb':
+                yield 'terabyte'
+            if word == 'w':
+                yield 'watt'
+            if word == 'yd':
+                yield 'yard'
 
             # other
             if word == 'dept':
