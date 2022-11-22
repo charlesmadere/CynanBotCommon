@@ -1,10 +1,8 @@
-from asyncio import TimeoutError
 from typing import Any, Dict, List, Optional, Tuple
-
-import aiohttp
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.network.exceptions import GenericNetworkException
     from CynanBotCommon.network.networkClientProvider import \
         NetworkClientProvider
     from CynanBotCommon.timber.timber import Timber
@@ -27,6 +25,7 @@ try:
         TrueFalseTriviaQuestion
 except:
     import utils
+    from network.exceptions import GenericNetworkException
     from network.networkClientProvider import NetworkClientProvider
     from timber.timber import Timber
     from trivia.absTriviaQuestion import AbsTriviaQuestion
@@ -88,7 +87,7 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
                     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:97.0) Gecko/20100101 Firefox/97.0' # LOOOOL
                 }
             )
-        except (aiohttp.ClientError, TimeoutError) as e:
+        except GenericNetworkException as e:
             self.__timber.log('QuizApiTriviaQuestionRepository', f'Encountered network error when fetching trivia question: {e}', e)
             raise GenericTriviaNetworkException(self.getTriviaSource(), e)
 

@@ -1,13 +1,11 @@
-from asyncio import TimeoutError
 from typing import Any, Dict, List, Optional
 from urllib.parse import quote
-
-import aiohttp
 
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.language.jishoResult import JishoResult
     from CynanBotCommon.language.jishoVariant import JishoVariant
+    from CynanBotCommon.network.exceptions import GenericNetworkException
     from CynanBotCommon.network.networkClientProvider import \
         NetworkClientProvider
     from CynanBotCommon.timber.timber import Timber
@@ -15,6 +13,7 @@ except:
     import utils
     from language.jishoResult import JishoResult
     from language.jishoVariant import JishoVariant
+    from network.exceptions import GenericNetworkException
     from network.networkClientProvider import NetworkClientProvider
     from timber.timber import Timber
 
@@ -57,7 +56,7 @@ class JishoHelper():
 
         try:
             response = await clientSession.get(f'https://jisho.org/api/v1/search/words?keyword={encodedQuery}')
-        except (aiohttp.ClientError, TimeoutError) as e:
+        except GenericNetworkException as e:
             self.__timber.log('JishoHelper', f'Encountered network error when searching Jisho for \"{query}\": {e}', e)
             raise RuntimeError(f'Encountered network error when searching Jisho for \"{query}\": {e}')
 

@@ -1,10 +1,8 @@
-from asyncio import TimeoutError
 from typing import Any, Dict, Optional
-
-import aiohttp
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.network.exceptions import GenericNetworkException
     from CynanBotCommon.network.networkClientProvider import \
         NetworkClientProvider
     from CynanBotCommon.storage.backingDatabase import BackingDatabase
@@ -12,6 +10,7 @@ try:
     from CynanBotCommon.timber.timber import Timber
 except:
     import utils
+    from network.exceptions import GenericNetworkException
     from network.networkClientProvider import NetworkClientProvider
     from storage.backingDatabase import BackingDatabase
     from storage.databaseConnection import DatabaseConnection
@@ -85,7 +84,7 @@ class UserIdsRepository():
                     'Client-Id': twitchClientId
                 }
             )
-        except (aiohttp.ClientError, TimeoutError) as e:
+        except GenericNetworkException as e:
             self.__timber.log('UserIdsRepository', f'Encountered network error when fetching userId for userName \"{userName}\": {e}', e)
             raise RuntimeError(f'UserIdsRepository encountered network error when fetching userId for userName \"{userName}\": {e}')
 

@@ -1,10 +1,8 @@
-from asyncio import TimeoutError
 from typing import Any, Dict, List, Optional
-
-import aiohttp
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.network.exceptions import GenericNetworkException
     from CynanBotCommon.network.networkClientProvider import \
         NetworkClientProvider
     from CynanBotCommon.pkmn.pokepediaDamageClass import PokepediaDamageClass
@@ -17,6 +15,7 @@ try:
     from CynanBotCommon.timber.timber import Timber
 except:
     import utils
+    from network.exceptions import GenericNetworkException
     from network.networkClientProvider import NetworkClientProvider
     from timber.timber import Timber
 
@@ -266,7 +265,7 @@ class PokepediaRepository():
 
         try:
             response = await clientSession.get(f'https://pokeapi.co/api/v2/move/{name}/')
-        except (aiohttp.ClientError, TimeoutError) as e:
+        except GenericNetworkException as e:
             self.__timber.log('PokepediaRepository', f'Encountered network error from PokeAPI when searching for \"{name}\" move: {e}', e)
             raise RuntimeError(f'Encountered network error from PokeAPI when searching for \"{name}\" move: {e}')
 
@@ -296,7 +295,7 @@ class PokepediaRepository():
 
         try:
             response = await clientSession.get(f'https://pokeapi.co/api/v2/pokemon/{name}/')
-        except (aiohttp.ClientError, TimeoutError) as e:
+        except GenericNetworkException as e:
             self.__timber.log('PokepediaRepository', f'Encountered network error from PokeAPI when searching for \"{name}\" Pokemon: {e}', e)
             raise RuntimeError(f'Encountered network error from PokeAPI when searching for \"{name}\" Pokemon: {e}')
 

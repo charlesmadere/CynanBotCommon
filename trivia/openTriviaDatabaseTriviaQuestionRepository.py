@@ -1,10 +1,8 @@
-from asyncio import TimeoutError
 from typing import Any, Dict, List, Optional
-
-import aiohttp
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.network.exceptions import GenericNetworkException
     from CynanBotCommon.network.networkClientProvider import \
         NetworkClientProvider
     from CynanBotCommon.timber.timber import Timber
@@ -29,6 +27,7 @@ try:
         TrueFalseTriviaQuestion
 except:
     import utils
+    from network.exceptions import GenericNetworkException
     from network.networkClientProvider import NetworkClientProvider
     from timber.timber import Timber
     from trivia.absTriviaQuestion import AbsTriviaQuestion
@@ -93,7 +92,7 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
             try:
                 response = await clientSession.get('https://opentdb.com/api_token.php?command=request')
-            except (aiohttp.ClientError, TimeoutError) as e:
+            except GenericNetworkException as e:
                 self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Encountered network error when fetching Open Trivia Database\'s session token for twitchChannel: \"{twitchChannel}\": {e}', e)
                 raise BadTriviaSessionTokenException(f'Encountered network error when fetching Open Trivia Database\'s session token for twitchChannel: \"{twitchChannel}\": {e}')
 
@@ -140,7 +139,7 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
                 response = await clientSession.get(f'https://opentdb.com/api.php?amount=1&token={sessionToken}')
             else:
                 response = await clientSession.get('https://opentdb.com/api.php?amount=1')
-        except (aiohttp.ClientError, TimeoutError) as e:
+        except GenericNetworkException as e:
             self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Encountered network error when fetching trivia question: {e}', e)
             raise GenericTriviaNetworkException(self.getTriviaSource(), e)
 

@@ -1,8 +1,6 @@
-from asyncio import TimeoutError
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 
-import aiohttp
 from lxml import html
 
 try:
@@ -10,6 +8,7 @@ try:
     from CynanBotCommon.analogue.analogueProductType import AnalogueProductType
     from CynanBotCommon.analogue.analogueStoreEntry import AnalogueStoreEntry
     from CynanBotCommon.analogue.analogueStoreStock import AnalogueStoreStock
+    from CynanBotCommon.network.exceptions import GenericNetworkException
     from CynanBotCommon.network.networkClientProvider import \
         NetworkClientProvider
     from CynanBotCommon.timber.timber import Timber
@@ -18,6 +17,7 @@ except:
     from analogue.analogueProductType import AnalogueProductType
     from analogue.analogueStoreEntry import AnalogueStoreEntry
     from analogue.analogueStoreStock import AnalogueStoreStock
+    from network.exceptions import GenericNetworkException
     from network.networkClientProvider import NetworkClientProvider
     from timber.timber import Timber
 
@@ -108,7 +108,7 @@ class AnalogueStoreRepository():
 
         try:
             response = await clientSession.get(self.__storeUrl)
-        except (aiohttp.ClientError, TimeoutError) as e:
+        except GenericNetworkException as e:
             self.__timber.log('AnalogueStoreRepository', f'Encountered network error: {e}', e)
             raise RuntimeError(f'Encountered network error when fetching Analogue store stock: {e}')
 
