@@ -1,13 +1,16 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from requests.models import Response
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.network.exceptions import \
+        NetworkResponseIsClosedException
     from CynanBotCommon.network.networkClientType import NetworkClientType
     from CynanBotCommon.network.networkResponse import NetworkResponse
 except:
     import utils
+    from network.exceptions import NetworkResponseIsClosedException
     from network.networkClientType import NetworkClientType
     from network.networkResponse import NetworkResponse
 
@@ -39,14 +42,24 @@ class RequestsResponse(NetworkResponse):
     def getNetworkClientType(self) -> NetworkClientType:
         return NetworkClientType.REQUESTS
 
+    def getStatusCode(self) -> int:
+        self.__requireNotClosed()
+        return self.__response.status_code
+
     def getUrl(self) -> str:
         return self.__url
 
     def isClosed(self) -> bool:
         return self.__isClosed
 
-    async def json(self) -> Dict[str, Any]:
+    async def json(self) -> Optional[Dict[str, Any]]:
+        self.__requireNotClosed()
         return self.__response.json()
 
-    def statusCode(self) -> int:
-        return self.__response.status_code
+    async def read(self) -> bytes:
+        self.__requireNotClosed()
+        return self.__response.content
+
+    def __requireNotClosed(self):
+        if self.isClosed():
+            raise NetworkResponseIsClosedException(f'This response has already been closed! ({self.getNetworkClientType()})')

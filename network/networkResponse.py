@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 try:
     from CynanBotCommon.network.networkClientType import NetworkClientType
@@ -14,14 +14,17 @@ class NetworkResponse():
     def getNetworkClientType(self) -> NetworkClientType:
         pass
 
+    def getStatusCode(self) -> int:
+        pass
+
     def getUrl(self) -> str:
         pass
 
     def isClosed(self) -> bool:
         pass
 
-    async def json(self) -> Dict[str, Any]:
+    async def json(self) -> Optional[Dict[str, Any]]:
         pass
 
-    def statusCode(self) -> int:
+    async def read(self) -> bytes:
         pass
