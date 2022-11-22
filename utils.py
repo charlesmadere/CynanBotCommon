@@ -2,7 +2,7 @@ import html
 import math
 import random
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from numbers import Number
 from typing import Any, Dict, Generator, List, Optional, Pattern
 from urllib.parse import urlparse
@@ -161,11 +161,16 @@ def getCleanedSplits(s: str) -> List[str]:
 
     return words
 
+naiveTimeZoneRegEx: Pattern = re.compile(r'.+\+00:00$', re.IGNORECASE)
+
 def getDateTimeFromStr(text: str) -> datetime:
-    if isValidStr(text):
-        return datetime.fromisoformat(text)
-    else:
+    if not isValidStr(text):
         return None
+
+    if naiveTimeZoneRegEx.fullmatch(text) is None:
+        text = f'{text}+00:00'
+
+    return datetime.fromisoformat(text)
 
 def getDefaultTimeout() -> int:
     return 10 # seconds
