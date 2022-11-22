@@ -22,11 +22,11 @@
         },
         "j_service": {
             "is_enabled": false,
-            "weight": 100
+            "weight": 25
         },
         "lord_of_the_rings": {
             "is_enabled": true,
-            "weight": 5
+            "weight": 2
         },
         "millionaire": {
             "is_enabled": true,
