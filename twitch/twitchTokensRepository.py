@@ -183,7 +183,7 @@ class TwitchTokensRepository():
         try:
             response = await clientSession.post(
                 url = self.__oauth2TokenUrl,
-                params = {
+                json = {
                         'client_id': twitchClientId,
                         'client_secret': twitchClientSecret,
                         'grant_type': 'refresh_token',
