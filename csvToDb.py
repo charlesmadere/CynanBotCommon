@@ -5,14 +5,23 @@ from typing import List, Optional, Set
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.trivia.triviaContentScanner import TriviaContentScanner
+    from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
+    from CynanBotCommon.trivia.triviaType import TriviaType
 except:
     import utils
+    from trivia.triviaContentScanner import TriviaContentScanner
+    from trivia.triviaDifficulty import TriviaDifficulty
+    from trivia.triviaType import TriviaType
 
+
+triviaContentScanner = TriviaContentScanner()
 
 def readInCsvRows(fileName: str) -> List[List[str]]:
     if not utils.isValidStr(fileName):
         raise ValueError(f'fileName argument is malformed: \"{fileName}\"')
 
+    bannedWords = triviaContentScanner.getBannedWords()
     rows: List[List[str]] = list()
 
     with open(fileName) as file:
@@ -29,7 +38,21 @@ def readInCsvRows(fileName: str) -> List[List[str]]:
                 print(f'Row #{lineNumber} in \"{fileName}\" has incorrect length ({len(row)}): {row}')
                 continue
 
-            rows.append(row)
+            encounteredBannedWord = False
+
+            for r in row:
+                for bannedWord in bannedWords:
+                    if bannedWord in r.lower():
+                        encounteredBannedWord = True
+                        break
+
+                if encounteredBannedWord:
+                    break
+
+            if encounteredBannedWord:
+                print(f'Row #{lineNumber} in \"{fileName}\" contains banned word: {row}')
+            else:
+                rows.append(row)
 
     if not utils.hasItems(rows):
         raise RuntimeError(f'Unable to read in any rows from \"{fileName}\": {rows}')
@@ -62,10 +85,17 @@ def writeRowsToSqlite(databaseName: str, rows: List[List[str]]):
         wrongAnswer3: str = utils.cleanStr(row[6])
         correctAnswer: str = utils.cleanStr(row[7])
 
+        difficulty: TriviaDifficulty = TriviaDifficulty.UNKNOWN
+        difficultyInt: Optional[int] = None
         try:
-            difficulty: Optional[int] = int(row[2])
-        except ValueError:
-            pass
+            difficultyInt = int(row[2])
+            difficulty = TriviaDifficulty.fromInt(difficultyInt)
+        except ValueError as e:
+            raise ValueError(f'difficultyInt at row #{rowNumber} is malformed: \"{difficultyInt}\": {e}')
+
+        triviaType: TriviaType = TriviaType.MULTIPLE_CHOICE
+        if utils.isValidBool(utils.strictStrToBool(correctAnswer)) and not utils.isValidStr(wrongAnswer1) and not utils.isValidStr(wrongAnswer2) and not utils.isValidStr(wrongAnswer3):
+            triviaType = TriviaType.TRUE_FALSE
 
         if not utils.isValidStr(tdQuestionId):
             raise ValueError(f'tdQuestionId at row #{rowNumber} is malformed: \"{tdQuestionId}\"')
@@ -75,33 +105,37 @@ def writeRowsToSqlite(databaseName: str, rows: List[List[str]]):
             raise ValueError(f'difficulty at row #{rowNumber} is malformed: \"{difficulty}\"')
         elif not utils.isValidStr(question):
             raise ValueError(f'question at row #{rowNumber} is malformed: \"{question}\"')
-        elif not utils.isValidStr(wrongAnswer1):
-            raise ValueError(f'wrongAnswer1 at row #{rowNumber} is malformed: \"{wrongAnswer1}\"')
-        elif not utils.isValidStr(wrongAnswer2):
-            raise ValueError(f'wrongAnswer2 at row #{rowNumber} is malformed: \"{wrongAnswer2}\"')
-        elif not utils.isValidStr(wrongAnswer3):
-            raise ValueError(f'wrongAnswer3 at row #{rowNumber} is malformed: \"{wrongAnswer3}\"')
         elif not utils.isValidStr(correctAnswer):
             raise ValueError(f'correctAnswer at row #{rowNumber} is malformed: \"{correctAnswer}\"')
+        elif not isinstance(difficulty, TriviaDifficulty):
+            raise ValueError(f'difficulty at row #{rowNumber} is malformed: \"{difficulty}\"')
+        elif not isinstance(triviaType, TriviaType):
+            raise ValueError(f'triviaType at row #{rowNumber} is malformed: \"{triviaType}\"')
+        elif triviaType is TriviaType.MULTIPLE_CHOICE and (not utils.isValidStr(wrongAnswer1) or not utils.isValidStr(wrongAnswer2) or not utils.isValidStr(wrongAnswer3)):
+            raise ValueError(f'triviaType {TriviaType.MULTIPLE_CHOICE} has malformed wrong answers (wrongAnswer1=\"{wrongAnswer1}\") (wrongAnswer2=\"{wrongAnswer2}\") (wrongAnswer3=\"{wrongAnswer3}\")')
+        elif triviaType is TriviaType.TRUE_FALSE and not utils.isValidBool(utils.strictStrToBool(correctAnswer)):
+            raise ValueError(f'triviaType {TriviaType.TRUE_FALSE} has malformed correct answer (correctAnswer=\"{correctAnswer}\")')
 
         questionId: str = f'{tdQuestionId}:{category}:{difficulty}:{question}:{wrongAnswer1}:{wrongAnswer2}:{wrongAnswer3}:{correctAnswer}'
         questionId = hashlib.sha224(questionId.encode('utf-8')).hexdigest()
 
-        if questionId in questionIds:
-            raise RuntimeError(f'questionId collision: \"{questionId}\"')
+        if not utils.isValidStr(questionId):
+            raise ValueError(f'questionId at row #{rowNumber} is malformed: \"{questionId}\"')
+        elif questionId in questionIds:
+            raise RuntimeError(f'questionId at row #{rowNumber} has collision: \"{questionId}\"')
 
         questionIds.add(questionId)
 
         try:
             cursor.execute(
                 '''
-                    INSERT INTO tdQuestions (category, correctAnswer, difficulty, question, questionId, tdQuestionId, wrongAnswer1, wrongAnswer2, wrongAnswer3)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                    INSERT INTO tdQuestions (category, correctAnswer, difficulty, question, questionId, tdQuestionId, triviaType, wrongAnswer1, wrongAnswer2, wrongAnswer3)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
                 ''',
-                ( category, correctAnswer, difficulty, question, questionId, tdQuestionId, wrongAnswer1, wrongAnswer2, wrongAnswer3 )
+                category, correctAnswer, difficulty.toInt(), question, questionId, tdQuestionId, triviaType.toStr(), wrongAnswer1, wrongAnswer2, wrongAnswer3
             )
         except sqlite3.IntegrityError as e:
-            raise RuntimeError(f'Unable to insert question into DB: {e}\ncategory=\"{category}\" correctAnswer=\"{correctAnswer}\" difficulty=\"{difficulty}\" question=\"{question}\" questionId=\"{questionId}\" tdQuestionId=\"{tdQuestionId}\" wrongAnswer1=\"{wrongAnswer1}\" wrongAnswer2=\"{wrongAnswer2}\" wrongAnswer3=\"{wrongAnswer3}\"')
+            raise RuntimeError(f'Unable to insert question into DB: {e}\ncategory=\"{category}\" correctAnswer=\"{correctAnswer}\" difficulty=\"{difficulty}\" question=\"{question}\" questionId=\"{questionId}\" tdQuestionId=\"{tdQuestionId}\" triviaType=\"{triviaType}\" wrongAnswer1=\"{wrongAnswer1}\" wrongAnswer2=\"{wrongAnswer2}\" wrongAnswer3=\"{wrongAnswer3}\"')
 
     connection.commit()
     cursor.close()
