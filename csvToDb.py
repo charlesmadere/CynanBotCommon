@@ -1,3 +1,4 @@
+import asyncio
 import csv
 import hashlib
 import sqlite3
@@ -5,17 +6,25 @@ from typing import List, Optional, Set
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.triviaContentScanner import TriviaContentScanner
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
+    from CynanBotCommon.trivia.triviaSettingsRepository import \
+        TriviaSettingsRepository
     from CynanBotCommon.trivia.triviaType import TriviaType
 except:
     import utils
+    from timber.timber import Timber
     from trivia.triviaContentScanner import TriviaContentScanner
     from trivia.triviaDifficulty import TriviaDifficulty
+    from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaType import TriviaType
 
 
-triviaContentScanner = TriviaContentScanner()
+triviaContentScanner = TriviaContentScanner(
+    timber = Timber(eventLoop = asyncio.get_event_loop()),
+    triviaSettingsRepository = TriviaSettingsRepository()
+)
 
 def readInCsvRows(fileName: str) -> List[List[str]]:
     if not utils.isValidStr(fileName):
@@ -33,9 +42,6 @@ def readInCsvRows(fileName: str) -> List[List[str]]:
 
             if not utils.hasItems(row):
                 print(f'Row #{lineNumber} in \"{fileName}\" is null/empty: {row}')
-                continue
-            elif len(row) != 8:
-                print(f'Row #{lineNumber} in \"{fileName}\" has incorrect length ({len(row)}): {row}')
                 continue
 
             encounteredBannedWord = False
@@ -85,14 +91,22 @@ def writeRowsToSqlite(databaseName: str, rows: List[List[str]]):
         wrongAnswer2: Optional[str] = None
         wrongAnswer3: Optional[str] = None
         correctAnswer: Optional[str] = None
+        triviaType: Optional[TriviaType] = None
 
-        if len(row) > 5:
-            wrongAnswer1 = utils.cleanStr(row[4])
-            wrongAnswer2 = utils.cleanStr(row[5])
-            wrongAnswer3 = utils.cleanStr(row[6])
-            correctAnswer = utils.cleanStr(row[7])
-        else:
-            correctAnswer = utils.cleanStr(row[4])
+        try:
+            if len(row) > 5:
+                wrongAnswer1 = utils.cleanStr(row[4])
+                wrongAnswer2 = utils.cleanStr(row[5])
+                wrongAnswer3 = utils.cleanStr(row[6])
+                correctAnswer = utils.cleanStr(row[7])
+                triviaType = TriviaType.MULTIPLE_CHOICE
+            elif len(row) == 5:
+                correctAnswer = utils.cleanStr(row[4])
+                triviaType = TriviaType.TRUE_FALSE
+            else:
+                raise ValueError(f'triviaType at row #{rowNumber} can\'t be determined: \"{triviaType}\"')
+        except IndexError as e:
+            raise ValueError(f'index error at row #{rowNumber}: {e}')
 
         difficultyInt: Optional[int] = None
         difficulty: TriviaDifficulty = TriviaDifficulty.UNKNOWN
@@ -102,16 +116,10 @@ def writeRowsToSqlite(databaseName: str, rows: List[List[str]]):
         except ValueError as e:
             raise ValueError(f'difficultyInt at row #{rowNumber} is malformed: \"{difficultyInt}\": {e}')
 
-        triviaType: TriviaType = TriviaType.MULTIPLE_CHOICE
-        if utils.isValidBool(utils.strictStrToBool(correctAnswer)) and not utils.isValidStr(wrongAnswer1) and not utils.isValidStr(wrongAnswer2) and not utils.isValidStr(wrongAnswer3):
-            triviaType = TriviaType.TRUE_FALSE
-
         if not utils.isValidStr(tdQuestionId):
             raise ValueError(f'tdQuestionId at row #{rowNumber} is malformed: \"{tdQuestionId}\"')
         elif not utils.isValidStr(category):
             raise ValueError(f'category at row #{rowNumber} is malformed: \"{category}\"')
-        elif not utils.isValidNum(difficulty):
-            raise ValueError(f'difficulty at row #{rowNumber} is malformed: \"{difficulty}\"')
         elif not utils.isValidStr(question):
             raise ValueError(f'question at row #{rowNumber} is malformed: \"{question}\"')
         elif not utils.isValidStr(correctAnswer):
@@ -141,10 +149,12 @@ def writeRowsToSqlite(databaseName: str, rows: List[List[str]]):
                     INSERT INTO tdQuestions (category, correctAnswer, difficulty, question, questionId, tdQuestionId, triviaType, wrongAnswer1, wrongAnswer2, wrongAnswer3)
                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
                 ''',
-                category, correctAnswer, difficulty.toInt(), question, questionId, tdQuestionId, triviaType.toStr(), wrongAnswer1, wrongAnswer2, wrongAnswer3
+                ( category, correctAnswer, difficulty.toInt(), question, questionId, tdQuestionId, triviaType.toStr(), wrongAnswer1, wrongAnswer2, wrongAnswer3 )
             )
         except sqlite3.IntegrityError as e:
-            raise RuntimeError(f'Unable to insert question into DB: {e}\ncategory=\"{category}\" correctAnswer=\"{correctAnswer}\" difficulty=\"{difficulty}\" question=\"{question}\" questionId=\"{questionId}\" tdQuestionId=\"{tdQuestionId}\" triviaType=\"{triviaType}\" wrongAnswer1=\"{wrongAnswer1}\" wrongAnswer2=\"{wrongAnswer2}\" wrongAnswer3=\"{wrongAnswer3}\"')
+            raise RuntimeError(f'Unable to insert question into DB: {e}\ncategory=\"{category}\" correctAnswer=\"{correctAnswer}\" difficulty=\"{difficulty}\" question=\"{question}\" questionId=\"{questionId}\" tdQuestionId=\"{tdQuestionId}\" triviaType=\"{triviaType}\" wrongAnswer1=\"{wrongAnswer1}\" wrongAnswer2=\"{wrongAnswer2}\" wrongAnswer3=\"{wrongAnswer3}\": {e}')
+        except sqlite3.OperationalError as e:
+            raise RuntimeError(f'Unable to insert question into DB: {e}\ncategory=\"{category}\" correctAnswer=\"{correctAnswer}\" difficulty=\"{difficulty}\" question=\"{question}\" questionId=\"{questionId}\" tdQuestionId=\"{tdQuestionId}\" triviaType=\"{triviaType}\" wrongAnswer1=\"{wrongAnswer1}\" wrongAnswer2=\"{wrongAnswer2}\" wrongAnswer3=\"{wrongAnswer3}\": {e}')
 
     connection.commit()
     cursor.close()
@@ -152,5 +162,9 @@ def writeRowsToSqlite(databaseName: str, rows: List[List[str]]):
 
     print(f'Wrote {rowNumber} rows into \"{databaseName}\" database')
 
-netflix = readInCsvRows('CynanBotCommon/netflix.csv')
-writeRowsToSqlite('CynanBotCommon/trivia/triviaDatabaseTriviaQuestionRepository.sqlite', netflix)
+
+multipleChoice = readInCsvRows('CynanBotCommon/multiple_choice.csv')
+writeRowsToSqlite('CynanBotCommon/trivia/triviaDatabaseTriviaQuestionRepository.sqlite', multipleChoice)
+
+trueFalse = readInCsvRows('CynanBotCommon/true_false.csv')
+writeRowsToSqlite('CynanBotCommon/trivia/triviaDatabaseTriviaQuestionRepository.sqlite', trueFalse)
