@@ -80,13 +80,22 @@ def writeRowsToSqlite(databaseName: str, rows: List[List[str]]):
         tdQuestionId: str = utils.cleanStr(row[0])
         category: str = utils.cleanStr(row[1])
         question: str = utils.cleanStr(row[3])
-        wrongAnswer1: str = utils.cleanStr(row[4])
-        wrongAnswer2: str = utils.cleanStr(row[5])
-        wrongAnswer3: str = utils.cleanStr(row[6])
-        correctAnswer: str = utils.cleanStr(row[7])
 
-        difficulty: TriviaDifficulty = TriviaDifficulty.UNKNOWN
+        wrongAnswer1: Optional[str] = None
+        wrongAnswer2: Optional[str] = None
+        wrongAnswer3: Optional[str] = None
+        correctAnswer: Optional[str] = None
+
+        if len(row) > 5:
+            wrongAnswer1 = utils.cleanStr(row[4])
+            wrongAnswer2 = utils.cleanStr(row[5])
+            wrongAnswer3 = utils.cleanStr(row[6])
+            correctAnswer = utils.cleanStr(row[7])
+        else:
+            correctAnswer = utils.cleanStr(row[4])
+
         difficultyInt: Optional[int] = None
+        difficulty: TriviaDifficulty = TriviaDifficulty.UNKNOWN
         try:
             difficultyInt = int(row[2])
             difficulty = TriviaDifficulty.fromInt(difficultyInt)
