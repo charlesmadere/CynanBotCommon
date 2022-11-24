@@ -43,6 +43,18 @@ class TriviaDifficulty(Enum):
         else:
             return TriviaDifficulty.UNKNOWN
 
+    def toInt(self) -> int:
+        if self is TriviaDifficulty.EASY:
+            return 1
+        elif self is TriviaDifficulty.MEDIUM:
+            return 2
+        elif self is TriviaDifficulty.HARD:
+            return 3
+        elif self is TriviaDifficulty.UNKNOWN:
+            return 0
+        else:
+            raise ValueError(f'unknown TriviaDifficulty: \"{self}\"')
+
     def toStr(self) -> str:
         if self is TriviaDifficulty.EASY:
             return 'easy'
