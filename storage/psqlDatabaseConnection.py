@@ -6,10 +6,13 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.storage.databaseConnection import DatabaseConnection
     from CynanBotCommon.storage.databaseType import DatabaseType
+    from CynanBotCommon.storage.exceptions import \
+        DatabaseConnectionIsClosedException
 except:
     import utils
     from storage.databaseConnection import DatabaseConnection
     from storage.databaseType import DatabaseType
+    from storage.exceptions import DatabaseConnectionIsClosedException
 
 
 class PsqlDatabaseConnection(DatabaseConnection):
@@ -72,4 +75,4 @@ class PsqlDatabaseConnection(DatabaseConnection):
 
     def __requireNotClosed(self):
         if self.isClosed():
-            raise RuntimeError(f'This database connection has already been closed! ({self.getDatabaseType()})')
+            raise DatabaseConnectionIsClosedException(f'This database connection has already been closed! ({self.getDatabaseType()})')

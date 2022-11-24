@@ -6,10 +6,13 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.storage.databaseConnection import DatabaseConnection
     from CynanBotCommon.storage.databaseType import DatabaseType
+    from CynanBotCommon.storage.exceptions import \
+        DatabaseConnectionIsClosedException
 except:
     import utils
     from storage.databaseConnection import DatabaseConnection
     from storage.databaseType import DatabaseType
+    from storage.exceptions import DatabaseConnectionIsClosedException
 
 
 class SqliteDatabaseConnection(DatabaseConnection):
@@ -83,4 +86,4 @@ class SqliteDatabaseConnection(DatabaseConnection):
 
     def __requireNotClosed(self):
         if self.__isClosed:
-            raise RuntimeError(f'This database connection has already been closed! ({self.getDatabaseType()})')
+            raise DatabaseConnectionIsClosedException(f'This database connection has already been closed! ({self.getDatabaseType()})')
