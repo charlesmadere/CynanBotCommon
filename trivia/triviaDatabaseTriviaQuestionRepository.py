@@ -12,24 +12,29 @@ try:
         MultipleChoiceTriviaQuestion
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
     from CynanBotCommon.trivia.triviaEmoteGenerator import TriviaEmoteGenerator
+    from CynanBotCommon.trivia.triviaExceptions import \
+        UnsupportedTriviaTypeException
     from CynanBotCommon.trivia.triviaQuestionCompiler import \
         TriviaQuestionCompiler
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
     from CynanBotCommon.trivia.triviaSource import TriviaSource
     from CynanBotCommon.trivia.triviaType import TriviaType
+    from CynanBotCommon.trivia.trueFalseTriviaQuestion import \
+        TrueFalseTriviaQuestion
 except:
     import utils
     from timber.timber import Timber
-
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.absTriviaQuestionRepository import AbsTriviaQuestionRepository
     from trivia.triviaDifficulty import TriviaDifficulty
     from trivia.triviaEmoteGenerator import TriviaEmoteGenerator
+    from trivia.triviaExceptions import UnsupportedTriviaTypeException
     from trivia.triviaQuestionCompiler import TriviaQuestionCompiler
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
     from trivia.triviaType import TriviaType
+    from trivia.trueFalseTriviaQuestion import TrueFalseTriviaQuestion
 
 
 class TriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
@@ -67,56 +72,71 @@ class TriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
             self.__timber.log('TriviaDatabaseTriviaQuestionRepository', f'{triviaDict}')
 
         triviaId = utils.getStrFromDict(triviaDict, 'triviaId')
-
-        category = utils.getStrFromDict(triviaDict, 'category')
-        category = await self.__triviaQuestionCompiler.compileCategory(category)
-
-        question = utils.getStrFromDict(triviaDict, 'question')
-        question = await self.__triviaQuestionCompiler.compileQuestion(question)
-
-        correctAnswer = utils.getStrFromDict(triviaDict, 'correctAnswer')
-        correctAnswer = await self.__triviaQuestionCompiler.compileResponse(correctAnswer)
-
-        correctAnswers: List[str] = list()
-        correctAnswers.append(correctAnswer)
-
-        wrongAnswers = await self.__triviaQuestionCompiler.compileResponses(triviaDict['wrongAnswers'])
-
-        multipleChoiceResponses = await self._buildMultipleChoiceResponsesList(
-            correctAnswers = correctAnswers,
-            multipleChoiceResponses = wrongAnswers
-        )
-
-        triviaDifficultyInt = utils.getIntFromDict(triviaDict, 'difficulty', -1)
+        triviaType = TriviaType.fromStr(utils.getStrFromDict(triviaDict, 'type'))
+        triviaDifficultyInt = utils.getIntFromDict(triviaDict, 'difficulty', fallback = -1)
         triviaDifficulty = TriviaDifficulty.fromInt(triviaDifficultyInt)
+
+        category = await self.__triviaQuestionCompiler.compileCategory(utils.getStrFromDict(triviaDict, 'category', fallback = ''))
+        question = await self.__triviaQuestionCompiler.compileQuestion(utils.getStrFromDict(triviaDict, 'question'))
 
         emote = await self.__triviaEmoteGenerator.getNextEmoteFor(twitchChannel)
 
-        return MultipleChoiceTriviaQuestion(
-            correctAnswers = correctAnswers,
-            multipleChoiceResponses = multipleChoiceResponses,
-            category = category,
-            categoryId = None,
-            emote = emote,
-            question = question,
-            triviaId = triviaId,
-            triviaDifficulty = triviaDifficulty,
-            triviaSource = TriviaSource.TRIVIA_DATABASE
-        )
+        if triviaType is TriviaType.MULTIPLE_CHOICE:
+            correctAnswer = await self.__triviaQuestionCompiler.compileResponse(
+                response = utils.getStrFromDict(triviaDict, 'correctAnswer')
+            )
+            correctAnswers: List[str] = list()
+            correctAnswers.append(correctAnswer)
+
+            wrongAnswers = await self.__triviaQuestionCompiler.compileResponses(triviaDict['wrongAnswers'])
+
+            multipleChoiceResponses = await self._buildMultipleChoiceResponsesList(
+                correctAnswers = correctAnswers,
+                multipleChoiceResponses = wrongAnswers
+            )
+
+            return MultipleChoiceTriviaQuestion(
+                correctAnswers = correctAnswers,
+                multipleChoiceResponses = multipleChoiceResponses,
+                category = category,
+                categoryId = None,
+                emote = emote,
+                question = question,
+                triviaId = triviaId,
+                triviaDifficulty = triviaDifficulty,
+                triviaSource = TriviaSource.TRIVIA_DATABASE
+            )
+        elif triviaType is TriviaType.TRUE_FALSE:
+            correctAnswer = utils.getBoolFromDict(triviaDict, 'correctAnswer')
+            correctAnswers: List[bool] = list()
+            correctAnswers.append(correctAnswer)
+
+            return TrueFalseTriviaQuestion(
+                correctAnswers = correctAnswers,
+                category = category,
+                categoryId = None,
+                emote = emote,
+                question = question,
+                triviaId = triviaId,
+                triviaDifficulty = triviaDifficulty,
+                triviaSource = TriviaSource.TRIVIA_DATABASE
+            )
+
+        raise UnsupportedTriviaTypeException(f'triviaType \"{triviaType}\" is not supported for Trivia Database: {triviaDict}')
 
     async def __fetchTriviaQuestionDict(self) -> Dict[str, Any]:
         connection = await aiosqlite.connect(self.__triviaDatabaseFile)
         cursor = await connection.execute(
             '''
-                SELECT category, correctAnswer, difficulty, question, questionId, wrongAnswer1, wrongAnswer2, wrongAnswer3 FROM tdQuestions
+                SELECT category, correctAnswer, difficulty, question, questionId, triviaType, wrongAnswer1, wrongAnswer2, wrongAnswer3 FROM tdQuestions
                 ORDER BY RANDOM()
                 LIMIT 1
             '''
         )
 
         row = await cursor.fetchone()
-        if not utils.hasItems(row) or len(row) != 8:
-            raise RuntimeError(f'Received malformed data from TD database: {row}')
+        if not utils.hasItems(row) or len(row) != 9:
+            raise RuntimeError(f'Received malformed data from {self.getTriviaSource()} database: {row}')
 
         triviaQuestionDict: Dict[str, Any] = {
             'category': row[0],
@@ -124,7 +144,8 @@ class TriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
             'difficulty': row[2],
             'question': row[3],
             'triviaId': row[4],
-            'wrongAnswers': [ row[5], row[6], row[7] ]
+            'type': row[5],
+            'wrongAnswers': [ row[6], row[7], row[8] ]
         }
 
         await cursor.close()
@@ -132,7 +153,7 @@ class TriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
         return triviaQuestionDict
 
     def getSupportedTriviaTypes(self) -> List[TriviaType]:
-        return [ TriviaType.MULTIPLE_CHOICE ]
+        return [ TriviaType.MULTIPLE_CHOICE, TriviaType.TRUE_FALSE ]
 
     def getTriviaSource(self) -> TriviaSource:
         return TriviaSource.TRIVIA_DATABASE
