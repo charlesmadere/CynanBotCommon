@@ -10,7 +10,6 @@ try:
     from CynanBotCommon.trivia.triviaType import TriviaType
 except:
     import utils
-
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.triviaDifficulty import TriviaDifficulty
     from trivia.triviaExceptions import NoTriviaCorrectAnswersException

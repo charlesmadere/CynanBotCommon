@@ -11,7 +11,6 @@ try:
     from CynanBotCommon.trivia.triviaType import TriviaType
 except:
     from timber.timber import Timber
-
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.bannedTriviaIdsRepository import BannedTriviaIdsRepository
     from trivia.triviaContentCode import TriviaContentCode

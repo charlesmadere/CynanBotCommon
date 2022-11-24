@@ -9,7 +9,6 @@ try:
     from CynanBotCommon.trivia.triviaGameType import TriviaGameType
 except:
     import utils
-
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.triviaGameType import TriviaGameType
 
