@@ -6,7 +6,6 @@ try:
     from CynanBotCommon.trivia.triviaScoreResult import TriviaScoreResult
 except:
     import utils
-
     from trivia.absTriviaEvent import AbsTriviaEvent
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.triviaEventType import TriviaEventType
