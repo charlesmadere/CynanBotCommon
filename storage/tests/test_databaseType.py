@@ -1,5 +1,5 @@
 try:
-    from ...storage.databaseType import DatabaseType
+    from CynanBotCommon.storage.databaseType import DatabaseType
 except:
     from storage.databaseType import DatabaseType
 
