@@ -17,14 +17,13 @@ except:
     import utils
     from network.exceptions import GenericNetworkException
     from network.networkClientProvider import NetworkClientProvider
-    from timber.timber import Timber
-
     from pkmn.pokepediaDamageClass import PokepediaDamageClass
     from pkmn.pokepediaElementType import PokepediaElementType
     from pkmn.pokepediaGeneration import PokepediaGeneration
     from pkmn.pokepediaMove import PokepediaMove
     from pkmn.pokepediaMoveGeneration import PokepediaMoveGeneration
     from pkmn.pokepediaPokemon import PokepediaPokemon
+    from timber.timber import Timber
 
 
 class PokepediaRepository():
@@ -276,8 +275,10 @@ class PokepediaRepository():
         jsonResponse: Optional[Dict[str, Any]] = await response.json()
         await response.close()
 
+        generationMoves = self.__getMoveGenerationDictionary(jsonResponse)
+
         return PokepediaMove(
-            generationMoves = self.__getMoveGenerationDictionary(jsonResponse),
+            generationMoves = generationMoves,
             moveId = utils.getIntFromDict(jsonResponse, 'id'),
             description = self.__getEnDescription(jsonResponse),
             name = self.__getEnName(jsonResponse),
@@ -310,8 +311,8 @@ class PokepediaRepository():
             jsonResponse = jsonResponse,
             initialGeneration = initialGeneration
         )
-        initialGeneration = PokepediaGeneration.fromPokedexId(pokedexId)
         pokedexId = utils.getIntFromDict(jsonResponse, 'id')
+        initialGeneration = PokepediaGeneration.fromPokedexId(pokedexId)
 
         return PokepediaPokemon(
             generationElementTypes = generationElementTypes,
