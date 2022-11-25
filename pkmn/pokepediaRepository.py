@@ -307,12 +307,12 @@ class PokepediaRepository():
         jsonResponse: Optional[Dict[str, Any]] = await response.json()
         await response.close()
 
+        pokedexId = utils.getIntFromDict(jsonResponse, 'id')
+        initialGeneration = PokepediaGeneration.fromPokedexId(pokedexId)
         generationElementTypes = self.__getElementTypeGenerationDictionary(
             jsonResponse = jsonResponse,
             initialGeneration = initialGeneration
         )
-        pokedexId = utils.getIntFromDict(jsonResponse, 'id')
-        initialGeneration = PokepediaGeneration.fromPokedexId(pokedexId)
 
         return PokepediaPokemon(
             generationElementTypes = generationElementTypes,
