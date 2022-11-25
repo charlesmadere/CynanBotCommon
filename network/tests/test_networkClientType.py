@@ -1,5 +1,5 @@
 try:
-    from .network.networkClientType import NetworkClientType
+    from ...networkClientType import NetworkClientType
 except:
     from network.networkClientType import NetworkClientType
 
