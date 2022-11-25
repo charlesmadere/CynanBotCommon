@@ -1,5 +1,5 @@
 try:
-    from ...databaseType import DatabaseType
+    from ...storage.databaseType import DatabaseType
 except:
     from storage.databaseType import DatabaseType
 
