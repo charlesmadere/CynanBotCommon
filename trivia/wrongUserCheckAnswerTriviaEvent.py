@@ -5,7 +5,6 @@ try:
     from CynanBotCommon.trivia.triviaEventType import TriviaEventType
 except:
     import utils
-
     from trivia.absTriviaEvent import AbsTriviaEvent
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.triviaEventType import TriviaEventType
