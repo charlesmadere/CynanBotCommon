@@ -48,7 +48,7 @@ class TriviaContentScanner():
 
     def __createCleanedBannedWordsSetFromLines(
         self,
-        lines: Optional[List[str]]
+        lines: Optional[List[Optional[str]]]
     ) -> Set[str]:
         cleanedBannedWords: Set[str] = set()
 
