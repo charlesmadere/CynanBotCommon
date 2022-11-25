@@ -7,7 +7,6 @@ try:
 except:
     import utils
     from funtoon.funtoonRepository import FuntoonRepository
-
     from trivia.bannedTriviaIdsRepository import BannedTriviaIdsRepository
     from trivia.triviaSource import TriviaSource
 
@@ -37,3 +36,11 @@ class TriviaBanHelper():
             await self.__funtoonRepository.banTriviaQuestion(triviaId)
         else:
             await self.__bannedTriviaIdsRepository.ban(triviaId, triviaSource)
+
+    async def unban(self, triviaId: str, triviaSource: TriviaSource):
+        if not utils.isValidStr(triviaId):
+            raise ValueError(f'triviaId argument is malformed: \"{triviaId}\"')
+        elif triviaSource is None:
+            raise ValueError(f'triviaSource argument is malformed: \"{triviaSource}\"')
+
+        return await self.__bannedTriviaIdsRepository.unban(triviaId, triviaSource)
