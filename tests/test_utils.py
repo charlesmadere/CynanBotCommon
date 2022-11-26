@@ -235,6 +235,26 @@ class TestUtils():
         result = utils.isValidUrl(' ')
         assert result is False
 
+    def test_removePreceedingAt_withAtCharlesString(self):
+        result = utils.removePreceedingAt('@charles')
+        assert result == 'charles'
+
+    def test_removePreceedingAt_withCharlesString(self):
+        result = utils.removePreceedingAt('charles')
+        assert result == 'charles'
+
+    def test_removePreceedingAt_withEmptyString(self):
+        result = utils.removePreceedingAt('')
+        assert result == ''
+
+    def test_removePreceedingAt_withNone(self):
+        result = utils.removePreceedingAt(None)
+        assert result is None
+
+    def test_removePreceedingAt_withWhitespaceString(self):
+        result = utils.removePreceedingAt(' ')
+        assert result == ' '
+
     def test_strictStrToBool_withEmptyString(self):
         result: bool = None
         exception: Exception = None
