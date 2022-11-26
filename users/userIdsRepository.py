@@ -41,8 +41,8 @@ class UserIdsRepository():
     async def fetchUserId(
         self,
         userName: str,
-        twitchAccessToken: str = None,
-        twitchClientId: str = None
+        twitchAccessToken: Optional[str] = None,
+        twitchClientId: Optional[str] = None
     ) -> str:
         if not utils.isValidStr(userName):
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
@@ -99,7 +99,7 @@ class UserIdsRepository():
             self.__timber.log('UserIdsRepository', f'Received an error of some kind when fetching userId for userName \"{userName}\": {jsonResponse}')
             raise RuntimeError(f'UserIdsRepository received an error of some kind when fetching userId for userName \"{userName}\": {jsonResponse}')
 
-        userId: str = jsonResponse['data'][0]['id']
+        userId: Optional[str] = jsonResponse['data'][0]['id']
 
         if not utils.isValidStr(userId):
             self.__timber.log('UserIdsRepository', f'Unable to fetch userId for \"{userName}\": {jsonResponse}')
@@ -113,8 +113,8 @@ class UserIdsRepository():
     async def fetchUserIdAsInt(
         self,
         userName: str,
-        twitchAccessToken: str = None,
-        twitchClientId: str = None
+        twitchAccessToken: Optional[str] = None,
+        twitchClientId: Optional[str] = None
     ) -> int:
         userId = await self.fetchUserId(
             userName = userName,
@@ -142,7 +142,7 @@ class UserIdsRepository():
         if not utils.hasItems(record):
             raise RuntimeError(f'No userName for userId \"{userId}\" found')
 
-        userName: str = record[0]
+        userName: Optional[str] = record[0]
         if not utils.isValidStr(userName):
             raise RuntimeError(f'userName for userId \"{userId}\" is malformed: \"{userName}\"')
 
