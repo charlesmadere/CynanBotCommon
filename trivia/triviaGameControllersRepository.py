@@ -10,6 +10,8 @@ try:
     from CynanBotCommon.trivia.removeTriviaGameControllerResult import \
         RemoveTriviaGameControllerResult
     from CynanBotCommon.trivia.triviaGameController import TriviaGameController
+    from CynanBotCommon.twitch.twitchTokensRepository import \
+        TwitchTokensRepository
     from CynanBotCommon.users.userIdsRepository import UserIdsRepository
 except:
     import utils
@@ -22,6 +24,7 @@ except:
         RemoveTriviaGameControllerResult
     from trivia.triviaGameController import TriviaGameController
 
+    from twitch.twitchTokensRepository import TwitchTokensRepository
     from users.userIdsRepository import UserIdsRepository
 
 
@@ -31,36 +34,42 @@ class TriviaGameControllersRepository():
         self,
         backingDatabase: BackingDatabase,
         timber: Timber,
+        twitchTokensRepository: TwitchTokensRepository,
         userIdsRepository: UserIdsRepository
     ):
         if backingDatabase is None:
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
         elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
+        elif twitchTokensRepository is None:
+            raise ValueError(f'twitchTokensRepository argument is malformed: \"{twitchTokensRepository}\"')
         elif userIdsRepository is None:
             raise ValueError(f'userIdsRepository argument is malformed: \"{userIdsRepository}\"')
 
         self.__backingDatabase: BackingDatabase = backingDatabase
         self.__timber: Timber = timber
+        self.__twitchTokensRepository: TwitchTokensRepository = twitchTokensRepository
         self.__userIdsRepository: UserIdsRepository = userIdsRepository
 
         self.__isDatabaseReady: bool = False
 
     async def addController(
         self,
-        twitchAccessToken: str,
         twitchChannel: str,
         twitchClientId: str,
         userName: str
     ) -> AddTriviaGameControllerResult:
-        if not utils.isValidStr(twitchAccessToken):
-            raise ValueError(f'twitchAccessToken argument is malformed: \"{twitchAccessToken}\"')
-        elif not utils.isValidStr(twitchChannel):
+        if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
         if not utils.isValidStr(twitchClientId):
             raise ValueError(f'twitchClientId argument is malformed: \"{twitchClientId}\"')
         elif not utils.isValidStr(userName):
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
+
+        twitchAccessToken = await self.__twitchTokensRepository.getAccessToken(twitchChannel)
+        if not utils.isValidStr(twitchAccessToken):
+            self.__timber.log('TriviaGameControllersRepository', f'Unable to retrieve Twitch access token for \"{twitchChannel}\" when trying to add \"{userName}\" as a trivia game controller')
+            return AddTriviaGameControllerResult.ERROR
 
         userId: Optional[str] = None
 
