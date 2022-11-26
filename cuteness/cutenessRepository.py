@@ -544,7 +544,7 @@ class CutenessRepository():
         await connection.execute(
             '''
                 CREATE TABLE IF NOT EXISTS cuteness (
-                    cuteness BIGINT NOT NULL DEFAULT 0,
+                    cuteness INTEGER NOT NULL DEFAULT 0,
                     twitchChannel TEXT NOT NULL COLLATE NOCASE,
                     userId TEXT NOT NULL COLLATE NOCASE,
                     utcYearAndMonth TEXT NOT NULL COLLATE NOCASE,
