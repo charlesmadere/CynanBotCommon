@@ -325,7 +325,7 @@ def permuteSubArrays(array: List[Any], pos: int = 0) -> Generator[List[Any], Non
 def randomBool() -> bool:
     return bool(random.getrandbits(1))
 
-def removePreceedingAt(s: str) -> str:
+def removePreceedingAt(s: Optional[str]) -> Optional[str]:
     if not isValidStr(s):
         return s
     elif s[0] != '@':
