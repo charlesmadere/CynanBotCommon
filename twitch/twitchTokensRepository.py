@@ -76,7 +76,7 @@ class TwitchTokensRepository():
     async def clearCaches(self):
         self.__jsonCache = None
 
-    async def getAccessToken(self, twitchHandle: str) -> str:
+    async def getAccessToken(self, twitchHandle: str) -> Optional[str]:
         if not utils.isValidStr(twitchHandle):
             raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
 
