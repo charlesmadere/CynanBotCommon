@@ -128,7 +128,7 @@ class TriviaGameControllersRepository():
         records = await connection.fetchRows(
             '''
                 SELECT triviaGameControllers.twitchChannel, triviaGameControllers.userId, userIds.userName FROM triviaGameControllers
-                INNER JOINT userIds ON triviaGameControllers.userId = userIds.userId
+                INNER JOIN userIds ON triviaGameControllers.userId = userIds.userId
                 WHERE triviaGameControllers.twitchChannel = $1
                 ORDER BY userIds.userName ASC
             ''',
