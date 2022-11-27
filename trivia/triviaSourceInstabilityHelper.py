@@ -15,15 +15,19 @@ class TriviaSourceInstabilityHelper():
     def __init__(
         self,
         timber: Timber,
-        fallOffTimeDelta: timedelta = timedelta(minutes = 20)
+        fallOffTimeDelta: timedelta = timedelta(minutes = 20),
+        timeZone: timezone = timezone.utc
     ):
         if timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif fallOffTimeDelta is None:
             raise ValueError(f'fallOffTimeDelta argument is malformed: \"{fallOffTimeDelta}\"')
+        elif timeZone is None:
+            raise ValueError(f'timeZone argument is malformed: \"{timeZone}\"')
 
         self.__timber: Timber = timber
         self.__fallOffTimeDelta: timedelta = fallOffTimeDelta
+        self.__timeZone: timezone = timeZone
 
         self.__times: Dict[TriviaSource, Optional[datetime]] = dict()
         self.__values: Dict[TriviaSource, int] = defaultdict(lambda: 0)
@@ -32,7 +36,7 @@ class TriviaSourceInstabilityHelper():
         if key is None or not isinstance(key, TriviaSource):
             raise ValueError(f'key argument is malformed: \"{key}\"')
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(self.__timeZone)
         lastErrorTime = self.__times.get(key, None)
 
         if lastErrorTime is not None and now - lastErrorTime <= self.__fallOffTimeDelta:
@@ -45,7 +49,7 @@ class TriviaSourceInstabilityHelper():
         if key is None or not isinstance(key, TriviaSource):
             raise ValueError(f'key argument is malformed: \"{key}\"')
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(self.__timeZone)
         lastErrorTime = self.__times.get(key, None)
         self.__times[key] = now
         newErrorCount: int = 0
