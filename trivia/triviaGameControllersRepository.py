@@ -102,7 +102,11 @@ class TriviaGameControllersRepository():
             twitchChannel, userId
         )
 
+        count: Optional[int] = None
         if utils.hasItems(record):
+            count = record[0]
+
+        if utils.isValidNum(count) and count >= 1:
             await connection.close()
             self.__timber.log('TriviaGameControllersRepository', f'Tried to add userName=\"{userName}\" userId=\"{userId}\" as a trivia game controller for \"{twitchChannel}\", but this user has already been added as one')
             return AddTriviaGameControllerResult.ALREADY_EXISTS
