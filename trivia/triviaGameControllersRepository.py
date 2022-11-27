@@ -10,6 +10,8 @@ try:
     from CynanBotCommon.trivia.removeTriviaGameControllerResult import \
         RemoveTriviaGameControllerResult
     from CynanBotCommon.trivia.triviaGameController import TriviaGameController
+    from CynanBotCommon.twitch.twitchCredentialsProviderInterface import \
+        TwitchCredentialsProviderInterface
     from CynanBotCommon.twitch.twitchTokensRepository import \
         TwitchTokensRepository
     from CynanBotCommon.users.userIdsRepository import UserIdsRepository
@@ -24,6 +26,8 @@ except:
         RemoveTriviaGameControllerResult
     from trivia.triviaGameController import TriviaGameController
 
+    from twitch.twitchCredentialsProviderInterface import \
+        TwitchCredentialsProviderInterface
     from twitch.twitchTokensRepository import TwitchTokensRepository
     from users.userIdsRepository import UserIdsRepository
 
@@ -34,6 +38,7 @@ class TriviaGameControllersRepository():
         self,
         backingDatabase: BackingDatabase,
         timber: Timber,
+        twitchCredentialsProviderInterface: TwitchCredentialsProviderInterface,
         twitchTokensRepository: TwitchTokensRepository,
         userIdsRepository: UserIdsRepository
     ):
@@ -41,6 +46,8 @@ class TriviaGameControllersRepository():
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
         elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
+        elif twitchCredentialsProviderInterface is None:
+            raise ValueError(f'twitchCredentialsProviderInterface argument is malformed: \"{twitchCredentialsProviderInterface}\"')
         elif twitchTokensRepository is None:
             raise ValueError(f'twitchTokensRepository argument is malformed: \"{twitchTokensRepository}\"')
         elif userIdsRepository is None:
@@ -48,6 +55,7 @@ class TriviaGameControllersRepository():
 
         self.__backingDatabase: BackingDatabase = backingDatabase
         self.__timber: Timber = timber
+        self.__twitchCredentialsProviderInterface: TwitchCredentialsProviderInterface = twitchCredentialsProviderInterface
         self.__twitchTokensRepository: TwitchTokensRepository = twitchTokensRepository
         self.__userIdsRepository: UserIdsRepository = userIdsRepository
 
@@ -56,13 +64,10 @@ class TriviaGameControllersRepository():
     async def addController(
         self,
         twitchChannel: str,
-        twitchClientId: str,
         userName: str
     ) -> AddTriviaGameControllerResult:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
-        if not utils.isValidStr(twitchClientId):
-            raise ValueError(f'twitchClientId argument is malformed: \"{twitchClientId}\"')
         elif not utils.isValidStr(userName):
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
 
@@ -72,6 +77,7 @@ class TriviaGameControllersRepository():
             return AddTriviaGameControllerResult.ERROR
 
         userId: Optional[str] = None
+        twitchClientId = await self.__twitchCredentialsProviderInterface.getTwitchClientId()
 
         try:
             userId = await self.__userIdsRepository.fetchUserId(
