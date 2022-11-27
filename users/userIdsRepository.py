@@ -57,7 +57,7 @@ class UserIdsRepository():
             userName
         )
 
-        userId: str = None
+        userId: Optional[str] = None
         if utils.hasItems(record):
             userId = record[0]
 
@@ -100,7 +100,7 @@ class UserIdsRepository():
             self.__timber.log('UserIdsRepository', f'Received an error of some kind when fetching userId for userName \"{userName}\": {jsonResponse}')
             raise RuntimeError(f'UserIdsRepository received an error of some kind when fetching userId for userName \"{userName}\": {jsonResponse}')
 
-        userId: Optional[str] = jsonResponse['data'][0]['id']
+        userId = jsonResponse['data'][0]['id']
 
         if not utils.isValidStr(userId):
             self.__timber.log('UserIdsRepository', f'Unable to fetch userId for \"{userName}\": {jsonResponse}')
