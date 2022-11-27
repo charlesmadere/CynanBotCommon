@@ -103,6 +103,7 @@ class BannedTriviaIdsRepository():
             '''
                 SELECT COUNT(1) FROM bannedTriviaIds
                 WHERE triviaId = $1 AND triviaSource = $2
+                LIMIT 1
             ''',
             triviaId, triviaSource.toStr()
         )

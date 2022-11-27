@@ -52,6 +52,7 @@ class UserIdsRepository():
             '''
                 SELECT userId FROM userIds
                 WHERE userName = $1
+                LIMIT 1
             ''',
             userName
         )
@@ -135,6 +136,7 @@ class UserIdsRepository():
             '''
                 SELECT userName FROM userIds
                 WHERE userId = $1
+                LIMIT 1
             ''',
             userId
         )

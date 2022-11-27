@@ -125,6 +125,7 @@ class TriviaHistoryRepository():
             '''
                 SELECT datetime FROM triviaHistory
                 WHERE triviaId = $1 AND triviaSource = $2 AND twitchChannel = $3
+                LIMIT 1
             ''',
             triviaId, triviaSource, twitchChannel
         )

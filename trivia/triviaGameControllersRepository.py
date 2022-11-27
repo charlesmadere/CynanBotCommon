@@ -98,6 +98,7 @@ class TriviaGameControllersRepository():
             '''
                 SELECT COUNT(1) FROM triviaGameControllers
                 WHERE twitchChannel = $1 AND userId = $2
+                LIMIT 1
             ''',
             twitchChannel, userId
         )
