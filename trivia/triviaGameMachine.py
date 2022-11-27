@@ -14,6 +14,8 @@ try:
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.checkAnswerTriviaAction import \
         CheckAnswerTriviaAction
+    from CynanBotCommon.trivia.checkSuperAnswerTriviaAction import \
+        CheckSuperAnswerTriviaAction
     from CynanBotCommon.trivia.correctAnswerTriviaEvent import \
         CorrectAnswerTriviaEvent
     from CynanBotCommon.trivia.correctSuperAnswerTriviaEvent import \
@@ -79,6 +81,8 @@ except:
     from trivia.absTriviaGameState import AbsTriviaGameState
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.checkAnswerTriviaAction import CheckAnswerTriviaAction
+    from trivia.checkSuperAnswerTriviaAction import \
+        CheckSuperAnswerTriviaAction
     from trivia.correctAnswerTriviaEvent import CorrectAnswerTriviaEvent
     from trivia.correctSuperAnswerTriviaEvent import \
         CorrectSuperAnswerTriviaEvent
@@ -324,7 +328,7 @@ class TriviaGameMachine():
             triviaScoreResult = triviaScoreResult
         ))
 
-    async def __handleActionCheckSuperAnswer(self, action: CheckAnswerTriviaAction):
+    async def __handleActionCheckSuperAnswer(self, action: CheckSuperAnswerTriviaAction):
         if action is None:
             raise ValueError(f'action argument is malformed: \"{action}\"')
         elif action.getTriviaActionType() is not TriviaActionType.CHECK_SUPER_ANSWER:
