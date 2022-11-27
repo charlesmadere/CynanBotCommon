@@ -15,7 +15,7 @@ class TriviaSourceInstabilityHelper():
     def __init__(
         self,
         timber: Timber,
-        fallOffTimeDelta: timedelta = timedelta(hours = 1)
+        fallOffTimeDelta: timedelta = timedelta(minutes = 20)
     ):
         if timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
