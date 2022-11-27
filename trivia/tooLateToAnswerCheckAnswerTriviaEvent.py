@@ -1,3 +1,5 @@
+from typing import Optional
+
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.trivia.absTriviaEvent import AbsTriviaEvent
@@ -6,7 +8,6 @@ try:
     from CynanBotCommon.trivia.triviaScoreResult import TriviaScoreResult
 except:
     import utils
-
     from trivia.absTriviaEvent import AbsTriviaEvent
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.triviaEventType import TriviaEventType
@@ -19,7 +20,7 @@ class TooLateToAnswerCheckAnswerTriviaEvent(AbsTriviaEvent):
         self,
         triviaQuestion: AbsTriviaQuestion,
         actionId: str,
-        answer: str,
+        answer: Optional[str],
         gameId: str,
         twitchChannel: str,
         userId: str,
@@ -47,14 +48,14 @@ class TooLateToAnswerCheckAnswerTriviaEvent(AbsTriviaEvent):
             raise ValueError(f'triviaScoreResult argument is malformed: \"{triviaScoreResult}\"')
 
         self.__triviaQuestion: AbsTriviaQuestion = triviaQuestion
-        self.__answer: str = answer
+        self.__answer: Optional[str] = answer
         self.__gameId: str = gameId
         self.__twitchChannel: str = twitchChannel
         self.__userId: str = userId
         self.__userName: str = userName
         self.__triviaScoreResult: TriviaScoreResult = triviaScoreResult
 
-    def getAnswer(self) -> str:
+    def getAnswer(self) -> Optional[str]:
         return self.__answer
 
     def getGameId(self) -> str:

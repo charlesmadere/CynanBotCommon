@@ -1,3 +1,5 @@
+from typing import Optional
+
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.trivia.absTriviaEvent import AbsTriviaEvent
@@ -13,7 +15,7 @@ class GameNotReadyCheckAnswerTriviaEvent(AbsTriviaEvent):
     def __init__(
         self,
         actionId: str,
-        answer: str,
+        answer: Optional[str],
         twitchChannel: str,
         userId: str,
         userName: str
@@ -30,12 +32,12 @@ class GameNotReadyCheckAnswerTriviaEvent(AbsTriviaEvent):
         elif not utils.isValidStr(userName):
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
 
-        self.__answer: str = answer
+        self.__answer: Optional[str] = answer
         self.__twitchChannel: str = twitchChannel
         self.__userId: str = userId
         self.__userName: str = userName
 
-    def getAnswer(self) -> str:
+    def getAnswer(self) -> Optional[str]:
         return self.__answer
 
     def getTwitchChannel(self) -> str:
