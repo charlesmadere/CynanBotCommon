@@ -36,6 +36,7 @@ class TriviaScoreRepository():
             '''
                 SELECT streak, superTriviaWins, triviaLosses, triviaWins, twitchChannel, userId FROM triviaScores
                 WHERE twitchChannel = $1 AND userId = $2
+                LIMIT 1
             ''',
             twitchChannel, userId
         )
