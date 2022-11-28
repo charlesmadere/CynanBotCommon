@@ -32,10 +32,12 @@ class TriviaEmoteGenerator():
     def __createEmotesDict(self) -> Dict[str, Optional[Set[str]]]:
         emotesDict: Dict[str, Optional[Set[str]]] = OrderedDict()
         emotesDict['🧮'] = None
+        emotesDict['⚗️'] = None
         emotesDict['👽'] = None
         emotesDict['🥓'] = None
         emotesDict['🎒'] = None
         emotesDict['🍌'] = None
+        emotesDict['📊'] = None
         emotesDict['🫑'] = None
         emotesDict['🫐'] = None
         emotesDict['📚'] = None
@@ -44,14 +46,21 @@ class TriviaEmoteGenerator():
         emotesDict['🥕'] = None
         emotesDict['🧀'] = None
         emotesDict['🍒'] = None
+        emotesDict['📋'] = None
         emotesDict['🖍️'] = None
         emotesDict['🍛'] = None
         emotesDict['🧬'] = None
+        emotesDict['🐬'] = None
         emotesDict['🧐'] = None
+        emotesDict['🚒'] = None
         emotesDict['🍇'] = None
         emotesDict['🍏'] = None
+        emotesDict['🚁'] = None
         emotesDict['📒'] = None
+        emotesDict['💡'] = None
         emotesDict['🍈'] = None
+        emotesDict['🔬'] = None
+        emotesDict['🍄'] = None
         emotesDict['🤓'] = None
         emotesDict['📓'] = None
         emotesDict['📎'] = None
@@ -59,15 +68,23 @@ class TriviaEmoteGenerator():
         emotesDict['🍎'] = None
         emotesDict['📏'] = None
         emotesDict['✏️'] = None
+        emotesDict['🐧'] = None
+        emotesDict['🍍'] = None
+        emotesDict['🌈'] = None
+        emotesDict['🍙'] = None
+        emotesDict['🚀'] = None
         emotesDict['🏫'] = None
         emotesDict['🦑'] = None
         emotesDict['🦐'] = None
         emotesDict['🍓'] = None
         emotesDict['🍊'] = None
+        emotesDict['🔭'] = None
         emotesDict['🤔'] = None
         emotesDict['💭'] = None
         emotesDict['📐'] = None
+        emotesDict['🌷'] = None
         emotesDict['🍉'] = None
+        emotesDict['🐋'] = None
 
         return emotesDict
 
