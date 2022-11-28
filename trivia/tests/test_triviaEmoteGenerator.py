@@ -24,14 +24,15 @@ class TestTriviaEmoteGenerator():
         backingDatabase = backingDatabase
     )
 
-    def test_getRandomEmote(self):
+    @pytest.mark.asyncio
+    async def test_getRandomEmote(self):
         for _ in range(100):
             result = self.triviaEmoteGenerator.getRandomEmote()
             assert result is not None
             assert isinstance(result, str)
             assert not result.isspace()
             assert len(result) >= 1
-            assert result == self.triviaEmoteGenerator.getValidatedAndNormalizedEmote(result)
+            assert result == await self.triviaEmoteGenerator.getValidatedAndNormalizedEmote(result)
 
     @pytest.mark.asyncio
     async def test_getValidatedAndNormalizedEmote_withAbacus(self):
