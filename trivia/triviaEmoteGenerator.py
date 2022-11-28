@@ -135,7 +135,7 @@ class TriviaEmoteGenerator():
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
         emoteIndex = await self.__getCurrentEmoteIndexFor(twitchChannel)
-        emoteIndex = (emoteIndex + 1) % len(self.__emotesDict)
+        emoteIndex = (emoteIndex + 1) % len(self.__emotesList)
 
         connection = await self.__getDatabaseConnection()
         await connection.execute(
