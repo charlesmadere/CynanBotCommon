@@ -5,14 +5,11 @@ try:
     from CynanBotCommon.trivia.absTriviaEvent import AbsTriviaEvent
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.triviaEventType import TriviaEventType
-    from CynanBotCommon.trivia.triviaScoreResult import TriviaScoreResult
 except:
     import utils
-
     from trivia.absTriviaEvent import AbsTriviaEvent
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.triviaEventType import TriviaEventType
-    from trivia.triviaScoreResult import TriviaScoreResult
 
 
 class IncorrectSuperAnswerTriviaEvent(AbsTriviaEvent):
@@ -58,9 +55,6 @@ class IncorrectSuperAnswerTriviaEvent(AbsTriviaEvent):
 
     def getTriviaQuestion(self) -> AbsTriviaQuestion:
         return self.__triviaQuestion
-
-    def getTriviaScoreResult(self) -> TriviaScoreResult:
-        return self.__triviaScoreResult
 
     def getTwitchChannel(self) -> str:
         return self.__twitchChannel
