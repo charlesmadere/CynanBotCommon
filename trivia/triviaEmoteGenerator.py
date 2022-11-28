@@ -30,6 +30,12 @@ class TriviaEmoteGenerator():
         self.__emotesList: List[str] = list(self.__emotesDict)
 
     def __createEmotesDict(self) -> Dict[str, Optional[Set[str]]]:
+        # Creates and returns a dictionary of emojis, with a set of emojis that should be
+        # considered equivalent. For example: 👨‍🔬 (man scientist) and 👩‍🔬 (woman scientist)
+        # should both be considered equivalents of the primary "root" 🧑‍🔬 (scientist) emoji.
+        #
+        # If a set is either None or empty, then the given emoji has no equivalent.
+
         emotesDict: Dict[str, Optional[Set[str]]] = OrderedDict()
         emotesDict['🧮'] = None
         emotesDict['⚗️'] = None
