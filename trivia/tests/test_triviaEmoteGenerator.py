@@ -31,6 +31,7 @@ class TestTriviaEmoteGenerator():
             assert isinstance(result, str)
             assert not result.isspace()
             assert len(result) >= 1
+            assert result == self.triviaEmoteGenerator.getValidatedAndNormalizedEmote(result)
 
     @pytest.mark.asyncio
     async def test_getValidatedAndNormalizedEmote_withAbacus(self):
