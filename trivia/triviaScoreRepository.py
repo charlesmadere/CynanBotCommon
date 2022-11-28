@@ -212,7 +212,7 @@ class TriviaScoreRepository():
         self.__isDatabaseReady = True
 
         connection = await self.__backingDatabase.getConnection()
-        await connection.execute(
+        await connection.createTableIfNotExists(
             '''
                 CREATE TABLE IF NOT EXISTS triviaScores (
                     streak INTEGER NOT NULL DEFAULT 0,

@@ -77,7 +77,7 @@ class BannedTriviaIdsRepository():
         self.__isDatabaseReady = True
 
         connection = await self.__backingDatabase.getConnection()
-        await connection.execute(
+        await connection.createTableIfNotExists(
             '''
                 CREATE TABLE IF NOT EXISTS bannedTriviaIds (
                     triviaId TEXT NOT NULL COLLATE NOCASE,

@@ -31,6 +31,12 @@ class SqliteDatabaseConnection(DatabaseConnection):
         self.__isClosed = True
         await self.__connection.close()
 
+    async def createTableIfNotExists(self, query: str, *args: Optional[Any]):
+        if not utils.isValidStr(query):
+            raise ValueError(f'query argument is malformed: \"{query}\"')
+
+        await self.execute(query, args)
+
     async def execute(self, query: str, *args: Optional[Any]):
         if not utils.isValidStr(query):
             raise ValueError(f'query argument is malformed: \"{query}\"')

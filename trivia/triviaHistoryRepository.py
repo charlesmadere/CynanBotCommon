@@ -91,7 +91,7 @@ class TriviaHistoryRepository():
         self.__isDatabaseReady = True
 
         connection = await self.__backingDatabase.getConnection()
-        await connection.execute(
+        await connection.createTableIfNotExists(
             '''
                 CREATE TABLE IF NOT EXISTS triviaHistory (
                     datetime TEXT NOT NULL,
