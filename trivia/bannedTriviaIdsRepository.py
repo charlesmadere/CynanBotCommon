@@ -58,8 +58,9 @@ class BannedTriviaIdsRepository():
         connection = await self.__getDatabaseConnection()
         await connection.execute(
             '''
-                INSERT OR IGNORE INTO bannedTriviaIds (triviaId, triviaSource)
+                INSERT INTO bannedTriviaIds (triviaId, triviaSource)
                 VALUES ($1, $2)
+                ON CONFLICT (triviaId, triviaSource) DO NOTHING
             ''',
             triviaId, triviaSource.toStr()
         )
