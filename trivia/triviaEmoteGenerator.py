@@ -153,7 +153,7 @@ class TriviaEmoteGenerator():
         self.__isDatabaseReady = True
 
         connection = await self.__backingDatabase.getConnection()
-        await connection.execute(
+        await connection.createTableIfNotExists(
             '''
                 CREATE TABLE IF NOT EXISTS triviaEmotes (
                     emoteIndex SMALLINT NOT NULL DEFAULT 0,

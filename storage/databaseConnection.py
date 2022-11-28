@@ -11,6 +11,9 @@ class DatabaseConnection():
     async def close(self):
         pass
 
+    async def createTableIfNotExists(self, query: str, *args: Optional[Any]):
+        pass
+
     async def execute(self, query: str, *args: Optional[Any]):
         pass
 

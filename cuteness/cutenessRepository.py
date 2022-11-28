@@ -541,7 +541,7 @@ class CutenessRepository():
         self.__isDatabaseReady = True
 
         connection = await self.__backingDatabase.getConnection()
-        await connection.execute(
+        await connection.createTableIfNotExists(
             '''
                 CREATE TABLE IF NOT EXISTS cuteness (
                     cuteness INTEGER NOT NULL DEFAULT 0,

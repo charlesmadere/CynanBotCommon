@@ -29,6 +29,12 @@ class PsqlDatabaseConnection(DatabaseConnection):
 
         await self.__connection.close()
 
+    async def createTableIfNotExists(self, query: str, *args: Optional[Any]):
+        if not utils.isValidStr(query):
+            raise ValueError(f'query argument is malformed: \"{query}\"')
+
+        # intentionally ignoring this call, as we can't create PSQL tables
+
     async def execute(self, query: str, *args: Optional[Any]):
         if not utils.isValidStr(query):
             raise ValueError(f'query argument is malformed: \"{query}\"')

@@ -162,7 +162,7 @@ class UserIdsRepository():
         self.__isDatabaseReady = True
 
         connection = await self.__backingDatabase.getConnection()
-        await connection.execute(
+        await connection.createTableIfNotExists(
             '''
                 CREATE TABLE IF NOT EXISTS userIds (
                     userId TEXT NOT NULL PRIMARY KEY COLLATE NOCASE,
