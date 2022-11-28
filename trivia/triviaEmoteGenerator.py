@@ -2,8 +2,6 @@ import random
 from collections import OrderedDict
 from typing import Dict, List, Optional, Set
 
-import emoji
-
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.storage.backingDatabase import BackingDatabase
@@ -155,8 +153,6 @@ class TriviaEmoteGenerator():
 
     async def getValidatedAndNormalizedEmote(self, emote: Optional[str]) -> Optional[str]:
         if not utils.isValidStr(emote):
-            return None
-        elif not emoji.is_emoji(emote):
             return None
 
         if emote in self.__emotesDict:
