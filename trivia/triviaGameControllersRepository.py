@@ -114,7 +114,7 @@ class TriviaGameControllersRepository():
 
         await connection.execute(
             '''
-                INSERT triviaGameControllers (twitchChannel, userId)
+                INSERT INTO triviaGameControllers (twitchChannel, userId)
                 VALUES ($1, $2)
                 ON CONFLICT (twitchChannel, userId) DO NOTHING
             ''',
