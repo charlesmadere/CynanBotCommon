@@ -47,6 +47,54 @@ class TestUtils():
         result = utils.areAllStrsInts([ 'hello', 'world' ])
         assert result is False
 
+    def test_areValidBools_withEmptyList(self):
+        result = utils.areValidBools(list())
+        assert result is False
+
+    def test_areValidBools_withEmptyStringList(self):
+        result = utils.areValidBools([ '', '\n', 'hello', 'world', '' ])
+        assert result is False
+
+    def test_areValidBools_withIntList(self):
+        result = utils.areValidBools([ 100, 200 ])
+        assert result is False
+
+    def test_areValidBools_withMixedTypeList(self):
+        result = utils.areValidBools([ True, 'hello', 1, False ])
+        assert result is False
+
+    def test_areValidBools_withNone(self):
+        result = utils.areValidBools(None)
+        assert result is False
+
+    def test_areValidBools_withValidList(self):
+        result = utils.areValidBools([ True, False, False, True ])
+        assert result is True
+
+    def test_areValidStrs_withEmptyList(self):
+        result = utils.areValidStrs(list())
+        assert result is False
+
+    def test_areValidStrs_withEmptyStringList(self):
+        result = utils.areValidStrs([ '', '\n', 'hello', 'world', '' ])
+        assert result is False
+
+    def test_areValidStrs_withIntList(self):
+        result = utils.areValidStrs([ 100, 200 ])
+        assert result is False
+
+    def test_areValidStrs_withMixedTypeList(self):
+        result = utils.areValidStrs([ True, 'hello', 1, False ])
+        assert result is False
+
+    def test_areValidStrs_withNone(self):
+        result = utils.areValidStrs(None)
+        assert result is False
+
+    def test_areValidStrs_withValidList(self):
+        result = utils.areValidStrs([ 'hello', 'world' ])
+        assert result is True
+
     def test_containsUrl_withEmptyString(self):
         result = utils.containsUrl('')
         assert result is False
