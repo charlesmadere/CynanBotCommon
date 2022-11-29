@@ -1,4 +1,5 @@
 import hashlib
+from typing import Optional
 
 try:
     import CynanBotCommon.utils as utils
@@ -14,8 +15,8 @@ class TriviaIdGenerator():
     async def generate(
         self,
         question: str,
-        category: str = None,
-        difficulty: str = None
+        category: Optional[str] = None,
+        difficulty: Optional[str] = None
     ) -> str:
         if not utils.isValidStr(question):
             raise ValueError(f'question argument is malformed: \"{question}\"')

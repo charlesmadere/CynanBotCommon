@@ -23,7 +23,7 @@ def areAllStrsInts(l: List[str]) -> bool:
 
     return True
 
-def areValidBools(l: List[bool]) -> bool:
+def areValidBools(l: Optional[List[Optional[bool]]]) -> bool:
     if not hasItems(l):
         return False
 
@@ -33,7 +33,7 @@ def areValidBools(l: List[bool]) -> bool:
 
     return True
 
-def areValidStrs(l: List[str]) -> bool:
+def areValidStrs(l: Optional[List[Optional[str]]]) -> bool:
     if not hasItems(l):
         return False
 
