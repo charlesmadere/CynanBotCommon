@@ -435,12 +435,16 @@ class TriviaAnswerChecker():
                 yield 'cyan magenta yellow black'
             if word == 'cpu':
                 yield 'central processing unit'
+            if word == 'dns':
+                yield 'domain name system'
             if word in ('dp', 'dip'):
                 yield 'density independent pixel'
             if word == 'dpi':
                 yield 'dots per inch'
             if word == 'ff':
                 yield 'firefox'
+            if word == 'ftp':
+                yield 'file transfer protocol'
             if word == 'goog':
                 yield 'google'
             if word == 'gpu':
@@ -493,8 +497,8 @@ class TriviaAnswerChecker():
             if word == 'f':
                 yield 'fahrenheit'
             if word == 'ft':
-                yield 'foot'
                 yield 'feet'
+                yield 'foot'
             if word == 'g':
                 yield 'gram'
             if word == 'gb':
@@ -553,6 +557,10 @@ class TriviaAnswerChecker():
                 yield 'yard'
 
             # other
+            if word == 'ac':
+                yield 'alternating current'
+            if word == 'dc':
+                yield 'direct current'
             if word == 'dept':
                 yield 'department'
             if word == 'no':
@@ -563,5 +571,9 @@ class TriviaAnswerChecker():
                 yield 'world record'
             if word == 'ww':
                 yield 'world war'
+            if word in ('wwi', 'ww1'):
+                yield 'world war 1'
+            if word in ('wwii', 'ww2'):
+                yield 'world war 2'
             if word == 'xmas':
                 yield 'christmas'
