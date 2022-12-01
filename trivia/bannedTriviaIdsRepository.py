@@ -46,9 +46,7 @@ class BannedTriviaIdsRepository():
         elif triviaSource is None:
             raise ValueError(f'triviaSource argument is malformed: \"{triviaSource}\"')
 
-        if await self.__triviaSettingsRepository.isDebugLoggingEnabled():
-            self.__timber.log('BannedTriviaIdsRepository', f'Banning trivia question (triviaId=\"{triviaId}\", triviaSource=\"{triviaSource}\")...')
-
+        self.__timber.log('BannedTriviaIdsRepository', f'Banning trivia question (triviaId=\"{triviaId}\", triviaSource=\"{triviaSource}\")...')
         await self.__banQuestion(triviaId, triviaSource)
 
     async def __banQuestion(self, triviaId: str, triviaSource: TriviaSource):
@@ -124,9 +122,7 @@ class BannedTriviaIdsRepository():
         if not utils.isValidNum(count) or count < 1:
             return False
 
-        if await self.__triviaSettingsRepository.isDebugLoggingEnabled():
-            self.__timber.log('BannedTriviaIdsRepository', f'Encountered banned trivia ID with count of {count} (triviaId=\"{triviaId}\", triviaSource=\"{triviaSource}\")')
-
+        self.__timber.log('BannedTriviaIdsRepository', f'Encountered banned trivia ID (count=\"{count}\", triviaId=\"{triviaId}\", triviaSource=\"{triviaSource}\")')
         return True
 
     async def unban(self, triviaId: str, triviaSource: TriviaSource):
@@ -135,8 +131,7 @@ class BannedTriviaIdsRepository():
         elif triviaSource is None:
             raise ValueError(f'triviaSource argument is malformed: \"{triviaSource}\"')
 
-        if await self.__triviaSettingsRepository.isDebugLoggingEnabled():
-            self.__timber.log('BannedTriviaIdsRepository', f'Unbanning trivia question (triviaId=\"{triviaId}\", triviaSource=\"{triviaSource}\")...')
+        self.__timber.log('BannedTriviaIdsRepository', f'Unbanning trivia question (triviaId=\"{triviaId}\", triviaSource=\"{triviaSource}\")...')
 
         connection = await self.__getDatabaseConnection()
         await connection.execute(
