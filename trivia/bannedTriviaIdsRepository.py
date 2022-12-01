@@ -4,6 +4,7 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.storage.backingDatabase import BackingDatabase
     from CynanBotCommon.storage.databaseConnection import DatabaseConnection
+    from CynanBotCommon.storage.databaseType import DatabaseType
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
@@ -12,6 +13,7 @@ except:
     import utils
     from storage.backingDatabase import BackingDatabase
     from storage.databaseConnection import DatabaseConnection
+    from storage.databaseType import DatabaseType
     from timber.timber import Timber
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
@@ -58,9 +60,9 @@ class BannedTriviaIdsRepository():
         connection = await self.__getDatabaseConnection()
         await connection.execute(
             '''
-                INSERT INTO bannedTriviaIds (triviaId, triviaSource)
+                INSERT INTO bannedtriviaids (triviaid, triviasource)
                 VALUES ($1, $2)
-                ON CONFLICT (triviaId, triviaSource) DO NOTHING
+                ON CONFLICT (triviaid, triviasource) DO NOTHING
             ''',
             triviaId, triviaSource.toStr()
         )
@@ -78,15 +80,19 @@ class BannedTriviaIdsRepository():
         self.__isDatabaseReady = True
 
         connection = await self.__backingDatabase.getConnection()
-        await connection.createTableIfNotExists(
-            '''
-                CREATE TABLE IF NOT EXISTS bannedTriviaIds (
-                    triviaId TEXT NOT NULL COLLATE NOCASE,
-                    triviaSource TEXT NOT NULL COLLATE NOCASE,
-                    PRIMARY KEY (triviaId, triviaSource)
-                )
-            '''
-        )
+
+        if connection.getDatabaseType() is DatabaseType.POSTGRESQL:
+            pass
+        elif connection.getDatabaseType() is DatabaseType.SQLITE:
+            await connection.createTableIfNotExists(
+                '''
+                    CREATE TABLE IF NOT EXISTS bannedtriviaids (
+                        triviaid TEXT NOT NULL COLLATE NOCASE,
+                        triviasource TEXT NOT NULL COLLATE NOCASE,
+                        PRIMARY KEY (triviaid, triviasource)
+                    )
+                '''
+            )
 
         await connection.close()
 
@@ -102,8 +108,8 @@ class BannedTriviaIdsRepository():
         connection = await self.__getDatabaseConnection()
         record = await connection.fetchRow(
             '''
-                SELECT COUNT(1) FROM bannedTriviaIds
-                WHERE triviaId = $1 AND triviaSource = $2
+                SELECT COUNT(1) FROM bannedtriviaids
+                WHERE triviaid = $1 AND triviasource = $2
                 LIMIT 1
             ''',
             triviaId, triviaSource.toStr()
@@ -135,8 +141,8 @@ class BannedTriviaIdsRepository():
         connection = await self.__getDatabaseConnection()
         await connection.execute(
             '''
-                DELETE FROM bannedTriviaIds
-                WHERE triviaId = $1 AND triviaSource = $2
+                DELETE FROM bannedtriviaids
+                WHERE triviaid = $1 AND triviasource = $2
             ''',
             triviaId, triviaSource.toStr()
         )
