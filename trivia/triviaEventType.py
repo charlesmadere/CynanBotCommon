@@ -3,6 +3,7 @@ from enum import Enum, auto
 
 class TriviaEventType(Enum):
 
+    CLEARED_SUPER_TRIVIA_QUEUE = auto()
     CORRECT_ANSWER = auto()
     GAME_ALREADY_IN_PROGRESS = auto()
     GAME_FAILED_TO_FETCH_QUESTION = auto()

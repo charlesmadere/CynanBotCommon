@@ -109,6 +109,24 @@ class QueuedTriviaGameStore():
             oldQueueSize = oldQueueSize
         )
 
+    async def clearQueuedSuperTriviaGames(self, twitchChannel: str) -> int:
+        if not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+
+        queuedSuperGames = self.__queuedSuperGames[twitchChannel.lower()]
+        oldQueueSize = queuedSuperGames.qsize()
+        amountRemoved: int = 0
+
+        try:
+            while not queuedSuperGames.empty():
+                queuedSuperGames.get(block = True, timeout = self.__queueTimeoutSeconds)
+                amountRemoved = amountRemoved + 1
+        except queue.Empty as e:
+            self.__timber.log('QueuedTriviaGameStore', f'Unable to clear all queued super games for \"{twitchChannel}\" (queue size: {queuedSuperGames.qsize()}) (oldQueueSize: {oldQueueSize}): {e}', e)
+
+        self.__timber.log('QueuedTriviaGameStore', f'Cleared {amountRemoved} super games for \"{twitchChannel}\" (oldQueueSize: {oldQueueSize})')
+        return amountRemoved
+
     async def getQueuedSuperGamesSize(self, twitchChannel: str) -> int:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
