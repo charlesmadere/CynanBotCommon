@@ -80,7 +80,15 @@ class BannedTriviaIdsRepository():
         connection = await self.__backingDatabase.getConnection()
 
         if connection.getDatabaseType() is DatabaseType.POSTGRESQL:
-            pass
+            await connection.createTableIfNotExists(
+                '''
+                    CREATE TABLE IF NOT EXISTS public.bannedtriviaids (
+                        triviaid public.citext NOT NULL,
+                        triviasource public.citext NOT NULL,
+                        PRIMARY KEY (triviaid, triviasource)
+                    )
+                '''
+            )
         elif connection.getDatabaseType() is DatabaseType.SQLITE:
             await connection.createTableIfNotExists(
                 '''
@@ -91,6 +99,8 @@ class BannedTriviaIdsRepository():
                     )
                 '''
             )
+        else:
+            raise RuntimeError(f'Encountered unexpected DatabaseType: \"{connection.getDatabaseType()}\"')
 
         await connection.close()
 
