@@ -1,3 +1,5 @@
+import locale
+
 try:
     import CynanBotCommon.utils as utils
 except:
@@ -27,11 +29,20 @@ class AddQueuedGamesResult():
     def getAmountAdded(self) -> int:
         return self.__amountAdded
 
+    def getAmountAddedStr(self) -> str:
+        return locale.format_string("%d", self.__amountAdded, grouping = True)
+
     def getNewQueueSize(self) -> int:
         return self.__newQueueSize
 
+    def getNewQueueSizeStr(self) -> str:
+        return locale.format_string("%d", self.__newQueueSize, grouping = True)
+
     def getOldQueueSize(self) -> int:
         return self.__oldQueueSize
+
+    def getOldQueueSizeStr(self) -> str:
+        return locale.format_string("%d", self.__oldQueueSize, grouping = True)
 
     def toStr(self) -> str:
         return f'amountAdded={self.__amountAdded}, newQueueSize={self.__newQueueSize}, oldQueueSize={self.__oldQueueSize}'

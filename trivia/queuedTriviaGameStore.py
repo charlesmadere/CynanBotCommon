@@ -7,6 +7,8 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.addQueuedGamesResult import AddQueuedGamesResult
+    from CynanBotCommon.trivia.clearQueuedGamesResult import \
+        ClearQueuedGamesResult
     from CynanBotCommon.trivia.startNewSuperTriviaGameAction import \
         StartNewSuperTriviaGameAction
     from CynanBotCommon.trivia.triviaSettingsRepository import \
@@ -15,6 +17,7 @@ except:
     import utils
     from timber.timber import Timber
     from trivia.addQueuedGamesResult import AddQueuedGamesResult
+    from trivia.clearQueuedGamesResult import ClearQueuedGamesResult
     from trivia.startNewSuperTriviaGameAction import \
         StartNewSuperTriviaGameAction
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
@@ -109,7 +112,7 @@ class QueuedTriviaGameStore():
             oldQueueSize = oldQueueSize
         )
 
-    async def clearQueuedSuperTriviaGames(self, twitchChannel: str) -> int:
+    async def clearQueuedSuperTriviaGames(self, twitchChannel: str) -> ClearQueuedGamesResult:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
@@ -125,7 +128,11 @@ class QueuedTriviaGameStore():
             self.__timber.log('QueuedTriviaGameStore', f'Unable to clear all queued super games for \"{twitchChannel}\" (queue size: {queuedSuperGames.qsize()}) (oldQueueSize: {oldQueueSize}): {e}', e)
 
         self.__timber.log('QueuedTriviaGameStore', f'Cleared {amountRemoved} super games for \"{twitchChannel}\" (oldQueueSize: {oldQueueSize})')
-        return amountRemoved
+
+        return ClearQueuedGamesResult(
+            amountRemoved = amountRemoved,
+            oldQueueSize = oldQueueSize
+        )
 
     async def getQueuedSuperGamesSize(self, twitchChannel: str) -> int:
         if not utils.isValidStr(twitchChannel):
