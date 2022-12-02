@@ -16,6 +16,10 @@ try:
         CheckAnswerTriviaAction
     from CynanBotCommon.trivia.checkSuperAnswerTriviaAction import \
         CheckSuperAnswerTriviaAction
+    from CynanBotCommon.trivia.clearedSuperTriviaQueueTriviaEvent import \
+        ClearedSuperTriviaQueueTriviaEvent
+    from CynanBotCommon.trivia.clearSuperTriviaQueueTriviaAction import \
+        ClearSuperTriviaQueueTriviaAction
     from CynanBotCommon.trivia.correctAnswerTriviaEvent import \
         CorrectAnswerTriviaEvent
     from CynanBotCommon.trivia.correctSuperAnswerTriviaEvent import \
@@ -83,6 +87,10 @@ except:
     from trivia.checkAnswerTriviaAction import CheckAnswerTriviaAction
     from trivia.checkSuperAnswerTriviaAction import \
         CheckSuperAnswerTriviaAction
+    from trivia.clearedSuperTriviaQueueTriviaEvent import \
+        ClearedSuperTriviaQueueTriviaEvent
+    from trivia.clearSuperTriviaQueueTriviaAction import \
+        ClearSuperTriviaQueueTriviaAction
     from trivia.correctAnswerTriviaEvent import CorrectAnswerTriviaEvent
     from trivia.correctSuperAnswerTriviaEvent import \
         CorrectSuperAnswerTriviaEvent
@@ -414,6 +422,22 @@ class TriviaGameMachine():
             triviaScoreResult = triviaScoreResult
         ))
 
+    async def __handleActionClearSuperTriviaQueue(self, action: ClearSuperTriviaQueueTriviaAction):
+        if action is None:
+            raise ValueError(f'action argument is malformed: \"{action}\"')
+        elif action.getTriviaActionType() is not TriviaActionType.CLEAR_SUPER_TRIVIA_QUEUE:
+            raise RuntimeError(f'TriviaActionType is not {TriviaActionType.CLEAR_SUPER_TRIVIA_QUEUE}: \"{action.getTriviaActionType()}\"')
+
+        numberOfGamesRemoved = await self.__queuedTriviaGameStore.clearQueuedSuperTriviaGames(
+            twitchChannel = action.getTwitchChannel()
+        )
+
+        await self.__submitEvent(ClearedSuperTriviaQueueTriviaEvent(
+            numberOfGamesRemoved = numberOfGamesRemoved,
+            actionId = action.getActionId(),
+            twitchChannel = action.getTwitchChannel()
+        ))
+
     async def __handleActionStartNewTriviaGame(self, action: StartNewTriviaGameAction):
         if action is None:
             raise ValueError(f'action argument is malformed: \"{action}\"')
@@ -636,6 +660,8 @@ class TriviaGameMachine():
                         await self.__handleActionCheckAnswer(action)
                     elif action.getTriviaActionType() is TriviaActionType.CHECK_SUPER_ANSWER:
                         await self.__handleActionCheckSuperAnswer(action)
+                    elif action.getTriviaActionType() is TriviaActionType.CLEAR_SUPER_TRIVIA_QUEUE:
+                        await self.__handleActionClearSuperTriviaQueue(action)
                     elif action.getTriviaActionType() is TriviaActionType.START_NEW_GAME:
                         await self.__handleActionStartNewTriviaGame(action)
                     elif action.getTriviaActionType() is TriviaActionType.START_NEW_SUPER_GAME:
