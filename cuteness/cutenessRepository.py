@@ -19,6 +19,7 @@ try:
     from CynanBotCommon.cuteness.cutenessResult import CutenessResult
     from CynanBotCommon.storage.backingDatabase import BackingDatabase
     from CynanBotCommon.storage.databaseConnection import DatabaseConnection
+    from CynanBotCommon.storage.databaseType import DatabaseType
     from CynanBotCommon.users.userIdsRepository import UserIdsRepository
 except:
     import utils
@@ -34,6 +35,7 @@ except:
     from cuteness.cutenessResult import CutenessResult
     from storage.backingDatabase import BackingDatabase
     from storage.databaseConnection import DatabaseConnection
+    from storage.databaseType import DatabaseType
 
     from users.userIdsRepository import UserIdsRepository
 
@@ -104,9 +106,9 @@ class CutenessRepository():
         connection = await self.__getDatabaseConnection()
         record = await connection.fetchRow(
             '''
-                SELECT cuteness.cuteness, cuteness.userId, userIds.userName FROM cuteness
-                INNER JOIN userIds ON cuteness.userId = userIds.userId
-                WHERE cuteness.twitchChannel = $1 AND cuteness.userId = $2 AND cuteness.utcYearAndMonth = $3
+                SELECT cuteness.cuteness, cuteness.userid, userids.userName FROM cuteness
+                INNER JOIN userids ON cuteness.userid = userids.userid
+                WHERE cuteness.twitchchannel = $1 AND cuteness.userid = $2 AND cuteness.utcyearandmonth = $3
                 LIMIT 1
             ''',
             twitchChannel, userId, cutenessDate.getStr()
@@ -138,9 +140,9 @@ class CutenessRepository():
 
         records = await connection.fetchRows(
             '''
-                SELECT cuteness.cuteness, cuteness.userId, userIds.userName FROM cuteness
-                INNER JOIN userIds ON cuteness.userId = userIds.userId
-                WHERE cuteness.twitchChannel = $1 AND cuteness.utcYearAndMonth = $2 AND cuteness.cuteness IS NOT NULL AND cuteness.cuteness >= 1 AND cuteness.userId != $3 AND cuteness.userId != $4
+                SELECT cuteness.cuteness, cuteness.userid, userids.username FROM cuteness
+                INNER JOIN userids ON cuteness.userid = userids.userid
+                WHERE cuteness.twitchchannel = $1 AND cuteness.utcyearandmonth = $2 AND cuteness.cuteness IS NOT NULL AND cuteness.cuteness >= 1 AND cuteness.userid != $3 AND cuteness.userid != $4
                 ORDER BY ABS($5 - ABS(cuteness.cuteness)) ASC
                 LIMIT $6
             ''',
@@ -188,9 +190,9 @@ class CutenessRepository():
         connection = await self.__getDatabaseConnection()
         records = await connection.fetchRows(
             '''
-                SELECT cuteness.userId, userIds.userName, SUM(cuteness.cuteness) as totalCuteness FROM cuteness
-                INNER JOIN userIds on cuteness.userId = userIds.userId where cuteness.twitchChannel = $1 AND cuteness.userId != $2
-                GROUP BY cuteness.userId, userIds.userName
+                SELECT cuteness.userid, userids.userName, SUM(cuteness.cuteness) as totalcuteness FROM cuteness
+                INNER JOIN userids on cuteness.userid = userids.userid where cuteness.twitchchannel = $1 AND cuteness.userid != $2
+                GROUP BY cuteness.userid, userids.username
                 ORDER BY SUM(cuteness.cuteness) DESC
                 LIMIT $3
             ''',
@@ -243,9 +245,9 @@ class CutenessRepository():
         connection = await self.__getDatabaseConnection()
         records = await connection.fetchRows(
             '''
-                SELECT cuteness, utcYearAndMonth FROM cuteness
-                WHERE twitchChannel = $1 AND userId = $2 AND cuteness IS NOT NULL AND cuteness >= 1
-                ORDER BY utcYearAndMonth DESC
+                SELECT cuteness, utcyearandmonth FROM cuteness
+                WHERE twitchchannel = $1 AND userid = $2 AND cuteness IS NOT NULL AND cuteness >= 1
+                ORDER BY utcyearandmonth DESC
                 LIMIT $3
             ''',
             twitchChannel, userId, self.__historySize
@@ -274,7 +276,7 @@ class CutenessRepository():
         record = await connection.fetchRow(
             '''
                 SELECT SUM(cuteness) FROM cuteness
-                WHERE twitchChannel = $1 AND userId = $2 AND cuteness IS NOT NULL AND cuteness >= 1
+                WHERE twitchchannel = $1 AND userid = $2 AND cuteness IS NOT NULL AND cuteness >= 1
                 LIMIT 1
             ''',
             twitchChannel, userId
@@ -288,15 +290,15 @@ class CutenessRepository():
 
         record = await connection.fetchRow(
             '''
-                SELECT cuteness, utcYearAndMonth FROM cuteness
-                WHERE twitchChannel = $1 AND userId = $2 AND cuteness IS NOT NULL AND cuteness >= 1
+                SELECT cuteness, utcyearandmonth FROM cuteness
+                WHERE twitchchannel = $1 AND userid = $2 AND cuteness IS NOT NULL AND cuteness >= 1
                 ORDER BY cuteness DESC
                 LIMIT 1
             ''',
             twitchChannel, userId
         )
 
-        bestCuteness: CutenessHistoryEntry = None
+        bestCuteness: Optional[CutenessHistoryEntry] = None
 
         if utils.hasItems(record):
             # again, this should be impossible here, but let's just be safe
@@ -346,7 +348,7 @@ class CutenessRepository():
         record = await connection.fetchRow(
             '''
                 SELECT cuteness FROM cuteness
-                WHERE twitchChannel = $1 AND userId = $2 AND utcYearAndMonth = $3
+                WHERE twitchchannel = $1 AND userid = $2 AND utcyearandmonth = $3
                 LIMIT 1
             ''',
             twitchChannel, userId, cutenessDate.getStr()
@@ -366,9 +368,9 @@ class CutenessRepository():
 
         await connection.execute(
             '''
-                INSERT INTO cuteness (cuteness, twitchChannel, userId, utcYearAndMonth)
+                INSERT INTO cuteness (cuteness, twitchchannel, userid, utcyearandmonth)
                 VALUES ($1, $2, $3, $4)
-                ON CONFLICT (twitchChannel, userId, utcYearAndMonth) DO UPDATE SET cuteness = EXCLUDED.cuteness
+                ON CONFLICT (twitchchannel, userid, utcyearandmonth) DO UPDATE SET cuteness = EXCLUDED.cuteness
             ''',
             newCuteness, twitchChannel, userId, cutenessDate.getStr()
         )
@@ -398,9 +400,9 @@ class CutenessRepository():
         connection = await self.__getDatabaseConnection()
         records = await connection.fetchRows(
             '''
-                SELECT cuteness.cuteness, cuteness.userId, userIds.userName FROM cuteness
-                INNER JOIN userIds ON cuteness.userId = userIds.userId
-                WHERE cuteness.twitchChannel = $1 AND cuteness.utcYearAndMonth = $2 AND cuteness.cuteness IS NOT NULL AND cuteness.cuteness >= 1 AND cuteness.userId != $3
+                SELECT cuteness.cuteness, cuteness.userid, userids.username FROM cuteness
+                INNER JOIN userids ON cuteness.userid = userIds.userid
+                WHERE cuteness.twitchchannel = $1 AND cuteness.utcyearandmonth = $2 AND cuteness.cuteness IS NOT NULL AND cuteness.cuteness >= 1 AND cuteness.userid != $3
                 ORDER BY cuteness.cuteness DESC
                 LIMIT $4
             ''',
@@ -476,9 +478,9 @@ class CutenessRepository():
         connection = await self.__getDatabaseConnection()
         records = await connection.fetchRows(
             '''
-                SELECT DISTINCT utcYearAndMonth FROM cuteness
-                WHERE twitchChannel = $1 AND utcYearAndMonth != $2
-                ORDER BY utcYearAndMonth DESC
+                SELECT DISTINCT utcyearandmonth FROM cuteness
+                WHERE twitchchannel = $1 AND utcyearandmonth != $2
+                ORDER BY utcyearandmonth DESC
                 LIMIT $3
             ''',
             twitchChannel, CutenessDate().getStr(), self.__historyLeaderboardSize
@@ -494,9 +496,9 @@ class CutenessRepository():
             cutenessDate = CutenessDate(record[0])
             monthRecords = await connection.fetchRows(
                 '''
-                    SELECT cuteness.cuteness, cuteness.userId, userIds.userName FROM cuteness
-                    INNER JOIN userIds ON cuteness.userId = userIds.userId
-                    WHERE cuteness.cuteness IS NOT NULL AND cuteness.cuteness >= 1 AND cuteness.twitchChannel = $1 AND cuteness.userId != $2 AND cuteness.utcYearAndMonth = $3
+                    SELECT cuteness.cuteness, cuteness.userid, userids.username FROM cuteness
+                    INNER JOIN userids ON cuteness.userid = userids.userid
+                    WHERE cuteness.cuteness IS NOT NULL AND cuteness.cuteness >= 1 AND cuteness.twitchchannel = $1 AND cuteness.userid != $2 AND cuteness.utcyearandmonth = $3
                     ORDER BY cuteness.cuteness DESC
                     LIMIT $4
                 ''',
@@ -541,16 +543,32 @@ class CutenessRepository():
         self.__isDatabaseReady = True
 
         connection = await self.__backingDatabase.getConnection()
-        await connection.createTableIfNotExists(
-            '''
-                CREATE TABLE IF NOT EXISTS cuteness (
-                    cuteness INTEGER NOT NULL DEFAULT 0,
-                    twitchChannel TEXT NOT NULL COLLATE NOCASE,
-                    userId TEXT NOT NULL COLLATE NOCASE,
-                    utcYearAndMonth TEXT NOT NULL COLLATE NOCASE,
-                    PRIMARY KEY (twitchChannel, userId, utcYearAndMonth)
-                )
-            '''
-        )
+
+        if connection.getDatabaseType() is DatabaseType.POSTGRESQL:
+            await connection.createTableIfNotExists(
+                '''
+                    CREATE TABLE IF NOT EXISTS cuteness (
+                        cuteness bigint DEFAULT 0 NOT NULL,
+                        twitchchannel public.citext NOT NULL,
+                        userid public.citext NOT NULL,
+                        utcyearandmonth public.citext NOT NULL,
+                        PRIMARY KEY (twitchchannel, userid, utcyearandmonth)
+                    )
+                '''
+            )
+        elif connection.getDatabaseType() is DatabaseType.SQLITE:
+            await connection.createTableIfNotExists(
+                '''
+                    CREATE TABLE IF NOT EXISTS cuteness (
+                        cuteness INTEGER NOT NULL DEFAULT 0,
+                        twitchchannel TEXT NOT NULL COLLATE NOCASE,
+                        userid TEXT NOT NULL COLLATE NOCASE,
+                        utcyearandmonth TEXT NOT NULL COLLATE NOCASE,
+                        PRIMARY KEY (twitchchannel, userid, utcyearandmonth)
+                    )
+                '''
+            )
+        else:
+            raise RuntimeError(f'Encountered unexpected DatabaseType when trying to create tables: \"{connection.getDatabaseType()}\"')
 
         await connection.close()

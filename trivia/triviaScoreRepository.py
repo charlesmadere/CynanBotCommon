@@ -2,11 +2,13 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.storage.backingDatabase import BackingDatabase
     from CynanBotCommon.storage.databaseConnection import DatabaseConnection
+    from CynanBotCommon.storage.databaseType import DatabaseType
     from CynanBotCommon.trivia.triviaScoreResult import TriviaScoreResult
 except:
     import utils
     from storage.backingDatabase import BackingDatabase
     from storage.databaseConnection import DatabaseConnection
+    from storage.databaseType import DatabaseType
     from trivia.triviaScoreResult import TriviaScoreResult
 
 
@@ -34,8 +36,8 @@ class TriviaScoreRepository():
         connection = await self.__getDatabaseConnection()
         record = await connection.fetchRow(
             '''
-                SELECT streak, superTriviaWins, triviaLosses, triviaWins, twitchChannel, userId FROM triviaScores
-                WHERE twitchChannel = $1 AND userId = $2
+                SELECT streak, supertriviawins, trivialosses, triviawins, twitchchannel, userid FROM triviascores
+                WHERE twitchchannel = $1 AND userid = $2
                 LIMIT 1
             ''',
             twitchChannel, userId
@@ -56,7 +58,7 @@ class TriviaScoreRepository():
 
         await connection.execute(
             '''
-                INSERT INTO triviaScores (streak, superTriviaWins, triviaLosses, triviaWins, twitchChannel, userId)
+                INSERT INTO triviascores (streak, supertriviawins, trivialosses, triviawins, twitchchannel, userid)
                 VALUES ($1, $2, $3, $4, $5, $6)
             ''',
             0, 0, 0, 0, twitchChannel, userId
@@ -212,19 +214,37 @@ class TriviaScoreRepository():
         self.__isDatabaseReady = True
 
         connection = await self.__backingDatabase.getConnection()
-        await connection.createTableIfNotExists(
-            '''
-                CREATE TABLE IF NOT EXISTS triviaScores (
-                    streak INTEGER NOT NULL DEFAULT 0,
-                    superTriviaWins INTEGER NOT NULL DEFAULT 0,
-                    triviaLosses INTEGER NOT NULL DEFAULT 0,
-                    triviaWins INTEGER NOT NULL DEFAULT 0,
-                    twitchChannel TEXT NOT NULL COLLATE NOCASE,
-                    userId TEXT NOT NULL COLLATE NOCASE,
-                    PRIMARY KEY (twitchChannel, userId)
-                )
-            '''
-        )
+
+        if connection.getDatabaseType() is DatabaseType.POSTGRESQL:
+            await connection.createTableIfNotExists(
+                '''
+                    CREATE TABLE IF NOT EXISTS triviascores (
+                        streak integer DEFAULT 0 NOT NULL,
+                        supertriviawins integer DEFAULT 0 NOT NULL,
+                        trivialosses integer DEFAULT 0 NOT NULL,
+                        triviawins integer DEFAULT 0 NOT NULL,
+                        twitchchannel public.citext NOT NULL,
+                        userid public.citext NOT NULL,
+                        PRIMARY KEY (twitchchannel, userid)
+                    )
+                '''
+            )
+        elif connection.getDatabaseType() is DatabaseType.SQLITE:
+            await connection.createTableIfNotExists(
+                '''
+                    CREATE TABLE IF NOT EXISTS triviascores (
+                        streak INTEGER NOT NULL DEFAULT 0,
+                        supertriviawins INTEGER NOT NULL DEFAULT 0,
+                        trivialosses INTEGER NOT NULL DEFAULT 0,
+                        triviawins INTEGER NOT NULL DEFAULT 0,
+                        twitchchannel TEXT NOT NULL COLLATE NOCASE,
+                        userid TEXT NOT NULL COLLATE NOCASE,
+                        PRIMARY KEY (twitchchannel, userid)
+                    )
+                '''
+            )
+        else:
+            raise RuntimeError(f'Encountered unexpected DatabaseType when trying to create tables: \"{connection.getDatabaseType()}\"')
 
         await connection.close()
 
@@ -261,9 +281,9 @@ class TriviaScoreRepository():
         connection = await self.__backingDatabase.getConnection()
         await connection.execute(
             '''
-                INSERT INTO triviaScores (streak, superTriviaWins, triviaLosses, triviaWins, twitchChannel, userId)
+                INSERT INTO triviascores (streak, supertriviawins, trivialosses, triviawins, twitchchannel, userid)
                 VALUES ($1, $2, $3, $4, $5, $6)
-                ON CONFLICT (twitchChannel, userId) DO UPDATE SET streak = EXCLUDED.streak, superTriviaWins = EXCLUDED.superTriviaWins, triviaLosses = EXCLUDED.triviaLosses, triviaWins = EXCLUDED.triviaWins
+                ON CONFLICT (twitchchannel, userid) DO UPDATE SET streak = EXCLUDED.streak, supertriviawins = EXCLUDED.supertriviawins, triviaLosses = EXCLUDED.trivialosses, triviawins = EXCLUDED.triviawins
             ''',
             newStreak, newSuperTriviaWins, newTriviaLosses, newTriviaWins, twitchChannel, userId
         )
