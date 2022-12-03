@@ -209,7 +209,7 @@ class TriviaGameStoreTests():
         # removing a game from an empty TriviaGameStore should do nothing
         result = await self.triviaGameStore.removeNormalGame(
             twitchChannel = self.game1.getTwitchChannel(),
-            userName = self.game1.getUserName()
+            userId = self.game1.getUserId()
         )
         assert result is False
 
@@ -226,7 +226,7 @@ class TriviaGameStoreTests():
         # try removing a game that does not exist
         result = await self.triviaGameStore.removeNormalGame(
             twitchChannel = self.game2.getTwitchChannel(),
-            userName = self.game1.getUserName()
+            userId = self.game1.getUserId()
         )
         assert result is False
 
@@ -239,7 +239,7 @@ class TriviaGameStoreTests():
         # remove a game that does exist
         result = await self.triviaGameStore.removeNormalGame(
             twitchChannel = self.game2.getTwitchChannel(),
-            userName = self.game2.getUserName()
+            userId = self.game2.getUserId()
         )
         assert result is True
 
@@ -251,7 +251,7 @@ class TriviaGameStoreTests():
         # remove another game that does exist
         result = await self.triviaGameStore.removeNormalGame(
             twitchChannel = self.game1.getTwitchChannel(),
-            userName = self.game1.getUserName()
+            userId = self.game1.getUserId()
         )
         assert result is True
 
@@ -262,7 +262,7 @@ class TriviaGameStoreTests():
         # try one more time to remove the same game that was just removed
         result = await self.triviaGameStore.removeNormalGame(
             twitchChannel = self.game1.getTwitchChannel(),
-            userName = self.game1.getUserName()
+            userId = self.game1.getUserId()
         )
         assert result is False
 
@@ -293,7 +293,7 @@ class TriviaGameStoreTests():
     async def test_removeNormalGame_withEmptyTriviaGameStore_returnsFalse(self):
         result = await self.triviaGameStore.removeNormalGame(
             twitchChannel = self.game3.getTwitchChannel(),
-            userName = self.game3.getUserName()
+            userId = self.game3.getUserId()
         )
 
         assert result is False
