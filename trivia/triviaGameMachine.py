@@ -229,7 +229,7 @@ class TriviaGameMachine():
 
         state = await self.__triviaGameStore.getNormalGame(
             twitchChannel = action.getTwitchChannel(),
-            userName = action.getUserName()
+            userId = action.getUserId()
         )
 
         now = datetime.now(timezone.utc)
@@ -259,7 +259,7 @@ class TriviaGameMachine():
         if state.getEndTime() < now:
             await self.__removeNormalTriviaGame(
                 twitchChannel = action.getTwitchChannel(),
-                userName = action.getUserName()
+                userId = action.getUserId()
             )
 
             triviaScoreResult = await self.__triviaScoreRepository.incrementTriviaLosses(
@@ -298,7 +298,7 @@ class TriviaGameMachine():
 
         await self.__removeNormalTriviaGame(
             twitchChannel = action.getTwitchChannel(),
-            userName = action.getUserName()
+            userId = action.getUserId()
         )
 
         if checkResult is TriviaAnswerCheckResult.INCORRECT:
@@ -367,10 +367,10 @@ class TriviaGameMachine():
             ))
             return
 
-        if not state.isEligibleToAnswer(action.getUserName()):
+        if not state.isEligibleToAnswer(action.getUserId()):
             return
 
-        state.incrementAnswerCount(action.getUserName())
+        state.incrementAnswerCount(action.getUserId())
 
         checkResult = await self.__checkAnswer(
             answer = action.getAnswer(),
@@ -587,7 +587,7 @@ class TriviaGameMachine():
 
                 await self.__removeNormalTriviaGame(
                     twitchChannel = normalGameState.getTwitchChannel(),
-                    userName = normalGameState.getUserName()
+                    userId = normalGameState.getUserId()
                 )
 
                 triviaScoreResult = await self.__triviaScoreRepository.incrementTriviaLosses(
@@ -624,15 +624,15 @@ class TriviaGameMachine():
             else:
                 raise UnknownTriviaGameTypeException(f'Unknown TriviaGameType (gameId=\"{state.getGameId()}\") (twitchChannel=\"{state.getTwitchChannel()}\") (actionId=\"{state.getActionId()}\"): \"{state.getTriviaGameType()}\"')
 
-    async def __removeNormalTriviaGame(self, twitchChannel: str, userName: str):
+    async def __removeNormalTriviaGame(self, twitchChannel: str, userId: str):
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
-        elif not utils.isValidStr(userName):
-            raise ValueError(f'userName argument is malformed: \"{userName}\"')
+        elif not utils.isValidStr(userId):
+            raise ValueError(f'userId argument is malformed: \"{userId}\"')
 
         await self.__triviaGameStore.removeNormalGame(
             twitchChannel = twitchChannel,
-            userName = userName
+            userId = userId
         )
 
     async def __removeSuperTriviaGame(self, twitchChannel: str):

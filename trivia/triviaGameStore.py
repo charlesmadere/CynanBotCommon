@@ -57,18 +57,18 @@ class TriviaGameStore():
 
         return allGames
 
-    async def getNormalGame(self, twitchChannel: str, userName: str) -> Optional[TriviaGameState]:
+    async def getNormalGame(self, twitchChannel: str, userId: str) -> Optional[TriviaGameState]:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
-        elif not utils.isValidStr(userName):
-            raise ValueError(f'userName argument is malformed: \"{userName}\"')
+        elif not utils.isValidStr(userId):
+            raise ValueError(f'userId argument is malformed: \"{userId}\"')
 
         normalGames = await self.getNormalGames()
         twitchChannel = twitchChannel.lower()
-        userName = userName.lower()
+        userId = userId.lower()
 
         for state in normalGames:
-            if twitchChannel == state.getTwitchChannel().lower() and userName == state.getUserName().lower():
+            if twitchChannel == state.getTwitchChannel().lower() and userId == state.getUserId().lower():
                 return state
 
         return None
@@ -101,18 +101,18 @@ class TriviaGameStore():
 
         return list(twitchChannels)
 
-    async def removeNormalGame(self, twitchChannel: str, userName: str) -> bool:
+    async def removeNormalGame(self, twitchChannel: str, userId: str) -> bool:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
-        elif not utils.isValidStr(userName):
-            raise ValueError(f'userName argument is malformed: \"{userName}\"')
+        elif not utils.isValidStr(userId):
+            raise ValueError(f'userId argument is malformed: \"{userId}\"')
 
         normalGames = await self.getNormalGames()
         twitchChannel = twitchChannel.lower()
-        userName = userName.lower()
+        userId = userId.lower()
 
         for index, state in enumerate(normalGames):
-            if twitchChannel == state.getTwitchChannel().lower() and userName == state.getUserName().lower():
+            if twitchChannel == state.getTwitchChannel().lower() and userId == state.getUserId().lower():
                 del self.__normalGameStates[index]
                 return True
 

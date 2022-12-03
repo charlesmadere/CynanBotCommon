@@ -46,14 +46,7 @@ class SuperTriviaGameState(AbsTriviaGameState):
         self.__perUserAttempts: int = perUserAttempts
         self.__pointsMultiplier: int = pointsMultiplier
 
-        self.__answeredUserNames: Dict[str, int] = defaultdict(lambda: 0)
-
-    def isEligibleToAnswer(self, userName: str) -> bool:
-        if not utils.isValidStr(userName):
-            raise ValueError(f'userName argument is malformed: \"{userName}\"')
-
-        userName = userName.lower()
-        return self.__answeredUserNames[userName] < self.__perUserAttempts
+        self.__answeredUserIds: Dict[str, int] = defaultdict(lambda: 0)
 
     def getPerUserAttempts(self) -> int:
         return self.__perUserAttempts
@@ -61,9 +54,16 @@ class SuperTriviaGameState(AbsTriviaGameState):
     def getPointsMultiplier(self) -> int:
         return self.__pointsMultiplier
 
-    def incrementAnswerCount(self, userName: str):
-        if not utils.isValidStr(userName):
-            raise ValueError(f'userName argument is malformed: \"{userName}\"')
+    def incrementAnswerCount(self, userId: str):
+        if not utils.isValidStr(userId):
+            raise ValueError(f'userId argument is malformed: \"{userId}\"')
 
-        userName = userName.lower()
-        self.__answeredUserNames[userName] = self.__answeredUserNames[userName] + 1
+        userId = userId.lower()
+        self.__answeredUserIds[userId] = self.__answeredUserIds[userId] + 1
+
+    def isEligibleToAnswer(self, userId: str) -> bool:
+        if not utils.isValidStr(userId):
+            raise ValueError(f'userId argument is malformed: \"{userId}\"')
+
+        userId = userId.lower()
+        return self.__answeredUserIds[userId] < self.__perUserAttempts
