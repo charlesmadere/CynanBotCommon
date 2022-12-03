@@ -143,7 +143,7 @@ class TriviaSettingsRepository():
         return utils.getBoolFromDict(jsonContents, 'debug_logging_enabled', False)
 
     async def __readJson(self) -> Dict[str, Any]:
-        if self.__settingsCache:
+        if self.__settingsCache is not None:
             return self.__settingsCache
 
         if not await aiofiles.ospath.exists(self.__settingsFile):
