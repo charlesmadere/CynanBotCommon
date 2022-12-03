@@ -191,6 +191,21 @@
             "question": "How many cuteness points did Oats scam Stashiocat out of by reducing the cost of trivia?",
             "responses": [ "250", "4980", "0", "2950" ],
             "type": "multiple"
+        },
+        {
+            "compatibleWith": [ "Eddie", "Imyt", "smCharles", "stashiocat" ],
+            "correctAnswers": [ false ],
+            "id": "ojx3RLkurMGB",
+            "question": "Being a Chicago Bully makes you an actual bully.",
+            "type": "boolean"
+        },
+        {
+            "compatibleWith": [ "Eddie", "Imyt", "smCharles", "stashiocat" ],
+            "correctAnswers": [ "Human hair" ],
+            "id": "fBlhSDorH5md",
+            "question": "Choose the correct answer.",
+            "responses": [ "Human hair", "Well done steaks", "Animal fighting", "Mandoo" ],
+            "type": "multiple"
         }
     ]
 }
