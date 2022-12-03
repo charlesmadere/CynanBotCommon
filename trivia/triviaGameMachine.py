@@ -432,6 +432,8 @@ class TriviaGameMachine():
             twitchChannel = action.getTwitchChannel()
         )
 
+        self.__timber.log('TriviaGameMachine', f'Cleared Super Trivia game queue for \"{action.getTwitchChannel()}\" (actionId=\"{action.getActionId()}\"): {result.toStr()}')
+
         await self.__submitEvent(ClearedSuperTriviaQueueTriviaEvent(
             numberOfGamesRemoved = result.getAmountRemoved(),
             previousQueueSize = result.getOldQueueSize(),

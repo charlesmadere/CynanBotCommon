@@ -127,8 +127,6 @@ class QueuedTriviaGameStore():
         except queue.Empty as e:
             self.__timber.log('QueuedTriviaGameStore', f'Unable to clear all queued super games for \"{twitchChannel}\" (queue size: {queuedSuperGames.qsize()}) (oldQueueSize: {oldQueueSize}): {e}', e)
 
-        self.__timber.log('QueuedTriviaGameStore', f'Cleared {amountRemoved} super games for \"{twitchChannel}\" (oldQueueSize: {oldQueueSize})')
-
         return ClearQueuedGamesResult(
             amountRemoved = amountRemoved,
             oldQueueSize = oldQueueSize
