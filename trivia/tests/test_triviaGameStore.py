@@ -181,7 +181,7 @@ class TriviaGameStoreTests():
     async def test_getNormalGame_isNone(self):
         game = await self.triviaGameStore.getNormalGame(
             twitchChannel = 'smCharles',
-            userName = 'stashiocat'
+            userId = '222222'
         )
 
         assert game is None

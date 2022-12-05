@@ -450,7 +450,7 @@ class TriviaGameMachine():
         now = datetime.now(timezone.utc)
         state = await self.__triviaGameStore.getNormalGame(
             twitchChannel = action.getTwitchChannel(),
-            userName = action.getUserName()
+            userId = action.getUserId()
         )
 
         if state is not None and state.getEndTime() >= now:
