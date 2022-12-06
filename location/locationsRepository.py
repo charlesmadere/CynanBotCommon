@@ -31,6 +31,9 @@ class LocationsRepository():
         self.__locationsFile: str = locationsFile
         self.__locationsCache: Dict[str, Location] = dict()
 
+    async def clearCaches(self):
+        self.__locationsCache.clear()
+
     async def getLocation(self, locationId: str) -> Location:
         if not utils.isValidStr(locationId):
             raise ValueError(f'locationId argument is malformed: \"{locationId}\"')
