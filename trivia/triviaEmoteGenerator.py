@@ -6,10 +6,12 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.storage.backingDatabase import BackingDatabase
     from CynanBotCommon.storage.databaseConnection import DatabaseConnection
+    from CynanBotCommon.storage.databaseType import DatabaseType
 except:
     import utils
     from storage.backingDatabase import BackingDatabase
     from storage.databaseConnection import DatabaseConnection
+    from storage.databaseType import DatabaseType
 
 
 class TriviaEmoteGenerator():
@@ -173,15 +175,27 @@ class TriviaEmoteGenerator():
             return
 
         self.__isDatabaseReady = True
-
         connection = await self.__backingDatabase.getConnection()
-        await connection.createTableIfNotExists(
-            '''
-                CREATE TABLE IF NOT EXISTS triviaEmotes (
-                    emoteIndex SMALLINT NOT NULL DEFAULT 0,
-                    twitchChannel TEXT NOT NULL PRIMARY KEY COLLATE NOCASE
-                )
-            '''
-        )
+
+        if connection.getDatabaseType() is DatabaseType.POSTGRESQL:
+            await connection.createTableIfNotExists(
+                '''
+                    CREATE TABLE IF NOT EXISTS triviaemotes (
+                        emoteindex smallint NOT NULL DEFAULT 0,
+                        twitchchannel public.citext NOT NULL PRIMARY KEY
+                    )
+                '''
+            )
+        elif connection.getDatabaseType() is DatabaseType.SQLITE:
+            await connection.createTableIfNotExists(
+                '''
+                    CREATE TABLE IF NOT EXISTS triviaemotes (
+                        emoteindex INTEGER NOT NULL DEFAULT 0,
+                        twitchchannel TEXT NOT NULL PRIMARY KEY COLLATE NOCASE
+                    )
+                '''
+            )
+        else:
+            raise RuntimeError(f'Encountered unexpected DatabaseType when trying to create tables: \"{connection.getDatabaseType()}\"')
 
         await connection.close()

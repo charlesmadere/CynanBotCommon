@@ -4,14 +4,13 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.storage.backingDatabase import BackingDatabase
     from CynanBotCommon.storage.databaseConnection import DatabaseConnection
+    from CynanBotCommon.storage.databaseType import DatabaseType
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.addTriviaGameControllerResult import \
         AddTriviaGameControllerResult
     from CynanBotCommon.trivia.removeTriviaGameControllerResult import \
         RemoveTriviaGameControllerResult
     from CynanBotCommon.trivia.triviaGameController import TriviaGameController
-    from CynanBotCommon.twitch.twitchCredentialsProviderInterface import \
-        TwitchCredentialsProviderInterface
     from CynanBotCommon.twitch.twitchTokensRepository import \
         TwitchTokensRepository
     from CynanBotCommon.users.userIdsRepository import UserIdsRepository
@@ -19,6 +18,7 @@ except:
     import utils
     from storage.backingDatabase import BackingDatabase
     from storage.databaseConnection import DatabaseConnection
+    from storage.databaseType import DatabaseType
     from timber.timber import Timber
     from trivia.addTriviaGameControllerResult import \
         AddTriviaGameControllerResult
@@ -26,8 +26,6 @@ except:
         RemoveTriviaGameControllerResult
     from trivia.triviaGameController import TriviaGameController
 
-    from twitch.twitchCredentialsProviderInterface import \
-        TwitchCredentialsProviderInterface
     from twitch.twitchTokensRepository import TwitchTokensRepository
     from users.userIdsRepository import UserIdsRepository
 
@@ -38,7 +36,6 @@ class TriviaGameControllersRepository():
         self,
         backingDatabase: BackingDatabase,
         timber: Timber,
-        twitchCredentialsProviderInterface: TwitchCredentialsProviderInterface,
         twitchTokensRepository: TwitchTokensRepository,
         userIdsRepository: UserIdsRepository
     ):
@@ -46,8 +43,6 @@ class TriviaGameControllersRepository():
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
         elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif twitchCredentialsProviderInterface is None:
-            raise ValueError(f'twitchCredentialsProviderInterface argument is malformed: \"{twitchCredentialsProviderInterface}\"')
         elif twitchTokensRepository is None:
             raise ValueError(f'twitchTokensRepository argument is malformed: \"{twitchTokensRepository}\"')
         elif userIdsRepository is None:
@@ -55,7 +50,6 @@ class TriviaGameControllersRepository():
 
         self.__backingDatabase: BackingDatabase = backingDatabase
         self.__timber: Timber = timber
-        self.__twitchCredentialsProviderInterface: TwitchCredentialsProviderInterface = twitchCredentialsProviderInterface
         self.__twitchTokensRepository: TwitchTokensRepository = twitchTokensRepository
         self.__userIdsRepository: UserIdsRepository = userIdsRepository
 
@@ -77,13 +71,11 @@ class TriviaGameControllersRepository():
             return AddTriviaGameControllerResult.ERROR
 
         userId: Optional[str] = None
-        twitchClientId = await self.__twitchCredentialsProviderInterface.getTwitchClientId()
 
         try:
             userId = await self.__userIdsRepository.fetchUserId(
                 userName = userName,
-                twitchAccessToken = twitchAccessToken,
-                twitchClientId = twitchClientId
+                twitchAccessToken = twitchAccessToken
             )
         except (RuntimeError, ValueError) as e:
             self.__timber.log('TriviaGameControllersRepository', f'Encountered exception when trying to add \"{userName}\" as a trivia game controller for \"{twitchChannel}\": {e}', e)
@@ -96,8 +88,8 @@ class TriviaGameControllersRepository():
         connection = await self.__getDatabaseConnection()
         record = await connection.fetchRow(
             '''
-                SELECT COUNT(1) FROM triviaGameControllers
-                WHERE twitchChannel = $1 AND userId = $2
+                SELECT COUNT(1) FROM triviagamecontrollers
+                WHERE twitchchannel = $1 AND userid = $2
                 LIMIT 1
             ''',
             twitchChannel, userId
@@ -114,9 +106,9 @@ class TriviaGameControllersRepository():
 
         await connection.execute(
             '''
-                INSERT INTO triviaGameControllers (twitchChannel, userId)
+                INSERT INTO triviagamecontrollers (twitchchannel, userid)
                 VALUES ($1, $2)
-                ON CONFLICT (twitchChannel, userId) DO NOTHING
+                ON CONFLICT (twitchchannel, userid) DO NOTHING
             ''',
             twitchChannel, userId
         )
@@ -133,10 +125,10 @@ class TriviaGameControllersRepository():
         connection = await self.__getDatabaseConnection()
         records = await connection.fetchRows(
             '''
-                SELECT triviaGameControllers.twitchChannel, triviaGameControllers.userId, userIds.userName FROM triviaGameControllers
-                INNER JOIN userIds ON triviaGameControllers.userId = userIds.userId
-                WHERE triviaGameControllers.twitchChannel = $1
-                ORDER BY userIds.userName ASC
+                SELECT triviagamecontrollers.twitchchannel, triviagamecontrollers.userid, userids.username FROM triviagamecontrollers
+                INNER JOIN userids ON triviagamecontrollers.userid = userids.userid
+                WHERE triviagamecontrollers.twitchchannel = $1
+                ORDER BY userids.username ASC
             ''',
             twitchChannel
         )
@@ -168,17 +160,30 @@ class TriviaGameControllersRepository():
             return
 
         self.__isDatabaseReady = True
-
         connection = await self.__backingDatabase.getConnection()
-        await connection.createTableIfNotExists(
-            '''
-                CREATE TABLE IF NOT EXISTS triviaGameControllers (
-                    twitchChannel TEXT NOT NULL COLLATE NOCASE,
-                    userId TEXT NOT NULL COLLATE NOCASE,
-                    PRIMARY KEY (twitchChannel, userId)
-                )
-            '''
-        )
+
+        if connection.getDatabaseType() is DatabaseType.POSTGRESQL:
+            await connection.createTableIfNotExists(
+                '''
+                    CREATE TABLE IF NOT EXISTS triviagamecontrollers (
+                        twitchchannel public.citext NOT NULL,
+                        userid public.citext NOT NULL,
+                        PRIMARY KEY (twitchchannel, userid)
+                    )
+                '''
+            )
+        elif connection.getDatabaseType() is DatabaseType.SQLITE:
+            await connection.createTableIfNotExists(
+                '''
+                    CREATE TABLE IF NOT EXISTS triviagamecontrollers (
+                        twitchchannel TEXT NOT NULL COLLATE NOCASE,
+                        userid TEXT NOT NULL COLLATE NOCASE,
+                        PRIMARY KEY (twitchchannel, userid)
+                    )
+                '''
+            )
+        else:
+            raise RuntimeError(f'Encountered unexpected DatabaseType when trying to create tables: \"{connection.getDatabaseType()}\"')
 
         await connection.close()
 
@@ -207,8 +212,8 @@ class TriviaGameControllersRepository():
         connection = await self.__backingDatabase.getConnection()
         await connection.execute(
             '''
-                DELETE FROM triviaGameControllers
-                WHERE twitchChannel = $1 AND userId = $2
+                DELETE FROM triviagamecontrollers
+                WHERE twitchchannel = $1 AND userid = $2
             ''',
             twitchChannel, userId
         )

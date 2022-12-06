@@ -5,6 +5,7 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.storage.backingDatabase import BackingDatabase
     from CynanBotCommon.storage.databaseConnection import DatabaseConnection
+    from CynanBotCommon.storage.databaseType import DatabaseType
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.triviaContentCode import TriviaContentCode
@@ -17,6 +18,7 @@ except:
     import utils
     from storage.backingDatabase import BackingDatabase
     from storage.databaseConnection import DatabaseConnection
+    from storage.databaseType import DatabaseType
     from timber.timber import Timber
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.triviaContentCode import TriviaContentCode
@@ -63,8 +65,8 @@ class TriviaHistoryRepository():
         connection = await self.__getDatabaseConnection()
         record = await connection.fetchRow(
             '''
-                SELECT emote, triviaId, triviaSource FROM triviaHistory
-                WHERE emote IS NOT NULL AND emote = $1 AND twitchChannel = $2
+                SELECT emote, triviaid, triviasource FROM triviahistory
+                WHERE emote IS NOT NULL AND emote = $1 AND twitchchannel = $2
                 ORDER BY datetime DESC
                 LIMIT 1
             ''',
@@ -89,20 +91,36 @@ class TriviaHistoryRepository():
             return
 
         self.__isDatabaseReady = True
-
         connection = await self.__backingDatabase.getConnection()
-        await connection.createTableIfNotExists(
-            '''
-                CREATE TABLE IF NOT EXISTS triviaHistory (
-                    datetime TEXT NOT NULL,
-                    emote TEXT NOT NULL,
-                    triviaId TEXT NOT NULL COLLATE NOCASE,
-                    triviaSource TEXT NOT NULL COLLATE NOCASE,
-                    twitchChannel TEXT NOT NULL COLLATE NOCASE,
-                    PRIMARY KEY (triviaId, triviaSource, twitchChannel)
-                )
-            '''
-        )
+
+        if connection.getDatabaseType() is DatabaseType.POSTGRESQL:
+            await connection.createTableIfNotExists(
+                '''
+                    CREATE TABLE IF NOT EXISTS triviahistory (
+                        datetime text NOT NULL,
+                        emote text NOT NULL,
+                        triviaid public.citext NOT NULL,
+                        triviasource public.citext NOT NULL,
+                        twitchchannel public.citext NOT NULL,
+                        triviaid public.citext NOT NULL,
+                    )
+                '''
+            )
+        elif connection.getDatabaseType() is DatabaseType.SQLITE:
+            await connection.createTableIfNotExists(
+                '''
+                    CREATE TABLE IF NOT EXISTS triviahistory (
+                        datetime TEXT NOT NULL,
+                        emote TEXT NOT NULL,
+                        triviaid TEXT NOT NULL COLLATE NOCASE,
+                        triviasource TEXT NOT NULL COLLATE NOCASE,
+                        twitchchannel TEXT NOT NULL COLLATE NOCASE,
+                        PRIMARY KEY (triviaid, triviasource, twitchchannel)
+                    )
+                '''
+            )
+        else:
+            raise RuntimeError(f'Encountered unexpected DatabaseType when trying to create tables: \"{connection.getDatabaseType()}\"')
 
         await connection.close()
 
@@ -123,8 +141,8 @@ class TriviaHistoryRepository():
         connection = await self.__getDatabaseConnection()
         record = await connection.fetchRow(
             '''
-                SELECT datetime FROM triviaHistory
-                WHERE triviaId = $1 AND triviaSource = $2 AND twitchChannel = $3
+                SELECT datetime FROM triviahistory
+                WHERE triviaid = $1 AND triviasource = $2 AND twitchchannel = $3
                 LIMIT 1
             ''',
             triviaId, triviaSource, twitchChannel
@@ -136,7 +154,7 @@ class TriviaHistoryRepository():
         if not utils.hasItems(record):
             await connection.execute(
                 '''
-                    INSERT INTO triviaHistory (datetime, emote, triviaId, triviaSource, twitchChannel)
+                    INSERT INTO triviahistory (datetime, emote, triviaid, triviasource, twitchchannel)
                     VALUES ($1, $2, $3, $4, $5)
                 ''',
                 nowDateTimeStr, emote, triviaId, triviaSource, twitchChannel
@@ -159,9 +177,9 @@ class TriviaHistoryRepository():
 
         await connection.execute(
             '''
-                UPDATE triviaHistory
+                UPDATE triviahistory
                 SET datetime = $1, emote = $2
-                WHERE triviaId = $3 AND triviaSource = $4 AND twitchChannel = $5
+                WHERE triviaid = $3 AND triviasource = $4 AND twitchchannel = $5
             ''',
             nowDateTimeStr, emote, triviaId, triviaSource, twitchChannel
         )
