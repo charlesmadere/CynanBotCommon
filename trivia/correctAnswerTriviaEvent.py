@@ -1,3 +1,5 @@
+import locale
+
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.trivia.absTriviaEvent import AbsTriviaEvent
@@ -6,7 +8,6 @@ try:
     from CynanBotCommon.trivia.triviaScoreResult import TriviaScoreResult
 except:
     import utils
-
     from trivia.absTriviaEvent import AbsTriviaEvent
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.triviaEventType import TriviaEventType
@@ -68,6 +69,9 @@ class CorrectAnswerTriviaEvent(AbsTriviaEvent):
 
     def getPointsForWinning(self) -> int:
         return self.__pointsForWinning
+
+    def getPointsForWinningStr(self) -> str:
+        return locale.format_string("%d", self.__pointsForWinning, grouping = True)
 
     def getTriviaQuestion(self) -> AbsTriviaQuestion:
         return self.__triviaQuestion
