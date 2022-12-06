@@ -33,6 +33,8 @@ class PsqlDatabaseConnection(DatabaseConnection):
         if not utils.isValidStr(query):
             raise ValueError(f'query argument is malformed: \"{query}\"')
 
+        self.__requireNotClosed()
+
         # intentionally ignoring this call, as we can't create PSQL tables
 
     async def execute(self, query: str, *args: Optional[Any]):
