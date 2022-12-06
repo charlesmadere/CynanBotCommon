@@ -76,13 +76,12 @@ class BannedTriviaIdsRepository():
             return
 
         self.__isDatabaseReady = True
-
         connection = await self.__backingDatabase.getConnection()
 
         if connection.getDatabaseType() is DatabaseType.POSTGRESQL:
             await connection.createTableIfNotExists(
                 '''
-                    CREATE TABLE IF NOT EXISTS public.bannedtriviaids (
+                    CREATE TABLE IF NOT EXISTS bannedtriviaids (
                         triviaid public.citext NOT NULL,
                         triviasource public.citext NOT NULL,
                         PRIMARY KEY (triviaid, triviasource)
@@ -100,7 +99,7 @@ class BannedTriviaIdsRepository():
                 '''
             )
         else:
-            raise RuntimeError(f'Encountered unexpected DatabaseType: \"{connection.getDatabaseType()}\"')
+            raise RuntimeError(f'Encountered unexpected DatabaseType when trying to create tables: \"{connection.getDatabaseType()}\"')
 
         await connection.close()
 

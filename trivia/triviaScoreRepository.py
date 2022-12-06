@@ -212,7 +212,6 @@ class TriviaScoreRepository():
             return
 
         self.__isDatabaseReady = True
-
         connection = await self.__backingDatabase.getConnection()
 
         if connection.getDatabaseType() is DatabaseType.POSTGRESQL:

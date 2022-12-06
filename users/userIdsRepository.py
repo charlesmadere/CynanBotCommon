@@ -50,8 +50,8 @@ class UserIdsRepository():
         connection = await self.__getDatabaseConnection()
         record = await connection.fetchRow(
             '''
-                SELECT userId FROM userIds
-                WHERE userName = $1
+                SELECT userid FROM userids
+                WHERE username = $1
                 LIMIT 1
             ''',
             userName
@@ -134,8 +134,8 @@ class UserIdsRepository():
         connection = await self.__getDatabaseConnection()
         record = await connection.fetchRow(
             '''
-                SELECT userName FROM userIds
-                WHERE userId = $1
+                SELECT username FROM userids
+                WHERE userid = $1
                 LIMIT 1
             ''',
             userId
@@ -160,16 +160,28 @@ class UserIdsRepository():
             return
 
         self.__isDatabaseReady = True
-
         connection = await self.__backingDatabase.getConnection()
-        await connection.createTableIfNotExists(
-            '''
-                CREATE TABLE IF NOT EXISTS userIds (
-                    userId TEXT NOT NULL PRIMARY KEY COLLATE NOCASE,
-                    userName TEXT NOT NULL COLLATE NOCASE
-                )
-            '''
-        )
+
+        if connection.getDatabaseType() is DatabaseType.POSTGRESQL:
+            await connection.createTableIfNotExists(
+                '''
+                    CREATE TABLE IF NOT EXISTS userids (
+                        userid public.citext NOT NULL PRIMARY KEY,
+                        username public.citext NOT NULL
+                    )
+                '''
+            )
+        elif connection.getDatabaseType() is DatabaseType.SQLITE:
+            await connection.createTableIfNotExists(
+                '''
+                    CREATE TABLE IF NOT EXISTS userids (
+                        userid TEXT NOT NULL PRIMARY KEY COLLATE NOCASE,
+                        username TEXT NOT NULL COLLATE NOCASE
+                    )
+                '''
+            )
+        else:
+            raise RuntimeError(f'Encountered unexpected DatabaseType when trying to create tables: \"{connection.getDatabaseType()}\"')
 
         await connection.close()
 
@@ -184,9 +196,9 @@ class UserIdsRepository():
         connection = await self.__getDatabaseConnection()
         await connection.execute(
             '''
-                INSERT INTO userIds (userId, userName)
+                INSERT INTO userids (userid, username)
                 VALUES ($1, $2)
-                ON CONFLICT (userId) DO UPDATE SET userName = EXCLUDED.userName
+                ON CONFLICT (userid) DO UPDATE SET username = EXCLUDED.username
             ''',
             userId, userName
         )
