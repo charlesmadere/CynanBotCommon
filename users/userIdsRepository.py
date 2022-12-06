@@ -7,14 +7,21 @@ try:
         NetworkClientProvider
     from CynanBotCommon.storage.backingDatabase import BackingDatabase
     from CynanBotCommon.storage.databaseConnection import DatabaseConnection
+    from CynanBotCommon.storage.databaseType import DatabaseType
     from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.twitch.twitchCredentialsProviderInterface import \
+        TwitchCredentialsProviderInterface
 except:
     import utils
     from network.exceptions import GenericNetworkException
     from network.networkClientProvider import NetworkClientProvider
     from storage.backingDatabase import BackingDatabase
     from storage.databaseConnection import DatabaseConnection
+    from storage.databaseType import DatabaseType
     from timber.timber import Timber
+
+    from twitch.twitchCredentialsProviderInterface import \
+        TwitchCredentialsProviderInterface
 
 
 class UserIdsRepository():
@@ -23,7 +30,8 @@ class UserIdsRepository():
         self,
         backingDatabase: BackingDatabase,
         networkClientProvider: NetworkClientProvider,
-        timber: Timber
+        timber: Timber,
+        twitchCredentialsProviderInterface: TwitchCredentialsProviderInterface
     ):
         if backingDatabase is None:
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
@@ -31,18 +39,20 @@ class UserIdsRepository():
             raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
         elif timber is None:
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
+        elif twitchCredentialsProviderInterface is None:
+            raise ValueError(f'twitchCredentialsProviderInterface argument is malformed: \"{twitchCredentialsProviderInterface}\"')
 
         self.__backingDatabase: BackingDatabase = backingDatabase
         self.__networkClientProvider: NetworkClientProvider = networkClientProvider
         self.__timber: Timber = timber
+        self.__twitchCredentialsProviderInterface: TwitchCredentialsProviderInterface = twitchCredentialsProviderInterface
 
         self.__isDatabaseReady: bool = False
 
     async def fetchUserId(
         self,
         userName: str,
-        twitchAccessToken: Optional[str] = None,
-        twitchClientId: Optional[str] = None
+        twitchAccessToken: Optional[str] = None
     ) -> str:
         if not utils.isValidStr(userName):
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
@@ -70,11 +80,12 @@ class UserIdsRepository():
                 self.__timber.log('UserIdsRepository', f'Persisted userId for userName \"{userName}\" is malformed: \"{userId}\"')
                 raise RuntimeError(f'Persisted userId for userName \"{userName}\" is malformed: \"{userId}\"')
 
-        if not utils.isValidStr(twitchAccessToken) or not utils.isValidStr(twitchClientId):
-            raise ValueError(f'Can\'t lookup Twitch user ID for \"{userName}\", as twitchAccessToken (\"{twitchAccessToken}\") and/or twitchClientId (\"{twitchClientId}\") is malformed')
+        if not utils.isValidStr(twitchAccessToken):
+            raise ValueError(f'Can\'t lookup Twitch user ID for \"{userName}\", as twitchAccessToken is missing and/or malformed: \"{twitchAccessToken}\"')
 
         self.__timber.log('UserIdsRepository', f'Performing network call to fetch Twitch userId for userName \"{userName}\"...')
 
+        twitchClientId = await self.__twitchCredentialsProviderInterface.getTwitchClientId()
         clientSession = await self.__networkClientProvider.get()
 
         try:
@@ -100,7 +111,7 @@ class UserIdsRepository():
             self.__timber.log('UserIdsRepository', f'Received an error of some kind when fetching userId for userName \"{userName}\": {jsonResponse}')
             raise RuntimeError(f'UserIdsRepository received an error of some kind when fetching userId for userName \"{userName}\": {jsonResponse}')
 
-        userId = jsonResponse['data'][0]['id']
+        userId: Optional[str] = jsonResponse['data'][0]['id']
 
         if not utils.isValidStr(userId):
             self.__timber.log('UserIdsRepository', f'Unable to fetch userId for \"{userName}\": {jsonResponse}')
@@ -114,13 +125,11 @@ class UserIdsRepository():
     async def fetchUserIdAsInt(
         self,
         userName: str,
-        twitchAccessToken: Optional[str] = None,
-        twitchClientId: Optional[str] = None
+        twitchAccessToken: Optional[str] = None
     ) -> int:
         userId = await self.fetchUserId(
             userName = userName,
-            twitchAccessToken = twitchAccessToken,
-            twitchClientId = twitchClientId
+            twitchAccessToken = twitchAccessToken
         )
 
         return int(userId)
