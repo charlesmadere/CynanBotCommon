@@ -206,7 +206,10 @@ class TriviaGameMachine():
         queuedSuperGames = await self.__queuedTriviaGameStore.popQueuedSuperGames(activeChannelsList)
 
         for queuedSuperGame in queuedSuperGames:
-            remainingQueueSize = await self.__queuedTriviaGameStore.getQueuedSuperGamesSize(queuedSuperGame.getTwitchChannel())
+            remainingQueueSize = await self.__queuedTriviaGameStore.getQueuedSuperGamesSize(
+                twitchChannel = queuedSuperGame.getTwitchChannel()
+            )
+
             self.__timber.log('TriviaGameMachine', f'Starting new queued super trivia game for \"{queuedSuperGame.getTwitchChannel()}\", with {remainingQueueSize} game(s) remaining in their queue (actionId=\"{queuedSuperGame.getActionId()}\")')
             await self.__handleActionStartNewSuperTriviaGame(queuedSuperGame)
 
