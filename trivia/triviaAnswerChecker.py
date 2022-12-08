@@ -469,6 +469,8 @@ class TriviaAnswerChecker():
                 yield 'random access memory'
             if word == 'rgb':
                 yield 'red green blue'
+            if word == 'sftp':
+                yield 'secure file transfer protocol'
             if word == 'sp':
                 yield 'scaleable pixels'
                 yield 'scale independent pixels'
