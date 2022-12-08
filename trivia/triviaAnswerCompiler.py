@@ -9,7 +9,6 @@ try:
     from CynanBotCommon.trivia.triviaExceptions import BadTriviaAnswerException
 except:
     import utils
-
     from trivia.triviaExceptions import BadTriviaAnswerException
 
 
@@ -64,7 +63,7 @@ class TriviaAnswerCompiler():
                 (?P<y>[уýУÝΥ𝙮𝐲𝝲𝑦ᶌ𝞬ʏ𝖞𝚢ｙꭚ𝒚𝓎ɣ𝗒ყ𝘆ү𝛾γ𝛄𝔂𝜸𝔶ℽ𝘺ỿϒ𝔜𝕐𝙔𝚈ⲨᎩ𐊲𝑌ꓬҮ𝒀𝖄𝖸Ｙ𝛶𝚼Ꮍ])|
                 (?P<z>[ʐżŻ𝓏𝙯ᴢ𝐳𝗓ꮓ𝔃𝚣𝔷𝒛𝘻𝗭𝚭ᏃΖ𝘡𝜡𝙕𝞕ꓜ𝝛𝐙𝑍ℤℨ𝖅Ｚ𝒵𝖹])
             """,
-            re.VERBOSE | re.IGNORECASE,
+            re.VERBOSE | re.IGNORECASE
         )
 
         self.__combiningDiacriticsRegEx = re.compile(r'[\u0300-\u036f\u1ab0-\u1aff\u1dc0-\u1dff\u20d0-\u20ff\ufe20-\ufe2f]')
@@ -237,4 +236,5 @@ class TriviaAnswerCompiler():
                 char,
             ) for char in text
         )
+
         return self.__combiningDiacriticsRegEx.sub('', text)
