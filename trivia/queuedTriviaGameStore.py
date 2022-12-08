@@ -137,7 +137,11 @@ class QueuedTriviaGameStore():
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
         twitchChannel = twitchChannel.lower()
-        return self.__queuedSuperGames[twitchChannel].qsize()
+
+        if twitchChannel in self.__queuedSuperGames:
+            return self.__queuedSuperGames[twitchChannel].qsize()
+        else:
+            return 0
 
     async def popQueuedSuperGames(self, activeChannels: List[str]) -> List[StartNewSuperTriviaGameAction]:
         workingActiveChannels: Set[str] = set()
