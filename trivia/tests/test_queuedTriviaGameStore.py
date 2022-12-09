@@ -1,3 +1,6 @@
+import asyncio
+from asyncio import AbstractEventLoop
+
 import pytest
 
 try:
@@ -16,10 +19,11 @@ except:
 
 class TestQueuedTriviaGameStore():
 
-    timber = Timber()
-
+    eventLoop: AbstractEventLoop = asyncio.get_event_loop()
+    timber = Timber(
+        eventLoop = eventLoop
+    )
     triviaSettingsRepository = TriviaSettingsRepository()
-
     queuedTriviaGameStore = QueuedTriviaGameStore(
         timber = timber,
         triviaSettingsRepository = triviaSettingsRepository
