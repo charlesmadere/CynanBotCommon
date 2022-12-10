@@ -111,8 +111,8 @@ class TriviaEmoteGenerator():
         connection = await self.__getDatabaseConnection()
         record = await connection.fetchRow(
             '''
-                SELECT emoteIndex FROM triviaEmotes
-                WHERE twitchChannel = $1
+                SELECT emoteindex FROM triviaemotes
+                WHERE twitchchannel = $1
                 LIMIT 1
             ''',
             twitchChannel
@@ -143,9 +143,9 @@ class TriviaEmoteGenerator():
         connection = await self.__getDatabaseConnection()
         await connection.execute(
             '''
-                INSERT INTO triviaEmotes (emoteIndex, twitchChannel)
+                INSERT INTO triviaemotes (emoteindex, twitchchannel)
                 VALUES ($1, $2)
-                ON CONFLICT (twitchChannel) DO UPDATE SET emoteIndex = EXCLUDED.emoteIndex
+                ON CONFLICT (twitchchannel) DO UPDATE SET emoteindex = EXCLUDED.emoteindex
             ''',
             emoteIndex, twitchChannel
         )
