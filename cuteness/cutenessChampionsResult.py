@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 try:
     import CynanBotCommon.utils as utils
@@ -15,15 +15,15 @@ class CutenessChampionsResult():
     def __init__(
         self,
         twitchChannel: str,
-        champions: List[CutenessLeaderboardEntry] = None
+        champions: Optional[List[CutenessLeaderboardEntry]] = None
     ):
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
         self.__twitchChannel: str = twitchChannel
-        self.__champions: List[CutenessLeaderboardEntry] = champions
+        self.__champions: Optional[List[CutenessLeaderboardEntry]] = champions
 
-    def getChampions(self) -> List[CutenessLeaderboardEntry]:
+    def getChampions(self) -> Optional[List[CutenessLeaderboardEntry]]:
         return self.__champions
 
     def getTwitchChannel(self) -> str:

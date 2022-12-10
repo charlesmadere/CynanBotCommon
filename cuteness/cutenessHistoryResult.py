@@ -1,5 +1,5 @@
 import locale
-from typing import List
+from typing import List, Optional
 
 try:
     import CynanBotCommon.utils as utils
@@ -7,7 +7,6 @@ try:
         CutenessHistoryEntry
 except:
     import utils
-
     from cuteness.cutenessHistoryEntry import CutenessHistoryEntry
 
 
@@ -17,9 +16,9 @@ class CutenessHistoryResult():
         self,
         userId: str,
         userName: str,
-        bestCuteness: CutenessHistoryEntry = None,
-        totalCuteness: int = None,
-        entries: List[CutenessHistoryEntry] = None
+        bestCuteness: Optional[CutenessHistoryEntry] = None,
+        totalCuteness: Optional[int] = None,
+        entries: Optional[List[CutenessHistoryEntry]] = None
     ):
         if not utils.isValidStr(userId):
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
@@ -30,17 +29,17 @@ class CutenessHistoryResult():
 
         self.__userId: str = userId
         self.__userName: str = userName
-        self.__bestCuteness: CutenessHistoryEntry = bestCuteness
-        self.__totalCuteness: int = totalCuteness
+        self.__bestCuteness: Optional[CutenessHistoryEntry] = bestCuteness
+        self.__totalCuteness: Optional[int] = totalCuteness
         self.__entries: List[CutenessHistoryEntry] = entries
 
-    def getBestCuteness(self) -> CutenessHistoryEntry:
+    def getBestCuteness(self) -> Optional[CutenessHistoryEntry]:
         return self.__bestCuteness
 
-    def getEntries(self) -> List[CutenessHistoryEntry]:
+    def getEntries(self) -> Optional[List[CutenessHistoryEntry]]:
         return self.__entries
 
-    def getTotalCuteness(self) -> int:
+    def getTotalCuteness(self) -> Optional[int]:
         return self.__totalCuteness
 
     def getTotalCutenessStr(self) -> str:

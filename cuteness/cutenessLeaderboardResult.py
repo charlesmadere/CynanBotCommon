@@ -32,10 +32,10 @@ class CutenessLeaderboardResult():
     def getCutenessDate(self) -> CutenessDate:
         return self.__cutenessDate
 
-    def getEntries(self) -> List[CutenessLeaderboardEntry]:
+    def getEntries(self) -> Optional[List[CutenessLeaderboardEntry]]:
         return self.__entries
 
-    def getSpecificLookupCutenessResult(self) -> CutenessResult:
+    def getSpecificLookupCutenessResult(self) -> Optional[CutenessResult]:
         return self.__specificLookupCutenessResult
 
     def hasEntries(self) -> bool:

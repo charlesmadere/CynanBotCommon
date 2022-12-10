@@ -23,7 +23,7 @@ class CutenessLeaderboardHistoryResult():
         self.__twitchChannel: str = twitchChannel
         self.__leaderboards: List[CutenessLeaderboardResult] = leaderboards
 
-    def getLeaderboards(self) -> List[CutenessLeaderboardResult]:
+    def getLeaderboards(self) -> Optional[List[CutenessLeaderboardResult]]:
         return self.__leaderboards
 
     def getTwitchChannel(self) -> str:
