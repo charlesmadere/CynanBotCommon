@@ -39,15 +39,15 @@ class StartNewSuperTriviaGameAction(AbsTriviaAction):
             raise ValueError(f'perUserAttempts argument is out of bounds: {perUserAttempts}')
         elif not utils.isValidNum(pointsForWinning):
             raise ValueError(f'pointsForWinning argument is malformed: \"{pointsForWinning}\"')
-        elif pointsForWinning < 1:
+        elif pointsForWinning < 1 or pointsForWinning > utils.getIntMaxSafeSize():
             raise ValueError(f'pointsForWinning argument is out of bounds: {pointsForWinning}')
         elif not utils.isValidNum(pointsMultiplier):
             raise ValueError(f'pointsMultiplier argument is malformed: \"{pointsMultiplier}\"')
-        elif pointsMultiplier < 1:
+        elif pointsMultiplier < 1 or pointsForWinning > utils.getIntMaxSafeSize():
             raise ValueError(f'pointsMultiplier argument is out of bounds: {pointsMultiplier}')
         elif not utils.isValidNum(secondsToLive):
             raise ValueError(f'secondsToLive argument is malformed: \"{secondsToLive}\"')
-        elif secondsToLive < 1:
+        elif secondsToLive < 1 or secondsToLive > utils.getIntMaxSafeSize():
             raise ValueError(f'secondsToLive argument is out of bounds: {secondsToLive}')
         elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
