@@ -113,7 +113,7 @@ class QueuedTriviaGameStore():
             oldQueueSize = oldQueueSize
         )
 
-    async def clearQueuedSuperTriviaGames(self, twitchChannel: str) -> ClearQueuedGamesResult:
+    async def clearQueuedSuperGames(self, twitchChannel: str) -> ClearQueuedGamesResult:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 

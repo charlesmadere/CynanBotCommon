@@ -431,7 +431,7 @@ class TriviaGameMachine():
         elif action.getTriviaActionType() is not TriviaActionType.CLEAR_SUPER_TRIVIA_QUEUE:
             raise RuntimeError(f'TriviaActionType is not {TriviaActionType.CLEAR_SUPER_TRIVIA_QUEUE}: \"{action.getTriviaActionType()}\"')
 
-        result = await self.__queuedTriviaGameStore.clearQueuedSuperTriviaGames(
+        result = await self.__queuedTriviaGameStore.clearQueuedSuperGames(
             twitchChannel = action.getTwitchChannel()
         )
 
