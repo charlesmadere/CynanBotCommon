@@ -115,28 +115,34 @@ def formatTimeShort(time, includeSeconds: bool = False) -> str:
     else:
         return time.strftime("%b %d %I:%M%p")
 
-def getBoolFromDict(d: Dict, key: str, fallback: bool = None) -> bool:
-    if d is None:
-        raise ValueError(f'd argument is malformed: \"{d}\"')
-    elif not isValidStr(key):
+def getBoolFromDict(d: Optional[Dict[str, Any]], key: str, fallback: bool = None) -> bool:
+    if not isValidStr(key):
         raise ValueError(f'key argument is malformed: \"{key}\"')
+    elif fallback is not None and not isValidBool(fallback):
+        raise ValueError(f'fallback argument is malformed: \"{fallback}\"')
 
     value: Optional[bool] = None
 
-    if key in d and d[key] is not None:
+    if not hasItems(d):
+        if fallback is None:
+            raise ValueError(f'there is no fallback and d is None/empty: \"{d}\"')
+        else:
+            value = fallback
+    elif key in d and d[key] is not None:
         value = d[key]
-    elif isValidBool(fallback):
+    elif fallback is not None:
         value = fallback
     else:
         raise KeyError(f'there is no fallback and key \"{key}\" doesn\'t exist in d: \"{d}\"')
 
-    if not isinstance(value, bool):
+    if not isValidBool(value):
         if isinstance(value, Number):
-            value = value != 0
+            value = numToBool(value)
         elif isinstance(value, str):
             value = strToBool(value)
-        else:
-            raise RuntimeError(f'encountered unknown type that can\'t be converted to bool: \"{value}\"')
+
+    if not isValidBool(value):
+        raise RuntimeError(f'value \"{value}\" for key \"{key}\" is malformed in d: \"{d}\"')
 
     return value
 
@@ -170,17 +176,22 @@ def getDateTimeFromStr(text: Optional[str]) -> Optional[datetime]:
 
     return datetime.fromisoformat(text)
 
-def getFloatFromDict(d: Dict, key: str, fallback: float = None) -> float:
-    if d is None:
-        raise ValueError(f'd argument is malformed: \"{d}\"')
-    elif not isValidStr(key):
+def getFloatFromDict(d: Optional[Dict[str, Any]], key: str, fallback: float = None) -> float:
+    if not isValidStr(key):
         raise ValueError(f'key argument is malformed: \"{key}\"')
+    elif fallback is not None and not isValidNum(fallback):
+        raise ValueError(f'fallback argument is malformed: \"{fallback}\"')
 
     value: Optional[float] = None
 
-    if key in d and d[key] is not None:
+    if not hasItems(d):
+        if fallback is None:
+            raise ValueError(f'there is no fallback and d is None/empty: \"{d}\"')
+        else:
+            value = fallback
+    elif key in d and d[key] is not None:
         value = d[key]
-    elif isValidNum(fallback):
+    elif fallback is not None:
         value = fallback
     else:
         raise KeyError(f'there is no fallback and key \"{key}\" doesn\'t exist in d: \"{d}\"')
@@ -193,17 +204,22 @@ def getFloatFromDict(d: Dict, key: str, fallback: float = None) -> float:
 
     return value
 
-def getIntFromDict(d: Dict, key: str, fallback: int = None) -> int:
-    if d is None:
-        raise ValueError(f'd argument is malformed: \"{d}\"')
-    elif not isValidStr(key):
+def getIntFromDict(d: Optional[Dict[str, Any]], key: str, fallback: int = None) -> int:
+    if not isValidStr(key):
         raise ValueError(f'key argument is malformed: \"{key}\"')
+    elif fallback is not None and not isValidNum(fallback):
+        raise ValueError(f'fallback argument is malformed: \"{fallback}\"')
 
     value: Optional[int] = None
 
-    if key in d and d[key] is not None:
+    if not hasItems(d):
+        if fallback is None:
+            raise ValueError(f'there is no fallback and d is None/empty: \"{d}\"')
+        else:
+            value = fallback
+    elif key in d and d[key] is not None:
         value = d[key]
-    elif isValidNum(fallback):
+    elif fallback is not None:
         value = fallback
     else:
         raise KeyError(f'there is no fallback and key \"{key}\" doesn\'t exist in d: \"{d}\"')
@@ -211,7 +227,7 @@ def getIntFromDict(d: Dict, key: str, fallback: int = None) -> int:
     if not isinstance(value, int):
         value = int(value)
 
-    if not isValidNum(value):
+    if not isValidInt(value):
         raise ValueError(f'value \"{value}\" for key \"{key}\" is malformed in d: \"{d}\"')
 
     return value
@@ -243,17 +259,17 @@ def getRandomSpaceEmoji() -> str:
     return random.choice(spaceEmoji)
 
 def getStrFromDict(
-    d: Dict[str, Any],
+    d: Optional[Dict[str, Any]],
     key: str,
     fallback: str = None,
     clean: bool = False,
     htmlUnescape: bool = False,
     removeCarrots: bool = False
 ) -> str:
-    if d is None:
-        raise ValueError(f'd argument is malformed: \"{d}\"')
-    elif not isValidStr(key):
+    if not isValidStr(key):
         raise ValueError(f'key argument is malformed: \"{key}\"')
+    elif fallback is not None and not isinstance(fallback, str):
+        raise ValueError(f'fallback argument is malformed: \"{fallback}\"')
     elif not isValidBool(clean):
         raise ValueError(f'clean argument is malformed: \"{clean}\"')
     elif not isValidBool(htmlUnescape):
@@ -263,6 +279,11 @@ def getStrFromDict(
 
     value: Optional[str] = None
 
+    if not hasItems(d):
+        if fallback is None:
+            raise ValueError(f'there is no fallback and d is None/empty: \"{d}\"')
+        else:
+            value = fallback
     if key in d and d[key] is not None:
         value = d[key]
     elif fallback is not None:
@@ -305,6 +326,12 @@ def isValidUrl(s: Optional[str]) -> bool:
 
     return False
 
+def numToBool(n: Optional[Number]) -> bool:
+    if not isValidNum(n):
+        raise ValueError(f'n argument is malformed: \"{n}\"')
+
+    return n != 0
+
 def permuteSubArrays(array: List[Any], pos: int = 0) -> Generator[List[Any], None, None]:
     if not isValidNum(pos):
         raise ValueError(f'pos argument is malformed: \"{pos}\"')
@@ -338,9 +365,9 @@ falseRegEx: Pattern = re.compile(r'f(alse)?|n(o)?', re.IGNORECASE)
 
 def strictStrToBool(s: Optional[str]) -> bool:
     """
-    Converts the given string into a bool. None/empty/whitespace strings will .
-    Random strings ("abc123", "asdf", "qwerty", etc) will return True. Only strings that provide a
-    match with falseRegEx will return False.
+    Converts the given string into a bool. None/empty/whitespace strings will cause an exception
+    to be raised. Random strings ("abc123", "asdf", "qwerty", etc) will return True. Only strings
+    that provide a match with falseRegEx will return False.
 
     Parameters
     ------------

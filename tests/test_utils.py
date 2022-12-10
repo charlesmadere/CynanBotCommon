@@ -1,5 +1,5 @@
 import math
-from typing import List
+from typing import Any, Dict, List, Optional
 
 try:
     import CynanBotCommon.utils as utils
@@ -172,6 +172,110 @@ class TestUtils():
         result: List[str] = utils.getCleanedSplits(original)
         assert result is not None
         assert len(result) == 0
+
+    def test_getFloatFromDict_withEmptyDict(self):
+        d: Dict[str, Any] = dict()
+        e: Optional[Exception] = None
+        value: Optional[float] = None
+
+        try:
+            value = utils.getFloatFromDict(d = d, key = "hello")
+        except Exception as e:
+            e = e
+
+        assert e is not None
+        assert value is None
+
+    def test_getFloatFromDict_withEmptyDictAndNoneFallback(self):
+        d: Dict[str, Any] = dict()
+        e: Optional[Exception] = None
+        value: Optional[float] = None
+
+        try:
+            value = utils.getFloatFromDict(d = d, key = "hello")
+        except Exception as e:
+            e = e
+
+        assert e is not None
+        assert value is None
+
+    def test_getFloatFromDict_withNoneDict(self):
+        d: Optional[Dict[str, Any]] = None
+        e: Optional[Exception] = None
+        value: Optional[float] = None
+
+        try:
+            value = utils.getFloatFromDict(d = d, key = "hello")
+        except Exception as e:
+            e = e
+
+        assert e is not None
+        assert value is None
+
+    def test_getFloatFromDict_withNoneDictAndNoneFallback(self):
+        d: Optional[Dict[str, Any]] = None
+        e: Optional[Exception] = None
+        value: Optional[float] = None
+
+        try:
+            value = utils.getFloatFromDict(d = d, key = "hello")
+        except Exception as e:
+            e = e
+
+        assert e is not None
+        assert value is None
+
+    def test_getIntFromDict_withEmptyDict(self):
+        d: Dict[str, Any] = dict()
+        e: Optional[Exception] = None
+        value: Optional[int] = None
+
+        try:
+            value = utils.getIntFromDict(d = d, key = "hello")
+        except Exception as e:
+            e = e
+
+        assert e is not None
+        assert value is None
+
+    def test_getIntFromDict_withEmptyDictAndNoneFallback(self):
+        d: Dict[str, Any] = dict()
+        e: Optional[Exception] = None
+        value: Optional[int] = None
+
+        try:
+            value = utils.getIntFromDict(d = d, key = "hello")
+        except Exception as e:
+            e = e
+
+        assert e is not None
+        assert value is None
+
+    def test_getIntFromDict_withNoneDict(self):
+        d: Optional[Dict[str, Any]] = None
+        e: Optional[Exception] = None
+        value: Optional[int] = None
+
+        try:
+            value = utils.getIntFromDict(d = d, key = "hello")
+        except Exception as e:
+            e = e
+
+        assert e is not None
+        assert value is None
+
+    def test_getIntFromDict_withNoneDictAndNoneFallback(self):
+        d: Optional[Dict[str, Any]] = None
+        e: Optional[Exception] = None
+        value: Optional[int] = None
+
+        try:
+            value = utils.getIntFromDict(d = d, key = "hello")
+        except Exception as e:
+            e = e
+
+        assert e is not None
+        assert value is None
 
     def test_isValidBool_withFalse(self):
         result: bool = utils.isValidBool(False)
