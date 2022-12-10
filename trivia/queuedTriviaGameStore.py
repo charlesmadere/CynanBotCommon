@@ -102,6 +102,7 @@ class QueuedTriviaGameStore():
                     twitchChannel = action.getTwitchChannel(),
                     triviaFetchOptions = action.getTriviaFetchOptions()
                 ))
+
                 amountAdded = amountAdded + 1
             else:
                 break
