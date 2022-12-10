@@ -28,10 +28,6 @@ class TriviaSettingsRepository():
     async def clearCaches(self):
         self.__settingsCache = None
 
-    async def isBanListEnabled(self) -> bool:
-        jsonContents = await self.__readJson()
-        return utils.getBoolFromDict(jsonContents, 'is_ban_list_enabled', True)
-
     async def getAvailableTriviaSourcesAndWeights(self) -> Dict[TriviaSource, int]:
         jsonContents = await self.__readJson()
 
@@ -137,6 +133,10 @@ class TriviaSettingsRepository():
     async def isAdditionalPluralCheckingEnabled(self) -> bool:
         jsonContents = await self.__readJson()
         return utils.getBoolFromDict(jsonContents, 'additional_plural_checking_enabled', False)
+
+    async def isBanListEnabled(self) -> bool:
+        jsonContents = await self.__readJson()
+        return utils.getBoolFromDict(jsonContents, 'is_ban_list_enabled', True)
 
     async def isDebugLoggingEnabled(self) -> bool:
         jsonContents = await self.__readJson()
