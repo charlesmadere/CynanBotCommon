@@ -101,139 +101,137 @@ class Data():
 
 class TestQueuedTriviaGameStore():
 
-    data = Data()
-
     @pytest.mark.asyncio
     async def test_addQueuedSuperGamesSize_withEmptyTwitchChannel_andSuperGameIsNotInProgress(self):
-        self.data = Data()
+        data = Data()
 
-        assert self.data.startNewSuperTriviaGameAction1.isQueueActionConsumed() is False
+        assert data.startNewSuperTriviaGameAction1.isQueueActionConsumed() is False
 
-        result = await self.data.queuedTriviaGameStore.addSuperGames(
+        result = await data.queuedTriviaGameStore.addSuperGames(
             isSuperTriviaGameCurrentlyInProgress = False,
-            action = self.data.startNewSuperTriviaGameAction1
+            action = data.startNewSuperTriviaGameAction1
         )
         assert result.getAmountAdded() == 2
         assert result.getNewQueueSize() == 2
         assert result.getOldQueueSize() == 0
-        assert self.data.startNewSuperTriviaGameAction1.isQueueActionConsumed() is True
+        assert data.startNewSuperTriviaGameAction1.isQueueActionConsumed() is True
 
-        result = await self.data.queuedTriviaGameStore.addSuperGames(
+        result = await data.queuedTriviaGameStore.addSuperGames(
             isSuperTriviaGameCurrentlyInProgress = True,
-            action = self.data.startNewSuperTriviaGameAction1
+            action = data.startNewSuperTriviaGameAction1
         )
         assert result.getAmountAdded() == 0
         assert result.getNewQueueSize() == 2
         assert result.getOldQueueSize() == 2
-        assert self.data.startNewSuperTriviaGameAction1.isQueueActionConsumed() is True
+        assert data.startNewSuperTriviaGameAction1.isQueueActionConsumed() is True
 
-        result = await self.data.queuedTriviaGameStore.addSuperGames(
+        result = await data.queuedTriviaGameStore.addSuperGames(
             isSuperTriviaGameCurrentlyInProgress = True,
-            action = self.data.startNewSuperTriviaGameAction2
+            action = data.startNewSuperTriviaGameAction2
         )
         assert result.getAmountAdded() == 1
         assert result.getNewQueueSize() == 3
         assert result.getOldQueueSize() == 2
-        assert self.data.startNewSuperTriviaGameAction2.isQueueActionConsumed() is True
+        assert data.startNewSuperTriviaGameAction2.isQueueActionConsumed() is True
 
-        result = await self.data.queuedTriviaGameStore.addSuperGames(
+        result = await data.queuedTriviaGameStore.addSuperGames(
             isSuperTriviaGameCurrentlyInProgress = True,
-            action = self.data.startNewSuperTriviaGameAction3
+            action = data.startNewSuperTriviaGameAction3
         )
         assert result.getAmountAdded() == 0
         assert result.getNewQueueSize() == 3
         assert result.getOldQueueSize() == 3
-        assert self.data.startNewSuperTriviaGameAction3.isQueueActionConsumed() is True
+        assert data.startNewSuperTriviaGameAction3.isQueueActionConsumed() is True
 
-        result = await self.data.queuedTriviaGameStore.addSuperGames(
+        result = await data.queuedTriviaGameStore.addSuperGames(
             isSuperTriviaGameCurrentlyInProgress = False,
-            action = self.data.startNewSuperTriviaGameAction4
+            action = data.startNewSuperTriviaGameAction4
         )
         assert result.getAmountAdded() == 4
         assert result.getNewQueueSize() == 4
         assert result.getOldQueueSize() == 0
-        assert self.data.startNewSuperTriviaGameAction4.isQueueActionConsumed() is True
+        assert data.startNewSuperTriviaGameAction4.isQueueActionConsumed() is True
 
     @pytest.mark.asyncio
     async def test_addQueuedSuperGamesSize_withEmptyTwitchChannel_andSuperGameIsInProgress(self):
-        self.data = Data()
+        data = Data()
 
-        assert self.data.startNewSuperTriviaGameAction2.isQueueActionConsumed() is False
+        assert data.startNewSuperTriviaGameAction2.isQueueActionConsumed() is False
 
-        result = await self.data.queuedTriviaGameStore.addSuperGames(
+        result = await data.queuedTriviaGameStore.addSuperGames(
             isSuperTriviaGameCurrentlyInProgress = True,
-            action = self.data.startNewSuperTriviaGameAction2
+            action = data.startNewSuperTriviaGameAction2
         )
 
         assert result.getAmountAdded() == 1
         assert result.getNewQueueSize() == 1
         assert result.getOldQueueSize() == 0
-        assert self.data.startNewSuperTriviaGameAction2.isQueueActionConsumed() is True
+        assert data.startNewSuperTriviaGameAction2.isQueueActionConsumed() is True
 
     @pytest.mark.asyncio
     async def test_addQueuedSuperGamesSize_withEmptyTwitchChannel_andSuperGameIsInProgress_andQueueActionConsumedIsTrue(self):
-        self.data = Data()
+        data = Data()
 
-        assert self.data.startNewSuperTriviaGameAction4.isQueueActionConsumed() is False
+        assert data.startNewSuperTriviaGameAction4.isQueueActionConsumed() is False
 
-        result = await self.data.queuedTriviaGameStore.addSuperGames(
+        result = await data.queuedTriviaGameStore.addSuperGames(
             isSuperTriviaGameCurrentlyInProgress = True,
-            action = self.data.startNewSuperTriviaGameAction4
+            action = data.startNewSuperTriviaGameAction4
         )
 
         assert result.getAmountAdded() == 0
         assert result.getNewQueueSize() == 0
         assert result.getOldQueueSize() == 0
-        assert self.data.startNewSuperTriviaGameAction4.isQueueActionConsumed() is True
+        assert data.startNewSuperTriviaGameAction4.isQueueActionConsumed() is True
 
     @pytest.mark.asyncio
     async def test_clearQueuedSuperGames(self):
-        self.data = Data()
+        data = Data()
 
-        assert self.data.startNewSuperTriviaGameAction1.isQueueActionConsumed() is False
+        assert data.startNewSuperTriviaGameAction1.isQueueActionConsumed() is False
 
-        clearResult = await self.data.queuedTriviaGameStore.clearQueuedSuperGames(
-            twitchChannel = self.data.startNewSuperTriviaGameAction1.getTwitchChannel()
+        clearResult = await data.queuedTriviaGameStore.clearQueuedSuperGames(
+            twitchChannel = data.startNewSuperTriviaGameAction1.getTwitchChannel()
         )
         assert clearResult.getAmountRemoved() == 0
         assert clearResult.getOldQueueSize() == 0
 
-        addResult = await self.data.queuedTriviaGameStore.addSuperGames(
+        addResult = await data.queuedTriviaGameStore.addSuperGames(
             isSuperTriviaGameCurrentlyInProgress = False,
-            action = self.data.startNewSuperTriviaGameAction1
+            action = data.startNewSuperTriviaGameAction1
         )
         assert addResult.getAmountAdded() == 2
         assert addResult.getNewQueueSize() == 2
         assert addResult.getOldQueueSize() == 0
-        assert self.data.startNewSuperTriviaGameAction1.isQueueActionConsumed()
+        assert data.startNewSuperTriviaGameAction1.isQueueActionConsumed()
 
-        queueSize = await self.data.queuedTriviaGameStore.getQueuedSuperGamesSize(
-            twitchChannel = self.data.startNewSuperTriviaGameAction1.getTwitchChannel()
+        queueSize = await data.queuedTriviaGameStore.getQueuedSuperGamesSize(
+            twitchChannel = data.startNewSuperTriviaGameAction1.getTwitchChannel()
         )
         assert queueSize == 2
 
-        clearResult = await self.data.queuedTriviaGameStore.clearQueuedSuperGames(
-            twitchChannel = self.data.startNewSuperTriviaGameAction1.getTwitchChannel()
+        clearResult = await data.queuedTriviaGameStore.clearQueuedSuperGames(
+            twitchChannel = data.startNewSuperTriviaGameAction1.getTwitchChannel()
         )
         assert clearResult.getAmountRemoved() == 2
         assert clearResult.getOldQueueSize() == 2
 
-        queueSize = await self.data.queuedTriviaGameStore.getQueuedSuperGamesSize(
-            twitchChannel = self.data.startNewSuperTriviaGameAction1.getTwitchChannel()
+        queueSize = await data.queuedTriviaGameStore.getQueuedSuperGamesSize(
+            twitchChannel = data.startNewSuperTriviaGameAction1.getTwitchChannel()
         )
         assert queueSize == 0
 
     @pytest.mark.asyncio
     async def test_clearQueuedSuperGames_withEmptyTwitchChannel(self):
-        self.data = Data()
+        data = Data()
 
-        clearResult = await self.data.queuedTriviaGameStore.clearQueuedSuperGames('imyt')
+        clearResult = await data.queuedTriviaGameStore.clearQueuedSuperGames('imyt')
         assert clearResult.getAmountRemoved() == 0
         assert clearResult.getOldQueueSize() == 0
 
     @pytest.mark.asyncio
     async def test_getQueuedSuperGamesSize_withEmptyTwitchChannel(self):
-        self.data = Data()
+        data = Data()
 
-        size = await self.data.queuedTriviaGameStore.getQueuedSuperGamesSize('Oatsngoats')
+        size = await data.queuedTriviaGameStore.getQueuedSuperGamesSize('Oatsngoats')
         assert size == 0
