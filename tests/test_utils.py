@@ -147,6 +147,71 @@ class TestUtils():
         assert result is not original
         assert result == original
 
+    def test_getBoolFromDict_withEmptyDict(self):
+        d: Dict[str, Any] = dict()
+        value: Optional[bool] = None
+        exception: Optional[Exception] = None
+
+        try:
+            value = utils.getBoolFromDict(d = d, key = "hello")
+        except Exception as e:
+            exception = e
+
+        assert value is None
+        assert exception is not None
+
+    def test_getBoolFromDict_withEmptyDict(self):
+        d: Dict[str, Any] = dict()
+        value: Optional[bool] = None
+        exception: Optional[Exception] = None
+
+        try:
+            value = utils.getBoolFromDict(d = d, key = "hello", fallback = False)
+        except Exception as e:
+            exception = e
+
+        assert value is False
+        assert exception is None
+
+    def test_getBoolFromDict_withEmptyDictAndNoneFallback(self):
+        d: Dict[str, Any] = dict()
+        value: Optional[bool] = None
+        exception: Optional[Exception] = None
+
+        try:
+            value = utils.getBoolFromDict(d = d, key = "hello")
+        except Exception as e:
+            exception = e
+
+        assert value is None
+        assert exception is not None
+
+    def test_getBoolFromDict_withNoneDict(self):
+        d: Optional[Dict[str, Any]] = None
+        value: Optional[bool] = None
+        exception: Optional[Exception] = None
+
+        try:
+            value = utils.getBoolFromDict(d = d, key = "hello", fallback = True)
+        except Exception as e:
+            exception = e
+
+        assert value is True
+        assert exception is None
+
+    def test_getBoolFromDict_withNoneDictAndNoneFallback(self):
+        d: Optional[Dict[str, Any]] = None
+        value: Optional[bool] = None
+        exception: Optional[Exception] = None
+
+        try:
+            value = utils.getBoolFromDict(d = d, key = "hello")
+        except Exception as e:
+            exception = e
+
+        assert value is None
+        assert exception is not None
+
     def test_getCleanedSplits_withEmptyString(self):
         original: str = ''
         result: List[str] = utils.getCleanedSplits(original)
@@ -175,107 +240,107 @@ class TestUtils():
 
     def test_getFloatFromDict_withEmptyDict(self):
         d: Dict[str, Any] = dict()
-        e: Optional[Exception] = None
         value: Optional[float] = None
+        exception: Optional[Exception] = None
 
         try:
-            value = utils.getFloatFromDict(d = d, key = "hello")
+            value = utils.getFloatFromDict(d = d, key = "hello", fallback = 3.14)
         except Exception as e:
-            e = e
+            exception = e
 
-        assert e is not None
-        assert value is None
+        assert value == 3.14
+        assert exception is None
 
     def test_getFloatFromDict_withEmptyDictAndNoneFallback(self):
         d: Dict[str, Any] = dict()
-        e: Optional[Exception] = None
         value: Optional[float] = None
+        exception: Optional[Exception] = None
 
         try:
             value = utils.getFloatFromDict(d = d, key = "hello")
         except Exception as e:
-            e = e
+            exception = e
 
-        assert e is not None
         assert value is None
+        assert exception is not None
 
     def test_getFloatFromDict_withNoneDict(self):
         d: Optional[Dict[str, Any]] = None
-        e: Optional[Exception] = None
         value: Optional[float] = None
+        exception: Optional[Exception] = None
 
         try:
-            value = utils.getFloatFromDict(d = d, key = "hello")
+            value = utils.getFloatFromDict(d = d, key = "hello", fallback = 1.1)
         except Exception as e:
-            e = e
+            exception = e
 
-        assert e is not None
-        assert value is None
+        assert value == 1.1
+        assert exception is None
 
     def test_getFloatFromDict_withNoneDictAndNoneFallback(self):
         d: Optional[Dict[str, Any]] = None
-        e: Optional[Exception] = None
         value: Optional[float] = None
+        exception: Optional[Exception] = None
 
         try:
             value = utils.getFloatFromDict(d = d, key = "hello")
         except Exception as e:
-            e = e
+            exception = e
 
-        assert e is not None
         assert value is None
+        assert exception is not None
 
     def test_getIntFromDict_withEmptyDict(self):
         d: Dict[str, Any] = dict()
-        e: Optional[Exception] = None
         value: Optional[int] = None
+        exception: Optional[Exception] = None
 
         try:
-            value = utils.getIntFromDict(d = d, key = "hello")
+            value = utils.getIntFromDict(d = d, key = "hello", fallback = 64)
         except Exception as e:
-            e = e
+            exception = e
 
-        assert e is not None
-        assert value is None
+        assert value == 64
+        assert exception is None
 
     def test_getIntFromDict_withEmptyDictAndNoneFallback(self):
         d: Dict[str, Any] = dict()
-        e: Optional[Exception] = None
         value: Optional[int] = None
+        exception: Optional[Exception] = None
 
         try:
             value = utils.getIntFromDict(d = d, key = "hello")
         except Exception as e:
-            e = e
+            exception = e
 
-        assert e is not None
         assert value is None
+        assert exception is not None
 
     def test_getIntFromDict_withNoneDict(self):
         d: Optional[Dict[str, Any]] = None
-        e: Optional[Exception] = None
         value: Optional[int] = None
+        exception: Optional[Exception] = None
 
         try:
-            value = utils.getIntFromDict(d = d, key = "hello")
+            value = utils.getIntFromDict(d = d, key = "hello", fallback = 2000)
         except Exception as e:
-            e = e
+            exception = e
 
-        assert e is not None
-        assert value is None
+        assert value == 2000
+        assert exception is None
 
     def test_getIntFromDict_withNoneDictAndNoneFallback(self):
         d: Optional[Dict[str, Any]] = None
-        e: Optional[Exception] = None
         value: Optional[int] = None
+        exception: Optional[Exception] = None
 
         try:
             value = utils.getIntFromDict(d = d, key = "hello")
         except Exception as e:
-            e = e
+            exception = e
 
-        assert e is not None
         assert value is None
+        assert exception is not None
 
     def test_isValidBool_withFalse(self):
         result: bool = utils.isValidBool(False)
@@ -386,6 +451,62 @@ class TestUtils():
     def test_isValidUrl_withWhitespaceString(self):
         result = utils.isValidUrl(' ')
         assert result is False
+
+    def test_numToBool_withInf(self):
+        result: Optional[bool] = None
+        exception: Optional[Exception] = None
+
+        try:
+            result = utils.numToBool(math.inf)
+        except Exception as e:
+            exception = e
+
+        assert result is None
+        assert isinstance(exception, ValueError)
+
+    def test_numToBool_withNegativeOne(self):
+        result = utils.numToBool(-1)
+        assert result is True
+
+    def test_numToBool_withNan(self):
+        result: Optional[bool] = None
+        exception: Optional[Exception] = None
+
+        try:
+            result = utils.numToBool(math.nan)
+        except Exception as e:
+            exception = e
+
+        assert result is None
+        assert isinstance(exception, ValueError)
+
+    def test_numToBool_withNone(self):
+        result: Optional[bool] = None
+        exception: Optional[Exception] = None
+
+        try:
+            result = utils.numToBool(None)
+        except Exception as e:
+            exception = e
+
+        assert result is None
+        assert isinstance(exception, ValueError)
+
+    def test_numToBool_withOne(self):
+        result = utils.numToBool(1)
+        assert result is False
+
+    def test_numToBool_withTen(self):
+        result = utils.numToBool(10)
+        assert result is False
+
+    def test_numToBool_withTwo(self):
+        result = utils.numToBool(2)
+        assert result is True
+
+    def test_numToBool_withZero(self):
+        result = utils.numToBool(0)
+        assert result is True
 
     def test_removePreceedingAt_withAtCharlesString(self):
         result = utils.removePreceedingAt('@charles')
