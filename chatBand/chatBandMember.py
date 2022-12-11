@@ -3,7 +3,6 @@ try:
     from CynanBotCommon.chatBand.chatBandInstrument import ChatBandInstrument
 except:
     import utils
-
     from chatBand.chatBandInstrument import ChatBandInstrument
 
 
