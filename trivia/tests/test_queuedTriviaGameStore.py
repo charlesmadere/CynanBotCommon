@@ -149,8 +149,8 @@ class TestQueuedTriviaGameStore():
             action = self.startNewSuperTriviaGameAction4
         )
 
-        assert result.getAmountAdded() == 5
-        assert result.getNewQueueSize() == 5
+        assert result.getAmountAdded() == 4
+        assert result.getNewQueueSize() == 4
         assert result.getOldQueueSize() == 0
         assert self.startNewSuperTriviaGameAction4.isQueueActionConsumed() is True
 
