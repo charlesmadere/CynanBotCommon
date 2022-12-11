@@ -146,17 +146,17 @@ class TriviaSettingsRepository():
         if self.__settingsCache is not None:
             return self.__settingsCache
 
-        if not await aiofiles.ospath.exists(self.__settingsFile):
-            raise FileNotFoundError(f'Trivia settings file not found: \"{self.__settingsFile}\"')
+        jsonContents: Optional[Dict[str, Any]] = None
 
-        async with aiofiles.open(self.__settingsFile, mode = 'r') as file:
-            data = await file.read()
-            jsonContents = json.loads(data)
+        if await aiofiles.ospath.exists(self.__settingsFile):
+            async with aiofiles.open(self.__settingsFile, mode = 'r') as file:
+                data = await file.read()
+                jsonContents = json.loads(data)
+        else:
+            jsonContents = dict()
 
         if jsonContents is None:
             raise IOError(f'Error reading from trivia settings file: \"{self.__settingsFile}\"')
-        elif len(jsonContents) == 0:
-            raise ValueError(f'JSON contents of trivia settings file \"{self.__settingsFile}\" is empty')
 
         self.__settingsCache = jsonContents
         return jsonContents
