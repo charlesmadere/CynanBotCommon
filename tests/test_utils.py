@@ -160,19 +160,6 @@ class TestUtils():
         assert value is None
         assert exception is not None
 
-    def test_getBoolFromDict_withEmptyDict(self):
-        d: Dict[str, Any] = dict()
-        value: Optional[bool] = None
-        exception: Optional[Exception] = None
-
-        try:
-            value = utils.getBoolFromDict(d = d, key = "hello", fallback = False)
-        except Exception as e:
-            exception = e
-
-        assert value is False
-        assert exception is None
-
     def test_getBoolFromDict_withEmptyDictAndNoneFallback(self):
         d: Dict[str, Any] = dict()
         value: Optional[bool] = None
