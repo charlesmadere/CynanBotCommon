@@ -449,11 +449,7 @@ class TestUtils():
             exception = e
 
         assert result is None
-        assert isinstance(exception, ValueError)
-
-    def test_numToBool_withNegativeOne(self):
-        result = utils.numToBool(-1)
-        assert result is True
+        assert exception is not None
 
     def test_numToBool_withNan(self):
         result: Optional[bool] = None
@@ -465,7 +461,15 @@ class TestUtils():
             exception = e
 
         assert result is None
-        assert isinstance(exception, ValueError)
+        assert exception is not None
+
+    def test_numToBool_withNegativeOne(self):
+        result = utils.numToBool(-1)
+        assert result is True
+
+    def test_numToBool_withNegativeTwo(self):
+        result = utils.numToBool(-2)
+        assert result is True
 
     def test_numToBool_withNone(self):
         result: Optional[bool] = None
@@ -477,15 +481,15 @@ class TestUtils():
             exception = e
 
         assert result is None
-        assert isinstance(exception, ValueError)
+        assert exception is not None
 
     def test_numToBool_withOne(self):
         result = utils.numToBool(1)
-        assert result is False
+        assert result is True
 
     def test_numToBool_withTen(self):
         result = utils.numToBool(10)
-        assert result is False
+        assert result is True
 
     def test_numToBool_withTwo(self):
         result = utils.numToBool(2)
@@ -493,7 +497,7 @@ class TestUtils():
 
     def test_numToBool_withZero(self):
         result = utils.numToBool(0)
-        assert result is True
+        assert result is False
 
     def test_removePreceedingAt_withAtCharlesString(self):
         result = utils.removePreceedingAt('@charles')
