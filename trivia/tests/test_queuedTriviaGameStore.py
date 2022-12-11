@@ -138,8 +138,8 @@ class TestQueuedTriviaGameStore():
             action = self.startNewSuperTriviaGameAction4
         )
         assert result.getAmountAdded() == 4
-        assert result.getNewQueueSize() == 7
-        assert result.getOldQueueSize() == 3
+        assert result.getNewQueueSize() == 4
+        assert result.getOldQueueSize() == 0
         assert self.startNewSuperTriviaGameAction4.isQueueActionConsumed() is True
 
     @pytest.mark.asyncio
