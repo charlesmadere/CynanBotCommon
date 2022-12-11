@@ -175,6 +175,8 @@ class TestQueuedTriviaGameStore():
 
     @pytest.mark.asyncio
     async def test_clearQueuedSuperGames(self):
+        assert self.startNewSuperTriviaGameAction1.isQueueActionConsumed() is False
+
         clearResult = await self.queuedTriviaGameStore.clearQueuedSuperGames(
             twitchChannel = self.startNewSuperTriviaGameAction1.getTwitchChannel()
         )
