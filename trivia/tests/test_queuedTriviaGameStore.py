@@ -95,6 +95,13 @@ class TestQueuedTriviaGameStore():
         )
     )
 
+    @pytest.fixture(autouse = True)
+    def runBeforeAndAfterTests(self):
+        self.queuedTriviaGameStore = QueuedTriviaGameStore(
+            timber = self.timber,
+            triviaSettingsRepository = self.triviaSettingsRepository
+        )
+
     @pytest.mark.asyncio
     async def test_addQueuedSuperGamesSize_withEmptyTwitchChannel_andSuperGameIsNotInProgress(self):
         result = await self.queuedTriviaGameStore.addSuperGames(
