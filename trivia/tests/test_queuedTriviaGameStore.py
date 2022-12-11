@@ -128,8 +128,8 @@ class TestQueuedTriviaGameStore():
             isSuperTriviaGameCurrentlyInProgress = True,
             action = self.startNewSuperTriviaGameAction3
         )
-        assert result.getAmountAdded() == 1
-        assert result.getNewQueueSize() == 4
+        assert result.getAmountAdded() == 0
+        assert result.getNewQueueSize() == 3
         assert result.getOldQueueSize() == 3
         assert self.startNewSuperTriviaGameAction3.isQueueActionConsumed() is True
 
@@ -137,8 +137,8 @@ class TestQueuedTriviaGameStore():
             isSuperTriviaGameCurrentlyInProgress = False,
             action = self.startNewSuperTriviaGameAction4
         )
-        assert result.getAmountAdded() == 3
-        assert result.getNewQueueSize() == 4
+        assert result.getAmountAdded() == 4
+        assert result.getNewQueueSize() == 7
         assert result.getOldQueueSize() == 3
         assert self.startNewSuperTriviaGameAction4.isQueueActionConsumed() is True
 
