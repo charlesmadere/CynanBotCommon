@@ -223,6 +223,11 @@ class TestTriviaAnswerCompiler():
         assert result == 'hello world'
 
     @pytest.mark.asyncio
+    async def test_compileTextAnswer_withMiyamotoSan(self):
+        result: str = await self.triviaAnswerCompiler.compileTextAnswer('Miyamoto san')
+        assert result == 'miyamoto'
+
+    @pytest.mark.asyncio
     async def test_compileTextAnswer_withNewLines(self):
         result: str = await self.triviaAnswerCompiler.compileTextAnswer('\nDream Theater\nOctavarium\n')
         assert result == 'dream theater octavarium'
@@ -233,6 +238,11 @@ class TestTriviaAnswerCompiler():
         assert result == ''
 
     @pytest.mark.asyncio
+    async def test_compileTextAnswer_withOkyakuSama(self):
+        result: str = await self.triviaAnswerCompiler.compileTextAnswer('Okyaku-sama')
+        assert result == 'okyaku'
+
+    @pytest.mark.asyncio
     async def test_compileTextAnswer_withPrefixA(self):
         result: str = await self.triviaAnswerCompiler.compileTextAnswer('A View From the Top of the World')
         assert result == 'view from the top of the world'
@@ -241,6 +251,26 @@ class TestTriviaAnswerCompiler():
     async def test_compileTextAnswer_withPrefixAn(self):
         result: str = await self.triviaAnswerCompiler.compileTextAnswer('An Orange')
         assert result == 'orange'
+
+    @pytest.mark.asyncio
+    async def test_compileTextAnswer_withRinonChan(self):
+        result: str = await self.triviaAnswerCompiler.compileTextAnswer('Rinon-chan')
+        assert result == 'rinon'
+
+    @pytest.mark.asyncio
+    async def test_compileTextAnswer_withSaintNicholas(self):
+        result: str = await self.triviaAnswerCompiler.compileTextAnswer('Saint Nicholas')
+        assert result == 'nicholas'
+
+    @pytest.mark.asyncio
+    async def test_compileTextAnswer_withSirPeter(self):
+        result: str = await self.triviaAnswerCompiler.compileTextAnswer('Sir Peter')
+        assert result == 'peter'
+
+    @pytest.mark.asyncio
+    async def test_compileTextAnswer_withToRun(self):
+        result: str = await self.triviaAnswerCompiler.compileTextAnswer('to run')
+        assert result == 'run'
 
     @pytest.mark.asyncio
     async def test_compileTextAnswer_withWhitespaceString(self):

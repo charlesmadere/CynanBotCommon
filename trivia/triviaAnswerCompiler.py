@@ -17,11 +17,12 @@ class TriviaAnswerCompiler():
     def __init__(self):
         self.__ampersandRegEx: Pattern = re.compile(r'(^&\s+)|(\s+&\s+)|(\s+&$)', re.IGNORECASE)
         self.__decadeRegEx: Pattern = re.compile(r'(\d{4})\'?s', re.IGNORECASE)
+        self.__japaneseSuffixRegEx: Pattern = re.compile(r'(\s|-)+(chan|kun|sama|san)$', re.IGNORECASE)
         self.__multipleChoiceAnswerRegEx: Pattern = re.compile(r'[a-z]', re.IGNORECASE)
         self.__newLineRegEx: Pattern = re.compile(r'(\n)+', re.IGNORECASE)
         self.__parenGroupRegEx: Pattern = re.compile(r'(\(.*?\))', re.IGNORECASE)
         self.__phraseAnswerRegEx: Pattern = re.compile(r'[^A-Za-z0-9 ]|(?<=\s)\s+', re.IGNORECASE)
-        self.__prefixRegEx: Pattern = re.compile(r'^(a|an|and|king|miss|mr|mrs|or|queen|saint|san|sir|the|this|to)\s+', re.IGNORECASE)
+        self.__prefixRegEx: Pattern = re.compile(r'^(a|an|and|of|miss|mr|mrs|or|saint|sir|the|this|to)\s+', re.IGNORECASE)
         self.__tagRemovalRegEx: Pattern = re.compile(r'[<\[]\/?\w+[>\]]', re.IGNORECASE)
         self.__whiteSpaceRegEx: Pattern = re.compile(r'\s\s*', re.IGNORECASE)
 
@@ -88,11 +89,14 @@ class TriviaAnswerCompiler():
         # replaces all new line characters with just a space
         answer = self.__newLineRegEx.sub(' ', answer).strip()
 
+        # replaces the '&' character, when used like the word "and", with the word "and"
+        answer = self.__ampersandRegEx.sub(' and ', answer).strip()
+
         # removes common phrase prefixes
         answer = self.__prefixRegEx.sub('', answer).strip()
 
-        # replaces the '&' character, when used like the word "and", with the word "and"
-        answer = self.__ampersandRegEx.sub(' and ', answer).strip()
+        # removes common Japanese name suffixes
+        answer = self.__japaneseSuffixRegEx.sub('', answer).strip()
 
         # convert special characters to latin where possible
         answer = self.__fancyToLatin(answer).strip()
