@@ -107,6 +107,8 @@ class TestQueuedTriviaGameStore():
     async def test_addQueuedSuperGamesSize_withEmptyTwitchChannel_andSuperGameIsNotInProgress(self):
         self.data = Data()
 
+        assert self.data.startNewSuperTriviaGameAction1.isQueueActionConsumed() is False
+
         result = await self.data.queuedTriviaGameStore.addSuperGames(
             isSuperTriviaGameCurrentlyInProgress = False,
             action = self.data.startNewSuperTriviaGameAction1
@@ -156,6 +158,8 @@ class TestQueuedTriviaGameStore():
     async def test_addQueuedSuperGamesSize_withEmptyTwitchChannel_andSuperGameIsInProgress(self):
         self.data = Data()
 
+        assert self.data.startNewSuperTriviaGameAction2.isQueueActionConsumed() is False
+
         result = await self.data.queuedTriviaGameStore.addSuperGames(
             isSuperTriviaGameCurrentlyInProgress = True,
             action = self.data.startNewSuperTriviaGameAction2
@@ -169,6 +173,8 @@ class TestQueuedTriviaGameStore():
     @pytest.mark.asyncio
     async def test_addQueuedSuperGamesSize_withEmptyTwitchChannel_andSuperGameIsInProgress_andQueueActionConsumedIsTrue(self):
         self.data = Data()
+
+        assert self.data.startNewSuperTriviaGameAction4.isQueueActionConsumed() is False
 
         result = await self.data.queuedTriviaGameStore.addSuperGames(
             isSuperTriviaGameCurrentlyInProgress = True,
