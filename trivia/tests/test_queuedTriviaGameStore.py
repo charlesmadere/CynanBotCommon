@@ -217,3 +217,7 @@ class TestQueuedTriviaGameStore():
     async def test_getQueuedSuperGamesSize_withEmptyTwitchChannel(self):
         size = await self.queuedTriviaGameStore.getQueuedSuperGamesSize('Oatsngoats')
         assert size == 0
+
+    def test_sanity(self):
+        assert self.queuedTriviaGameStore is not None
+        assert isinstance(self.queuedTriviaGameStore, QueuedTriviaGameStore)
