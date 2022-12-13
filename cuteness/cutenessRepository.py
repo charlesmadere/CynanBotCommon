@@ -106,7 +106,7 @@ class CutenessRepository():
         connection = await self.__getDatabaseConnection()
         record = await connection.fetchRow(
             '''
-                SELECT cuteness.cuteness, cuteness.userid, userids.userName FROM cuteness
+                SELECT cuteness.cuteness, cuteness.userid, userids.username FROM cuteness
                 INNER JOIN userids ON cuteness.userid = userids.userid
                 WHERE cuteness.twitchchannel = $1 AND cuteness.userid = $2 AND cuteness.utcyearandmonth = $3
                 LIMIT 1
@@ -190,7 +190,7 @@ class CutenessRepository():
         connection = await self.__getDatabaseConnection()
         records = await connection.fetchRows(
             '''
-                SELECT cuteness.userid, userids.userName, SUM(cuteness.cuteness) as totalcuteness FROM cuteness
+                SELECT cuteness.userid, userids.username, SUM(cuteness.cuteness) as totalcuteness FROM cuteness
                 INNER JOIN userids on cuteness.userid = userids.userid where cuteness.twitchchannel = $1 AND cuteness.userid != $2
                 GROUP BY cuteness.userid, userids.username
                 ORDER BY SUM(cuteness.cuteness) DESC
