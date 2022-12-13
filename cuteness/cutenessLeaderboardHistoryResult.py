@@ -2,11 +2,10 @@ from typing import List, Optional
 
 try:
     import CynanBotCommon.utils as utils
-
-    from CynanBotCommon.cuteness.cutenessLeaderboardResult import CutenessLeaderboardResult
+    from CynanBotCommon.cuteness.cutenessLeaderboardResult import \
+        CutenessLeaderboardResult
 except:
     import utils
-
     from cuteness.cutenessLeaderboardResult import CutenessLeaderboardResult
 
 

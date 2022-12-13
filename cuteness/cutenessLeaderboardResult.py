@@ -8,7 +8,6 @@ try:
     from CynanBotCommon.cuteness.cutenessResult import CutenessResult
 except:
     import utils
-
     from cuteness.cutenessDate import CutenessDate
     from cuteness.cutenessLeaderboardEntry import CutenessLeaderboardEntry
     from cuteness.cutenessResult import CutenessResult

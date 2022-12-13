@@ -137,8 +137,12 @@ class WeatherRepository():
             self.__timber.log('WeatherRepository', f'Encountered non-200 HTTP status code when fetching air quality index for \"{location.getName()}\" ({location.getLocationId()}): {response.getStatusCode()}')
             return None
 
-        jsonResponse: Dict[str, Any] = await response.json()
+        jsonResponse: Optional[Dict[str, Any]] = await response.json()
         await response.close()
+
+        if not utils.hasItems(jsonResponse):
+            self.__timber.log('WeatherRepository', f'Received null/empty JSON response when fetching air quality index for \"{location.getName()}\" ({location.getLocationId()})')
+            return None
 
         airQualityIndex = utils.getIntFromDict(
             d = jsonResponse['list'][0]['main'],
@@ -187,8 +191,12 @@ class WeatherRepository():
             self.__timber.log('WeatherRepository', f'Encountered non-200 HTTP status code when fetching weather for \"{location.getName()}\" ({location.getLocationId()}): {response.getStatusCode()}')
             raise RuntimeError(f'Encountered network error when fetching weather for \"{location.getName()}\" ({location.getLocationId()})')
 
-        jsonResponse: Dict[str, Any] = await response.json()
+        jsonResponse: Optional[Dict[str, Any]] = await response.json()
         await response.close()
+
+        if not utils.hasItems(jsonResponse):
+            self.__timber.log('WeatherRepository', f'Received null/empty JSON response when fetching weather for \"{location.getName()}\" ({location.getLocationId()}): {jsonResponse}')
+            raise RuntimeError(f'WeatherRepository received null/empty JSON response when fetching weather for \"{location.getName()}\" ({location.getLocationId()}): {jsonResponse}')
 
         currentJson: Dict[str, Any] = jsonResponse['current']
         humidity = int(round(utils.getFloatFromDict(currentJson, 'humidity')))

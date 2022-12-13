@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Set
+from typing import Any, Dict, List, Optional, Set
 
 try:
     import CynanBotCommon.utils as utils
@@ -90,7 +90,7 @@ class FuntoonTriviaQuestionRepository(AbsTriviaQuestionRepository):
             self.__timber.log('FuntoonTriviaQuestionRepository', f'Encountered non-200 HTTP status code: \"{response.getStatusCode()}\"')
             raise GenericTriviaNetworkException(self.getTriviaSource())
 
-        jsonResponse: List[Dict[str, Any]] = await response.json()
+        jsonResponse: Optional[List[Dict[str, Any]]] = await response.json()
         await response.close()
 
         if await self._triviaSettingsRepository.isDebugLoggingEnabled():

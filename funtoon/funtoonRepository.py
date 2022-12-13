@@ -58,11 +58,12 @@ class FuntoonRepository():
             return False
 
         responseStatus: Optional[int] = None
+
         if response is not None:
             responseStatus = response.getStatusCode()
             await response.close()
 
-        return utils.isValidNum(responseStatus) and responseStatus == 200
+        return utils.isValidInt(responseStatus) and responseStatus == 200
 
     async def clearCaches(self):
         self.__cache = None

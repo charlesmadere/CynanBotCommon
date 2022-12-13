@@ -15,13 +15,12 @@ try:
         WebsocketConnectionServer
 except:
     import utils
+    from chatBand.chatBandInstrument import ChatBandInstrument
+    from chatBand.chatBandMember import ChatBandMember
     from timber.timber import Timber
     from timedDict import TimedDict
     from websocketConnection.websocketConnectionServer import \
         WebsocketConnectionServer
-
-    from chatBand.chatBandInstrument import ChatBandInstrument
-    from chatBand.chatBandMember import ChatBandMember
 
 
 class ChatBandManager():

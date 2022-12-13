@@ -5,7 +5,6 @@ try:
     from CynanBotCommon.cuteness.cutenessEntry import CutenessEntry
 except:
     import utils
-
     from cuteness.cutenessEntry import CutenessEntry
 
 

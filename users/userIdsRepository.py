@@ -107,7 +107,10 @@ class UserIdsRepository():
         jsonResponse: Optional[Dict[str, Any]] = await response.json()
         await response.close()
 
-        if 'error' in jsonResponse and len(jsonResponse['error']) >= 1:
+        if not utils.hasItems(jsonResponse):
+            self.__timber.log('UserIdsRepository', f'Received a null/empty JSON response when fetching userId for userName \"{userName}\": {jsonResponse}')
+            raise RuntimeError(f'UserIdsRepository eceived a null/empty JSON response when fetching userId for userName \"{userName}\": {jsonResponse}')
+        elif 'error' in jsonResponse and len(jsonResponse['error']) >= 1:
             self.__timber.log('UserIdsRepository', f'Received an error of some kind when fetching userId for userName \"{userName}\": {jsonResponse}')
             raise RuntimeError(f'UserIdsRepository received an error of some kind when fetching userId for userName \"{userName}\": {jsonResponse}')
 
