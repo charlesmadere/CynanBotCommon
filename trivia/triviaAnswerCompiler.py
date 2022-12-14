@@ -125,7 +125,9 @@ class TriviaAnswerCompiler():
         for answer in answers:
             if not utils.isValidStr(answer):
                 continue
+
             cases = await self.expandSpecialCases(answer)
+
             for case in cases:
                 if expandParentheses:
                     possibilities = await self.__getParentheticalPossibilities(case)
