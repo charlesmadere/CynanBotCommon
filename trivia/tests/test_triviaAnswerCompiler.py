@@ -227,6 +227,9 @@ class TestTriviaAnswerCompiler():
         result: str = await self.triviaAnswerCompiler.compileTextAnswer('Miyamoto san')
         assert result == 'miyamoto'
 
+        result: str = await self.triviaAnswerCompiler.compileTextAnswer('Miyamoto-san')
+        assert result == 'miyamoto'
+
     @pytest.mark.asyncio
     async def test_compileTextAnswer_withNewLines(self):
         result: str = await self.triviaAnswerCompiler.compileTextAnswer('\nDream Theater\nOctavarium\n')
@@ -239,6 +242,9 @@ class TestTriviaAnswerCompiler():
 
     @pytest.mark.asyncio
     async def test_compileTextAnswer_withOkyakuSama(self):
+        result: str = await self.triviaAnswerCompiler.compileTextAnswer('Okyaku sama')
+        assert result == 'okyaku'
+
         result: str = await self.triviaAnswerCompiler.compileTextAnswer('Okyaku-sama')
         assert result == 'okyaku'
 
@@ -254,6 +260,9 @@ class TestTriviaAnswerCompiler():
 
     @pytest.mark.asyncio
     async def test_compileTextAnswer_withRinonChan(self):
+        result: str = await self.triviaAnswerCompiler.compileTextAnswer('Rinon chan')
+        assert result == 'rinon'
+
         result: str = await self.triviaAnswerCompiler.compileTextAnswer('Rinon-chan')
         assert result == 'rinon'
 
@@ -300,20 +309,28 @@ class TestTriviaAnswerCompiler():
         assert len(result) == 0
 
     @pytest.mark.asyncio
-    async def test_compileTextAnswersList_withNone(self):
-        result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList(None)
+    async def test_compileTextAnswersList_withHash(self):
+        result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ 'mambo #5' ])
         assert result is not None
-        assert len(result) == 0
+        assert len(result) == 2
+        assert 'mambo number 5' in result
+        assert 'mambo 5' in result
 
     @pytest.mark.asyncio
     async def test_compileTextAnswersList_withKurtVonnegutJr(self):
         result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ '(Kurt) Vonnegut (Jr.)' ])
         assert result is not None
         assert len(result) == 4
-        assert 'kurt vonnegut jr' in result
         assert 'kurt vonnegut' in result
+        assert 'kurt vonnegut jr' in result
         assert 'vonnegut' in result
         assert 'vonnegut jr' in result
+
+    @pytest.mark.asyncio
+    async def test_compileTextAnswersList_withNone(self):
+        result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList(None)
+        assert result is not None
+        assert len(result) == 0
 
     @pytest.mark.asyncio
     async def test_compileTextAnswersList_withNumberWord(self):
@@ -344,14 +361,6 @@ class TestTriviaAnswerCompiler():
         assert len(result) == 2
         assert 'first' in result
         assert 'second' in result
-
-    @pytest.mark.asyncio
-    async def test_compileTextAnswersList_withHash(self):
-        result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ 'mambo #5' ])
-        assert result is not None
-        assert len(result) == 2
-        assert 'mambo number 5' in result
-        assert 'mambo 5' in result
 
     @pytest.mark.asyncio
     async def test_expandNumerals_withSimpleDigit1(self):

@@ -100,6 +100,12 @@ class TestTriviaQuestionCompiler():
         assert isinstance(exception, ValueError)
 
     @pytest.mark.asyncio
+    async def test_compileQuestion_withExtranneousWhiteSpace(self):
+        question: str = await self.triviaQuestionCompiler.compileQuestion('    \nWhat  country    is  Tokyo in? \n')
+        assert question is not None
+        assert question == 'What country is Tokyo in?'
+
+    @pytest.mark.asyncio
     async def test_compileQuestion_withWhitespaceString(self):
         question: str = None
         exception: Exception = None
