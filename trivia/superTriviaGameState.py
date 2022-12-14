@@ -40,7 +40,7 @@ class SuperTriviaGameState(AbsTriviaGameState):
             raise ValueError(f'perUserAttempts argument is out of bounds: {perUserAttempts}')
         elif not utils.isValidNum(pointsMultiplier):
             raise ValueError(f'pointsMultiplier argument is malformed: \"{pointsMultiplier}\"')
-        elif pointsMultiplier < 1 or pointsMultiplier > utils.getIntMaxSafeSize():
+        elif pointsMultiplier < 1 or pointsMultiplier >= utils.getIntMaxSafeSize():
             raise ValueError(f'pointsMultiplier argument is out of bounds: {pointsMultiplier}')
 
         self.__perUserAttempts: int = perUserAttempts

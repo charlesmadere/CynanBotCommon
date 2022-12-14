@@ -14,7 +14,7 @@ class AbsTriviaAction(ABC):
         self,
         triviaActionType: TriviaActionType
     ):
-        if triviaActionType is None:
+        if not isinstance(triviaActionType, TriviaActionType):
             raise ValueError(f'triviaActionType argument is malformed: \"{triviaActionType}\"')
 
         self.__triviaActionType: TriviaActionType = triviaActionType

@@ -19,7 +19,7 @@ class AbsTriviaEvent(ABC):
     ):
         if not utils.isValidStr(actionId):
             raise ValueError(f'actionId argument is malformed: \"{actionId}\"')
-        elif triviaEventType is None:
+        elif not isinstance(triviaEventType, TriviaEventType):
             raise ValueError(f'triviaEventType argument is malformed: \"{triviaEventType}\"')
 
         self.__actionId: str = actionId

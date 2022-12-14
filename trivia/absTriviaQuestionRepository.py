@@ -28,7 +28,7 @@ class AbsTriviaQuestionRepository(ABC):
         self,
         triviaSettingsRepository: TriviaSettingsRepository
     ):
-        if triviaSettingsRepository is None:
+        if not isinstance(triviaSettingsRepository, TriviaSettingsRepository):
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
 
         self._triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository

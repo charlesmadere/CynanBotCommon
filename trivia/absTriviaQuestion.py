@@ -35,11 +35,11 @@ class AbsTriviaQuestion(ABC):
             raise NoTriviaQuestionException(f'question argument is malformed: \"{question}\"')
         elif not utils.isValidStr(triviaId):
             raise ValueError(f'triviaId argument is malformed: \"{triviaId}\"')
-        elif triviaDifficulty is None:
+        elif not isinstance(triviaDifficulty, TriviaDifficulty):
             raise ValueError(f'triviaDifficulty argument is malformed: \"{triviaDifficulty}\"')
-        elif triviaSource is None:
+        elif not isinstance(triviaSource, TriviaSource):
             raise ValueError(f'triviaSource argument is malformed: \"{triviaSource}\"')
-        elif triviaType is None:
+        elif not isinstance(triviaType, TriviaType):
             raise ValueError(f'triviaType argument is malformed: \"{triviaType}\"')
 
         self.__category: Optional[str] = category

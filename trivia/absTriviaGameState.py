@@ -24,21 +24,21 @@ class AbsTriviaGameState(ABC):
         twitchChannel: str,
         triviaGameType: TriviaGameType
     ):
-        if triviaQuestion is None:
+        if not isinstance(triviaQuestion, AbsTriviaQuestion):
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
         elif not utils.isValidNum(pointsForWinning):
             raise ValueError(f'pointsForWinning argument is malformed: \"{pointsForWinning}\"')
-        elif pointsForWinning < 1:
+        elif pointsForWinning < 1 or pointsForWinning >= utils.getIntMaxSafeSize():
             raise ValueError(f'pointsForWinning argument is out of bounds: {pointsForWinning}')
         elif not utils.isValidNum(secondsToLive):
             raise ValueError(f'secondsToLive argument is malformed: \"{secondsToLive}\"')
-        elif secondsToLive < 1 or secondsToLive > utils.getIntMaxSafeSize():
+        elif secondsToLive < 1 or secondsToLive >= utils.getIntMaxSafeSize():
             raise ValueError(f'secondsToLive argument is out of bounds: {secondsToLive}')
         elif not utils.isValidStr(actionId):
             raise ValueError(f'actionId argument is malformed: \"{actionId}\"')
         elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
-        elif triviaGameType is None:
+        elif not isinstance(triviaGameType, TriviaGameType):
             raise ValueError(f'triviaGameType argument is malformed: \"{triviaGameType}\"')
 
         self.__triviaQuestion: AbsTriviaQuestion = triviaQuestion
