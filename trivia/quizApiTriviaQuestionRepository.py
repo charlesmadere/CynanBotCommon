@@ -58,15 +58,15 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
     ):
         super().__init__(triviaSettingsRepository)
 
-        if networkClientProvider is None:
+        if not isinstance(networkClientProvider, NetworkClientProvider):
             raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
         elif not utils.isValidStr(quizApiKey):
             raise ValueError(f'quizApiKey argument is malformed: \"{quizApiKey}\"')
-        elif timber is None:
+        elif not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif triviaEmoteGenerator is None:
+        elif not isinstance(triviaEmoteGenerator, TriviaEmoteGenerator):
             raise ValueError(f'triviaEmoteGenerator argument is malformed: \"{triviaEmoteGenerator}\"')
-        elif triviaIdGenerator is None:
+        elif not isinstance(triviaIdGenerator, TriviaIdGenerator):
             raise ValueError(f'triviaIdGenerator argument is malformed: \"{triviaIdGenerator}\"')
 
         self.__networkClientProvider: NetworkClientProvider = networkClientProvider
@@ -76,6 +76,9 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self.__triviaIdGenerator: TriviaIdGenerator = triviaIdGenerator
 
     async def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
+        if not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+
         self.__timber.log('QuizApiTriviaQuestionRepository', f'Fetching trivia question... (twitchChannel={twitchChannel})')
 
         clientSession = await self.__networkClientProvider.get()

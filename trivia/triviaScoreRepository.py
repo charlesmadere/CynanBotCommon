@@ -15,7 +15,7 @@ except:
 class TriviaScoreRepository():
 
     def __init__(self, backingDatabase: BackingDatabase):
-        if backingDatabase is None:
+        if not isinstance(backingDatabase, BackingDatabase):
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
 
         self.__backingDatabase: BackingDatabase = backingDatabase

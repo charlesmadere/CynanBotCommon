@@ -58,17 +58,17 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
     ):
         super().__init__(triviaSettingsRepository)
 
-        if networkClientProvider is None:
+        if not isinstance(networkClientProvider, NetworkClientProvider):
             raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
-        elif timber is None:
+        elif not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif triviaAnswerCompiler is None:
+        elif not isinstance(triviaAnswerCompiler, TriviaAnswerCompiler):
             raise ValueError(f'triviaAnswerCompiler argument is malformed: \"{triviaAnswerCompiler}\"')
-        elif triviaEmoteGenerator is None:
+        elif not isinstance(triviaEmoteGenerator, TriviaEmoteGenerator):
             raise ValueError(f'triviaEmoteGenerator argument is malformed: \"{triviaEmoteGenerator}\"')
-        elif triviaIdGenerator is None:
+        elif not isinstance(triviaIdGenerator, TriviaIdGenerator):
             raise ValueError(f'triviaIdGenerator argument is malformed: \"{triviaIdGenerator}\"')
-        elif triviaQuestionCompiler is None:
+        elif not isinstance(triviaQuestionCompiler, TriviaQuestionCompiler):
             raise ValueError(f'triviaQuestionCompiler argument is malformed: \"{triviaQuestionCompiler}\"')
 
         self.__networkClientProvider: NetworkClientProvider = networkClientProvider
@@ -79,6 +79,9 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self.__triviaQuestionCompiler: TriviaQuestionCompiler = triviaQuestionCompiler
 
     async def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
+        if not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+
         questions = await self.fetchTriviaQuestions(
             twitchChannel = twitchChannel,
             count = 1
@@ -90,7 +93,9 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
         return questions[0]
 
     async def fetchTriviaQuestions(self, twitchChannel: str, count: int) -> List[AbsTriviaQuestion]:
-        if not utils.isValidNum(count):
+        if not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+        elif not utils.isValidNum(count):
             raise ValueError(f'count argument is malformed: \"{count}\"')
         elif count < 1 or count > 100:
             raise ValueError(f'count argument is out of bounds: {count}')

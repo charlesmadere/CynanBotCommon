@@ -10,7 +10,6 @@ try:
     from CynanBotCommon.trivia.triviaGameType import TriviaGameType
 except:
     import utils
-
     from trivia.absTriviaGameState import AbsTriviaGameState
     from trivia.superTriviaGameState import SuperTriviaGameState
     from trivia.triviaExceptions import UnknownTriviaGameTypeException
@@ -25,7 +24,7 @@ class TriviaGameStore():
         self.__superGameStates: List[SuperTriviaGameState] = list()
 
     async def add(self, state: AbsTriviaGameState):
-        if state is None:
+        if not isinstance(state, AbsTriviaGameState):
             raise ValueError(f'state argument is malformed: \"{state}\"')
 
         if state.getTriviaGameType() is TriviaGameType.NORMAL:

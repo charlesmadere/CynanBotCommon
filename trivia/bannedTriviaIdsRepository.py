@@ -27,11 +27,11 @@ class BannedTriviaIdsRepository():
         timber: Timber,
         triviaSettingsRepository: TriviaSettingsRepository
     ):
-        if backingDatabase is None:
+        if not isinstance(backingDatabase, BackingDatabase):
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
-        elif timber is None:
+        elif not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif triviaSettingsRepository is None:
+        elif not isinstance(triviaSettingsRepository, TriviaSettingsRepository):
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
 
         self.__backingDatabase: BackingDatabase = backingDatabase
@@ -43,7 +43,7 @@ class BannedTriviaIdsRepository():
     async def ban(self, triviaId: str, triviaSource: TriviaSource):
         if not utils.isValidStr(triviaId):
             raise ValueError(f'triviaId argument is malformed: \"{triviaId}\"')
-        elif triviaSource is None:
+        elif not isinstance(triviaSource, TriviaSource):
             raise ValueError(f'triviaSource argument is malformed: \"{triviaSource}\"')
 
         self.__timber.log('BannedTriviaIdsRepository', f'Banning trivia question (triviaId=\"{triviaId}\", triviaSource=\"{triviaSource}\")...')
@@ -52,7 +52,7 @@ class BannedTriviaIdsRepository():
     async def __banQuestion(self, triviaId: str, triviaSource: TriviaSource):
         if not utils.isValidStr(triviaId):
             raise ValueError(f'triviaId argument is malformed: \"{triviaId}\"')
-        elif triviaSource is None:
+        elif not isinstance(triviaSource, TriviaSource):
             raise ValueError(f'triviaSource argument is malformed: \"{triviaSource}\"')
 
         connection = await self.__getDatabaseConnection()
@@ -104,10 +104,10 @@ class BannedTriviaIdsRepository():
         await connection.close()
 
     async def isBanned(self, triviaSource: TriviaSource, triviaId: str) -> bool:
-        if triviaSource is None:
-            raise ValueError(f'triviaSource argument is malformed: \"{triviaSource}\"')
-        elif not utils.isValidStr(triviaId):
+        if not utils.isValidStr(triviaId):
             raise ValueError(f'triviaId argument is malformed: \"{triviaId}\"')
+        elif not isinstance(triviaSource, TriviaSource):
+            raise ValueError(f'triviaSource argument is malformed: \"{triviaSource}\"')
 
         if not await self.__triviaSettingsRepository.isBanListEnabled():
             return False
@@ -137,7 +137,7 @@ class BannedTriviaIdsRepository():
     async def unban(self, triviaId: str, triviaSource: TriviaSource):
         if not utils.isValidStr(triviaId):
             raise ValueError(f'triviaId argument is malformed: \"{triviaId}\"')
-        elif triviaSource is None:
+        elif not isinstance(triviaSource, TriviaSource):
             raise ValueError(f'triviaSource argument is malformed: \"{triviaSource}\"')
 
         self.__timber.log('BannedTriviaIdsRepository', f'Unbanning trivia question (triviaId=\"{triviaId}\", triviaSource=\"{triviaSource}\")...')

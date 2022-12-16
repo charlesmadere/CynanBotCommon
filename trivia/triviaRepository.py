@@ -108,29 +108,37 @@ class TriviaRepository():
         wwtbamTriviaQuestionRepository: WwtbamTriviaQuestionRepository,
         sleepTimeSeconds: float = 0.5
     ):
-        if bongoTriviaQuestionRepository is None:
+        if not isinstance(bongoTriviaQuestionRepository, BongoTriviaQuestionRepository):
             raise ValueError(f'bongoTriviaQuestionRepository argument is malformed: \"{bongoTriviaQuestionRepository}\"')
-        elif funtoonTriviaQuestionRepository is None:
+        elif not isinstance(funtoonTriviaQuestionRepository, FuntoonTriviaQuestionRepository):
             raise ValueError(f'funtoonTriviaQuestionRepository argument is malformed: \"{funtoonTriviaQuestionRepository}\"')
-        elif millionaireTriviaQuestionRepository is None:
+        elif jokeTriviaQuestionRepository is not None and not isinstance(jokeTriviaQuestionRepository, JokeTriviaQuestionRepository):
+            raise ValueError(f'jokeTriviaQuestionRepository argument is malformed: \"{jokeTriviaQuestionRepository}\"')
+        elif jServiceTriviaQuestionRepository is not None and not isinstance(jServiceTriviaQuestionRepository, JServiceTriviaQuestionRepository):
+            raise ValueError(f'jServiceTriviaQuestionRepository argument is malformed \"{jServiceTriviaQuestionRepository}\"')
+        elif lotrTriviaQuestionRepository is not None and not isinstance(lotrTriviaQuestionRepository, LotrTriviaQuestionRepository):
+            raise ValueError(f'lotrTriviaQuestionRepository argument is malformed: \"{lotrTriviaQuestionRepository}\"')
+        elif not isinstance(millionaireTriviaQuestionRepository, MillionaireTriviaQuestionRepository):
             raise ValueError(f'millionaireTriviaQuestionRepository argument is malformed: \"{millionaireTriviaQuestionRepository}\"')
-        elif openTriviaDatabaseTriviaQuestionRepository is None:
+        elif not isinstance(openTriviaDatabaseTriviaQuestionRepository, OpenTriviaDatabaseTriviaQuestionRepository):
             raise ValueError(f'openTriviaDatabaseTriviaQuestionRepository argument is malformed: \"{openTriviaDatabaseTriviaQuestionRepository}\"')
-        elif openTriviaQaTriviaQuestionRepository is None:
+        elif not isinstance(openTriviaQaTriviaQuestionRepository, OpenTriviaQaTriviaQuestionRepository):
             raise ValueError(f'openTriviaQaTriviaQuestionRepository argument is malformed: \"{openTriviaQaTriviaQuestionRepository}\"')
-        elif timber is None:
+        elif quizApiTriviaQuestionRepository is not None and not isinstance(quizApiTriviaQuestionRepository, QuizApiTriviaQuestionRepository):
+            raise ValueError(f'quizApiTriviaQuestionRepository argument is malformed: \"{quizApiTriviaQuestionRepository}\"')
+        elif not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif triviaDatabaseTriviaQuestionRepository is None:
+        elif not isinstance(triviaDatabaseTriviaQuestionRepository, TriviaDatabaseTriviaQuestionRepository):
             raise ValueError(f'triviaDatabaseTriviaQuestionRepository argument is malformed: \"{triviaDatabaseTriviaQuestionRepository}\"')
-        elif triviaSettingsRepository is None:
+        elif not isinstance(triviaSettingsRepository, TriviaSettingsRepository):
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
-        elif triviaSourceInstabilityHelper is None:
+        elif not isinstance(triviaSourceInstabilityHelper, TriviaSourceInstabilityHelper):
             raise ValueError(f'triviaSourceInstabilityHelper argument is malformed: \"{triviaSourceInstabilityHelper}\"')
-        elif triviaVerifier is None:
+        elif not isinstance(triviaVerifier, TriviaVerifier):
             raise ValueError(f'triviaVerifier argument is malformed: \"{triviaVerifier}\"')
-        elif willFryTriviaQuestionRepository is None:
+        elif not isinstance(willFryTriviaQuestionRepository, WillFryTriviaQuestionRepository):
             raise ValueError(f'willFryTriviaQuestionRepository argument is malformed: \"{willFryTriviaQuestionRepository}\"')
-        elif wwtbamTriviaQuestionRepository is None:
+        elif not isinstance(wwtbamTriviaQuestionRepository, WwtbamTriviaQuestionRepository):
             raise ValueError(f'wwtbamTriviaQuestionRepository argument is malformed: \"{wwtbamTriviaQuestionRepository}\"')
         elif not utils.isValidNum(sleepTimeSeconds):
             raise ValueError(f'sleepTimeSeconds argument is malformed: \"{sleepTimeSeconds}\"')
@@ -211,13 +219,13 @@ class TriviaRepository():
         return triviaSourceToRepositoryMap
 
     async def fetchTrivia(self, triviaFetchOptions: TriviaFetchOptions) -> Optional[AbsTriviaQuestion]:
-        if triviaFetchOptions is None:
+        if not isinstance(triviaFetchOptions, TriviaFetchOptions):
             raise ValueError(f'triviaFetchOptions argument is malformed: \"{triviaFetchOptions}\"')
 
         return await self.__fetchTrivia(triviaFetchOptions)
 
     async def __fetchTrivia(self, triviaFetchOptions: TriviaFetchOptions) -> Optional[AbsTriviaQuestion]:
-        if triviaFetchOptions is None:
+        if not isinstance(triviaFetchOptions, TriviaFetchOptions):
             raise ValueError(f'triviaFetchOptions argument is malformed: \"{triviaFetchOptions}\"')
 
         triviaQuestion: Optional[AbsTriviaQuestion] = None
@@ -253,7 +261,7 @@ class TriviaRepository():
         raise TooManyTriviaFetchAttemptsException(f'Unable to fetch trivia from {attemptedTriviaSources} after {retryCount} attempts (max attempts is {maxRetryCount})')
 
     async def __getCurrentlyInvalidTriviaSources(self, triviaFetchOptions: TriviaFetchOptions) -> Set[TriviaSource]:
-        if triviaFetchOptions is None:
+        if not isinstance(triviaFetchOptions, TriviaFetchOptions):
             raise ValueError(f'triviaFetchOptions argument is malformed: \"{triviaFetchOptions}\"')
 
         availableTriviaSourcesMap: Dict[TriviaSource, AbsTriviaQuestionRepository] = dict()
@@ -317,10 +325,10 @@ class TriviaRepository():
 
     async def __verifyGoodTriviaQuestion(
         self,
-        triviaQuestion: AbsTriviaQuestion,
+        triviaQuestion: Optional[AbsTriviaQuestion],
         triviaFetchOptions: TriviaFetchOptions
     ) -> bool:
-        if triviaFetchOptions is None:
+        if not isinstance(triviaFetchOptions, TriviaFetchOptions):
             raise ValueError(f'triviaFetchOptions argument is malformed: \"{triviaFetchOptions}\"')
 
         triviaContentCode = await self.__triviaVerifier.verify(triviaQuestion, triviaFetchOptions)

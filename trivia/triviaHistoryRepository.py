@@ -35,11 +35,11 @@ class TriviaHistoryRepository():
         timber: Timber,
         triviaSettingsRepository: TriviaSettingsRepository
     ):
-        if backingDatabase is None:
+        if not isinstance(backingDatabase, BackingDatabase):
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
-        elif timber is None:
+        elif not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif triviaSettingsRepository is None:
+        elif not isinstance(triviaSettingsRepository, TriviaSettingsRepository):
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
 
         self.__backingDatabase: BackingDatabase = backingDatabase
@@ -129,7 +129,7 @@ class TriviaHistoryRepository():
         question: AbsTriviaQuestion,
         twitchChannel: str
     ) -> TriviaContentCode:
-        if question is None:
+        if not isinstance(question, AbsTriviaQuestion):
             raise ValueError(f'question argument is malformed: \"{question}\"')
         elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')

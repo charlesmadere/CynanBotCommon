@@ -3,7 +3,6 @@ try:
     from CynanBotCommon.trivia.triviaSource import TriviaSource
 except:
     import utils
-
     from trivia.triviaSource import TriviaSource
 
 
@@ -22,7 +21,7 @@ class TriviaQuestionReference():
             raise ValueError(f'triviaId argument is malformed: \"{triviaId}\"')
         elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
-        elif triviaSource is None:
+        elif not isinstance(triviaSource, TriviaSource):
             raise ValueError(f'triviaSource argument is malformed: \"{triviaSource}\"')
 
         self.__emote: str = emote

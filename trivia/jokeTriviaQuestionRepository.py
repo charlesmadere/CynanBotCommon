@@ -48,9 +48,9 @@ class JokeTriviaQuestionRepository(AbsTriviaQuestionRepository):
     ):
         super().__init__(triviaSettingsRepository)
 
-        if timber is None:
+        if not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif triviaEmoteGenerator is None:
+        elif not isinstance(triviaEmoteGenerator, TriviaEmoteGenerator):
             raise ValueError(f'triviaEmoteGenerator argument is malformed: \"{triviaEmoteGenerator}\"')
         elif not utils.isValidStr(jokeTriviaQuestionFile):
             raise ValueError(f'jokeTriviaQuestionFile argument is malformed: \"{jokeTriviaQuestionFile}\"')
@@ -60,6 +60,9 @@ class JokeTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self.__jokeTriviaQuestionFile: str = jokeTriviaQuestionFile
 
     async def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
+        if not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+
         self.__timber.log('JokeTriviaQuestionRepository', f'Fetching trivia question... (twitchChannel={twitchChannel})')
 
         triviaJson: Optional[Dict[str, Any]] = await self.__fetchTriviaQuestionJson(twitchChannel)
@@ -108,6 +111,10 @@ class JokeTriviaQuestionRepository(AbsTriviaQuestionRepository):
             raise UnsupportedTriviaTypeException(f'triviaType \"{triviaType}\" is not supported for Joke Trivia Question Repository: {triviaJson}')
 
     async def __fetchTriviaQuestionJson(self, twitchChannel: str) -> Optional[Dict[str, Any]]:
+        if not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+
+        twitchChannel = twitchChannel.lower()
         jsonContents = await self.__readAllJson()
 
         triviaQuestions: List[Dict[str, Any]] = jsonContents.get('triviaQuestions')
@@ -121,7 +128,7 @@ class JokeTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
             if utils.hasItems(compatibleWith):
                 for tc in compatibleWith:
-                    if tc.lower() == twitchChannel.lower():
+                    if tc.lower() == twitchChannel:
                         acceptableTriviaQuestions.append(triviaQuestion)
                         break
             else:

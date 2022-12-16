@@ -31,9 +31,9 @@ class QueuedTriviaGameStore():
         triviaSettingsRepository: TriviaSettingsRepository,
         queueTimeoutSeconds: int = 3
     ):
-        if timber is None:
+        if not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif triviaSettingsRepository is None:
+        elif not isinstance(triviaSettingsRepository, TriviaSettingsRepository):
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
         elif not utils.isValidNum(queueTimeoutSeconds):
             raise ValueError(f'queueTimeoutSeconds argument is malformed: \"{queueTimeoutSeconds}\"')
@@ -53,7 +53,7 @@ class QueuedTriviaGameStore():
     ) -> AddQueuedGamesResult:
         if not utils.isValidBool(isSuperTriviaGameCurrentlyInProgress):
             raise ValueError(f'isSuperTriviaGameCurrentlyInProgress argument is malformed: \"{isSuperTriviaGameCurrentlyInProgress}\"')
-        elif action is None:
+        elif not isinstance(action, StartNewSuperTriviaGameAction):
             raise ValueError(f'action argument is malformed: \"{action}\"')
 
         queuedSuperGames = self.__queuedSuperGames[action.getTwitchChannel().lower()]

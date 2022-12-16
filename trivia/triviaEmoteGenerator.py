@@ -20,7 +20,7 @@ class TriviaEmoteGenerator():
         self,
         backingDatabase: BackingDatabase
     ):
-        if backingDatabase is None:
+        if not isinstance(backingDatabase, BackingDatabase):
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
 
         self.__backingDatabase: BackingDatabase = backingDatabase
@@ -83,7 +83,7 @@ class TriviaEmoteGenerator():
         emotesDict['🍠'] = None
         emotesDict['🚀'] = None
         emotesDict['🏫'] = None
-        emotesDict['🦐'] = None
+        emotesDict['🦐'] = { '🍤' }
         emotesDict['🦑'] = { '🐙' }
         emotesDict['📏'] = None
         emotesDict['🍓'] = None

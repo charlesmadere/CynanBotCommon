@@ -29,7 +29,7 @@ class WrongUserCheckAnswerTriviaEvent(AbsTriviaEvent):
             triviaEventType = TriviaEventType.WRONG_USER
         )
 
-        if triviaQuestion is None:
+        if not isinstance(triviaQuestion, AbsTriviaQuestion):
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
         elif not utils.isValidStr(gameId):
             raise ValueError(f'gameId argument is malformed: \"{gameId}\"')

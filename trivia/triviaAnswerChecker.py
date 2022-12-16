@@ -47,11 +47,11 @@ class TriviaAnswerChecker():
         triviaAnswerCompiler: TriviaAnswerCompiler,
         triviaSettingsRepository: TriviaSettingsRepository,
     ):
-        if timber is None:
+        if not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif triviaAnswerCompiler is None:
+        elif not isinstance(triviaAnswerCompiler, TriviaAnswerCompiler):
             raise ValueError(f'triviaAnswerCompiler argument is malformed: \"{triviaAnswerCompiler}\"')
-        elif triviaSettingsRepository is None:
+        elif not isinstance(triviaSettingsRepository, TriviaSettingsRepository):
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
 
         self.__timber: Timber = timber
@@ -91,7 +91,7 @@ class TriviaAnswerChecker():
         triviaQuestion: AbsTriviaQuestion,
         extras: Optional[Dict[str, Any]] = None
     ) -> TriviaAnswerCheckResult:
-        if triviaQuestion is None:
+        if not isinstance(triviaQuestion, AbsTriviaQuestion):
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
 
         if not utils.isValidStr(answer):

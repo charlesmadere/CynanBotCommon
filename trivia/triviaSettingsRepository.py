@@ -144,7 +144,7 @@ class TriviaSettingsRepository():
 
     async def isDebugLoggingEnabled(self) -> bool:
         jsonContents = await self.__readJson()
-        return utils.getBoolFromDict(jsonContents, 'debug_logging_enabled', False)
+        return utils.getBoolFromDict(jsonContents, 'debug_logging_enabled', True)
 
     async def __readJson(self) -> Dict[str, Any]:
         if self.__settingsCache is not None:

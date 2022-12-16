@@ -33,7 +33,7 @@ class CorrectAnswerTriviaEvent(AbsTriviaEvent):
             triviaEventType = TriviaEventType.CORRECT_ANSWER
         )
 
-        if triviaQuestion is None:
+        if not isinstance(triviaQuestion, AbsTriviaQuestion):
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
         elif not utils.isValidNum(pointsForWinning):
             raise ValueError(f'pointsForWinning argument is malformed: \"{pointsForWinning}\"')
@@ -49,7 +49,7 @@ class CorrectAnswerTriviaEvent(AbsTriviaEvent):
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
         elif not utils.isValidStr(userName):
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
-        elif triviaScoreResult is None:
+        elif not isinstance(triviaScoreResult, TriviaScoreResult):
             raise ValueError(f'triviaScoreResult argument is malformed: \"{triviaScoreResult}\"')
 
         self.__triviaQuestion: AbsTriviaQuestion = triviaQuestion

@@ -32,7 +32,7 @@ class TooLateToAnswerCheckAnswerTriviaEvent(AbsTriviaEvent):
             triviaEventType = TriviaEventType.TOO_LATE_TO_ANSWER
         )
 
-        if triviaQuestion is None:
+        if not isinstance(triviaQuestion, AbsTriviaQuestion):
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
         elif not utils.isValidStr(answer):
             raise ValueError(f'answer argument is malformed: \"{answer}\"')
@@ -44,7 +44,7 @@ class TooLateToAnswerCheckAnswerTriviaEvent(AbsTriviaEvent):
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
         elif not utils.isValidStr(userName):
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
-        elif triviaScoreResult is None:
+        elif not isinstance(triviaScoreResult, TriviaScoreResult):
             raise ValueError(f'triviaScoreResult argument is malformed: \"{triviaScoreResult}\"')
 
         self.__triviaQuestion: AbsTriviaQuestion = triviaQuestion

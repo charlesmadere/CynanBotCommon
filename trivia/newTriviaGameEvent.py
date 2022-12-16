@@ -7,7 +7,6 @@ try:
     from CynanBotCommon.trivia.triviaEventType import TriviaEventType
 except:
     import utils
-
     from trivia.absTriviaEvent import AbsTriviaEvent
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.triviaEventType import TriviaEventType
@@ -31,7 +30,7 @@ class NewTriviaGameEvent(AbsTriviaEvent):
             triviaEventType = TriviaEventType.NEW_GAME
         )
 
-        if triviaQuestion is None:
+        if not isinstance(triviaQuestion, AbsTriviaQuestion):
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
         elif not utils.isValidNum(pointsForWinning):
             raise ValueError(f'pointsForWinning argument is malformed: \"{pointsForWinning}\"')

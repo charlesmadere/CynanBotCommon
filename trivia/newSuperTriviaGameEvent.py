@@ -29,7 +29,7 @@ class NewSuperTriviaGameEvent(AbsTriviaEvent):
             triviaEventType = TriviaEventType.NEW_SUPER_GAME
         )
 
-        if triviaQuestion is None:
+        if not isinstance(triviaQuestion, AbsTriviaQuestion):
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
         elif not utils.isValidNum(pointsForWinning):
             raise ValueError(f'pointsForWinning argument is malformed: \"{pointsForWinning}\"')

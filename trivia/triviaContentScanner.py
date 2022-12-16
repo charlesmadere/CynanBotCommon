@@ -29,9 +29,9 @@ class TriviaContentScanner():
         triviaSettingsRepository: TriviaSettingsRepository,
         bannedWordsFile: str = 'CynanBotCommon/trivia/bannedWords.txt'
     ):
-        if timber is None:
+        if not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif triviaSettingsRepository is None:
+        elif not isinstance(triviaSettingsRepository, TriviaSettingsRepository):
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
         elif not utils.isValidStr(bannedWordsFile):
             raise ValueError(f'bannedWordsFile argument is malformed: \"{bannedWordsFile}\"')
@@ -106,7 +106,10 @@ class TriviaContentScanner():
 
         return bannedWords
 
-    async def verify(self, question: AbsTriviaQuestion) -> TriviaContentCode:
+    async def verify(self, question: Optional[AbsTriviaQuestion]) -> TriviaContentCode:
+        if question is not None and not isinstance(question, AbsTriviaQuestion):
+            raise ValueError(f'question argument is malformed: \"{question}\"')
+
         if question is None:
             return TriviaContentCode.IS_NONE
 

@@ -18,11 +18,11 @@ class TriviaSourceInstabilityHelper():
         fallOffTimeDelta: timedelta = timedelta(minutes = 20),
         timeZone: timezone = timezone.utc
     ):
-        if timber is None:
+        if not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif fallOffTimeDelta is None:
+        elif not isinstance(fallOffTimeDelta, timedelta):
             raise ValueError(f'fallOffTimeDelta argument is malformed: \"{fallOffTimeDelta}\"')
-        elif timeZone is None:
+        elif not isinstance(timeZone, timezone.utc):
             raise ValueError(f'timeZone argument is malformed: \"{timeZone}\"')
 
         self.__timber: Timber = timber

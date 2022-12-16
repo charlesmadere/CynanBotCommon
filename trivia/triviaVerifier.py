@@ -1,3 +1,5 @@
+from typing import Optional
+
 try:
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
@@ -29,13 +31,13 @@ class TriviaVerifier():
         triviaContentScanner: TriviaContentScanner,
         triviaHistoryRepository: TriviaHistoryRepository
     ):
-        if bannedTriviaIdsRepository is None:
+        if not isinstance(bannedTriviaIdsRepository, BannedTriviaIdsRepository):
             raise ValueError(f'bannedTriviaIdsRepository argument is malformed: \"bannedTriviaIdsRepository\"')
-        elif timber is None:
+        elif not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif triviaContentScanner is None:
+        elif not isinstance(triviaContentScanner, TriviaContentScanner):
             raise ValueError(f'triviaContentScanner argument is malformed: \"{triviaContentScanner}\"')
-        elif triviaHistoryRepository is None:
+        elif not isinstance(triviaHistoryRepository, TriviaHistoryRepository):
             raise ValueError(f'triviaHistoryRepository argument is malformed: \"{triviaHistoryRepository}\"')
 
         self.__bannedTriviaIdsRepository: BannedTriviaIdsRepository = bannedTriviaIdsRepository
@@ -45,10 +47,10 @@ class TriviaVerifier():
 
     async def verify(
         self,
-        question: AbsTriviaQuestion,
+        question: Optional[AbsTriviaQuestion],
         triviaFetchOptions: TriviaFetchOptions
     ) -> TriviaContentCode:
-        if triviaFetchOptions is None:
+        if not isinstance(triviaFetchOptions, TriviaFetchOptions):
             raise ValueError(f'triviaFetchOptions argument is malformed: \"{triviaFetchOptions}\"')
 
         if question is None:
@@ -61,7 +63,7 @@ class TriviaVerifier():
             self.__timber.log('TriviaVerifier', f'The given TriviaType is illegal: {question.getTriviaType()}')
             return TriviaContentCode.ILLEGAL_TRIVIA_TYPE
 
-        if await self.__bannedTriviaIdsRepository.isBanned(question.getTriviaSource(), question.getTriviaId()):
+        if await self.__bannedTriviaIdsRepository.isBanned(question.getTriviaId(), question.getTriviaSource()):
             return TriviaContentCode.IS_BANNED
 
         contentScannerCode = await self.__triviaContentScanner.verify(question)
