@@ -22,7 +22,7 @@ class TriviaSourceInstabilityHelper():
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(fallOffTimeDelta, timedelta):
             raise ValueError(f'fallOffTimeDelta argument is malformed: \"{fallOffTimeDelta}\"')
-        elif not isinstance(timeZone, timezone.utc):
+        elif not isinstance(timeZone, timezone):
             raise ValueError(f'timeZone argument is malformed: \"{timeZone}\"')
 
         self.__timber: Timber = timber
