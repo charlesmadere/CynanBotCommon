@@ -51,23 +51,23 @@ class CutenessRepository():
         leaderboardSize: int = 10,
         localLeaderboardSize: int = 5
     ):
-        if backingDatabase is None:
+        if not isinstance(backingDatabase, BackingDatabase):
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
-        elif userIdsRepository is None:
+        elif not isinstance(userIdsRepository, UserIdsRepository):
             raise ValueError(f'userIdsRepository argument is malformed: \"{userIdsRepository}\"')
-        elif not utils.isValidNum(historyLeaderboardSize):
+        elif not utils.isValidInt(historyLeaderboardSize):
             raise ValueError(f'historyLeaderboardSize argument is malformed: \"{historyLeaderboardSize}\"')
         elif historyLeaderboardSize < 2 or historyLeaderboardSize > 6:
             raise ValueError(f'historyLeaderboardSize argument is out of bounds: {historyLeaderboardSize}')
-        elif not utils.isValidNum(historySize):
+        elif not utils.isValidInt(historySize):
             raise ValueError(f'historySize argument is malformed: \"{historySize}\"')
         elif historySize < 2 or historySize > 12:
             raise ValueError(f'historySize argument is out of bounds: {historySize}')
-        elif not utils.isValidNum(leaderboardSize):
+        elif not utils.isValidInt(leaderboardSize):
             raise ValueError(f'leaderboardSize argument is malformed: \"{leaderboardSize}\"')
         elif leaderboardSize < 3 or leaderboardSize > 10:
             raise ValueError(f'leaderboardSize argument is out of bounds: {leaderboardSize}')
-        elif not utils.isValidNum(localLeaderboardSize):
+        elif not utils.isValidInt(localLeaderboardSize):
             raise ValueError(f'localLeaderboardSize argument is malformed: \"{localLeaderboardSize}\"')
         elif localLeaderboardSize < 1 or localLeaderboardSize > 5:
             raise ValueError(f'localLeaderboardSize argument is out of bounds: {localLeaderboardSize}')
@@ -325,7 +325,7 @@ class CutenessRepository():
         userId: str,
         userName: str
     ) -> CutenessResult:
-        if not utils.isValidNum(incrementAmount):
+        if not utils.isValidInt(incrementAmount):
             raise ValueError(f'incrementAmount argument is malformed: \"{incrementAmount}\"')
         elif incrementAmount >= utils.getLongMaxSafeSize():
             raise ValueError(f'incrementAmount ({incrementAmount}) is >= maximum value ({utils.getLongMaxSafeSize()})')
