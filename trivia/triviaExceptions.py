@@ -12,7 +12,37 @@ class BadTriviaAnswerException(Exception):
         super().__init__(message)
 
 
+class BadTriviaDifficultyException(Exception):
+
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
+class BadTriviaEmoteException(Exception):
+
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
+class BadTriviaIdException(Exception):
+
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
 class BadTriviaSessionTokenException(Exception):
+
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
+class BadTriviaSourceException(Exception):
+
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
+class BadTriviaTypeException(Exception):
 
     def __init__(self, message: str):
         super().__init__(message)

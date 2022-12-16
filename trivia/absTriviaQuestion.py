@@ -4,14 +4,21 @@ from typing import List, Optional
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
-    from CynanBotCommon.trivia.triviaExceptions import \
-        NoTriviaQuestionException
+    from CynanBotCommon.trivia.triviaExceptions import (
+        BadTriviaDifficultyException, BadTriviaEmoteException,
+        BadTriviaIdException, BadTriviaSourceException, BadTriviaTypeException,
+        NoTriviaQuestionException)
     from CynanBotCommon.trivia.triviaSource import TriviaSource
     from CynanBotCommon.trivia.triviaType import TriviaType
 except:
     import utils
     from trivia.triviaDifficulty import TriviaDifficulty
-    from trivia.triviaExceptions import NoTriviaQuestionException
+    from trivia.triviaExceptions import (BadTriviaDifficultyException,
+                                         BadTriviaEmoteException,
+                                         BadTriviaIdException,
+                                         BadTriviaSourceException,
+                                         BadTriviaTypeException,
+                                         NoTriviaQuestionException)
     from trivia.triviaSource import TriviaSource
     from trivia.triviaType import TriviaType
 
@@ -30,17 +37,17 @@ class AbsTriviaQuestion(ABC):
         triviaType: TriviaType
     ):
         if not utils.isValidStr(emote):
-            raise ValueError(f'emote argument is malformed: \"{emote}\"')
+            raise BadTriviaEmoteException(f'emote argument is malformed: \"{emote}\"')
         elif not utils.isValidStr(question):
             raise NoTriviaQuestionException(f'question argument is malformed: \"{question}\"')
         elif not utils.isValidStr(triviaId):
-            raise ValueError(f'triviaId argument is malformed: \"{triviaId}\"')
+            raise BadTriviaIdException(f'triviaId argument is malformed: \"{triviaId}\"')
         elif not isinstance(triviaDifficulty, TriviaDifficulty):
-            raise ValueError(f'triviaDifficulty argument is malformed: \"{triviaDifficulty}\"')
+            raise BadTriviaDifficultyException(f'triviaDifficulty argument is malformed: \"{triviaDifficulty}\"')
         elif not isinstance(triviaSource, TriviaSource):
-            raise ValueError(f'triviaSource argument is malformed: \"{triviaSource}\"')
+            raise BadTriviaSourceException(f'triviaSource argument is malformed: \"{triviaSource}\"')
         elif not isinstance(triviaType, TriviaType):
-            raise ValueError(f'triviaType argument is malformed: \"{triviaType}\"')
+            raise BadTriviaTypeException(f'triviaType argument is malformed: \"{triviaType}\"')
 
         self.__category: Optional[str] = category
         self.__categoryId: Optional[str] = categoryId
