@@ -103,7 +103,7 @@ class BannedTriviaIdsRepository():
 
         await connection.close()
 
-    async def isBanned(self, triviaSource: TriviaSource, triviaId: str) -> bool:
+    async def isBanned(self, triviaId: str, triviaSource: TriviaSource) -> bool:
         if not utils.isValidStr(triviaId):
             raise ValueError(f'triviaId argument is malformed: \"{triviaId}\"')
         elif not isinstance(triviaSource, TriviaSource):
