@@ -126,6 +126,10 @@ class TriviaSettingsRepository():
 
         return minMultipleChoiceResponses
 
+    async def getShinyProbability(self) -> float:
+        jsonContents = await self.__readJson()
+        return utils.getFloatFromDict(jsonContents, 'shiny_probability', 0.01)
+
     async def getSuperTriviaCooldownSeconds(self) -> int:
         jsonContents = await self.__readJson()
         return utils.getIntFromDict(jsonContents, 'super_trivia_cooldown_seconds', 6)

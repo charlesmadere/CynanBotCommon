@@ -1,4 +1,5 @@
-from typing import Optional
+import random
+from typing import Dict, Optional
 
 try:
     import CynanBotCommon.utils as utils
@@ -40,6 +41,22 @@ class ShinyTriviaHelper():
         self.__timber: Timber = timber
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
 
+        self.__rankToProbabilityDict: Dict[int, float] = self.__createRankToProbabilityDict()
+
+    def __createRankToProbabilityDict(self) -> Dict[int, float]:
+        values: Dict[int, float] = dict()
+        values[1] =  0.001
+        values[2] =  0.010
+        values[3] =  0.100
+        values[4] =  0.200
+        values[5] =  0.300
+        values[6] =  0.400
+        values[7] =  0.500
+        values[8] =  0.700
+        values[9] =  0.950
+
+        return values
+
     async def __getUserPlacementOnLeaderboard(
         self,
         twitchChannel: str,
@@ -50,9 +67,20 @@ class ShinyTriviaHelper():
         elif not utils.isValidStr(userId):
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
 
-        # TODO
+        cutenessLeaderboard = await self.__cutenessRepository.fetchCutenessLeaderboard(
+            twitchChannel = twitchChannel
+        )
 
-        raise NotImplementedError()
+        if not cutenessLeaderboard.hasEntries():
+            return None
+
+        userId = userId.lower()
+
+        for entry in cutenessLeaderboard.getEntries():
+            if entry.getUserId().lower() == userId:
+                return entry.getRank()
+
+        return None
 
     async def isShinyTriviaQuestion(
         self,
@@ -64,6 +92,27 @@ class ShinyTriviaHelper():
         elif not utils.isValidStr(userId):
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
 
-        # TODO
+        if not await self.__triviaSettingsRepository.areShiniesEnabled():
+            return False
 
-        raise NotImplementedError()
+        userPlacementOnLeaderboard = await self.__getUserPlacementOnLeaderboard(
+            twitchChannel = twitchChannel,
+            userId = userId
+        )
+
+        probability = await self.__triviaSettingsRepository.getShinyProbability()
+
+        if userPlacementOnLeaderboard is not None and userPlacementOnLeaderboard in self.__rankToProbabilityDict:
+            probability = probability * self.__rankToProbabilityDict[userPlacementOnLeaderboard]
+
+        if random.uniform(0, 1) >= probability:
+            return False
+
+        shinyResult = await self.__shinyTriviaOccurencesRepository.incrementShinyCount(
+            twitchChannel = twitchChannel,
+            userId = userId
+        )
+
+        self.__timber.log('ShinyTriviaHelper', f'{shinyResult.getUserName()}:{shinyResult.getUserId()} has encountered a shiny!')
+
+        return True
