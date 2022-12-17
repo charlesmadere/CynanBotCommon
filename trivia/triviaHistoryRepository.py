@@ -103,6 +103,7 @@ class TriviaHistoryRepository():
                         triviasource public.citext NOT NULL,
                         twitchchannel public.citext NOT NULL,
                         triviaid public.citext NOT NULL,
+                        PRIMARY KEY (triviaid, triviasource, twitchchannel)
                     )
                 '''
             )

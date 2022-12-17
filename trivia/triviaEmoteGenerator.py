@@ -182,7 +182,7 @@ class TriviaEmoteGenerator():
             await connection.createTableIfNotExists(
                 '''
                     CREATE TABLE IF NOT EXISTS triviaemotes (
-                        emoteindex smallint NOT NULL DEFAULT 0,
+                        emoteindex smallint DEFAULT 0 NOT NULL,
                         twitchchannel public.citext NOT NULL PRIMARY KEY
                     )
                 '''
