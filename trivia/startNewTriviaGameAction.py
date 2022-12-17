@@ -7,7 +7,6 @@ try:
     from CynanBotCommon.trivia.triviaFetchOptions import TriviaFetchOptions
 except:
     import utils
-
     from trivia.absTriviaAction import AbsTriviaAction
     from trivia.triviaActionType import TriviaActionType
     from trivia.triviaFetchOptions import TriviaFetchOptions
@@ -26,13 +25,13 @@ class StartNewTriviaGameAction(AbsTriviaAction):
     ):
         super().__init__(triviaActionType = TriviaActionType.START_NEW_GAME)
 
-        if not utils.isValidNum(pointsForWinning):
+        if not utils.isValidInt(pointsForWinning):
             raise ValueError(f'pointsForWinning argument is malformed: \"{pointsForWinning}\"')
-        elif pointsForWinning < 1:
+        elif pointsForWinning < 1 or pointsForWinning >= utils.getIntMaxSafeSize():
             raise ValueError(f'pointsForWinning argument is out of bounds: {pointsForWinning}')
-        elif not utils.isValidNum(secondsToLive):
+        elif not utils.isValidInt(secondsToLive):
             raise ValueError(f'secondsToLive argument is malformed: \"{secondsToLive}\"')
-        elif secondsToLive < 1:
+        elif secondsToLive < 1 or secondsToLive >= utils.getIntMaxSafeSize():
             raise ValueError(f'secondsToLive argument is out of bounds: {secondsToLive}')
         elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
@@ -40,7 +39,7 @@ class StartNewTriviaGameAction(AbsTriviaAction):
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
         elif not utils.isValidStr(userName):
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
-        elif triviaFetchOptions is None:
+        elif not isinstance(triviaFetchOptions, TriviaFetchOptions):
             raise ValueError(f'triviaFetchOptions argument is malformed: \"{triviaFetchOptions}\"')
 
         self.__pointsForWinning: int = pointsForWinning
