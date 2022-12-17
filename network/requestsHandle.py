@@ -28,7 +28,7 @@ class RequestsHandle(NetworkHandle):
         timber: Timber,
         timeoutSeconds: int = 8
     ):
-        if timber is None:
+        if not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not utils.isValidNum(timeoutSeconds):
             raise ValueError(f'timeoutSeconds argument is malformed: \"{timeoutSeconds}\"')

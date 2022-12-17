@@ -22,7 +22,7 @@ class AioHttpResponse(NetworkResponse):
         response: aiohttp.ClientResponse,
         url: str
     ):
-        if response is None:
+        if not isinstance(response, aiohttp.ClientResponse):
             raise ValueError(f'response argument is malformed: \"{response}\"')
         elif not utils.isValidStr(url):
             raise ValueError(f'url argument is malformed: \"{url}\"')

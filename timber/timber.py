@@ -25,7 +25,7 @@ class Timber():
         sleepTimeSeconds: float = 10,
         timberRootDirectory: str = 'CynanBotCommon/timber'
     ):
-        if eventLoop is None:
+        if not isinstance(eventLoop, AbstractEventLoop):
             raise ValueError(f'eventLoop argument is malformed: \"{eventLoop}\"')
         elif not utils.isValidBool(alsoPrintToStandardOut):
             raise ValueError(f'alsoPrintToStandardOut argument is malformed: \"{alsoPrintToStandardOut}\"')

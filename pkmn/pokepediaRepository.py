@@ -17,13 +17,14 @@ except:
     import utils
     from network.exceptions import GenericNetworkException
     from network.networkClientProvider import NetworkClientProvider
+    from timber.timber import Timber
+
     from pkmn.pokepediaDamageClass import PokepediaDamageClass
     from pkmn.pokepediaElementType import PokepediaElementType
     from pkmn.pokepediaGeneration import PokepediaGeneration
     from pkmn.pokepediaMove import PokepediaMove
     from pkmn.pokepediaMoveGeneration import PokepediaMoveGeneration
     from pkmn.pokepediaPokemon import PokepediaPokemon
-    from timber.timber import Timber
 
 
 class PokepediaRepository():
@@ -33,9 +34,9 @@ class PokepediaRepository():
         networkClientProvider: NetworkClientProvider,
         timber: Timber
     ):
-        if networkClientProvider is None:
+        if not isinstance(networkClientProvider, NetworkClientProvider):
             raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
-        elif timber is None:
+        elif not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
 
         self.__networkClientProvider: NetworkClientProvider = networkClientProvider

@@ -22,7 +22,7 @@ class RequestsResponse(NetworkResponse):
         response: Response,
         url: str
     ):
-        if response is None:
+        if not isinstance(response, Response):
             raise ValueError(f'response argument is malformed: \"{response}\"')
         elif not utils.isValidStr(url):
             raise ValueError(f'url argument is malformed: \"{url}\"')

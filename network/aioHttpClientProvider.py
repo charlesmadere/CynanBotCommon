@@ -28,9 +28,9 @@ class AioHttpClientProvider(NetworkClientProvider):
         timber: Timber,
         timeoutSeconds: int = 8
     ):
-        if eventLoop is None:
+        if not isinstance(eventLoop, AbstractEventLoop):
             raise ValueError(f'eventLoop argument is malformed: \"{eventLoop}\"')
-        elif timber is None:
+        elif not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not utils.isValidNum(timeoutSeconds):
             raise ValueError(f'timeoutSeconds argument is malformed: \"{timeoutSeconds}\"')

@@ -7,7 +7,6 @@ try:
     from CynanBotCommon.cuteness.cutenessEntry import CutenessEntry
 except:
     import utils
-
     from cuteness.cutenessDate import CutenessDate
     from cuteness.cutenessEntry import CutenessEntry
 
@@ -22,7 +21,7 @@ class CutenessResult():
         userId: str,
         userName: str
     ):
-        if cutenessDate is None:
+        if not isinstance(cutenessDate, CutenessDate):
             raise ValueError(f'cutenessDate argument is malformed: \"{cutenessDate}\"')
         elif not utils.isValidStr(userId):
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
