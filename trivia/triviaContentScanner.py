@@ -1,13 +1,11 @@
-import os
-from typing import List, Optional, Set
-
-import aiofiles
-import aiofiles.ospath
+from typing import List, Optional
 
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
+    from CynanBotCommon.trivia.bannedWordsRepository import \
+        BannedWordsRepository
     from CynanBotCommon.trivia.triviaContentCode import TriviaContentCode
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
@@ -16,6 +14,7 @@ except:
     import utils
     from timber.timber import Timber
     from trivia.absTriviaQuestion import AbsTriviaQuestion
+    from trivia.bannedWordsRepository import BannedWordsRepository
     from trivia.triviaContentCode import TriviaContentCode
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaType import TriviaType
@@ -25,86 +24,20 @@ class TriviaContentScanner():
 
     def __init__(
         self,
+        bannedWordsRepository: BannedWordsRepository,
         timber: Timber,
-        triviaSettingsRepository: TriviaSettingsRepository,
-        bannedWordsFile: str = 'CynanBotCommon/trivia/bannedWords.txt'
+        triviaSettingsRepository: TriviaSettingsRepository
     ):
-        if not isinstance(timber, Timber):
+        if not isinstance(bannedWordsRepository, BannedWordsRepository):
+            raise ValueError(f'bannedWordsRepository argument is malformed: \"{bannedWordsRepository}\"')
+        elif not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(triviaSettingsRepository, TriviaSettingsRepository):
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
-        elif not utils.isValidStr(bannedWordsFile):
-            raise ValueError(f'bannedWordsFile argument is malformed: \"{bannedWordsFile}\"')
 
+        self.__bannedWordsRepository: BannedWordsRepository = bannedWordsRepository
         self.__timber: Timber = timber
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
-        self.__bannedWordsFile: str = bannedWordsFile
-
-        self.__bannedWordsCache: Optional[Set[str]] = None
-
-    async def clearCaches(self):
-        self.__bannedWordsCache = None
-        self.__timber.log('TriviaContentScanner', 'Caches cleared')
-
-    def __createCleanedBannedWordsSetFromLines(
-        self,
-        lines: Optional[List[Optional[str]]]
-    ) -> Set[str]:
-        cleanedBannedWords: Set[str] = set()
-
-        if not utils.hasItems(lines):
-            return cleanedBannedWords
-
-        for line in lines:
-            if utils.isValidStr(line):
-                line = line.strip().lower()
-
-                if utils.isValidStr(line):
-                    cleanedBannedWords.add(line)
-
-        return cleanedBannedWords
-
-    def __fetchBannedWords(self) -> Set[str]:
-        if not os.path.exists(self.__bannedWordsFile):
-            raise FileNotFoundError(f'Banned words file not found: \"{self.__bannedWordsFile}\"')
-
-        lines: Optional[List[str]] = None
-
-        with open(self.__bannedWordsFile, 'r') as file:
-            lines = file.readlines()
-
-        return self.__createCleanedBannedWordsSetFromLines(lines)
-
-    async def __fetchBannedWordsAsync(self) -> Set[str]:
-        if not await aiofiles.ospath.exists(self.__bannedWordsFile):
-            raise FileNotFoundError(f'Banned words file not found: \"{self.__bannedWordsFile}\"')
-
-        lines: Optional[List[str]] = None
-
-        async with aiofiles.open(self.__bannedWordsFile, 'r') as file:
-            lines = await file.readlines()
-
-        return self.__createCleanedBannedWordsSetFromLines(lines)
-
-    def getBannedWords(self) -> Set[str]:
-        if self.__bannedWordsCache is not None:
-            return self.__bannedWordsCache
-
-        bannedWords = self.__fetchBannedWords()
-        self.__timber.log('TriviaContentScanner', f'Synchronously read in {len(bannedWords)} banned word(s) from \"{self.__bannedWordsFile}\"')
-        self.__bannedWordsCache = bannedWords
-
-        return bannedWords
-
-    async def getBannedWordsAsync(self) -> Set[str]:
-        if self.__bannedWordsCache is not None:
-            return self.__bannedWordsCache
-
-        bannedWords = await self.__fetchBannedWordsAsync()
-        self.__timber.log('TriviaContentScanner', f'Asynchronously read in {len(bannedWords)} banned word(s) from \"{self.__bannedWordsFile}\"')
-        self.__bannedWordsCache = bannedWords
-
-        return bannedWords
 
     async def verify(self, question: Optional[AbsTriviaQuestion]) -> TriviaContentCode:
         if question is not None and not isinstance(question, AbsTriviaQuestion):
@@ -159,7 +92,7 @@ class TriviaContentScanner():
         for response in question.getResponses():
             strings.append(response.lower())
 
-        bannedWords = await self.getBannedWordsAsync()
+        bannedWords = await self.__bannedWordsRepository.getBannedWordsAsync()
 
         for string in strings:
             if not utils.isValidStr(string):
