@@ -13,23 +13,31 @@ except:
 
 class SuperTriviaCooldownHelper():
 
-    def __init__(self, triviaSettingsRepository: TriviaSettingsRepository):
-        if triviaSettingsRepository is None:
+    def __init__(
+        self,
+        triviaSettingsRepository: TriviaSettingsRepository,
+        timeZone: timezone = timezone.utc
+    ):
+        if not isinstance(triviaSettingsRepository, TriviaSettingsRepository):
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
+        elif not isinstance(timeZone, timezone):
+            raise ValueError(f'timeZone argument is malformed: \"{timeZone}\"')
 
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
-        self.__values: Dict[str, datetime] = defaultdict(lambda: datetime.now(timezone.utc) - timedelta(days = 1))
+        self.__timeZone: timezone = timeZone
+
+        self.__values: Dict[str, datetime] = defaultdict(lambda: datetime.now(timeZone) - timedelta(days = 1))
 
     def __getitem__(self, twitchChannel: str) -> bool:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(self.__timeZone)
         return now > self.__values[twitchChannel.lower()]
 
     async def getTwitchChannelsInCooldown(self) -> List[str]:
         twitchChannels: Set[str] = set()
-        now = datetime.now(timezone.utc)
+        now = datetime.now(self.__timeZone)
 
         for twitchChannel, cooldown in self.__values.items():
             if cooldown > now:
@@ -43,6 +51,6 @@ class SuperTriviaCooldownHelper():
 
         cooldownSeconds = await self.__triviaSettingsRepository.getSuperTriviaCooldownSeconds()
         cooldown = timedelta(seconds = cooldownSeconds)
-        now = datetime.now(timezone.utc)
+        now = datetime.now(self.__timeZone)
 
         self.__values[twitchChannel.lower()] = now + cooldown
