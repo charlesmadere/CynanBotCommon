@@ -156,25 +156,25 @@ class TriviaGameMachine():
         sleepTimeSeconds: float = 0.5,
         queueTimeoutSeconds: int = 3
     ):
-        if eventLoop is None:
+        if not isinstance(eventLoop, AbstractEventLoop):
             raise ValueError(f'eventLoop argument is malformed: \"{eventLoop}\"')
-        elif queuedTriviaGameStore is None:
+        elif not isinstance(queuedTriviaGameStore, QueuedTriviaGameStore):
             raise ValueError(f'queuedTriviaGameStore argument is malformed: \"{queuedTriviaGameStore}\"')
-        elif superTriviaCooldownHelper is None:
+        elif not isinstance(superTriviaCooldownHelper, SuperTriviaCooldownHelper):
             raise ValueError(f'superTriviaCooldownHelper argument is malformed: \"{superTriviaCooldownHelper}\"')
-        elif timber is None:
+        elif not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif triviaAnswerChecker is None:
+        elif not isinstance(triviaAnswerChecker, TriviaAnswerChecker):
             raise ValueError(f'triviaAnswerChecker argument is malformed: \"{triviaAnswerChecker}\"')
-        elif triviaGameStore is None:
+        elif not isinstance(triviaGameStore, TriviaGameStore):
             raise ValueError(f'triviaGameStore argument is malformed: \"{triviaGameStore}\"')
-        elif triviaRepository is None:
+        elif not isinstance(triviaRepository, TriviaRepository):
             raise ValueError(f'triviaRepository argument is malformed: \"{triviaRepository}\"')
-        elif triviaScoreRepository is None:
+        elif not isinstance(triviaScoreRepository, TriviaScoreRepository):
             raise ValueError(f'triviaScoreRepository argument is malformed: \"{triviaScoreRepository}\"')
         elif not utils.isValidNum(sleepTimeSeconds):
             raise ValueError(f'sleepTimeSeconds argument is malformed: \"{sleepTimeSeconds}\"')
-        elif sleepTimeSeconds < 0.25 or sleepTimeSeconds > 2:
+        elif sleepTimeSeconds < 0.25 or sleepTimeSeconds > 3:
             raise ValueError(f'sleepTimeSeconds argument is out of bounds: {sleepTimeSeconds}')
         elif not utils.isValidNum(queueTimeoutSeconds):
             raise ValueError(f'queueTimeoutSeconds argument is malformed: \"{queueTimeoutSeconds}\"')
@@ -219,13 +219,13 @@ class TriviaGameMachine():
         triviaQuestion: AbsTriviaQuestion,
         extras: Optional[Dict[str, Any]] = None
     ) -> TriviaAnswerCheckResult:
-        if triviaQuestion is None:
+        if not isinstance(triviaQuestion, AbsTriviaQuestion):
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
 
         return await self.__triviaAnswerChecker.checkAnswer(answer, triviaQuestion, extras)
 
     async def __handleActionCheckAnswer(self, action: CheckAnswerTriviaAction):
-        if action is None:
+        if not isinstance(action, CheckAnswerTriviaAction):
             raise ValueError(f'action argument is malformed: \"{action}\"')
         elif action.getTriviaActionType() is not TriviaActionType.CHECK_ANSWER:
             raise RuntimeError(f'TriviaActionType is not {TriviaActionType.CHECK_ANSWER}: \"{action.getTriviaActionType()}\"')
@@ -340,7 +340,7 @@ class TriviaGameMachine():
         ))
 
     async def __handleActionCheckSuperAnswer(self, action: CheckSuperAnswerTriviaAction):
-        if action is None:
+        if not isinstance(action, CheckSuperAnswerTriviaAction):
             raise ValueError(f'action argument is malformed: \"{action}\"')
         elif action.getTriviaActionType() is not TriviaActionType.CHECK_SUPER_ANSWER:
             raise RuntimeError(f'TriviaActionType is not {TriviaActionType.CHECK_SUPER_ANSWER}: \"{action.getTriviaActionType()}\"')
@@ -426,7 +426,7 @@ class TriviaGameMachine():
         ))
 
     async def __handleActionClearSuperTriviaQueue(self, action: ClearSuperTriviaQueueTriviaAction):
-        if action is None:
+        if not isinstance(action, ClearSuperTriviaQueueTriviaAction):
             raise ValueError(f'action argument is malformed: \"{action}\"')
         elif action.getTriviaActionType() is not TriviaActionType.CLEAR_SUPER_TRIVIA_QUEUE:
             raise RuntimeError(f'TriviaActionType is not {TriviaActionType.CLEAR_SUPER_TRIVIA_QUEUE}: \"{action.getTriviaActionType()}\"')
@@ -505,7 +505,7 @@ class TriviaGameMachine():
         ))
 
     async def __handleActionStartNewSuperTriviaGame(self, action: StartNewSuperTriviaGameAction):
-        if action is None:
+        if not isinstance(action, StartNewSuperTriviaGameAction):
             raise ValueError(f'action argument is malformed: \"{action}\"')
         elif action.getTriviaActionType() is not TriviaActionType.START_NEW_SUPER_GAME:
             raise RuntimeError(f'TriviaActionType is not {TriviaActionType.START_NEW_SUPER_GAME}: \"{action.getTriviaActionType()}\"')

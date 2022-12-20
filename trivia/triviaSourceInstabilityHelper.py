@@ -33,7 +33,7 @@ class TriviaSourceInstabilityHelper():
         self.__values: Dict[TriviaSource, int] = defaultdict(lambda: 0)
 
     def __getitem__(self, key: TriviaSource) -> int:
-        if key is None or not isinstance(key, TriviaSource):
+        if not isinstance(key, TriviaSource):
             raise ValueError(f'key argument is malformed: \"{key}\"')
 
         now = datetime.now(self.__timeZone)
@@ -46,7 +46,7 @@ class TriviaSourceInstabilityHelper():
         return 0
 
     def incrementErrorCount(self, key: TriviaSource) -> int:
-        if key is None or not isinstance(key, TriviaSource):
+        if not isinstance(key, TriviaSource):
             raise ValueError(f'key argument is malformed: \"{key}\"')
 
         now = datetime.now(self.__timeZone)

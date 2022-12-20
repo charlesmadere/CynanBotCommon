@@ -34,17 +34,17 @@ class WeatherRepository():
         maxAlerts: int = 2,
         cacheTimeDelta: timedelta = timedelta(minutes = 20)
     ):
-        if networkClientProvider is None:
+        if not isinstance(networkClientProvider, NetworkClientProvider):
             raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
         elif not utils.isValidStr(oneWeatherApiKey):
             raise ValueError(f'oneWeatherApiKey argument is malformed: \"{oneWeatherApiKey}\"')
-        elif timber is None:
+        elif not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif not utils.isValidNum(maxAlerts):
+        elif not utils.isValidInt(maxAlerts):
             raise ValueError(f'maxAlerts argument is malformed: \"{maxAlerts}\"')
         elif maxAlerts < 1:
             raise ValueError(f'maxAlerts argument is out of bounds: {maxAlerts}')
-        elif cacheTimeDelta is None:
+        elif not isinstance(cacheTimeDelta, timedelta):
             raise ValueError(f'cacheTimeDelta argument is malformed: \"{cacheTimeDelta}\"')
 
         self.__networkClientProvider: NetworkClientProvider = networkClientProvider

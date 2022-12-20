@@ -29,7 +29,7 @@ class InvalidAnswerInputTriviaEvent(AbsTriviaEvent):
             triviaEventType = TriviaEventType.INVALID_ANSWER_INPUT
         )
 
-        if triviaQuestion is None:
+        if not isinstance(triviaQuestion, AbsTriviaQuestion):
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
         elif not utils.isValidStr(gameId):
             raise ValueError(f'gameId argument is malformed: \"{gameId}\"')

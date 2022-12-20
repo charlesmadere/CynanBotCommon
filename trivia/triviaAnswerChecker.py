@@ -111,7 +111,7 @@ class TriviaAnswerChecker():
         answer: Optional[str],
         triviaQuestion: MultipleChoiceTriviaQuestion
     ) -> TriviaAnswerCheckResult:
-        if triviaQuestion is None:
+        if not isinstance(triviaQuestion, MultipleChoiceTriviaQuestion):
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
         elif triviaQuestion.getTriviaType() is not TriviaType.MULTIPLE_CHOICE:
             raise RuntimeError(f'TriviaType is not {TriviaType.MULTIPLE_CHOICE}: \"{triviaQuestion.getTriviaType()}\"')
@@ -148,7 +148,7 @@ class TriviaAnswerChecker():
         triviaQuestion: QuestionAnswerTriviaQuestion,
         extras: Optional[Dict[str, Any]] = None
     ) -> TriviaAnswerCheckResult:
-        if triviaQuestion is None:
+        if not isinstance(triviaQuestion, QuestionAnswerTriviaQuestion):
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
         elif triviaQuestion.getTriviaType() is not TriviaType.QUESTION_ANSWER:
             raise RuntimeError(f'TriviaType is not {TriviaType.QUESTION_ANSWER}: \"{triviaQuestion.getTriviaType()}\"')
@@ -197,7 +197,7 @@ class TriviaAnswerChecker():
         answer: Optional[str],
         triviaQuestion: TrueFalseTriviaQuestion
     ) -> TriviaAnswerCheckResult:
-        if triviaQuestion is None:
+        if not isinstance(triviaQuestion, TrueFalseTriviaQuestion):
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
         elif triviaQuestion.getTriviaType() is not TriviaType.TRUE_FALSE:
             raise RuntimeError(f'TriviaType is not {TriviaType.TRUE_FALSE}: \"{triviaQuestion.getTriviaType()}\"')

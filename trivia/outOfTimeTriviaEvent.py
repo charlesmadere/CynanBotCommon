@@ -6,7 +6,6 @@ try:
     from CynanBotCommon.trivia.triviaScoreResult import TriviaScoreResult
 except:
     import utils
-
     from trivia.absTriviaEvent import AbsTriviaEvent
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.triviaEventType import TriviaEventType
@@ -30,7 +29,7 @@ class OutOfTimeTriviaEvent(AbsTriviaEvent):
             triviaEventType = TriviaEventType.GAME_OUT_OF_TIME
         )
 
-        if triviaQuestion is None:
+        if not isinstance(triviaQuestion, AbsTriviaQuestion):
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
         elif not utils.isValidStr(gameId):
             raise ValueError(f'gameId argument is malformed: \"{gameId}\"')
@@ -40,7 +39,7 @@ class OutOfTimeTriviaEvent(AbsTriviaEvent):
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
         elif not utils.isValidStr(userName):
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
-        elif triviaScoreResult is None:
+        elif not isinstance(triviaScoreResult, TriviaScoreResult):
             raise ValueError(f'triviaScoreResult argument is malformed: \"{triviaScoreResult}\"')
 
         self.__triviaQuestion: AbsTriviaQuestion = triviaQuestion

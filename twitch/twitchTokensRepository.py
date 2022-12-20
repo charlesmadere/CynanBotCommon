@@ -50,9 +50,9 @@ class TwitchTokensRepository():
         twitchTokensFile: str = 'CynanBotCommon/twitch/twitchTokensRepository.json',
         tokensExpirationBuffer: timedelta = timedelta(minutes = 30)
     ):
-        if networkClientProvider is None:
+        if not isinstance(networkClientProvider, NetworkClientProvider):
             raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
-        elif timber is None:
+        elif not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not utils.isValidUrl(oauth2TokenUrl):
             raise ValueError(f'oauth2TokenUrl argument is malformed: \"{oauth2TokenUrl}\"')
@@ -60,7 +60,7 @@ class TwitchTokensRepository():
             raise ValueError(f'oauth2ValidateUrl argument is malformed: \"{oauth2ValidateUrl}\"')
         elif not utils.isValidStr(twitchTokensFile):
             raise ValueError(f'twitchTokensFile argument is malformed: \"{twitchTokensFile}\"')
-        elif tokensExpirationBuffer is None:
+        elif not isinstance(tokensExpirationBuffer, timedelta):
             raise ValueError(f'tokensExpirationBuffer argument is malformed: \"{tokensExpirationBuffer}\"')
 
         self.__networkClientProvider: NetworkClientProvider = networkClientProvider

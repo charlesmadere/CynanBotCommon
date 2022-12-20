@@ -33,13 +33,13 @@ class UserIdsRepository():
         timber: Timber,
         twitchCredentialsProviderInterface: TwitchCredentialsProviderInterface
     ):
-        if backingDatabase is None:
+        if not isinstance(backingDatabase, BackingDatabase):
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
-        elif networkClientProvider is None:
+        elif not isinstance(networkClientProvider, NetworkClientProvider):
             raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
-        elif timber is None:
+        elif not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif twitchCredentialsProviderInterface is None:
+        elif not isinstance(twitchCredentialsProviderInterface, TwitchCredentialsProviderInterface):
             raise ValueError(f'twitchCredentialsProviderInterface argument is malformed: \"{twitchCredentialsProviderInterface}\"')
 
         self.__backingDatabase: BackingDatabase = backingDatabase

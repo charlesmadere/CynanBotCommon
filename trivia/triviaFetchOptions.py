@@ -4,7 +4,6 @@ try:
         QuestionAnswerTriviaConditions
 except:
     import utils
-
     from trivia.questionAnswerTriviaConditions import \
         QuestionAnswerTriviaConditions
 
@@ -21,7 +20,7 @@ class TriviaFetchOptions():
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
         elif not utils.isValidBool(isJokeTriviaRepositoryEnabled):
             raise ValueError(f'isJokeTriviaRepositoryEnabled argument is malformed: \"{isJokeTriviaRepositoryEnabled}\"')
-        elif questionAnswerTriviaConditions is None:
+        elif not isinstance(questionAnswerTriviaConditions, QuestionAnswerTriviaConditions):
             raise ValueError(f'questionAnswerTriviaConditions argument is malformed: \"{questionAnswerTriviaConditions}\"')
 
         self.__twitchChannel: str = twitchChannel
