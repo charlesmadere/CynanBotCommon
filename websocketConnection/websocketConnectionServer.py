@@ -18,7 +18,6 @@ try:
 except:
     import utils
     from timber.timber import Timber
-
     from websocketConnection.websocketEvent import WebsocketEvent
 
 
@@ -34,15 +33,15 @@ class WebsocketConnectionServer():
         websocketSettingsFile: str = 'CynanBotCommon/websocketConnection/websocketSettings.json',
         eventTimeToLive: timedelta = timedelta(seconds = 30)
     ):
-        if eventLoop is None:
+        if not isinstance(eventLoop, AbstractEventLoop):
             raise ValueError(f'eventLoop argument is malformed: \"{eventLoop}\"')
-        elif timber is None:
+        elif not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not utils.isValidNum(sleepTimeSeconds):
             raise ValueError(f'sleepTimeSeconds argument is malformed: \"{sleepTimeSeconds}\"')
         elif sleepTimeSeconds < 3:
             raise ValueError(f'sleepTimeSeconds argument is too aggressive: {sleepTimeSeconds}')
-        elif not utils.isValidNum(port):
+        elif not utils.isValidInt(port):
             raise ValueError(f'port argument is malformed: \"{port}\"')
         elif port <= 1000:
             raise ValueError(f'port argument is out of bounds: \"{port}\"')
@@ -50,7 +49,7 @@ class WebsocketConnectionServer():
             raise ValueError(f'host argument is malformed: \"{host}\"')
         elif not utils.isValidStr(websocketSettingsFile):
             raise ValueError(f'websocketSettingsFile argument is malformed: \"{websocketSettingsFile}\"')
-        elif eventTimeToLive is None:
+        elif not isinstance(eventTimeToLive, timedelta):
             raise ValueError(f'eventTimeToLive argument is malformed: \"{eventTimeToLive}\"')
 
         self.__timber: Timber = timber

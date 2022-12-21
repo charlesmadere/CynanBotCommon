@@ -24,7 +24,7 @@ class BackingSqliteDatabase(BackingDatabase):
         eventLoop: AbstractEventLoop,
         backingDatabaseFile: str = 'CynanBotCommon/storage/database.sqlite'
     ):
-        if eventLoop is None:
+        if not isinstance(eventLoop, AbstractEventLoop):
             raise ValueError(f'eventLoop argument is malformed: \"{eventLoop}\"')
         elif not utils.isValidStr(backingDatabaseFile):
             raise ValueError(f'backingDatabaseFile argument is malformed: \"{backingDatabaseFile}\"')

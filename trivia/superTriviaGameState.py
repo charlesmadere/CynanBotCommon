@@ -34,11 +34,11 @@ class SuperTriviaGameState(AbsTriviaGameState):
             triviaGameType = TriviaGameType.SUPER
         )
 
-        if not utils.isValidNum(perUserAttempts):
+        if not utils.isValidInt(perUserAttempts):
             raise ValueError(f'perUserAttempts argument is malformed: \"{perUserAttempts}\"')
         elif perUserAttempts < 1 or perUserAttempts > 5:
             raise ValueError(f'perUserAttempts argument is out of bounds: {perUserAttempts}')
-        elif not utils.isValidNum(pointsMultiplier):
+        elif not utils.isValidInt(pointsMultiplier):
             raise ValueError(f'pointsMultiplier argument is malformed: \"{pointsMultiplier}\"')
         elif pointsMultiplier < 1 or pointsMultiplier >= utils.getIntMaxSafeSize():
             raise ValueError(f'pointsMultiplier argument is out of bounds: {pointsMultiplier}')

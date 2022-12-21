@@ -49,14 +49,10 @@ class Timber():
 
         return f'{exception}\n'
 
-    def __getLogStatement(
-        self,
-        ensureNewLine: bool,
-        timberEntry: TimberEntry
-    ) -> str:
+    def __getLogStatement(self, ensureNewLine: bool, timberEntry: TimberEntry) -> str:
         if not utils.isValidBool(ensureNewLine):
             raise ValueError(f'ensureNewLine argument is malformed: \"{ensureNewLine}\"')
-        elif timberEntry is None:
+        elif not isinstance(timberEntry, TimberEntry):
             raise ValueError(f'timberEntry argument is malformed: \"{timberEntry}\"')
 
         logStatement = f'{timberEntry.getSimpleDateTime().getDateAndTimeStr()} — {timberEntry.getTag()} — {timberEntry.getMsg()}'
@@ -85,7 +81,7 @@ class Timber():
         self.__entryQueue.put(timberEntry)
 
     async def __log(self, timberEntry: TimberEntry):
-        if timberEntry is None:
+        if not isinstance(timberEntry, TimberEntry):
             raise ValueError(f'timberEntry argument is malformed: \"{timberEntry}\"')
 
         await self.__writeToLogFile(timberEntry)
@@ -102,7 +98,7 @@ class Timber():
             await asyncio.sleep(self.__sleepTimeSeconds)
 
     async def __writeToLogFile(self, timberEntry: TimberEntry):
-        if timberEntry is None:
+        if not isinstance(timberEntry, TimberEntry):
             raise ValueError(f'timberEntry argument is malformed: \"{timberEntry}\"')
 
         sdt = timberEntry.getSimpleDateTime()

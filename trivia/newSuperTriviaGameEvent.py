@@ -31,17 +31,17 @@ class NewSuperTriviaGameEvent(AbsTriviaEvent):
 
         if not isinstance(triviaQuestion, AbsTriviaQuestion):
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
-        elif not utils.isValidNum(pointsForWinning):
+        elif not utils.isValidInt(pointsForWinning):
             raise ValueError(f'pointsForWinning argument is malformed: \"{pointsForWinning}\"')
-        elif pointsForWinning < 1:
+        elif pointsForWinning < 1 or pointsForWinning >= utils.getIntMaxSafeSize():
             raise ValueError(f'pointsForWinning argument is out of bounds: {pointsForWinning}')
-        elif not utils.isValidNum(pointsMultiplier):
+        elif not utils.isValidInt(pointsMultiplier):
             raise ValueError(f'pointsMultiplier argument is malformed: \"{pointsMultiplier}\"')
-        elif pointsMultiplier < 1:
+        elif pointsMultiplier < 1 or pointsMultiplier >= utils.getIntMaxSafeSize():
             raise ValueError(f'pointsMultiplier argument is out of bounds: {pointsMultiplier}')
-        elif not utils.isValidNum(secondsToLive):
+        elif not utils.isValidInt(secondsToLive):
             raise ValueError(f'secondsToLive argument is malformed: \"{secondsToLive}\"')
-        elif secondsToLive < 1:
+        elif secondsToLive < 1 or secondsToLive >= utils.getIntMaxSafeSize():
             raise ValueError(f'secondsToLive argument is out of bounds: {secondsToLive}')
         elif not utils.isValidStr(gameId):
             raise ValueError(f'gameId argument is malformed: \"{gameId}\"')

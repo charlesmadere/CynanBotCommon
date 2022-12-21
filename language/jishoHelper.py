@@ -27,15 +27,15 @@ class JishoHelper():
         definitionsMaxSize: int = 3,
         variantsMaxSize: int = 3
     ):
-        if networkClientProvider is None:
+        if not isinstance(networkClientProvider, NetworkClientProvider):
             raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
-        elif timber is None:
+        elif not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif not utils.isValidNum(definitionsMaxSize):
+        elif not utils.isValidInt(definitionsMaxSize):
             raise ValueError(f'definitionsMaxSize argument is malformed: \"{definitionsMaxSize}\"')
         elif definitionsMaxSize < 1 or definitionsMaxSize > 5:
             raise ValueError(f'definitionsMaxSize argument is out of bounds: \"{definitionsMaxSize}\"')
-        elif not utils.isValidNum(variantsMaxSize):
+        elif not utils.isValidInt(variantsMaxSize):
             raise ValueError(f'variantsMaxSize argument is malformed: \"{variantsMaxSize}\"')
         elif variantsMaxSize < 1 or variantsMaxSize > 5:
             raise ValueError(f'variantsMaxSize argument is out of bounds: \"{variantsMaxSize}\"')

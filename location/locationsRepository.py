@@ -10,9 +10,8 @@ try:
     from CynanBotCommon.timeZoneRepository import TimeZoneRepository
 except:
     import utils
-    from timeZoneRepository import TimeZoneRepository
-
     from location.location import Location
+    from timeZoneRepository import TimeZoneRepository
 
 
 class LocationsRepository():
@@ -22,7 +21,7 @@ class LocationsRepository():
         timeZoneRepository: TimeZoneRepository,
         locationsFile: str = 'CynanBotCommon/location/locationsRepository.json'
     ):
-        if timeZoneRepository is None:
+        if not isinstance(timeZoneRepository, TimeZoneRepository):
             raise ValueError(f'timeZoneRepository argument is malformed: \"{timeZoneRepository}\"')
         elif not utils.isValidStr(locationsFile):
             raise ValueError(f'locationsFile argument is malformed: \"{locationsFile}\"')

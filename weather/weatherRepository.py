@@ -116,7 +116,7 @@ class WeatherRepository():
         return icons
 
     async def __fetchAirQualityIndex(self, location: Location) -> Optional[AirQualityIndex]:
-        if location is None:
+        if not isinstance(location, Location):
             raise ValueError(f'location argument is malformed: \"{location}\"')
 
         # Retrieve air quality index from: https://openweathermap.org/api/air-pollution
@@ -156,7 +156,7 @@ class WeatherRepository():
             return AirQualityIndex.fromInt(airQualityIndex)
 
     async def fetchWeather(self, location: Location) -> WeatherReport:
-        if location is None:
+        if not isinstance(location, Location):
             raise ValueError(f'location argument is malformed: \"{location}\"')
 
         cacheValue = self.__cache[location.getLocationId()]
@@ -169,7 +169,7 @@ class WeatherRepository():
         return weatherReport
 
     async def __fetchWeather(self, location: Location) -> WeatherReport:
-        if location is None:
+        if not isinstance(location, Location):
             raise ValueError(f'location argument is malformed: \"{location}\"')
 
         self.__timber.log('WeatherRepository', f'Fetching weather for \"{location.getName()}\" ({location.getLocationId()})...')

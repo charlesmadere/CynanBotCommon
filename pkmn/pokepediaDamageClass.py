@@ -34,7 +34,7 @@ class PokepediaDamageClass(Enum):
     # gen 1-3 have damage classes based off element type
     @classmethod
     def getTypeBasedDamageClass(cls, elementType: PokepediaElementType):
-        if elementType is None:
+        if not isinstance(elementType, PokepediaElementType):
             raise ValueError(f'elementType argument is malformed: \"{elementType}\"')
 
         physicalElementTypes = [ PokepediaElementType.BUG, PokepediaElementType.FIGHTING, PokepediaElementType.FLYING, PokepediaElementType.GHOST, PokepediaElementType.GROUND, PokepediaElementType.NORMAL, PokepediaElementType.POISON, PokepediaElementType.ROCK, PokepediaElementType.STEEL ]

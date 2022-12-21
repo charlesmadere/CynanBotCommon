@@ -26,11 +26,11 @@ class AbsTriviaGameState(ABC):
     ):
         if not isinstance(triviaQuestion, AbsTriviaQuestion):
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
-        elif not utils.isValidNum(pointsForWinning):
+        elif not utils.isValidInt(pointsForWinning):
             raise ValueError(f'pointsForWinning argument is malformed: \"{pointsForWinning}\"')
         elif pointsForWinning < 1 or pointsForWinning >= utils.getIntMaxSafeSize():
             raise ValueError(f'pointsForWinning argument is out of bounds: {pointsForWinning}')
-        elif not utils.isValidNum(secondsToLive):
+        elif not utils.isValidInt(secondsToLive):
             raise ValueError(f'secondsToLive argument is malformed: \"{secondsToLive}\"')
         elif secondsToLive < 1 or secondsToLive >= utils.getIntMaxSafeSize():
             raise ValueError(f'secondsToLive argument is out of bounds: {secondsToLive}')

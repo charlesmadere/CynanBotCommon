@@ -1,12 +1,11 @@
 import random
-from typing import List
+from typing import List, Optional
 
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.language.languageEntry import LanguageEntry
 except:
     import utils
-
     from language.languageEntry import LanguageEntry
 
 
@@ -177,16 +176,21 @@ class LanguagesRepository():
 
     def getExampleLanguageEntry(
         self,
-        hasIso6391Code: bool = None,
-        hasWotdApiCode: bool = None
+        hasIso6391Code: Optional[bool] = None,
+        hasWotdApiCode: Optional[bool] = None
     ) -> LanguageEntry:
+        if hasIso6391Code is not None and not utils.isValidBool(hasIso6391Code):
+            raise ValueError(f'hasIso6391Code argument is malformed: \"{hasIso6391Code}\"')
+        elif hasWotdApiCode is not None and not utils.isValidBool(hasWotdApiCode):
+            raise ValueError(f'hasWotdApiCode argument is malformed: \"{hasWotdApiCode}\"')
+
         validEntries = self.__getLanguageEntries(hasIso6391Code, hasWotdApiCode)
         return random.choice(validEntries)
 
     def __getLanguageEntries(
         self,
-        hasIso6391Code: bool = None,
-        hasWotdApiCode: bool = None
+        hasIso6391Code: Optional[bool] = None,
+        hasWotdApiCode: Optional[bool] = None
     ) -> List[LanguageEntry]:
         if hasIso6391Code is not None and not utils.isValidBool(hasIso6391Code):
             raise ValueError(f'hasIso6391Code argument is malformed: \"{hasIso6391Code}\"')
@@ -216,11 +220,15 @@ class LanguagesRepository():
     def getLanguageForCommand(
         self,
         command: str,
-        hasIso6391Code: bool = None,
-        hasWotdApiCode: bool = None
-    ) -> LanguageEntry:
+        hasIso6391Code: Optional[bool] = None,
+        hasWotdApiCode: Optional[bool] = None
+    ) -> Optional[LanguageEntry]:
         if not utils.isValidStr(command):
             raise ValueError(f'command argument is malformed: \"{command}\"')
+        elif hasIso6391Code is not None and not utils.isValidBool(hasIso6391Code):
+            raise ValueError(f'hasIso6391Code argument is malformed: \"{hasIso6391Code}\"')
+        elif hasWotdApiCode is not None and not utils.isValidBool(hasWotdApiCode):
+            raise ValueError(f'hasWotdApiCode argumet is malformed: \"{hasWotdApiCode}\"')
 
         validEntries = self.__getLanguageEntries(hasIso6391Code, hasWotdApiCode)
 
@@ -234,9 +242,16 @@ class LanguagesRepository():
     def requireLanguageForCommand(
         self,
         command: str,
-        hasIso6391Code: bool = None,
-        hasWotdApiCode: bool = None
+        hasIso6391Code: Optional[bool] = None,
+        hasWotdApiCode: Optional[bool] = None
     ) -> LanguageEntry:
+        if not utils.isValidStr(command):
+            raise ValueError(f'command argument is malformed: \"{command}\"')
+        elif hasIso6391Code is not None and not utils.isValidBool(hasIso6391Code):
+            raise ValueError(f'hasIso6391Code argument is malformed: \"{hasIso6391Code}\"')
+        elif hasWotdApiCode is not None and not utils.isValidBool(hasWotdApiCode):
+            raise ValueError(f'hasWotdApiCode argumet is malformed: \"{hasWotdApiCode}\"')
+
         languageEntry = self.getLanguageForCommand(command, hasIso6391Code, hasWotdApiCode)
 
         if languageEntry is None:

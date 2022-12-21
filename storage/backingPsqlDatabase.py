@@ -25,9 +25,9 @@ class BackingPsqlDatabase(BackingDatabase):
         eventLoop: AbstractEventLoop,
         psqlCredentialsProvider: PsqlCredentialsProvider
     ):
-        if eventLoop is None:
+        if not isinstance(eventLoop, AbstractEventLoop):
             raise ValueError(f'eventLoop argument is malformed: \"{eventLoop}\"')
-        elif psqlCredentialsProvider is None:
+        elif not isinstance(psqlCredentialsProvider, PsqlCredentialsProvider):
             raise ValueError(f'psqlCredentialsProvider argument is malformed: \"{psqlCredentialsProvider}\"')
 
         self.__eventLoop: AbstractEventLoop = eventLoop
