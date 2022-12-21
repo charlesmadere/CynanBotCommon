@@ -19,6 +19,7 @@ class CorrectAnswerTriviaEvent(AbsTriviaEvent):
     def __init__(
         self,
         triviaQuestion: AbsTriviaQuestion,
+        isShiny: bool,
         pointsForWinning: int,
         actionId: str,
         answer: str,
@@ -35,9 +36,11 @@ class CorrectAnswerTriviaEvent(AbsTriviaEvent):
 
         if not isinstance(triviaQuestion, AbsTriviaQuestion):
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
-        elif not utils.isValidNum(pointsForWinning):
+        elif not utils.isValidBool(isShiny):
+            raise ValueError(f'isShiny argument is malformed: \"{isShiny}\"')
+        elif not utils.isValidInt(pointsForWinning):
             raise ValueError(f'pointsForWinning argument is malformed: \"{pointsForWinning}\"')
-        elif pointsForWinning < 1:
+        elif pointsForWinning < 1 or pointsForWinning >= utils.getIntMaxSafeSize():
             raise ValueError(f'pointsForWinning argument is out of bounds: {pointsForWinning}')
         elif not utils.isValidStr(gameId):
             raise ValueError(f'gameId argument is malformed: \"{gameId}\"')
@@ -53,6 +56,7 @@ class CorrectAnswerTriviaEvent(AbsTriviaEvent):
             raise ValueError(f'triviaScoreResult argument is malformed: \"{triviaScoreResult}\"')
 
         self.__triviaQuestion: AbsTriviaQuestion = triviaQuestion
+        self.__isShiny: bool = isShiny
         self.__pointsForWinning: int = pointsForWinning
         self.__answer: str = answer
         self.__gameId: str = gameId
@@ -87,3 +91,6 @@ class CorrectAnswerTriviaEvent(AbsTriviaEvent):
 
     def getUserName(self) -> str:
         return self.__userName
+
+    def isShiny(self) -> bool:
+        return self.__isShiny

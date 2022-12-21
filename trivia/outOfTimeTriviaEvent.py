@@ -1,3 +1,5 @@
+import locale
+
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.trivia.absTriviaEvent import AbsTriviaEvent
@@ -17,6 +19,8 @@ class OutOfTimeTriviaEvent(AbsTriviaEvent):
     def __init__(
         self,
         triviaQuestion: AbsTriviaQuestion,
+        isShiny: bool,
+        pointsForWinning: int,
         actionId: str,
         gameId: str,
         twitchChannel: str,
@@ -31,6 +35,12 @@ class OutOfTimeTriviaEvent(AbsTriviaEvent):
 
         if not isinstance(triviaQuestion, AbsTriviaQuestion):
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
+        elif not utils.isValidBool(isShiny):
+            raise ValueError(f'isShiny argument is malformed: \"{isShiny}\"')
+        elif not utils.isValidInt(pointsForWinning):
+            raise ValueError(f'pointsForWinning argument is malformed: \"{pointsForWinning}\"')
+        elif pointsForWinning < 1 or pointsForWinning >= utils.getIntMaxSafeSize():
+            raise ValueError(f'pointsForWinning argument is out of bounds: {pointsForWinning}')
         elif not utils.isValidStr(gameId):
             raise ValueError(f'gameId argument is malformed: \"{gameId}\"')
         elif not utils.isValidStr(twitchChannel):
@@ -43,6 +53,8 @@ class OutOfTimeTriviaEvent(AbsTriviaEvent):
             raise ValueError(f'triviaScoreResult argument is malformed: \"{triviaScoreResult}\"')
 
         self.__triviaQuestion: AbsTriviaQuestion = triviaQuestion
+        self.__isShiny: bool = isShiny
+        self.__pointsForWinning: int = pointsForWinning
         self.__gameId: str = gameId
         self.__twitchChannel: str = twitchChannel
         self.__userId: str = userId
@@ -51,6 +63,12 @@ class OutOfTimeTriviaEvent(AbsTriviaEvent):
 
     def getGameId(self) -> str:
         return self.__gameId
+
+    def getPointsForWinning(self) -> int:
+        return self.__pointsForWinning
+
+    def getPointsForWinningStr(self) -> str:
+        return locale.format_string("%d", self.__pointsForWinning, grouping = True)
 
     def getTriviaQuestion(self) -> AbsTriviaQuestion:
         return self.__triviaQuestion
@@ -66,3 +84,6 @@ class OutOfTimeTriviaEvent(AbsTriviaEvent):
 
     def getUserName(self) -> str:
         return self.__userName
+
+    def isShiny(self) -> bool:
+        return self.__isShiny

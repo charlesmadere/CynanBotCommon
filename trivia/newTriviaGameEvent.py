@@ -17,6 +17,7 @@ class NewTriviaGameEvent(AbsTriviaEvent):
     def __init__(
         self,
         triviaQuestion: AbsTriviaQuestion,
+        isShiny: bool,
         pointsForWinning: int,
         secondsToLive: int,
         actionId: str,
@@ -32,11 +33,13 @@ class NewTriviaGameEvent(AbsTriviaEvent):
 
         if not isinstance(triviaQuestion, AbsTriviaQuestion):
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
-        elif not utils.isValidNum(pointsForWinning):
+        elif not utils.isValidBool(isShiny):
+            raise ValueError(f'isShiny argument is malformed: \"{isShiny}\"')
+        elif not utils.isValidInt(pointsForWinning):
             raise ValueError(f'pointsForWinning argument is malformed: \"{pointsForWinning}\"')
         elif pointsForWinning < 1 or pointsForWinning >= utils.getIntMaxSafeSize():
             raise ValueError(f'pointsForWinning argument is out of bounds: {pointsForWinning}')
-        elif not utils.isValidNum(secondsToLive):
+        elif not utils.isValidInt(secondsToLive):
             raise ValueError(f'secondsToLive argument is malformed: \"{secondsToLive}\"')
         elif secondsToLive < 1 or secondsToLive >= utils.getIntMaxSafeSize():
             raise ValueError(f'secondsToLive argument is out of bounds: {secondsToLive}')
@@ -50,6 +53,7 @@ class NewTriviaGameEvent(AbsTriviaEvent):
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
 
         self.__triviaQuestion: AbsTriviaQuestion = triviaQuestion
+        self.__isShiny: bool = isShiny
         self.__pointsForWinning: int = pointsForWinning
         self.__secondsToLive: int = secondsToLive
         self.__gameId: str = gameId
@@ -83,3 +87,6 @@ class NewTriviaGameEvent(AbsTriviaEvent):
 
     def getUserName(self) -> str:
         return self.__userName
+
+    def isShiny(self) -> bool:
+        return self.__isShiny

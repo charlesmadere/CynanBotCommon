@@ -15,6 +15,7 @@ class TriviaGameState(AbsTriviaGameState):
     def __init__(
         self,
         triviaQuestion: AbsTriviaQuestion,
+        isShiny: bool,
         pointsForWinning: int,
         secondsToLive: int,
         actionId: str,
@@ -31,11 +32,14 @@ class TriviaGameState(AbsTriviaGameState):
             triviaGameType = TriviaGameType.NORMAL
         )
 
-        if not utils.isValidStr(userId):
+        if not utils.isValidBool(isShiny):
+            raise ValueError(f'isShiny argument is malformed: \"{isShiny}\"')
+        elif not utils.isValidStr(userId):
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
         elif not utils.isValidStr(userName):
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
 
+        self.__isShiny: bool = isShiny
         self.__userId: str = userId
         self.__userName: str = userName
 
@@ -44,3 +48,6 @@ class TriviaGameState(AbsTriviaGameState):
 
     def getUserName(self) -> str:
         return self.__userName
+
+    def isShiny(self) -> bool:
+        return self.__isShiny

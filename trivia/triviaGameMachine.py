@@ -48,6 +48,7 @@ try:
     from CynanBotCommon.trivia.outOfTimeTriviaEvent import OutOfTimeTriviaEvent
     from CynanBotCommon.trivia.queuedTriviaGameStore import \
         QueuedTriviaGameStore
+    from CynanBotCommon.trivia.shinyTriviaHelper import ShinyTriviaHelper
     from CynanBotCommon.trivia.startNewSuperTriviaGameAction import \
         StartNewSuperTriviaGameAction
     from CynanBotCommon.trivia.startNewTriviaGameAction import \
@@ -114,6 +115,7 @@ except:
     from trivia.outOfTimeSuperTriviaEvent import OutOfTimeSuperTriviaEvent
     from trivia.outOfTimeTriviaEvent import OutOfTimeTriviaEvent
     from trivia.queuedTriviaGameStore import QueuedTriviaGameStore
+    from trivia.shinyTriviaHelper import ShinyTriviaHelper
     from trivia.startNewSuperTriviaGameAction import \
         StartNewSuperTriviaGameAction
     from trivia.startNewTriviaGameAction import StartNewTriviaGameAction
@@ -147,6 +149,7 @@ class TriviaGameMachine():
         self,
         eventLoop: AbstractEventLoop,
         queuedTriviaGameStore: QueuedTriviaGameStore,
+        shinyTriviaHelper: ShinyTriviaHelper,
         superTriviaCooldownHelper: SuperTriviaCooldownHelper,
         timber: Timber,
         triviaAnswerChecker: TriviaAnswerChecker,
@@ -161,6 +164,8 @@ class TriviaGameMachine():
             raise ValueError(f'eventLoop argument is malformed: \"{eventLoop}\"')
         elif not isinstance(queuedTriviaGameStore, QueuedTriviaGameStore):
             raise ValueError(f'queuedTriviaGameStore argument is malformed: \"{queuedTriviaGameStore}\"')
+        elif not isinstance(shinyTriviaHelper, ShinyTriviaHelper):
+            raise ValueError(f'shinyTriviaHelper argument is malformed: \"{shinyTriviaHelper}\"')
         elif not isinstance(superTriviaCooldownHelper, SuperTriviaCooldownHelper):
             raise ValueError(f'superTriviaCooldownHelper argument is malformed: \"{superTriviaCooldownHelper}\"')
         elif not isinstance(timber, Timber):
@@ -185,6 +190,7 @@ class TriviaGameMachine():
             raise ValueError(f'timeZone argument is malformed: \"{timeZone}\"')
 
         self.__queuedTriviaGameStore: QueuedTriviaGameStore = queuedTriviaGameStore
+        self.__shinyTriviaHelper: ShinyTriviaHelper = shinyTriviaHelper
         self.__superTriviaCooldownHelper: SuperTriviaCooldownHelper = superTriviaCooldownHelper
         self.__timber: Timber = timber
         self.__triviaAnswerChecker: TriviaAnswerChecker = triviaAnswerChecker
@@ -316,6 +322,7 @@ class TriviaGameMachine():
 
             await self.__submitEvent(IncorrectAnswerTriviaEvent(
                 triviaQuestion = state.getTriviaQuestion(),
+                isShiny = state.isShiny(),
                 actionId = action.getActionId(),
                 answer = action.getAnswer(),
                 gameId = state.getGameId(),
@@ -333,6 +340,7 @@ class TriviaGameMachine():
 
         await self.__submitEvent(CorrectAnswerTriviaEvent(
             triviaQuestion = state.getTriviaQuestion(),
+            isShiny = state.isShiny(),
             pointsForWinning = state.getPointsForWinning(),
             actionId = action.getActionId(),
             answer = action.getAnswer(),
@@ -485,8 +493,16 @@ class TriviaGameMachine():
             ))
             return
 
+        isShiny = False
+        if action.isShinyTriviaEnabled():
+            isShiny = await self.__shinyTriviaHelper.isShinyTriviaQuestion(
+                twitchChannel = action.getTwitchChannel(),
+                userId = action.getUserId()
+            )
+
         state = TriviaGameState(
             triviaQuestion = triviaQuestion,
+            isShiny = isShiny,
             pointsForWinning = action.getPointsForWinning(),
             secondsToLive = action.getSecondsToLive(),
             actionId = action.getActionId(),
@@ -499,6 +515,7 @@ class TriviaGameMachine():
 
         await self.__submitEvent(NewTriviaGameEvent(
             triviaQuestion = triviaQuestion,
+            isShiny = isShiny,
             pointsForWinning = action.getPointsForWinning(),
             secondsToLive = action.getSecondsToLive(),
             actionId = action.getActionId(),
@@ -606,6 +623,8 @@ class TriviaGameMachine():
 
                 await self.__submitEvent(OutOfTimeTriviaEvent(
                     triviaQuestion = normalGameState.getTriviaQuestion(),
+                    isShiny = normalGameState.isShiny(),
+                    pointsForWinning = normalGameState.getPointsForWinning(),
                     actionId = normalGameState.getActionId(),
                     gameId = normalGameState.getGameId(),
                     twitchChannel = normalGameState.getTwitchChannel(),

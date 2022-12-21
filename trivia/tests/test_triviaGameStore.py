@@ -89,6 +89,7 @@ class TriviaGameStoreTests():
 
     game1 = TriviaGameState(
         triviaQuestion = normalQuestion1,
+        isShiny = False,
         pointsForWinning = 5,
         secondsToLive = 60,
         actionId = 'abc123',
@@ -99,6 +100,7 @@ class TriviaGameStoreTests():
 
     game2 = TriviaGameState(
         triviaQuestion = normalQuestion2,
+        isShiny = False,
         pointsForWinning = 5,
         secondsToLive = 60,
         actionId = 'abc123',
@@ -109,6 +111,7 @@ class TriviaGameStoreTests():
 
     game3 = TriviaGameState(
         triviaQuestion = normalQuestion3,
+        isShiny = False,
         pointsForWinning = 5,
         secondsToLive = 60,
         actionId = 'abc123',
