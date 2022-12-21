@@ -519,6 +519,18 @@ class TestUtils():
         result = utils.removePreceedingAt(' ')
         assert result == ' '
 
+    def test_splitLongStringIntoMessages_withEmptyString(self):
+        result = utils.splitLongStringIntoMessages(
+            maxMessages = 50,
+            perMessageMaxSize = 50,
+            message = 'Hello, World! This is an example sentence. This should be broken up into smaller strings.'
+        )
+
+        assert result is not None
+        assert len(result) == 2
+        assert result[0] == 'Hello, World! This is an example sentence. This should'
+        assert result[1] == 'be broken up into smaller strings.'
+
     def test_strictStrToBool_withEmptyString(self):
         result: bool = None
         exception: Exception = None

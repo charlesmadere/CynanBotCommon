@@ -360,6 +360,50 @@ def removePreceedingAt(s: Optional[str]) -> Optional[str]:
     else:
         return s[1:len(s)]
 
+def splitLongStringIntoMessages(
+    maxMessages: int,
+    perMessageMaxSize: int,
+    message: str
+) -> List[str]:
+    if not isValidInt(maxMessages):
+        raise ValueError(f'maxMessages argument is malformed: \"{maxMessages}\"')
+    elif maxMessages < 1 or maxMessages >= getIntMaxSafeSize():
+        raise ValueError(f'maxMessages argument is out of bounds: {maxMessages}')
+    elif not isValidInt(perMessageMaxSize):
+        raise ValueError(f'perMessageMaxSize argument is malformed: \"{perMessageMaxSize}\"')
+    elif perMessageMaxSize < 50 or perMessageMaxSize >= getIntMaxSafeSize():
+        raise ValueError(f'perMessageMaxSize argument is out of bounds: {perMessageMaxSize}')
+
+    messages: List[str] = list()
+
+    if not isValidStr(message):
+        return messages
+
+    messages.append(message)
+    index: int = 0
+
+    while index < len(messages):
+        m = messages[index]
+
+        if len(m) >= perMessageMaxSize:
+            spaceIndex = m.rfind(' ')
+
+            while spaceIndex >= perMessageMaxSize:
+                spaceIndex = m[0:spaceIndex].rfind(' ')
+
+            if spaceIndex == -1:
+                raise RuntimeError(f'This message is insane! (len is {len(message)}):\n{message}')
+
+            messages[index] = m[0:spaceIndex].strip()
+            messages.append(m[spaceIndex:len(m)].strip())
+
+        index = index + 1
+
+    if len(messages) > maxMessages:
+        raise RuntimeError(f'This message is too long! (len is {len(message)}):\n{message}')
+
+    return messages
+
 trueRegEx: Pattern = re.compile(r't(rue)?|y(es)?', re.IGNORECASE)
 falseRegEx: Pattern = re.compile(r'f(alse)?|n(o)?', re.IGNORECASE)
 
