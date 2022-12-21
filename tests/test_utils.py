@@ -558,7 +558,7 @@ class TestUtils():
         )
 
         assert result is not None
-        assert len(result) == 2
+        assert len(result) == 3
         assert result[0] == 'Hello, World! This is an example sentence. This'
         assert result[1] == 'should be broken up into smaller strings. This'
         assert result[2] == 'message is three strings!'
