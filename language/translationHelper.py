@@ -39,13 +39,13 @@ class TranslationHelper():
         timber: Timber,
         googleServiceAccountFile: str = 'CynanBotCommon/language/googleServiceAccount.json'
     ):
-        if languagesRepository is None:
+        if not isinstance(languagesRepository, LanguagesRepository):
             raise ValueError(f'languagesRepository argument is malformed: \"{languagesRepository}\"')
-        elif networkClientProvider is None:
+        elif not isinstance(networkClientProvider, NetworkClientProvider):
             raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
         elif not utils.isValidStr(deepLAuthKey):
             raise ValueError(f'deepLAuthKey argument is malformed: \"{deepLAuthKey}\"')
-        elif timber is None:
+        elif not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not utils.isValidStr(googleServiceAccountFile):
             raise ValueError(f'googleServiceAccountFile argument is malformed: \"{googleServiceAccountFile}\"')
@@ -172,7 +172,7 @@ class TranslationHelper():
     async def translate(
         self,
         text: str,
-        targetLanguageEntry: LanguageEntry = None
+        targetLanguageEntry: Optional[LanguageEntry] = None
     ) -> TranslationResponse:
         if not utils.isValidStr(text):
             raise ValueError(f'text argument is malformed: \"{text}\"')

@@ -3,7 +3,6 @@ try:
     from CynanBotCommon.language.languageEntry import LanguageEntry
 except:
     import utils
-
     from language.languageEntry import LanguageEntry
 
 
@@ -18,7 +17,7 @@ class WordOfTheDayResponse():
         transliteration: str,
         word: str
     ):
-        if languageEntry is None:
+        if not isinstance(languageEntry, LanguageEntry):
             raise ValueError(f'languageEntry argument is malformed: \"{languageEntry}\"')
         elif not utils.isValidStr(definition):
             raise ValueError(f'definition argument is malformed: \"{definition}\"')

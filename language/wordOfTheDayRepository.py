@@ -31,11 +31,11 @@ class WordOfTheDayRepository():
         timber: Timber,
         cacheTimeDelta: timedelta = timedelta(hours = 1)
     ):
-        if networkClientProvider is None:
+        if not isinstance(networkClientProvider, NetworkClientProvider):
             raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
-        elif timber is None:
+        elif not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif cacheTimeDelta is None:
+        elif not isinstance(cacheTimeDelta, timedelta):
             raise ValueError(f'cacheTimeDelta argument is malformed: \"{cacheTimeDelta}\"')
 
         self.__networkClientProvider: NetworkClientProvider = networkClientProvider
@@ -47,7 +47,7 @@ class WordOfTheDayRepository():
         self.__timber.log('WordOfTheDayRepository', 'Caches cleared')
 
     async def fetchWotd(self, languageEntry: LanguageEntry) -> WordOfTheDayResponse:
-        if languageEntry is None:
+        if not isinstance(languageEntry, LanguageEntry):
             raise ValueError(f'languageEntry argument is malformed: \"{languageEntry}\"')
         elif not languageEntry.hasWotdApiCode():
             raise ValueError(f'the given languageEntry is not supported for Word Of The Day: \"{languageEntry.getName()}\"')
@@ -62,7 +62,7 @@ class WordOfTheDayRepository():
         return wotd
 
     async def __fetchWotd(self, languageEntry: LanguageEntry) -> WordOfTheDayResponse:
-        if languageEntry is None:
+        if not isinstance(languageEntry, LanguageEntry):
             raise ValueError(f'languageEntry argument is malformed: \"{languageEntry}\"')
         elif not languageEntry.hasWotdApiCode():
             raise ValueError(f'the given languageEntry is not supported for Word Of The Day: \"{languageEntry.getName()}\"')

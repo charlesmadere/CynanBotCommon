@@ -24,7 +24,7 @@ class Location():
             raise ValueError(f'id_ argument is malformed: \"{locationId}\"')
         elif not utils.isValidStr(name):
             raise ValueError(f'name argument is malformed: \"{name}\"')
-        elif timeZone is None:
+        elif not isinstance(timeZone, tzinfo):
             raise ValueError(f'timeZone argument is malformed: \"{timeZone}\"')
 
         self.__latitude: float = latitude
