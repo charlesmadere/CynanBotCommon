@@ -2,12 +2,14 @@ import locale
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.cuteness.cutenessResult import CutenessResult
     from CynanBotCommon.trivia.absTriviaEvent import AbsTriviaEvent
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.triviaEventType import TriviaEventType
     from CynanBotCommon.trivia.triviaScoreResult import TriviaScoreResult
 except:
     import utils
+    from cuteness.cutenessResult import CutenessResult
     from trivia.absTriviaEvent import AbsTriviaEvent
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.triviaEventType import TriviaEventType
@@ -19,6 +21,7 @@ class CorrectSuperAnswerTriviaEvent(AbsTriviaEvent):
     def __init__(
         self,
         triviaQuestion: AbsTriviaQuestion,
+        cutenessResult: CutenessResult,
         pointsForWinning: int,
         pointsMultiplier: int,
         remainingQueueSize: int,
@@ -37,6 +40,8 @@ class CorrectSuperAnswerTriviaEvent(AbsTriviaEvent):
 
         if not isinstance(triviaQuestion, AbsTriviaQuestion):
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
+        elif not isinstance(cutenessResult, CutenessResult):
+            raise ValueError(f'cutenessResult argument is malformed: \"{cutenessResult}\"')
         elif not utils.isValidInt(pointsForWinning):
             raise ValueError(f'pointsForWinning argument is malformed: \"{pointsForWinning}\"')
         elif pointsForWinning < 1 or pointsForWinning >= utils.getIntMaxSafeSize():
@@ -63,6 +68,7 @@ class CorrectSuperAnswerTriviaEvent(AbsTriviaEvent):
             raise ValueError(f'triviaScoreResult argument is malformed: \"{triviaScoreResult}\"')
 
         self.__triviaQuestion: AbsTriviaQuestion = triviaQuestion
+        self.__cutenessResult: CutenessResult = cutenessResult
         self.__pointsForWinning: int = pointsForWinning
         self.__pointsMultiplier: int = pointsMultiplier
         self.__remainingQueueSize: int = remainingQueueSize
@@ -75,6 +81,9 @@ class CorrectSuperAnswerTriviaEvent(AbsTriviaEvent):
 
     def getAnswer(self) -> str:
         return self.__answer
+
+    def getCutenessResult(self) -> CutenessResult:
+        return self.__cutenessResult
 
     def getGameId(self) -> str:
         return self.__gameId

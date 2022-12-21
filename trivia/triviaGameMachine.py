@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Optional, Set
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.cuteness.cutenessRepository import CutenessRepository
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.absTriviaAction import AbsTriviaAction
     from CynanBotCommon.trivia.absTriviaEvent import AbsTriviaEvent
@@ -80,6 +81,7 @@ try:
         WrongUserCheckAnswerTriviaEvent
 except:
     import utils
+    from cuteness.cutenessRepository import CutenessRepository
     from timber.timber import Timber
     from trivia.absTriviaAction import AbsTriviaAction
     from trivia.absTriviaEvent import AbsTriviaEvent
@@ -148,6 +150,7 @@ class TriviaGameMachine():
     def __init__(
         self,
         eventLoop: AbstractEventLoop,
+        cutenessRepository: CutenessRepository,
         queuedTriviaGameStore: QueuedTriviaGameStore,
         shinyTriviaHelper: ShinyTriviaHelper,
         superTriviaCooldownHelper: SuperTriviaCooldownHelper,
@@ -162,6 +165,8 @@ class TriviaGameMachine():
     ):
         if not isinstance(eventLoop, AbstractEventLoop):
             raise ValueError(f'eventLoop argument is malformed: \"{eventLoop}\"')
+        elif not isinstance(cutenessRepository, CutenessRepository):
+            raise ValueError(f'cutenessRepository argument is malformed: \"{cutenessRepository}\"')
         elif not isinstance(queuedTriviaGameStore, QueuedTriviaGameStore):
             raise ValueError(f'queuedTriviaGameStore argument is malformed: \"{queuedTriviaGameStore}\"')
         elif not isinstance(shinyTriviaHelper, ShinyTriviaHelper):
@@ -189,6 +194,7 @@ class TriviaGameMachine():
         elif not isinstance(timeZone, timezone):
             raise ValueError(f'timeZone argument is malformed: \"{timeZone}\"')
 
+        self.__cutenessRepository: CutenessRepository = cutenessRepository
         self.__queuedTriviaGameStore: QueuedTriviaGameStore = queuedTriviaGameStore
         self.__shinyTriviaHelper: ShinyTriviaHelper = shinyTriviaHelper
         self.__superTriviaCooldownHelper: SuperTriviaCooldownHelper = superTriviaCooldownHelper
@@ -333,6 +339,13 @@ class TriviaGameMachine():
             ))
             return
 
+        cutenessResult = await self.__cutenessRepository.fetchCutenessIncrementedBy(
+            incrementAmount = state.getPointsForWinning(),
+            twitchChannel = state.getTwitchChannel(),
+            userId = action.getUserId(),
+            userName = action.getUserName()
+        )
+
         triviaScoreResult = await self.__triviaScoreRepository.incrementTriviaWins(
             twitchChannel = action.getTwitchChannel(),
             userId = action.getUserId()
@@ -341,6 +354,7 @@ class TriviaGameMachine():
         await self.__submitEvent(CorrectAnswerTriviaEvent(
             triviaQuestion = state.getTriviaQuestion(),
             isShiny = state.isShiny(),
+            cutenessResult = cutenessResult,
             pointsForWinning = state.getPointsForWinning(),
             actionId = action.getActionId(),
             answer = action.getAnswer(),
@@ -414,17 +428,25 @@ class TriviaGameMachine():
 
         await self.__removeSuperTriviaGame(action.getTwitchChannel())
 
-        triviaScoreResult = await self.__triviaScoreRepository.incrementSuperTriviaWins(
-            twitchChannel = action.getTwitchChannel(),
-            userId = action.getUserId()
+        cutenessResult = await self.__cutenessRepository.fetchCutenessIncrementedBy(
+            incrementAmount = state.getPointsForWinning(),
+            twitchChannel = state.getTwitchChannel(),
+            userId = action.getUserId(),
+            userName = action.getUserName()
         )
 
         remainingQueueSize = await self.__queuedTriviaGameStore.getQueuedSuperGamesSize(
             twitchChannel = action.getTwitchChannel()
         )
 
+        triviaScoreResult = await self.__triviaScoreRepository.incrementSuperTriviaWins(
+            twitchChannel = action.getTwitchChannel(),
+            userId = action.getUserId()
+        )
+
         await self.__submitEvent(CorrectSuperAnswerTriviaEvent(
             triviaQuestion = state.getTriviaQuestion(),
+            cutenessResult = cutenessResult,
             pointsForWinning = state.getPointsForWinning(),
             pointsMultiplier = state.getPointsMultiplier(),
             remainingQueueSize = remainingQueueSize,
