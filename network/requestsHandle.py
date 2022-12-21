@@ -52,15 +52,17 @@ class RequestsHandle(NetworkHandle):
                 timeout = self.__timeoutSeconds
             )
         except Exception as e:
-            self.__timber.log('RequestsHandle', f'Encountered network error (via {self.getNetworkClientType()}) when trying to hit URL \"{url}\" with headers \"{headers}\"', e)
-            raise GenericNetworkException(f'Encountered network error (via {self.getNetworkClientType()}) when trying to hit URL \"{url}\" with headers \"{headers}\"')
+            self.__timber.log('RequestsHandle', f'Encountered network error (via {self.getNetworkClientType()}) when trying to get URL \"{url}\" with headers \"{headers}\"', e)
+            raise GenericNetworkException(f'Encountered network error (via {self.getNetworkClientType()}) when trying to get URL \"{url}\" with headers \"{headers}\"')
 
         if response is None:
-            raise GenericNetworkException(f'Received no response (via {self.getNetworkClientType()}) when trying to hit URL \"{url}\" with headers \"{headers}\"')
+            self.__timber.log('RequestsHandle', f'Received no response (via {self.getNetworkClientType()}) when trying to get URL \"{url}\" with headers \"{headers}\"', e)
+            raise GenericNetworkException(f'Received no response (via {self.getNetworkClientType()}) when trying to get URL \"{url}\" with headers \"{headers}\"')
 
         return RequestsResponse(
             response = response,
-            url = url
+            url = url,
+            timber = self.__timber
         )
 
     def getNetworkClientType(self) -> NetworkClientType:
@@ -82,13 +84,15 @@ class RequestsHandle(NetworkHandle):
                 timeout = self.__timeoutSeconds
             )
         except Exception as e:
-            self.__timber.log('RequestsHandle', f'Encountered network error (via {self.getNetworkClientType()}) when trying to hit URL \"{url}\" with headers \"{headers}\"', e)
-            raise GenericNetworkException(f'Encountered network error (via {self.getNetworkClientType()}) when trying to hit URL \"{url}\" with headers \"{headers}\"')
+            self.__timber.log('RequestsHandle', f'Encountered network error (via {self.getNetworkClientType()}) when trying to post URL \"{url}\" with headers \"{headers}\"', e)
+            raise GenericNetworkException(f'Encountered network error (via {self.getNetworkClientType()}) when trying to post URL \"{url}\" with headers \"{headers}\"')
 
         if response is None:
-            raise GenericNetworkException(f'Received no response (via {self.getNetworkClientType()}) when trying to hit URL \"{url}\" with headers \"{headers}\"')
+            self.__timber.log('RequestsHandle', f'Received no response (via {self.getNetworkClientType()}) when trying to post URL \"{url}\" with headers \"{headers}\"', e)
+            raise GenericNetworkException(f'Received no response (via {self.getNetworkClientType()}) when trying to post URL \"{url}\" with headers \"{headers}\"')
 
         return RequestsResponse(
             response = response,
-            url = url
+            url = url,
+            timber = self.__timber
         )
