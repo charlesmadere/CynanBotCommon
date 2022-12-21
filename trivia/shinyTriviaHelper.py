@@ -27,7 +27,7 @@ class ShinyTriviaHelper():
         shinyTriviaOccurencesRepository: ShinyTriviaOccurencesRepository,
         timber: Timber,
         triviaSettingsRepository: TriviaSettingsRepository,
-        cooldown: timedelta = timedelta(hours = 18),
+        cooldown: timedelta = timedelta(hours = 2),
         timeZone: timezone = timezone.utc
     ):
         if not isinstance(cutenessRepository, CutenessRepository):
