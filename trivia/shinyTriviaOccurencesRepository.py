@@ -173,6 +173,8 @@ class ShinyTriviaOccurencesRepository():
     ):
         if not utils.isValidInt(newShinyCount):
             raise ValueError(f'newShinyCount argument is malformed: \"{newShinyCount}\"')
+        elif newShinyCount < 0 or newShinyCount >= utils.getIntMaxSafeSize():
+            raise ValueError(f'newShinyCount argument is out of bounds: {newShinyCount}')
         elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
         elif not utils.isValidStr(userId):
