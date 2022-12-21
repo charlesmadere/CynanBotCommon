@@ -46,11 +46,11 @@ class AioHttpHandle(NetworkHandle):
                 headers = headers
             )
         except Exception as e:
-            self.__timber.log('AioHttpHandle', f'Encountered network error (via {self.getNetworkClientType()}) when trying to get URL \"{url}\" with headers \"{headers}\"', e)
-            raise GenericNetworkException(f'Encountered network error (via {self.getNetworkClientType()}) when trying to get URL \"{url}\" with headers \"{headers}\"')
+            self.__timber.log('AioHttpHandle', f'Encountered network error (via {self.getNetworkClientType()}) when trying to get URL \"{url}\" with headers \"{headers}\": {e}', e)
+            raise GenericNetworkException(f'Encountered network error (via {self.getNetworkClientType()}) when trying to get URL \"{url}\" with headers \"{headers}\": {e}')
 
         if response is None:
-            self.__timber.log('AioHttpHandle', f'Received no response (via {self.getNetworkClientType()}) when trying to get URL \"{url}\" with headers \"{headers}\"', e)
+            self.__timber.log('AioHttpHandle', f'Received no response (via {self.getNetworkClientType()}) when trying to get URL \"{url}\" with headers \"{headers}\"')
             raise GenericNetworkException(f'Received no response (via {self.getNetworkClientType()}) when trying to get URL \"{url}\" with headers \"{headers}\"')
 
         return AioHttpResponse(
@@ -77,11 +77,11 @@ class AioHttpHandle(NetworkHandle):
                 json = json
             )
         except Exception as e:
-            self.__timber.log('AioHttpHandle', f'Encountered network error (via {self.getNetworkClientType()}) when trying to post URL \"{url}\" with headers \"{headers}\" and json \"{json}\"', e)
-            raise GenericNetworkException(f'Encountered network error (via {self.getNetworkClientType()}) when trying to post URL \"{url}\" with headers \"{headers}\" and json \"{json}\"')
+            self.__timber.log('AioHttpHandle', f'Encountered network error (via {self.getNetworkClientType()}) when trying to post URL \"{url}\" with headers \"{headers}\" and json \"{json}\": {e}', e)
+            raise GenericNetworkException(f'Encountered network error (via {self.getNetworkClientType()}) when trying to post URL \"{url}\" with headers \"{headers}\" and json \"{json}\": {e}')
 
         if response is None:
-            self.__timber.log('AioHttpHandle', f'Received no response (via {self.getNetworkClientType()}) when trying to post URL \"{url}\" with headers \"{headers}\"', e)
+            self.__timber.log('AioHttpHandle', f'Received no response (via {self.getNetworkClientType()}) when trying to post URL \"{url}\" with headers \"{headers}\" and json \"{json}\"')
             raise GenericNetworkException(f'Received no response (via {self.getNetworkClientType()}) when trying to post URL \"{url}\" with headers \"{headers}\" and json \"{json}\"')
 
         return AioHttpResponse(
