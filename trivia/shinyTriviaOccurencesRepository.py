@@ -45,7 +45,7 @@ class ShinyTriviaOccurencesRepository():
 
         self.__isDatabaseReady: bool = False
 
-    async def fetchShinyCount(
+    async def fetchDetails(
         self,
         twitchChannel: str,
         userId: str
@@ -103,7 +103,7 @@ class ShinyTriviaOccurencesRepository():
         elif userId == '0':
             raise ValueError(f'userId argument is an illegal value: \"{userId}\"')
 
-        result = await self.fetchShinyCount(
+        result = await self.fetchDetails(
             twitchChannel = twitchChannel,
             userId = userId
         )
@@ -196,5 +196,4 @@ class ShinyTriviaOccurencesRepository():
         )
 
         await connection.close()
-
         self.__timber.log('ShinyTriviaOccurencesRepository', f'Shiny count for {userName}:{userId} in {twitchChannel} is now {newShinyCount}')
