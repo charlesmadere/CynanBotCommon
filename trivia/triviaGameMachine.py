@@ -154,7 +154,8 @@ class TriviaGameMachine():
         triviaRepository: TriviaRepository,
         triviaScoreRepository: TriviaScoreRepository,
         sleepTimeSeconds: float = 0.5,
-        queueTimeoutSeconds: int = 3
+        queueTimeoutSeconds: int = 3,
+        timeZone: timezone = timezone.utc
     ):
         if not isinstance(eventLoop, AbstractEventLoop):
             raise ValueError(f'eventLoop argument is malformed: \"{eventLoop}\"')
@@ -180,6 +181,8 @@ class TriviaGameMachine():
             raise ValueError(f'queueTimeoutSeconds argument is malformed: \"{queueTimeoutSeconds}\"')
         elif queueTimeoutSeconds < 1 or queueTimeoutSeconds > 5:
             raise ValueError(f'queueTimeoutSeconds argument is out of bounds: {queueTimeoutSeconds}')
+        elif not isinstance(timeZone, timezone):
+            raise ValueError(f'timeZone argument is malformed: \"{timeZone}\"')
 
         self.__queuedTriviaGameStore: QueuedTriviaGameStore = queuedTriviaGameStore
         self.__superTriviaCooldownHelper: SuperTriviaCooldownHelper = superTriviaCooldownHelper
@@ -190,6 +193,7 @@ class TriviaGameMachine():
         self.__triviaScoreRepository: TriviaScoreRepository = triviaScoreRepository
         self.__sleepTimeSeconds: float = sleepTimeSeconds
         self.__queueTimeoutSeconds: int = queueTimeoutSeconds
+        self.__timeZone: timezone = timeZone
 
         self.__eventListener: Optional[TriviaEventListener] = None
         self.__actionQueue: SimpleQueue[AbsTriviaAction] = SimpleQueue()
@@ -235,7 +239,7 @@ class TriviaGameMachine():
             userId = action.getUserId()
         )
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(self.__timeZone)
 
         if state is None:
             await self.__submitEvent(GameNotReadyCheckAnswerTriviaEvent(
@@ -346,7 +350,7 @@ class TriviaGameMachine():
             raise RuntimeError(f'TriviaActionType is not {TriviaActionType.CHECK_SUPER_ANSWER}: \"{action.getTriviaActionType()}\"')
 
         state = await self.__triviaGameStore.getSuperGame(action.getTwitchChannel())
-        now = datetime.now(timezone.utc)
+        now = datetime.now(self.__timeZone)
 
         if state is None:
             await self.__submitEvent(SuperGameNotReadyCheckAnswerTriviaEvent(
@@ -445,12 +449,12 @@ class TriviaGameMachine():
         ))
 
     async def __handleActionStartNewTriviaGame(self, action: StartNewTriviaGameAction):
-        if action is None:
+        if not isinstance(action, StartNewTriviaGameAction):
             raise ValueError(f'action argument is malformed: \"{action}\"')
         elif action.getTriviaActionType() is not TriviaActionType.START_NEW_GAME:
             raise RuntimeError(f'TriviaActionType is not {TriviaActionType.START_NEW_GAME}: \"{action.getTriviaActionType()}\"')
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(self.__timeZone)
         state = await self.__triviaGameStore.getNormalGame(
             twitchChannel = action.getTwitchChannel(),
             userId = action.getUserId()
@@ -510,7 +514,7 @@ class TriviaGameMachine():
         elif action.getTriviaActionType() is not TriviaActionType.START_NEW_SUPER_GAME:
             raise RuntimeError(f'TriviaActionType is not {TriviaActionType.START_NEW_SUPER_GAME}: \"{action.getTriviaActionType()}\"')
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(self.__timeZone)
         state = await self.__triviaGameStore.getSuperGame(action.getTwitchChannel())
         isSuperTriviaGameCurrentlyInProgress = state is not None and state.getEndTime() >= now
 
@@ -578,7 +582,7 @@ class TriviaGameMachine():
         await self.__beginQueuedTriviaGames()
 
     async def __removeDeadTriviaGames(self):
-        now = datetime.now(timezone.utc)
+        now = datetime.now(self.__timeZone)
         gameStates = await self.__triviaGameStore.getAll()
         gameStatesToRemove: List[AbsTriviaGameState] = list()
 
@@ -662,15 +666,17 @@ class TriviaGameMachine():
 
             try:
                 for action in actions:
-                    if action.getTriviaActionType() is TriviaActionType.CHECK_ANSWER:
+                    triviaActionType = action.getTriviaActionType()
+
+                    if triviaActionType is TriviaActionType.CHECK_ANSWER:
                         await self.__handleActionCheckAnswer(action)
-                    elif action.getTriviaActionType() is TriviaActionType.CHECK_SUPER_ANSWER:
+                    elif triviaActionType is TriviaActionType.CHECK_SUPER_ANSWER:
                         await self.__handleActionCheckSuperAnswer(action)
-                    elif action.getTriviaActionType() is TriviaActionType.CLEAR_SUPER_TRIVIA_QUEUE:
+                    elif triviaActionType is TriviaActionType.CLEAR_SUPER_TRIVIA_QUEUE:
                         await self.__handleActionClearSuperTriviaQueue(action)
-                    elif action.getTriviaActionType() is TriviaActionType.START_NEW_GAME:
+                    elif triviaActionType is TriviaActionType.START_NEW_GAME:
                         await self.__handleActionStartNewTriviaGame(action)
-                    elif action.getTriviaActionType() is TriviaActionType.START_NEW_SUPER_GAME:
+                    elif triviaActionType is TriviaActionType.START_NEW_SUPER_GAME:
                         await self.__handleActionStartNewSuperTriviaGame(action)
                     else:
                         raise UnknownTriviaActionTypeException(f'Unknown TriviaActionType: \"{action.getTriviaActionType()}\"')
