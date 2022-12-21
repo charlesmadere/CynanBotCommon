@@ -55,6 +55,32 @@ class TriviaSource(Enum):
         else:
             raise ValueError(f'unknown TriviaSource: \"{text}\"')
 
+    def isLocal(self) -> bool:
+        if self is TriviaSource.BONGO:
+            return False
+        elif self is TriviaSource.FUNTOON:
+            return False
+        elif self is TriviaSource.JOKE_TRIVIA_REPOSITORY:
+            return True
+        elif self is TriviaSource.J_SERVICE:
+            return False
+        elif self is TriviaSource.LORD_OF_THE_RINGS:
+            return True
+        elif self is TriviaSource.MILLIONAIRE:
+            return True
+        elif self is TriviaSource.OPEN_TRIVIA_DATABASE:
+            return False
+        elif self is TriviaSource.OPEN_TRIVIA_QA:
+            return True
+        elif self is TriviaSource.TRIVIA_DATABASE:
+            return True
+        elif self is TriviaSource.WILL_FRY_TRIVIA:
+            return False
+        elif self is TriviaSource.WWTBAM:
+            return True
+        else:
+            raise ValueError(f'unknown TriviaSource: \"{self}\"')
+
     def toStr(self) -> str:
         if self is TriviaSource.BONGO:
             return 'BONGO'
