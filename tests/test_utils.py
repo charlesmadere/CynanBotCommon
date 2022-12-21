@@ -519,7 +519,38 @@ class TestUtils():
         result = utils.removePreceedingAt(' ')
         assert result == ' '
 
-    def test_splitLongStringIntoMessages_withEmptyString(self):
+    def test_splitLongStringIntoMessages_withEmptyMessage(self):
+        result = utils.splitLongStringIntoMessages(
+            maxMessages = 50,
+            perMessageMaxSize = 50,
+            message = ''
+        )
+
+        assert result is not None
+        assert len(result) == 0
+
+    def test_splitLongStringIntoMessages_withNoneMessage(self):
+        result = utils.splitLongStringIntoMessages(
+            maxMessages = 50,
+            perMessageMaxSize = 50,
+            message = None
+        )
+
+        assert result is not None
+        assert len(result) == 0
+
+    def test_splitLongStringIntoMessages_withOneSentences(self):
+        result = utils.splitLongStringIntoMessages(
+            maxMessages = 50,
+            perMessageMaxSize = 50,
+            message = 'Hello, World!'
+        )
+
+        assert result is not None
+        assert len(result) == 1
+        assert result[0] == 'Hello, World!'
+
+    def test_splitLongStringIntoMessages_withTwoSentences(self):
         result = utils.splitLongStringIntoMessages(
             maxMessages = 50,
             perMessageMaxSize = 50,
@@ -528,8 +559,8 @@ class TestUtils():
 
         assert result is not None
         assert len(result) == 2
-        assert result[0] == 'Hello, World! This is an example sentence. This should'
-        assert result[1] == 'be broken up into smaller strings.'
+        assert result[0] == 'Hello, World! This is an example sentence. This'
+        assert result[1] == 'should be broken up into smaller strings.'
 
     def test_strictStrToBool_withEmptyString(self):
         result: bool = None

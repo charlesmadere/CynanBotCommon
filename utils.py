@@ -363,7 +363,7 @@ def removePreceedingAt(s: Optional[str]) -> Optional[str]:
 def splitLongStringIntoMessages(
     maxMessages: int,
     perMessageMaxSize: int,
-    message: str
+    message: Optional[str]
 ) -> List[str]:
     if not isValidInt(maxMessages):
         raise ValueError(f'maxMessages argument is malformed: \"{maxMessages}\"')
