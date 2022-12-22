@@ -40,11 +40,13 @@ class TestQueuedTriviaGameStore1():
 
     startNewSuperTriviaGameAction1 = StartNewSuperTriviaGameAction(
         isQueueActionConsumed = False,
+        isShinyTriviaEnabled = False,
         numberOfGames = 3,
         perUserAttempts = 2,
         pointsForWinning = 5,
         pointsMultiplier = 5,
         secondsToLive = 50,
+        shinyTriviaMultiplier = 8,
         twitchChannel = 'smCharles',
         triviaFetchOptions = TriviaFetchOptions(
             isJokeTriviaRepositoryEnabled = False,
@@ -55,11 +57,13 @@ class TestQueuedTriviaGameStore1():
 
     startNewSuperTriviaGameAction2 = StartNewSuperTriviaGameAction(
         isQueueActionConsumed = False,
+        isShinyTriviaEnabled = False,
         numberOfGames = 1,
         perUserAttempts = 2,
         pointsForWinning = 5,
         pointsMultiplier = 5,
         secondsToLive = 50,
+        shinyTriviaMultiplier = 8,
         twitchChannel = 'smCharles',
         triviaFetchOptions = TriviaFetchOptions(
             isJokeTriviaRepositoryEnabled = False,
@@ -70,11 +74,13 @@ class TestQueuedTriviaGameStore1():
 
     startNewSuperTriviaGameAction3 = StartNewSuperTriviaGameAction(
         isQueueActionConsumed = True,
+        isShinyTriviaEnabled = False,
         numberOfGames = 1,
         perUserAttempts = 2,
         pointsForWinning = 5,
         pointsMultiplier = 5,
         secondsToLive = 50,
+        shinyTriviaMultiplier = 8,
         twitchChannel = 'smCharles',
         triviaFetchOptions = TriviaFetchOptions(
             isJokeTriviaRepositoryEnabled = False,
@@ -85,11 +91,13 @@ class TestQueuedTriviaGameStore1():
 
     startNewSuperTriviaGameAction4 = StartNewSuperTriviaGameAction(
         isQueueActionConsumed = False,
+        isShinyTriviaEnabled = False,
         numberOfGames = 5,
         perUserAttempts = 2,
         pointsForWinning = 5,
         pointsMultiplier = 5,
         secondsToLive = 50,
+        shinyTriviaMultiplier = 8,
         twitchChannel = 'stashiocat',
         triviaFetchOptions = TriviaFetchOptions(
             isJokeTriviaRepositoryEnabled = False,
@@ -220,11 +228,13 @@ class TestQueuedTriviaGameStore4():
 
     startNewSuperTriviaGameAction = StartNewSuperTriviaGameAction(
         isQueueActionConsumed = False,
+        isShinyTriviaEnabled = False,
         numberOfGames = 1,
         perUserAttempts = 2,
         pointsForWinning = 5,
         pointsMultiplier = 5,
         secondsToLive = 50,
+        shinyTriviaMultiplier = 8,
         twitchChannel = 'smCharles',
         triviaFetchOptions = TriviaFetchOptions(
             isJokeTriviaRepositoryEnabled = False,
@@ -269,11 +279,13 @@ class TestQueuedTriviaGameStore5():
 
     startNewSuperTriviaGameAction = StartNewSuperTriviaGameAction(
         isQueueActionConsumed = False,
+        isShinyTriviaEnabled = False,
         numberOfGames = 5,
         perUserAttempts = 2,
         pointsForWinning = 5,
         pointsMultiplier = 5,
         secondsToLive = 50,
+        shinyTriviaMultiplier = 8,
         twitchChannel = 'stashiocat',
         triviaFetchOptions = TriviaFetchOptions(
             isJokeTriviaRepositoryEnabled = False,
@@ -318,11 +330,13 @@ class TestQueuedTriviaGameStore6():
 
     startNewSuperTriviaGameAction = StartNewSuperTriviaGameAction(
         isQueueActionConsumed = False,
+        isShinyTriviaEnabled = False,
         numberOfGames = 3,
         perUserAttempts = 2,
         pointsForWinning = 5,
         pointsMultiplier = 5,
         secondsToLive = 50,
+        shinyTriviaMultiplier = 8,
         twitchChannel = 'smCharles',
         triviaFetchOptions = TriviaFetchOptions(
             isJokeTriviaRepositoryEnabled = False,
@@ -388,11 +402,13 @@ class TestQueuedTriviaGameStore7():
 
     startNewSuperTriviaGameAction = StartNewSuperTriviaGameAction(
         isQueueActionConsumed = False,
+        isShinyTriviaEnabled = False,
         numberOfGames = 1,
         perUserAttempts = 2,
         pointsForWinning = 5,
         pointsMultiplier = 5,
         secondsToLive = 50,
+        shinyTriviaMultiplier = 8,
         twitchChannel = 'smCharles',
         triviaFetchOptions = TriviaFetchOptions(
             isJokeTriviaRepositoryEnabled = False,
