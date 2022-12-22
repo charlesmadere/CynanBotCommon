@@ -17,6 +17,7 @@ class OutOfTimeSuperTriviaEvent(AbsTriviaEvent):
     def __init__(
         self,
         triviaQuestion: AbsTriviaQuestion,
+        isShiny: bool,
         pointsForWinning: int,
         pointsMultiplier: int,
         remainingQueueSize: int,
@@ -31,6 +32,8 @@ class OutOfTimeSuperTriviaEvent(AbsTriviaEvent):
 
         if not isinstance(triviaQuestion, AbsTriviaQuestion):
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
+        elif not utils.isValidBool(isShiny):
+            raise ValueError(f'isShiny argument is malformed: \"{isShiny}\"')
         elif not utils.isValidInt(pointsForWinning):
             raise ValueError(f'pointsForWinning argument is malformed: \"{pointsForWinning}\"')
         elif pointsForWinning < 1 or pointsForWinning >= utils.getIntMaxSafeSize():
@@ -49,6 +52,7 @@ class OutOfTimeSuperTriviaEvent(AbsTriviaEvent):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
         self.__triviaQuestion: AbsTriviaQuestion = triviaQuestion
+        self.__isShiny: bool = isShiny
         self.__pointsForWinning: int = pointsForWinning
         self.__pointsMultiplier: int = pointsMultiplier
         self.__remainingQueueSize: int = remainingQueueSize
@@ -81,3 +85,6 @@ class OutOfTimeSuperTriviaEvent(AbsTriviaEvent):
 
     def getTwitchChannel(self) -> str:
         return self.__twitchChannel
+
+    def isShiny(self) -> bool:
+        return self.__isShiny

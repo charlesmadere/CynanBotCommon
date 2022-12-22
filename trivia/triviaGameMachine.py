@@ -288,6 +288,7 @@ class TriviaGameMachine():
 
             await self.__submitEvent(TooLateToAnswerCheckAnswerTriviaEvent(
                 triviaQuestion = state.getTriviaQuestion(),
+                isShiny = state.isShiny(),
                 actionId = action.getActionId(),
                 answer = action.getAnswer(),
                 gameId = state.getGameId(),
@@ -306,6 +307,7 @@ class TriviaGameMachine():
         if checkResult is TriviaAnswerCheckResult.INVALID_INPUT:
             await self.__submitEvent(InvalidAnswerInputTriviaEvent(
                 triviaQuestion = state.getTriviaQuestion(),
+                isShiny = state.isShiny(),
                 actionId = action.getActionId(),
                 answer = action.getAnswer(),
                 gameId = state.getGameId(),
@@ -339,8 +341,12 @@ class TriviaGameMachine():
             ))
             return
 
+        pointsForWinning = state.getPointsForWinning()
+        if state.isShiny():
+            pointsForWinning = pointsForWinning * state.getShinyTriviaMultiplier()
+
         cutenessResult = await self.__cutenessRepository.fetchCutenessIncrementedBy(
-            incrementAmount = state.getPointsForWinning(),
+            incrementAmount = pointsForWinning,
             twitchChannel = state.getTwitchChannel(),
             userId = action.getUserId(),
             userName = action.getUserName()
@@ -355,7 +361,7 @@ class TriviaGameMachine():
             triviaQuestion = state.getTriviaQuestion(),
             isShiny = state.isShiny(),
             cutenessResult = cutenessResult,
-            pointsForWinning = state.getPointsForWinning(),
+            pointsForWinning = pointsForWinning,
             actionId = action.getActionId(),
             answer = action.getAnswer(),
             gameId = state.getGameId(),
@@ -387,6 +393,7 @@ class TriviaGameMachine():
         if state.getEndTime() < now:
             await self.__submitEvent(TooLateToAnswerCheckSuperAnswerTriviaEvent(
                 triviaQuestion = state.getTriviaQuestion(),
+                isShiny = state.isShiny(),
                 actionId = action.getActionId(),
                 answer = action.getAnswer(),
                 gameId = state.getGameId(),
@@ -417,6 +424,7 @@ class TriviaGameMachine():
         if checkResult is not TriviaAnswerCheckResult.CORRECT:
             await self.__submitEvent(IncorrectSuperAnswerTriviaEvent(
                 triviaQuestion = state.getTriviaQuestion(),
+                isShiny = state.isShiny(),
                 actionId = action.getActionId(),
                 answer = action.getAnswer(),
                 gameId = state.getGameId(),
@@ -428,8 +436,14 @@ class TriviaGameMachine():
 
         await self.__removeSuperTriviaGame(action.getTwitchChannel())
 
+        pointsForWinning = state.getPointsForWinning()
+        if state.isShiny():
+            pointsForWinning = pointsForWinning * state.getShinyTriviaMultiplier()
+        else:
+            pointsForWinning = pointsForWinning * state.getPointsMultiplier()
+
         cutenessResult = await self.__cutenessRepository.fetchCutenessIncrementedBy(
-            incrementAmount = state.getPointsForWinning(),
+            incrementAmount = pointsForWinning,
             twitchChannel = state.getTwitchChannel(),
             userId = action.getUserId(),
             userName = action.getUserName()
@@ -446,9 +460,9 @@ class TriviaGameMachine():
 
         await self.__submitEvent(CorrectSuperAnswerTriviaEvent(
             triviaQuestion = state.getTriviaQuestion(),
+            isShiny = state.isShiny(),
             cutenessResult = cutenessResult,
-            pointsForWinning = state.getPointsForWinning(),
-            pointsMultiplier = state.getPointsMultiplier(),
+            pointsForWinning = pointsForWinning,
             remainingQueueSize = remainingQueueSize,
             actionId = action.getActionId(),
             answer = action.getAnswer(),
@@ -527,6 +541,7 @@ class TriviaGameMachine():
             isShiny = isShiny,
             pointsForWinning = action.getPointsForWinning(),
             secondsToLive = action.getSecondsToLive(),
+            shinyTriviaMultiplier = action.getShinyTriviaMultiplier(),
             actionId = action.getActionId(),
             twitchChannel = action.getTwitchChannel(),
             userId = action.getUserId(),
@@ -540,6 +555,7 @@ class TriviaGameMachine():
             isShiny = isShiny,
             pointsForWinning = action.getPointsForWinning(),
             secondsToLive = action.getSecondsToLive(),
+            shinyTriviaMultiplier = action.getShinyTriviaMultiplier(),
             actionId = action.getActionId(),
             gameId = state.getGameId(),
             twitchChannel = action.getTwitchChannel(),
@@ -594,12 +610,20 @@ class TriviaGameMachine():
             ))
             return
 
+        isShiny = False
+        if action.isShinyTriviaEnabled():
+            isShiny = await self.__shinyTriviaHelper.isShinySuperTriviaQuestion(
+                twitchChannel = action.getTwitchChannel()
+            )
+
         state = SuperTriviaGameState(
             triviaQuestion = triviaQuestion,
+            isShiny = isShiny,
             perUserAttempts = action.getPerUserAttempts(),
             pointsForWinning = action.getPointsForWinning(),
             pointsMultiplier = action.getPointsMultiplier(),
             secondsToLive = action.getSecondsToLive(),
+            shinyTriviaMultiplier = action.getShinyTriviaMultiplier(),
             actionId = action.getActionId(),
             twitchChannel = action.getTwitchChannel()
         )
@@ -608,9 +632,11 @@ class TriviaGameMachine():
 
         await self.__submitEvent(NewSuperTriviaGameEvent(
             triviaQuestion = triviaQuestion,
+            isShiny = isShiny,
             pointsForWinning = action.getPointsForWinning(),
             pointsMultiplier = action.getPointsMultiplier(),
             secondsToLive = action.getSecondsToLive(),
+            shinyTriviaMultiplier = action.getShinyTriviaMultiplier(),
             actionId = action.getActionId(),
             gameId = state.getGameId(),
             twitchChannel = action.getTwitchChannel(),
@@ -664,6 +690,7 @@ class TriviaGameMachine():
 
                 await self.__submitEvent(OutOfTimeSuperTriviaEvent(
                     triviaQuestion = superGameState.getTriviaQuestion(),
+                    isShiny = superGameState.isShiny(),
                     pointsForWinning = superGameState.getPointsForWinning(),
                     pointsMultiplier = superGameState.getPointsMultiplier(),
                     remainingQueueSize = remainingQueueSize,

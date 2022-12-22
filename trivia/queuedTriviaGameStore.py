@@ -94,11 +94,13 @@ class QueuedTriviaGameStore():
             if queuedSuperGames.qsize() < maxSuperGameQueueSize:
                 queuedSuperGames.put(StartNewSuperTriviaGameAction(
                     isQueueActionConsumed = True,
+                    isShinyTriviaEnabled = action.isShinyTriviaEnabled(),
                     numberOfGames = 1,
                     perUserAttempts = action.getPerUserAttempts(),
                     pointsForWinning = action.getPointsForWinning(),
                     pointsMultiplier = action.getPointsMultiplier(),
                     secondsToLive = action.getSecondsToLive(),
+                    shinyTriviaMultiplier = action.getShinyTriviaMultiplier(),
                     twitchChannel = action.getTwitchChannel(),
                     triviaFetchOptions = action.getTriviaFetchOptions()
                 ))

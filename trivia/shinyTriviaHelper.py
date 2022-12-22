@@ -91,11 +91,7 @@ class ShinyTriviaHelper():
 
         return None
 
-    async def isShinyTriviaQuestion(
-        self,
-        twitchChannel: str,
-        userId: str
-    ) -> bool:
+    async def isShinyTriviaQuestion(self, twitchChannel: str, userId: str) -> bool:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
         elif not utils.isValidStr(userId):
@@ -114,7 +110,7 @@ class ShinyTriviaHelper():
         if userPlacementOnLeaderboard is not None and userPlacementOnLeaderboard in self.__rankToProbabilityDict:
             probability = probability * self.__rankToProbabilityDict[userPlacementOnLeaderboard]
 
-        if random.uniform(0, 1) >= probability:
+        if random.uniform(0, 1) > probability:
             return False
 
         details = await self.__shinyTriviaOccurencesRepository.fetchDetails(
@@ -134,6 +130,22 @@ class ShinyTriviaHelper():
             userId = userId
         )
 
-        self.__timber.log('ShinyTriviaHelper', f'{result.getUserName()}:{result.getUserId()} in {result.getTwitchChannel()} has encountered a shiny!')
+        self.__timber.log('ShinyTriviaHelper', f'{result.getUserName()}:{result.getUserId()} in {twitchChannel} has encountered a shiny!')
+
+        return True
+
+    async def isShinySuperTriviaQuestion(self, twitchChannel: str) -> bool:
+        if not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+
+        if not await self.__triviaSettingsRepository.areShiniesEnabled():
+            return False        
+
+        probability = await self.__triviaSettingsRepository.getShinyProbability()
+
+        if random.uniform(0, 1) > probability:
+            return False
+
+        self.__timber.log('ShinyTriviaHelper', f'{twitchChannel} has encountered a shiny!')
 
         return True

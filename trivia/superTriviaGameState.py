@@ -18,17 +18,21 @@ class SuperTriviaGameState(AbsTriviaGameState):
     def __init__(
         self,
         triviaQuestion: AbsTriviaQuestion,
+        isShiny: bool,
         perUserAttempts: int,
         pointsForWinning: int,
         pointsMultiplier: int,
         secondsToLive: int,
+        shinyTriviaMultiplier: int,
         actionId: str,
         twitchChannel: str
     ):
         super().__init__(
             triviaQuestion = triviaQuestion,
+            isShiny = isShiny,
             pointsForWinning = pointsForWinning,
             secondsToLive = secondsToLive,
+            shinyTriviaMultiplier = shinyTriviaMultiplier,
             actionId = actionId,
             twitchChannel = twitchChannel,
             triviaGameType = TriviaGameType.SUPER

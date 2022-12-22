@@ -17,17 +17,17 @@ class TriviaScoreResult():
         twitchChannel: str,
         userId: str
     ):
-        if not utils.isValidNum(streak):
+        if not utils.isValidInt(streak):
             raise ValueError(f'streak argument is malformed: \"{streak}\"')
-        elif not utils.isValidNum(superTriviaWins):
+        elif not utils.isValidInt(superTriviaWins):
             raise ValueError(f'superTriviaWins argument is malformed: \"{superTriviaWins}\"')
         elif superTriviaWins < 0:
             raise ValueError(f'superTriviaWins argument is out of bounds: {superTriviaWins}')
-        elif not utils.isValidNum(triviaLosses):
+        elif not utils.isValidInt(triviaLosses):
             raise ValueError(f'triviaLosses argument is malformed: \"{triviaLosses}\"')
         elif triviaLosses < 0:
             raise ValueError(f'triviaLosses argument is out of bounds: {triviaLosses}')
-        elif not utils.isValidNum(triviaWins):
+        elif not utils.isValidInt(triviaWins):
             raise ValueError(f'triviaWins argument is malformed: \"{triviaWins}\"')
         elif triviaWins < 0:
             raise ValueError(f'triviaWins argument is out of bounds: {triviaWins}')

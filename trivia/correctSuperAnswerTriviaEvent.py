@@ -21,9 +21,9 @@ class CorrectSuperAnswerTriviaEvent(AbsTriviaEvent):
     def __init__(
         self,
         triviaQuestion: AbsTriviaQuestion,
+        isShiny: bool,
         cutenessResult: CutenessResult,
         pointsForWinning: int,
-        pointsMultiplier: int,
         remainingQueueSize: int,
         actionId: str,
         answer: str,
@@ -40,16 +40,14 @@ class CorrectSuperAnswerTriviaEvent(AbsTriviaEvent):
 
         if not isinstance(triviaQuestion, AbsTriviaQuestion):
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
+        elif not utils.isValidBool(isShiny):
+            raise ValueError(f'isShiny argument is malformed: \"{isShiny}\"')
         elif not isinstance(cutenessResult, CutenessResult):
             raise ValueError(f'cutenessResult argument is malformed: \"{cutenessResult}\"')
         elif not utils.isValidInt(pointsForWinning):
             raise ValueError(f'pointsForWinning argument is malformed: \"{pointsForWinning}\"')
         elif pointsForWinning < 1 or pointsForWinning >= utils.getIntMaxSafeSize():
             raise ValueError(f'pointsForWinning argument is out of bounds: {pointsForWinning}')
-        elif not utils.isValidInt(pointsMultiplier):
-            raise ValueError(f'pointsMultiplier argument is malformed: \"{pointsMultiplier}\"')
-        elif pointsMultiplier < 1 or pointsMultiplier >= utils.getIntMaxSafeSize():
-            raise ValueError(f'pointsMultiplier argument is out of bounds: {pointsMultiplier}')
         elif not utils.isValidInt(remainingQueueSize):
             raise ValueError(f'remainingQueueSize argument is malformed: \"{remainingQueueSize}\"')
         elif remainingQueueSize < 0 or remainingQueueSize >= utils.getIntMaxSafeSize():
@@ -68,9 +66,9 @@ class CorrectSuperAnswerTriviaEvent(AbsTriviaEvent):
             raise ValueError(f'triviaScoreResult argument is malformed: \"{triviaScoreResult}\"')
 
         self.__triviaQuestion: AbsTriviaQuestion = triviaQuestion
+        self.__isShiny: bool = isShiny
         self.__cutenessResult: CutenessResult = cutenessResult
         self.__pointsForWinning: int = pointsForWinning
-        self.__pointsMultiplier: int = pointsMultiplier
         self.__remainingQueueSize: int = remainingQueueSize
         self.__answer: str = answer
         self.__gameId: str = gameId
@@ -94,12 +92,6 @@ class CorrectSuperAnswerTriviaEvent(AbsTriviaEvent):
     def getPointsForWinningStr(self) -> str:
         return locale.format_string("%d", self.__pointsForWinning, grouping = True)
 
-    def getPointsMultiplier(self) -> int:
-        return self.__pointsMultiplier
-
-    def getPointsMultiplierStr(self) -> str:
-        return locale.format_string("%d", self.__pointsMultiplier, grouping = True)
-
     def getRemainingQueueSize(self) -> int:
         return self.__remainingQueueSize
 
@@ -120,3 +112,6 @@ class CorrectSuperAnswerTriviaEvent(AbsTriviaEvent):
 
     def getUserName(self) -> str:
         return self.__userName
+
+    def isShiny(self) -> bool:
+        return self.__isShiny

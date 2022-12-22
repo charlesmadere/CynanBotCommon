@@ -17,11 +17,13 @@ class StartNewSuperTriviaGameAction(AbsTriviaAction):
     def __init__(
         self,
         isQueueActionConsumed: bool,
+        isShinyTriviaEnabled: bool,
         numberOfGames: int,
         perUserAttempts: int,
         pointsForWinning: int,
         pointsMultiplier: int,
         secondsToLive: int,
+        shinyTriviaMultiplier: int,
         twitchChannel: str,
         triviaFetchOptions: TriviaFetchOptions
     ):
@@ -29,6 +31,8 @@ class StartNewSuperTriviaGameAction(AbsTriviaAction):
 
         if not utils.isValidBool(isQueueActionConsumed):
             raise ValueError(f'isQueueActionConsumed argument is malformed: \"{isQueueActionConsumed}\"')
+        elif not utils.isValidBool(isShinyTriviaEnabled):
+            raise ValueError(f'isShinyTriviaEnabled argument is malformed: \"{isShinyTriviaEnabled}\"')
         elif not utils.isValidInt(numberOfGames):
             raise ValueError(f'numberOfGames argument is malformed: \"{numberOfGames}\"')
         elif numberOfGames < 1 or numberOfGames >= utils.getIntMaxSafeSize():
@@ -49,17 +53,23 @@ class StartNewSuperTriviaGameAction(AbsTriviaAction):
             raise ValueError(f'secondsToLive argument is malformed: \"{secondsToLive}\"')
         elif secondsToLive < 1 or secondsToLive >= utils.getIntMaxSafeSize():
             raise ValueError(f'secondsToLive argument is out of bounds: {secondsToLive}')
+        elif not utils.isValidInt(shinyTriviaMultiplier):
+            raise ValueError(f'shinyTriviaMultiplier argument is malformed: \"{shinyTriviaMultiplier}\"')
+        elif shinyTriviaMultiplier < 1 or shinyTriviaMultiplier >= utils.getIntMaxSafeSize():
+            raise ValueError(f'shinyTriviaMultiplier argument is out of bounds: {shinyTriviaMultiplier}')
         elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
         elif not isinstance(triviaFetchOptions, TriviaFetchOptions):
             raise ValueError(f'triviaFetchOptions argument is malformed: \"{triviaFetchOptions}\"')
 
         self.__isQueueActionConsumed: bool = isQueueActionConsumed
+        self.__isShinyTriviaEnabled: bool = isShinyTriviaEnabled
         self.__numberOfGames: int = numberOfGames
         self.__perUserAttempts: int = perUserAttempts
         self.__pointsForWinning: int = pointsForWinning
         self.__pointsMultiplier: int = pointsMultiplier
         self.__secondsToLive: int = secondsToLive
+        self.__shinyTriviaMultiplier: int = shinyTriviaMultiplier
         self.__twitchChannel: str = twitchChannel
         self.__triviaFetchOptions: TriviaFetchOptions = triviaFetchOptions
 
@@ -93,6 +103,12 @@ class StartNewSuperTriviaGameAction(AbsTriviaAction):
     def getSecondsToLiveStr(self) -> str:
         return locale.format_string("%d", self.__secondsToLive, grouping = True)
 
+    def getShinyTriviaMultiplier(self) -> int:
+        return self.__shinyTriviaMultiplier
+
+    def getShinyTriviaMultiplierStr(self) -> str:
+        return locale.format_string("%d", self.__shinyTriviaMultiplier, grouping = True)
+
     def getTriviaFetchOptions(self) -> TriviaFetchOptions:
         return self.__triviaFetchOptions
 
@@ -101,3 +117,6 @@ class StartNewSuperTriviaGameAction(AbsTriviaAction):
 
     def isQueueActionConsumed(self) -> bool:
         return self.__isQueueActionConsumed
+
+    def isShinyTriviaEnabled(self) -> bool:
+        return self.__isShinyTriviaEnabled

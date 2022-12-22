@@ -18,6 +18,7 @@ class TriviaGameState(AbsTriviaGameState):
         isShiny: bool,
         pointsForWinning: int,
         secondsToLive: int,
+        shinyTriviaMultiplier: int,
         actionId: str,
         twitchChannel: str,
         userId: str,
@@ -25,21 +26,20 @@ class TriviaGameState(AbsTriviaGameState):
     ):
         super().__init__(
             triviaQuestion = triviaQuestion,
+            isShiny = isShiny,
             pointsForWinning = pointsForWinning,
             secondsToLive = secondsToLive,
+            shinyTriviaMultiplier = shinyTriviaMultiplier,
             actionId = actionId,
             twitchChannel = twitchChannel,
             triviaGameType = TriviaGameType.NORMAL
         )
 
-        if not utils.isValidBool(isShiny):
-            raise ValueError(f'isShiny argument is malformed: \"{isShiny}\"')
-        elif not utils.isValidStr(userId):
+        if not utils.isValidStr(userId):
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
         elif not utils.isValidStr(userName):
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
 
-        self.__isShiny: bool = isShiny
         self.__userId: str = userId
         self.__userName: str = userName
 
@@ -48,6 +48,3 @@ class TriviaGameState(AbsTriviaGameState):
 
     def getUserName(self) -> str:
         return self.__userName
-
-    def isShiny(self) -> bool:
-        return self.__isShiny

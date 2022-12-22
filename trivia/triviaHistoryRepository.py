@@ -33,7 +33,8 @@ class TriviaHistoryRepository():
         self,
         backingDatabase: BackingDatabase,
         timber: Timber,
-        triviaSettingsRepository: TriviaSettingsRepository
+        triviaSettingsRepository: TriviaSettingsRepository,
+        timeZone: timezone = timezone.utc
     ):
         if not isinstance(backingDatabase, BackingDatabase):
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
@@ -41,10 +42,13 @@ class TriviaHistoryRepository():
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(triviaSettingsRepository, TriviaSettingsRepository):
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
+        elif not isinstance(timeZone, timezone):
+            raise ValueError(f'timeZone argument is malformed: \"{timeZone}\"')
 
         self.__backingDatabase: BackingDatabase = backingDatabase
         self.__timber: Timber = timber
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
+        self.__timeZone: timezone = timeZone
 
         self.__isDatabaseReady: bool = False
 
@@ -149,7 +153,7 @@ class TriviaHistoryRepository():
             triviaId, triviaSource, twitchChannel
         )
 
-        nowDateTime = datetime.now(timezone.utc)
+        nowDateTime = datetime.now(self.__timeZone)
         nowDateTimeStr = nowDateTime.isoformat()
 
         if not utils.hasItems(record):
