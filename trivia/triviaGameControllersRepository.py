@@ -82,7 +82,7 @@ class TriviaGameControllersRepository():
             return AddTriviaGameControllerResult.ERROR
 
         if not utils.isValidStr(userId):
-            self.__timber.log('TriviaGameControllersRepository', f'Retrieved no userId from UserIdsRepository when trying to add \"{userName}\" as a trivia game controller for \"{twitchChannel}\"')
+            self.__timber.log('TriviaGameControllersRepository', f'Retrieved no userId from UserIdsRepository when trying to add \"{userName}\" as a trivia game controller for \"{twitchChannel}\": \"{userId}\"')
             return AddTriviaGameControllerResult.ERROR
 
         connection = await self.__getDatabaseConnection()
