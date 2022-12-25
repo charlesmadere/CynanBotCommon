@@ -43,6 +43,8 @@ class TriviaGameGlobalControllersRepository():
     ):
         if not isinstance(backingDatabase, BackingDatabase):
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
+        elif not utils.isValidStr(administrator):
+            raise ValueError(f'administrator argument is malformed: \"{administrator}\"')
         elif not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(twitchTokensRepository, TwitchTokensRepository):
@@ -50,8 +52,8 @@ class TriviaGameGlobalControllersRepository():
         elif not isinstance(userIdsRepository, UserIdsRepository):
             raise ValueError(f'userIdsRepository argument is malformed: \"{userIdsRepository}\"')
 
-        self.__administrator: str = administrator
         self.__backingDatabase: BackingDatabase = backingDatabase
+        self.__administrator: str = administrator
         self.__timber: Timber = timber
         self.__twitchTokensRepository: TwitchTokensRepository = twitchTokensRepository
         self.__userIdsRepository: UserIdsRepository = userIdsRepository
