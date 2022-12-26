@@ -64,7 +64,7 @@ class TriviaGameGlobalControllersRepository():
         if not utils.isValidStr(userName):
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
 
-        twitchAccessToken = await self.__twitchTokensRepository.requireAccessToken(self.__administrator)
+        twitchAccessToken = await self.__twitchTokensRepository.getAccessToken(self.__administrator)
         userId: Optional[str] = None
 
         try:

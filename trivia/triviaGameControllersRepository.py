@@ -66,10 +66,6 @@ class TriviaGameControllersRepository():
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
 
         twitchAccessToken = await self.__twitchTokensRepository.getAccessToken(twitchChannel)
-        if not utils.isValidStr(twitchAccessToken):
-            self.__timber.log('TriviaGameControllersRepository', f'Unable to retrieve Twitch access token for \"{twitchChannel}\" when trying to add \"{userName}\" as a trivia game controller')
-            return AddTriviaGameControllerResult.ERROR
-
         userId: Optional[str] = None
 
         try:
