@@ -54,15 +54,15 @@ class ShinyTriviaHelper():
 
     def __createRankToProbabilityDict(self) -> Dict[int, float]:
         values: Dict[int, float] = dict()
-        values[1] =  0.001
-        values[2] =  0.010
-        values[3] =  0.100
-        values[4] =  0.200
-        values[5] =  0.300
-        values[6] =  0.400
-        values[7] =  0.500
-        values[8] =  0.700
-        values[9] =  0.950
+        values[1] =  0.500
+        values[2] =  0.550
+        values[3] =  0.600
+        values[4] =  0.650
+        values[5] =  0.700
+        values[6] =  0.750
+        values[7] =  0.800
+        values[8] =  0.850
+        values[9] =  0.900
 
         return values
 
