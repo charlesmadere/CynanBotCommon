@@ -50,6 +50,8 @@ try:
     from CynanBotCommon.trivia.queuedTriviaGameStore import \
         QueuedTriviaGameStore
     from CynanBotCommon.trivia.shinyTriviaHelper import ShinyTriviaHelper
+    from CynanBotCommon.trivia.shinyTriviaOccurencesRepository import \
+        ShinyTriviaOccurencesRepository
     from CynanBotCommon.trivia.startNewSuperTriviaGameAction import \
         StartNewSuperTriviaGameAction
     from CynanBotCommon.trivia.startNewTriviaGameAction import \
@@ -118,6 +120,8 @@ except:
     from trivia.outOfTimeTriviaEvent import OutOfTimeTriviaEvent
     from trivia.queuedTriviaGameStore import QueuedTriviaGameStore
     from trivia.shinyTriviaHelper import ShinyTriviaHelper
+    from trivia.shinyTriviaOccurencesRepository import \
+        ShinyTriviaOccurencesRepository
     from trivia.startNewSuperTriviaGameAction import \
         StartNewSuperTriviaGameAction
     from trivia.startNewTriviaGameAction import StartNewTriviaGameAction
@@ -153,6 +157,7 @@ class TriviaGameMachine():
         cutenessRepository: CutenessRepository,
         queuedTriviaGameStore: QueuedTriviaGameStore,
         shinyTriviaHelper: ShinyTriviaHelper,
+        shinyTriviaOccurencesRepository: ShinyTriviaOccurencesRepository,
         superTriviaCooldownHelper: SuperTriviaCooldownHelper,
         timber: Timber,
         triviaAnswerChecker: TriviaAnswerChecker,
@@ -171,6 +176,8 @@ class TriviaGameMachine():
             raise ValueError(f'queuedTriviaGameStore argument is malformed: \"{queuedTriviaGameStore}\"')
         elif not isinstance(shinyTriviaHelper, ShinyTriviaHelper):
             raise ValueError(f'shinyTriviaHelper argument is malformed: \"{shinyTriviaHelper}\"')
+        elif not isinstance(shinyTriviaOccurencesRepository, ShinyTriviaOccurencesRepository):
+            raise ValueError(f'shinyTriviaOccurencesRepository argument is malformed: \"{shinyTriviaOccurencesRepository}\"')
         elif not isinstance(superTriviaCooldownHelper, SuperTriviaCooldownHelper):
             raise ValueError(f'superTriviaCooldownHelper argument is malformed: \"{superTriviaCooldownHelper}\"')
         elif not isinstance(timber, Timber):
@@ -197,6 +204,7 @@ class TriviaGameMachine():
         self.__cutenessRepository: CutenessRepository = cutenessRepository
         self.__queuedTriviaGameStore: QueuedTriviaGameStore = queuedTriviaGameStore
         self.__shinyTriviaHelper: ShinyTriviaHelper = shinyTriviaHelper
+        self.__shinyTriviaOccurencesRepository: ShinyTriviaOccurencesRepository = shinyTriviaOccurencesRepository
         self.__superTriviaCooldownHelper: SuperTriviaCooldownHelper = superTriviaCooldownHelper
         self.__timber: Timber = timber
         self.__triviaAnswerChecker: TriviaAnswerChecker = triviaAnswerChecker
@@ -431,6 +439,12 @@ class TriviaGameMachine():
             return
 
         await self.__removeSuperTriviaGame(action.getTwitchChannel())
+
+        if state.isShiny():
+            await self.__shinyTriviaOccurencesRepository.incrementShinyCount(
+                twitchChannel = state.getTwitchChannel(),
+                userId = action.getUserId()
+            )
 
         cutenessResult = await self.__cutenessRepository.fetchCutenessIncrementedBy(
             incrementAmount = state.getPointsForWinning(),
