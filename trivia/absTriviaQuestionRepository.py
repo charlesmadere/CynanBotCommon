@@ -43,11 +43,8 @@ class AbsTriviaQuestionRepository(ABC):
         elif not utils.hasItems(multipleChoiceResponses):
             raise NoTriviaMultipleChoiceResponsesException(f'multipleChoiceResponses argument is malformed: \"{multipleChoiceResponses}\"')
 
+        filteredMultipleChoiceResponses: List[str] = utils.copyList(correctAnswers)
         maxMultipleChoiceResponses = await self._triviaSettingsRepository.getMaxMultipleChoiceResponses()
-        filteredMultipleChoiceResponses: List[str] = list()
-
-        for correctAnswer in correctAnswers:
-            filteredMultipleChoiceResponses.append(correctAnswer)
 
         # Annoyingly, I've encountered a few situations where we can have a question with more
         # than one of the same multiple choice answers. The below logic takes some steps to make
@@ -56,6 +53,7 @@ class AbsTriviaQuestionRepository(ABC):
 
         for response in multipleChoiceResponses:
             cleanedResponse = utils.cleanStr(response, htmlUnescape = True)
+
             if not utils.isValidStr(cleanedResponse):
                 continue
 
@@ -72,11 +70,13 @@ class AbsTriviaQuestionRepository(ABC):
                 if len(filteredMultipleChoiceResponses) >= maxMultipleChoiceResponses:
                     break
 
-        if utils.hasItems(filteredMultipleChoiceResponses):
-            if utils.areAllStrsInts(filteredMultipleChoiceResponses):
-                filteredMultipleChoiceResponses.sort(key = lambda response: int(response))
-            else:
-                filteredMultipleChoiceResponses.sort(key = lambda response: response.lower())
+        if not utils.hasItems(filteredMultipleChoiceResponses):
+            return filteredMultipleChoiceResponses
+
+        if utils.areAllStrsInts(filteredMultipleChoiceResponses):
+            filteredMultipleChoiceResponses.sort(key = lambda response: int(response))
+        else:
+            filteredMultipleChoiceResponses.sort(key = lambda response: response.lower())
 
         return filteredMultipleChoiceResponses
 
