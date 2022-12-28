@@ -1,5 +1,4 @@
 import random
-from collections import OrderedDict
 from typing import Dict, List, Optional, Set
 
 try:
@@ -7,23 +6,29 @@ try:
     from CynanBotCommon.storage.backingDatabase import BackingDatabase
     from CynanBotCommon.storage.databaseConnection import DatabaseConnection
     from CynanBotCommon.storage.databaseType import DatabaseType
+    from CynanBotCommon.timber.timber import Timber
 except:
     import utils
     from storage.backingDatabase import BackingDatabase
     from storage.databaseConnection import DatabaseConnection
     from storage.databaseType import DatabaseType
+    from timber.timber import Timber
 
 
 class TriviaEmoteGenerator():
 
     def __init__(
         self,
-        backingDatabase: BackingDatabase
+        backingDatabase: BackingDatabase,
+        timber: Timber
     ):
         if not isinstance(backingDatabase, BackingDatabase):
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
+        elif not isinstance(timber, Timber):
+            raise ValueError(f'timber arguent is malformed: \"{timber}\"')
 
         self.__backingDatabase: BackingDatabase = backingDatabase
+        self.__timber: Timber = timber
 
         self.__isDatabaseReady: bool = False
         self.__emotesDict: Dict[str, Optional[Set[str]]] = self.__createEmotesDict()
@@ -36,15 +41,17 @@ class TriviaEmoteGenerator():
         #
         # If a set is either None or empty, then the given emoji has no equivalent.
 
-        emotesDict: Dict[str, Optional[Set[str]]] = OrderedDict()
+        emotesDict: Dict[str, Optional[Set[str]]] = dict()
         emotesDict['🧮'] = None
         emotesDict['⚗️'] = None
         emotesDict['👽'] = None
+        emotesDict['🥑'] = None
         emotesDict['🥓'] = None
         emotesDict['🎒'] = None
         emotesDict['🍌'] = None
         emotesDict['📊'] = None
         emotesDict['🫑'] = None
+        emotesDict['🐦'] = { '🐤' }
         emotesDict['🫐'] = None
         emotesDict['📚'] = None
         emotesDict['💼'] = None
@@ -54,6 +61,7 @@ class TriviaEmoteGenerator():
         emotesDict['🧀'] = None
         emotesDict['🍒'] = None
         emotesDict['📋'] = None
+        emotesDict['🐄'] = { '🐮' }
         emotesDict['🦀'] = None
         emotesDict['🖍️'] = None
         emotesDict['🍛'] = None
@@ -65,17 +73,20 @@ class TriviaEmoteGenerator():
         emotesDict['🍇'] = None
         emotesDict['🍏'] = None
         emotesDict['🚁'] = None
+        emotesDict['🌶️'] = None
         emotesDict['📒'] = None
         emotesDict['💡'] = None
-        emotesDict['🍈'] = None
+        emotesDict['🍈'] = { '🍉' }
         emotesDict['🔬'] = None
         emotesDict['🍄'] = None
         emotesDict['🤓'] = None
         emotesDict['📓'] = None
+        emotesDict['🍐'] = None
         emotesDict['📎'] = None
         emotesDict['✏️'] = None
         emotesDict['🐧'] = None
         emotesDict['🍍'] = None
+        emotesDict['🍕'] = None
         emotesDict['🥔'] = None
         emotesDict['🍎'] = None
         emotesDict['🌈'] = None
@@ -93,7 +104,7 @@ class TriviaEmoteGenerator():
         emotesDict['💭'] = None
         emotesDict['📐'] = None
         emotesDict['🌷'] = None
-        emotesDict['🍉'] = None
+        emotesDict['🌊'] = { '💧', '💦' }
         emotesDict['🐋'] = None
 
         return emotesDict
@@ -103,7 +114,12 @@ class TriviaEmoteGenerator():
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
         emoteIndex = await self.__getCurrentEmoteIndexFor(twitchChannel)
-        return self.__emotesList[emoteIndex]
+
+        if emoteIndex < 0 or emoteIndex >= len(self.__emotesList):
+            self.__timber.log('TriviaEmoteGenerator', f'Encountered out of bounds emoteIndex for \"{twitchChannel}\": {emoteIndex}')
+            emoteIndex = 0
+
+        return emoteIndex
 
     async def __getCurrentEmoteIndexFor(self, twitchChannel: str) -> int:
         if not utils.isValidStr(twitchChannel):
@@ -125,7 +141,7 @@ class TriviaEmoteGenerator():
 
         await connection.close()
 
-        if not utils.isValidNum(emoteIndex) or emoteIndex < 0:
+        if not utils.isValidInt(emoteIndex) or emoteIndex < 0 or emoteIndex >= len(self.__emotesList):
             emoteIndex = 0
 
         return emoteIndex
