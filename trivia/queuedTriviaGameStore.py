@@ -146,15 +146,11 @@ class QueuedTriviaGameStore():
         else:
             return 0
 
-    async def popQueuedSuperGames(self, activeChannels: List[str]) -> List[StartNewSuperTriviaGameAction]:
-        workingActiveChannels: Set[str] = set()
-        for activeChannel in activeChannels:
-            workingActiveChannels.add(activeChannel.lower())
-
+    async def popQueuedSuperGames(self, activeChannels: Set[str]) -> List[StartNewSuperTriviaGameAction]:
         superGames: List[StartNewSuperTriviaGameAction] = list()
 
         for twitchChannel, queuedSuperGames in self.__queuedSuperGames.items():
-            if twitchChannel.lower() in workingActiveChannels:
+            if twitchChannel.lower() in activeChannels:
                 continue
             elif queuedSuperGames.empty():
                 continue
