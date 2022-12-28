@@ -24,7 +24,7 @@ class PokepediaMove():
     ):
         if not utils.hasItems(generationMoves):
             raise ValueError(f'generationMoves argument is malformed: \"{generationMoves}\"')
-        elif not utils.isValidNum(moveId):
+        elif not utils.isValidInt(moveId):
             raise ValueError(f'moveId argument is malformed: \"{moveId}\"')
         elif not utils.isValidStr(description):
             raise ValueError(f'description argument is malformed: \"{description}\"')

@@ -1,5 +1,5 @@
 import locale
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 try:
     import CynanBotCommon.utils as utils
@@ -30,7 +30,7 @@ class PokepediaPokemon():
     ):
         if not utils.hasItems(generationElementTypes):
             raise ValueError(f'generationElementTypes argument is malformed: \"{generationElementTypes}\"')
-        elif initialGeneration is None:
+        elif not isinstance(initialGeneration, PokepediaGeneration):
             raise ValueError(f'initialGeneration argument is malformed: \"{initialGeneration}\"')
         elif not utils.isValidNum(height):
             raise ValueError(f'height argument is malformed: \"{height}\"')
@@ -53,12 +53,12 @@ class PokepediaPokemon():
         weaknessesAndResistances: Dict[PokepediaDamageMultiplier, List[PokepediaElementType]],
         damageMultiplier: PokepediaDamageMultiplier,
         delimiter: str
-    ) -> str:
+    ) -> Optional[str]:
         if not utils.hasItems(weaknessesAndResistances):
             raise ValueError(f'weaknessesAndResistances argument is malformed: \"{weaknessesAndResistances}\"')
-        elif damageMultiplier is None:
+        elif not isinstance(damageMultiplier, PokepediaDamageMultiplier):
             raise ValueError(f'damageMultiplier argument is malformed: \"{damageMultiplier}\"')
-        elif delimiter is None:
+        elif not isinstance(delimiter, str):
             raise ValueError(f'delimiter argument is malformed: \"{delimiter}\"')
 
         if damageMultiplier not in weaknessesAndResistances or not utils.hasItems(weaknessesAndResistances[damageMultiplier]):
@@ -99,7 +99,7 @@ class PokepediaPokemon():
         return locale.format_string("%d", self.__weight, grouping = True)
 
     def toStrList(self, delimiter: str = ', ') -> List[str]:
-        if delimiter is None:
+        if not isinstance(delimiter, str):
             raise ValueError(f'delimiter argument is malformed: \"{delimiter}\"')
 
         strings: List[str] = list()

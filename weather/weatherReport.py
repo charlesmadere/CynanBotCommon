@@ -125,7 +125,7 @@ class WeatherReport():
         return self.__uvIndex is not None
 
     def toStr(self, delimiter: str = ', ') -> str:
-        if delimiter is None:
+        if not isinstance(delimiter, str):
             raise ValueError(f'delimiter argument is malformed: \"{delimiter}\"')
 
         temperature = f'🌡 Temperature is {self.getTemperatureStr()}°C ({self.getTemperatureImperialStr()}°F), '

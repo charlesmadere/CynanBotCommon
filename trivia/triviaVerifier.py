@@ -50,7 +50,9 @@ class TriviaVerifier():
         question: Optional[AbsTriviaQuestion],
         triviaFetchOptions: TriviaFetchOptions
     ) -> TriviaContentCode:
-        if not isinstance(triviaFetchOptions, TriviaFetchOptions):
+        if question is not None and not isinstance(question, AbsTriviaQuestion):
+            raise ValueError(f'question argument is malformed: \"{question}\"')
+        elif not isinstance(triviaFetchOptions, TriviaFetchOptions):
             raise ValueError(f'triviaFetchOptions argument is malformed: \"{triviaFetchOptions}\"')
 
         if question is None:

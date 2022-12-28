@@ -128,7 +128,7 @@ class BannedTriviaIdsRepository():
 
         await connection.close()
 
-        if not utils.isValidNum(count) or count < 1:
+        if not utils.isValidInt(count) or count < 1:
             return False
 
         self.__timber.log('BannedTriviaIdsRepository', f'Encountered banned trivia ID (count=\"{count}\", triviaId=\"{triviaId}\", triviaSource=\"{triviaSource}\")')

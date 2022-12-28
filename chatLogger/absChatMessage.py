@@ -6,9 +6,8 @@ try:
     from CynanBotCommon.simpleDateTime import SimpleDateTime
 except:
     import utils
-    from simpleDateTime import SimpleDateTime
-
     from chatLogger.chatEventType import ChatEventType
+    from simpleDateTime import SimpleDateTime
 
 
 class AbsChatMessage(ABC):
@@ -18,7 +17,7 @@ class AbsChatMessage(ABC):
         chatEventType: ChatEventType,
         twitchChannel: str
     ):
-        if chatEventType is None:
+        if not isinstance(chatEventType, ChatEventType):
             raise ValueError(f'chatEventType argument is malformed: \"{chatEventType}\"')
         elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')

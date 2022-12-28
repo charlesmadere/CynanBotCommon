@@ -35,13 +35,13 @@ class TriviaGameStore():
             raise UnknownTriviaGameTypeException(f'Unknown TriviaGameType: \"{state.getTriviaGameType()}\"')
 
     async def __addNormalGame(self, state: TriviaGameState):
-        if state is None:
+        if not isinstance(state, TriviaGameState):
             raise ValueError(f'state argument is malformed: \"{state}\"')
 
         self.__normalGameStates.append(state)
 
     async def __addSuperGame(self, state: SuperTriviaGameState):
-        if state is None:
+        if not isinstance(state, SuperTriviaGameState):
             raise ValueError(f'state argument is malformed: \"{state}\"')
 
         self.__superGameStates.append(state)

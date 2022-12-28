@@ -30,7 +30,7 @@ class ChatLogger():
         sleepTimeSeconds: float = 10,
         logRootDirectory: str = 'CynanBotCommon/chatLogger'
     ):
-        if eventLoop is None:
+        if not isinstance(eventLoop, AbstractEventLoop):
             raise ValueError(f'eventLoop argument is malformed: \"{eventLoop}\"')
         elif not utils.isValidNum(sleepTimeSeconds):
             raise ValueError(f'sleepTimeSeconds argument is malformed: \"{sleepTimeSeconds}\"')
@@ -46,7 +46,7 @@ class ChatLogger():
         eventLoop.create_task(self.__startMessageLoop())
 
     def __getLogStatement(self, message: AbsChatMessage) -> str:
-        if message is None:
+        if not isinstance(message, AbsChatMessage):
             raise ValueError(f'message argument is malformed: \"{message}\"')
 
         logStatement: str = f'{message.getSimpleDateTime().getDateAndTimeStr()} —'
@@ -111,7 +111,7 @@ class ChatLogger():
             await asyncio.sleep(self.__sleepTimeSeconds)
 
     async def __writeToLogFile(self, message: AbsChatMessage):
-        if message is None:
+        if not isinstance(message, AbsChatMessage):
             raise ValueError(f'message argument is malformed: \"{message}\"')
 
         sdt = message.getSimpleDateTime()

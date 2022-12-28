@@ -95,7 +95,7 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
     async def fetchTriviaQuestions(self, twitchChannel: str, count: int) -> List[AbsTriviaQuestion]:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
-        elif not utils.isValidNum(count):
+        elif not utils.isValidInt(count):
             raise ValueError(f'count argument is malformed: \"{count}\"')
         elif count < 1 or count > 100:
             raise ValueError(f'count argument is out of bounds: {count}')

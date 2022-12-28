@@ -5,7 +5,6 @@ try:
     from CynanBotCommon.language.jishoVariant import JishoVariant
 except:
     import utils
-
     from language.jishoVariant import JishoVariant
 
 
@@ -31,7 +30,7 @@ class JishoResult():
         return self.__variants
 
     def toStrList(self, definitionDelimiter: str = ', ') -> List[str]:
-        if definitionDelimiter is None:
+        if not isinstance(definitionDelimiter, str):
             raise ValueError(f'definitionDelimiter argument is malformed: \"{definitionDelimiter}\"')
 
         strings: List[str] = list()

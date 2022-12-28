@@ -108,7 +108,7 @@ class PokepediaTypeChart(Enum):
 
     @classmethod
     def fromPokepediaGeneration(cls, pokepediaGeneration: PokepediaGeneration):
-        if pokepediaGeneration is None:
+        if not isinstance(pokepediaGeneration, PokepediaGeneration):
             raise ValueError(f'pokepediaGeneration argument is malformed: \"{pokepediaGeneration}\"')
 
         if pokepediaGeneration is PokepediaGeneration.GENERATION_1:

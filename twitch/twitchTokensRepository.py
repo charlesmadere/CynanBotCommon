@@ -70,7 +70,7 @@ class TwitchTokensRepository():
         self.__twitchTokensFile: str = twitchTokensFile
         self.__tokensExpirationBuffer: timedelta = tokensExpirationBuffer
 
-        self.__jsonCache: Dict[str, Any] = None
+        self.__jsonCache: Optional[Dict[str, Any]] = None
         self.__tokenExpirations: Dict[str, datetime] = dict()
 
     async def clearCaches(self):
@@ -83,7 +83,7 @@ class TwitchTokensRepository():
         jsonContents = await self.__readJsonForTwitchHandle(twitchHandle)
         return utils.getStrFromDict(jsonContents, 'accessToken', fallback = '')
 
-    async def getExpiringTwitchHandles(self) -> List[str]:
+    async def getExpiringTwitchHandles(self) -> Optional[List[str]]:
         if not utils.hasItems(self.__tokenExpirations):
             return None
 
@@ -312,11 +312,11 @@ class TwitchTokensRepository():
             self.__timber.log('TwitchTokensRepository', f'Encountered network error when validating Twitch access token for \"{twitchHandle}\": {e}', e)
             raise TwitchNetworkException(f'Encountered network error when validating Twitch access token for \"{twitchHandle}\": {e}')
 
-        responseStatus: int = response.getStatusCode()
+        responseStatus = response.getStatusCode()
         jsonResponse: Optional[Dict[str, Any]] = await response.json()
         await response.close()
 
-        clientId: str = None
+        clientId: Optional[str] = None
         if jsonResponse is not None and utils.isValidStr(jsonResponse.get('client_id')):
             clientId = utils.getStrFromDict(jsonResponse, 'client_id')
 

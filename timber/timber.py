@@ -44,7 +44,7 @@ class Timber():
         eventLoop.create_task(self.__startEventLoop())
 
     def __getErrorStatement(self, exception: Exception) -> str:
-        if exception is None:
+        if not isinstance(exception, Exception):
             raise ValueError(f'exception argument is malformed: \"{exception}\"')
 
         return f'{exception}\n'

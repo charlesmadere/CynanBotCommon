@@ -44,12 +44,12 @@ class PokepediaRepository():
 
     def __getElementTypeGenerationDictionary(
         self,
-        jsonResponse: Dict,
+        jsonResponse: Dict[str, Any],
         initialGeneration: PokepediaGeneration
     ) -> Dict[PokepediaGeneration, List[PokepediaElementType]]:
         if jsonResponse is None:
             raise ValueError(f'jsonResponse argument is malformed: \"{jsonResponse}\"')
-        elif initialGeneration is None:
+        elif not isinstance(initialGeneration, PokepediaGeneration):
             raise ValueError(f'initialGeneration argument is malformed: \"{initialGeneration}\"')
 
         currentTypesJson = jsonResponse.get('types')

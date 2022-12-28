@@ -34,17 +34,17 @@ class ChatBandManager():
         eventCooldown: timedelta = timedelta(minutes = 5),
         memberCacheTimeToLive: timedelta = timedelta(minutes = 15)
     ):
-        if timber is None:
+        if not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif websocketConnectionServer is None:
+        elif not isinstance(websocketConnectionServer, WebsocketConnectionServer):
             raise ValueError(f'websocketConnectionServer argument is malformed: \"{websocketConnectionServer}\"')
         elif not utils.isValidStr(chatBandFile):
             raise ValueError(f'chatBandFile argument is malformed: \"{chatBandFile}\"')
         elif not utils.isValidStr(eventType):
             raise ValueError(f'eventType argument is malformed: \"{eventType}\"')
-        elif eventCooldown is None:
+        elif not isinstance(eventCooldown, timedelta):
             raise ValueError(f'eventCooldown argument is malformed: \"{eventCooldown}\"')
-        elif memberCacheTimeToLive is None:
+        elif not isinstance(memberCacheTimeToLive, timedelta):
             raise ValueError(f'memberCacheTimeToLive argument is malformed: \"{memberCacheTimeToLive}\"')
 
         self.__timber: Timber = timber
@@ -194,7 +194,7 @@ class ChatBandManager():
         return None
 
     def __toEventData(self, chatBandMember: ChatBandMember) -> Dict[str, Any]:
-        if chatBandMember is None:
+        if not isinstance(chatBandMember, ChatBandMember):
             raise ValueError(f'chatBandMember argument is malformed: \"{chatBandMember}\"')
 
         return {

@@ -17,7 +17,7 @@ class ChatBandMember():
     ):
         if not utils.isValidBool(isEnabled):
             raise ValueError(f'isEnabled argument is malformed: \"{isEnabled}\"')
-        elif instrument is None:
+        elif not isinstance(instrument, ChatBandInstrument):
             raise ValueError(f'instrument argument is malformed: \"{instrument}\"')
         elif not utils.isValidStr(author):
             raise ValueError(f'author argument is malformed: \"{author}\"')
