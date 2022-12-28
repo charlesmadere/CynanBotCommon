@@ -150,3 +150,16 @@ class ShinyTriviaHelper():
         self.__timber.log('ShinyTriviaHelper', f'{twitchChannel} has encountered a shiny!')
 
         return True
+
+    async def shinySuperTriviaWin(self, twitchChannel: str, userId: str):
+        if not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+        elif not utils.isValidStr(userId):
+            raise ValueError(f'userId argument is malformed: \"{userId}\"')
+
+        result = await self.__shinyTriviaOccurencesRepository.incrementShinyCount(
+            twitchChannel = twitchChannel,
+            userId = userId
+        )
+
+        self.__timber.log('ShinyTriviaHelper', f'{result.getUserName()}:{result.getUserId()} in {twitchChannel} won a shiny super trivia!')
