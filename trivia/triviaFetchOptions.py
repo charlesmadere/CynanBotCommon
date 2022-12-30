@@ -39,3 +39,10 @@ class TriviaFetchOptions():
 
     def requireQuestionAnswerTriviaQuestion(self) -> bool:
         return self.__questionAnswerTriviaConditions is QuestionAnswerTriviaConditions.REQUIRED
+
+    def toStr(self) -> str:
+        return {
+            'twitchChannel': self.__twitchChannel,
+            'isJokeTriviaRepositoryEnabled': self.__isJokeTriviaRepositoryEnabled,
+            'questionAnswerTriviaConditions': self.__questionAnswerTriviaConditions
+        }

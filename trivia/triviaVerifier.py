@@ -59,13 +59,16 @@ class TriviaVerifier():
             return TriviaContentCode.IS_NONE
 
         if not triviaFetchOptions.areQuestionAnswerTriviaQuestionsEnabled() and question.getTriviaType() is TriviaType.QUESTION_ANSWER:
-            self.__timber.log('TriviaVerifier', f'The given TriviaType is illegal: {question.getTriviaType()}')
+            self.__timber.log('TriviaVerifier', f'The given TriviaType is illegal: {question.getTriviaType()} (triviaFetchOptions: {triviaFetchOptions.toStr()})')
             return TriviaContentCode.ILLEGAL_TRIVIA_TYPE
         elif triviaFetchOptions.requireQuestionAnswerTriviaQuestion() and question.getTriviaType() is not TriviaType.QUESTION_ANSWER:
-            self.__timber.log('TriviaVerifier', f'The given TriviaType is illegal: {question.getTriviaType()}')
+            self.__timber.log('TriviaVerifier', f'The given TriviaType is illegal: {question.getTriviaType()} (triviaFetchOptions: {triviaFetchOptions.toStr()})')
             return TriviaContentCode.ILLEGAL_TRIVIA_TYPE
 
-        if await self.__bannedTriviaIdsRepository.isBanned(question.getTriviaId(), question.getTriviaSource()):
+        if await self.__bannedTriviaIdsRepository.isBanned(
+            triviaId = question.getTriviaId(),
+            triviaSource = question.getTriviaSource()
+        ):
             return TriviaContentCode.IS_BANNED
 
         contentScannerCode = await self.__triviaContentScanner.verify(question)

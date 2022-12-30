@@ -1,4 +1,5 @@
 from enum import Enum, auto
+from typing import Optional
 
 try:
     import CynanBotCommon.utils as utils
@@ -17,7 +18,7 @@ class AnalogueProductType(Enum):
     SUPER_NT = auto()
 
     @classmethod
-    def fromStr(cls, text: str):
+    def fromStr(cls, text: Optional[str]):
         if not utils.isValidStr(text):
             return AnalogueProductType.OTHER
 
