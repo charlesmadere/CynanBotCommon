@@ -332,6 +332,7 @@ class PokepediaRepository():
         return PokepediaMove(
             generationMoves = generationMoves,
             moveId = utils.getIntFromDict(jsonResponse, 'id'),
+            initialGeneration = PokepediaGeneration.fromStr(jsonResponse['generation']['name']),
             description = self.__getEnDescription(jsonResponse),
             name = self.__getEnName(jsonResponse),
             rawName = utils.getStrFromDict(jsonResponse, 'name')

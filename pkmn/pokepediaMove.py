@@ -18,6 +18,7 @@ class PokepediaMove():
         self,
         generationMoves: Dict[PokepediaGeneration, PokepediaMoveGeneration],
         moveId: int,
+        initialGeneration: PokepediaGeneration,
         description: str,
         name: str,
         rawName: str
@@ -26,6 +27,8 @@ class PokepediaMove():
             raise ValueError(f'generationMoves argument is malformed: \"{generationMoves}\"')
         elif not utils.isValidInt(moveId):
             raise ValueError(f'moveId argument is malformed: \"{moveId}\"')
+        elif not isinstance(initialGeneration, PokepediaGeneration):
+            raise ValueError(f'initialGeneration argument is malformed: \"{initialGeneration}\"')
         elif not utils.isValidStr(description):
             raise ValueError(f'description argument is malformed: \"{description}\"')
         elif not utils.isValidStr(name):
@@ -35,6 +38,7 @@ class PokepediaMove():
 
         self.__generationMoves: Dict[PokepediaGeneration, PokepediaMoveGeneration] = generationMoves
         self.__moveId: int = moveId
+        self.__initialGeneration: PokepediaGeneration = initialGeneration
         self.__description: str = description
         self.__name: str = name
         self.__rawName: str = rawName
@@ -44,6 +48,9 @@ class PokepediaMove():
 
     def getGenerationMoves(self) -> Dict[PokepediaGeneration, PokepediaMoveGeneration]:
         return self.__generationMoves
+
+    def getInitialGeneration(self) -> PokepediaGeneration:
+        return self.__initialGeneration
 
     def getMoveId(self) -> int:
         return self.__moveId
