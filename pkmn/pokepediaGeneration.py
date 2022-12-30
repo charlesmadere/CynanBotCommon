@@ -24,19 +24,19 @@ class PokepediaGeneration(Enum):
         elif pokedexId < 0:
             raise ValueError(f'pokedexId argument is out of bounds: \"{pokedexId}\"')
 
-        if pokedexId < 152:
+        if pokedexId <= PokepediaGeneration.GENERATION_1.getMaxPokedexId():
             return PokepediaGeneration.GENERATION_1
-        elif pokedexId < 252:
+        elif pokedexId <= PokepediaGeneration.GENERATION_2.getMaxPokedexId():
             return PokepediaGeneration.GENERATION_2
-        elif pokedexId < 387:
+        elif pokedexId <= PokepediaGeneration.GENERATION_3.getMaxPokedexId():
             return PokepediaGeneration.GENERATION_3
-        elif pokedexId < 494:
+        elif pokedexId <= PokepediaGeneration.GENERATION_4.getMaxPokedexId():
             return PokepediaGeneration.GENERATION_4
-        elif pokedexId < 650:
+        elif pokedexId <= PokepediaGeneration.GENERATION_5.getMaxPokedexId():
             return PokepediaGeneration.GENERATION_5
-        elif pokedexId < 722:
+        elif pokedexId <= PokepediaGeneration.GENERATION_6.getMaxPokedexId():
             return PokepediaGeneration.GENERATION_6
-        elif pokedexId < 810:
+        elif pokedexId <= PokepediaGeneration.GENERATION_7.getMaxPokedexId():
             return PokepediaGeneration.GENERATION_7
         else:
             return PokepediaGeneration.GENERATION_8
@@ -64,6 +64,26 @@ class PokepediaGeneration(Enum):
             return PokepediaGeneration.GENERATION_8
         else:
             return PokepediaGeneration.GENERATION_1
+
+    def getMaxPokedexId(self) -> int:
+        if self is PokepediaGeneration.GENERATION_1:
+            return 151
+        elif self is PokepediaGeneration.GENERATION_2:
+            return 251
+        elif self is PokepediaGeneration.GENERATION_3:
+            return 386
+        elif self is PokepediaGeneration.GENERATION_4:
+            return 493
+        elif self is PokepediaGeneration.GENERATION_5:
+            return 649
+        elif self is PokepediaGeneration.GENERATION_6:
+            return 721
+        elif self is PokepediaGeneration.GENERATION_7:
+            return 809
+        elif self is PokepediaGeneration.GENERATION_8:
+            return 905
+        else:
+            raise RuntimeError(f'unknown PokepediaGeneration: \"{self}\"')
 
     def isEarlyGeneration(self) -> bool:
         return self is PokepediaGeneration.GENERATION_1 or self is PokepediaGeneration.GENERATION_2 or self is PokepediaGeneration.GENERATION_3
