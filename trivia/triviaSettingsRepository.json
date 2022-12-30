@@ -21,7 +21,7 @@
             "weight": 10
         },
         "j_service": {
-            "is_enabled": false,
+            "is_enabled": true,
             "weight": 25
         },
         "lord_of_the_rings": {
@@ -39,6 +39,10 @@
         "open_trivia_qa": {
             "is_enabled": true,
             "weight": 500
+        },
+        "poke_api": {
+            "is_enabled": true,
+            "weight": 25
         },
         "quiz_api": {
             "is_enabled": true,
