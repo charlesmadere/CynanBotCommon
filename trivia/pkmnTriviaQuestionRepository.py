@@ -17,11 +17,8 @@ try:
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
     from CynanBotCommon.trivia.triviaEmoteGenerator import TriviaEmoteGenerator
     from CynanBotCommon.trivia.triviaExceptions import (
-        BadTriviaSessionTokenException, GenericTriviaNetworkException,
-        UnsupportedTriviaTypeException)
+        GenericTriviaNetworkException, UnsupportedTriviaTypeException)
     from CynanBotCommon.trivia.triviaIdGenerator import TriviaIdGenerator
-    from CynanBotCommon.trivia.triviaQuestionCompiler import \
-        TriviaQuestionCompiler
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
     from CynanBotCommon.trivia.triviaSource import TriviaSource
@@ -38,11 +35,9 @@ except:
         MultipleChoiceTriviaQuestion
     from trivia.triviaDifficulty import TriviaDifficulty
     from trivia.triviaEmoteGenerator import TriviaEmoteGenerator
-    from trivia.triviaExceptions import (BadTriviaSessionTokenException,
-                                         GenericTriviaNetworkException,
+    from trivia.triviaExceptions import (GenericTriviaNetworkException,
                                          UnsupportedTriviaTypeException)
     from trivia.triviaIdGenerator import TriviaIdGenerator
-    from trivia.triviaQuestionCompiler import TriviaQuestionCompiler
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
     from trivia.triviaType import TriviaType
