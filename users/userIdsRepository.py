@@ -1,27 +1,22 @@
-from typing import Any, Dict, Optional
+from typing import Optional
 
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.network.exceptions import GenericNetworkException
-    from CynanBotCommon.network.networkClientProvider import \
-        NetworkClientProvider
     from CynanBotCommon.storage.backingDatabase import BackingDatabase
     from CynanBotCommon.storage.databaseConnection import DatabaseConnection
     from CynanBotCommon.storage.databaseType import DatabaseType
     from CynanBotCommon.timber.timber import Timber
-    from CynanBotCommon.twitch.twitchCredentialsProviderInterface import \
-        TwitchCredentialsProviderInterface
+    from CynanBotCommon.twitch.twitchApiService import TwitchApiService
 except:
     import utils
     from network.exceptions import GenericNetworkException
-    from network.networkClientProvider import NetworkClientProvider
     from storage.backingDatabase import BackingDatabase
     from storage.databaseConnection import DatabaseConnection
     from storage.databaseType import DatabaseType
     from timber.timber import Timber
 
-    from twitch.twitchCredentialsProviderInterface import \
-        TwitchCredentialsProviderInterface
+    from twitch.twitchApiService import TwitchApiService
 
 
 class UserIdsRepository():
@@ -29,23 +24,19 @@ class UserIdsRepository():
     def __init__(
         self,
         backingDatabase: BackingDatabase,
-        networkClientProvider: NetworkClientProvider,
         timber: Timber,
-        twitchCredentialsProviderInterface: TwitchCredentialsProviderInterface
+        twitchApiService: TwitchApiService
     ):
         if not isinstance(backingDatabase, BackingDatabase):
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
-        elif not isinstance(networkClientProvider, NetworkClientProvider):
-            raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
         elif not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif not isinstance(twitchCredentialsProviderInterface, TwitchCredentialsProviderInterface):
-            raise ValueError(f'twitchCredentialsProviderInterface argument is malformed: \"{twitchCredentialsProviderInterface}\"')
+        elif not isinstance(twitchApiService, TwitchApiService):
+            raise ValueError(f'twitchApiService argument is malformed: \"{twitchApiService}\"')
 
         self.__backingDatabase: BackingDatabase = backingDatabase
-        self.__networkClientProvider: NetworkClientProvider = networkClientProvider
         self.__timber: Timber = timber
-        self.__twitchCredentialsProviderInterface: TwitchCredentialsProviderInterface = twitchCredentialsProviderInterface
+        self.__twitchApiService: TwitchApiService = twitchApiService
 
         self.__isDatabaseReady: bool = False
 
@@ -73,54 +64,23 @@ class UserIdsRepository():
 
         await connection.close()
 
-        if userId is not None:
-            if utils.isValidStr(userId):
-                return userId
-            else:
-                self.__timber.log('UserIdsRepository', f'Persisted userId for userName \"{userName}\" is malformed: \"{userId}\"')
-                raise RuntimeError(f'Persisted userId for userName \"{userName}\" is malformed: \"{userId}\"')
+        if utils.isValidStr(userId):
+            return userId
+        elif not utils.isValidStr(twitchAccessToken):
+            raise RuntimeError(f'UserIdsRepository can\'t lookup Twitch user ID for \"{userName}\" as not twitchAccessToken was specified')
 
-        if not utils.isValidStr(twitchAccessToken):
-            raise ValueError(f'Can\'t lookup Twitch user ID for \"{userName}\", as twitchAccessToken is missing and/or malformed: \"{twitchAccessToken}\"')
-
-        self.__timber.log('UserIdsRepository', f'Performing network call to fetch Twitch userId for userName \"{userName}\"...')
-
-        twitchClientId = await self.__twitchCredentialsProviderInterface.getTwitchClientId()
-        clientSession = await self.__networkClientProvider.get()
+        self.__timber.log('UserIdsRepository', f'User ID for userName \"{userName}\" wasn\'t found locally, so performing a network call to fetch instead...')
 
         try:
-            response = await clientSession.get(
-                url = f'https://api.twitch.tv/helix/users?login={userName}',
-                headers = {
-                    'Authorization': f'Bearer {twitchAccessToken}',
-                    'Client-Id': twitchClientId
-                }
+            userDetails = await self.__twitchApiService.fetchUserDetails(
+                twitchAccessToken = twitchAccessToken,
+                userName = userName
             )
         except GenericNetworkException as e:
-            self.__timber.log('UserIdsRepository', f'Encountered network error when fetching userId for userName \"{userName}\": {e}', e)
-            raise RuntimeError(f'UserIdsRepository encountered network error when fetching userId for userName \"{userName}\": {e}')
+            self.__timber.log('UserIdsRepository', f'Received a network error of some kind when fetching userId for userName \"{userName}\": {e}', e)
+            raise GenericNetworkException(f'UserIdsRepository received a network error of some kind when fetching userId for userName \"{userName}\": {e}')
 
-        if response.getStatusCode() != 200:
-            self.__timber.log('UserIdsRepository', f'Encountered non-200 HTTP status code when fetching userId for userName \"{userName}\": \"{response.getStatusCode()}\"')
-            raise RuntimeError(f'UserIdsRepository encountered non-200 HTTP status code when fetching userId for userName \"{userName}\": \"{response.getStatusCode()}\"')
-
-        jsonResponse: Optional[Dict[str, Any]] = await response.json()
-        await response.close()
-
-        if not utils.hasItems(jsonResponse):
-            self.__timber.log('UserIdsRepository', f'Received a null/empty JSON response when fetching userId for userName \"{userName}\": {jsonResponse}')
-            raise RuntimeError(f'UserIdsRepository eceived a null/empty JSON response when fetching userId for userName \"{userName}\": {jsonResponse}')
-        elif 'error' in jsonResponse and len(jsonResponse['error']) >= 1:
-            self.__timber.log('UserIdsRepository', f'Received an error of some kind when fetching userId for userName \"{userName}\": {jsonResponse}')
-            raise RuntimeError(f'UserIdsRepository received an error of some kind when fetching userId for userName \"{userName}\": {jsonResponse}')
-
-        userId: Optional[str] = jsonResponse['data'][0]['id']
-
-        if not utils.isValidStr(userId):
-            self.__timber.log('UserIdsRepository', f'Unable to fetch userId for \"{userName}\": {jsonResponse}')
-            raise ValueError(f'UserIdsRepository was unable to fetch userId for \"{userName}\": {jsonResponse}')
-
-        self.__timber.log('UserIdsRepository', f'Successfully fetched Twitch userId for userName \"{userName}\": \"{userId}\"')
+        userId = userDetails.getUserId()
         await self.setUser(userId = userId, userName = userName)
 
         return userId

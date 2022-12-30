@@ -9,66 +9,42 @@ import aiofiles.ospath
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.network.exceptions import GenericNetworkException
-    from CynanBotCommon.network.networkClientProvider import \
-        NetworkClientProvider
-    from CynanBotCommon.network.networkResponse import NetworkResponse
     from CynanBotCommon.timber.timber import Timber
-    from CynanBotCommon.twitch.twitchAccessTokenMissingException import \
-        TwitchAccessTokenMissingException
-    from CynanBotCommon.twitch.twitchExpiresInMissingException import \
-        TwitchExpiresInMissingException
-    from CynanBotCommon.twitch.twitchJsonException import TwitchJsonException
-    from CynanBotCommon.twitch.twitchNetworkException import \
-        TwitchNetworkException
-    from CynanBotCommon.twitch.twitchRefreshTokenMissingException import \
-        TwitchRefreshTokenMissingException
+    from CynanBotCommon.twitch.twitchApiService import TwitchApiService
 except:
     import utils
     from network.exceptions import GenericNetworkException
-    from network.networkClientProvider import NetworkClientProvider
-    from network.networkResponse import NetworkResponse
     from timber.timber import Timber
 
-    from twitch.twitchAccessTokenMissingException import \
-        TwitchAccessTokenMissingException
-    from twitch.twitchExpiresInMissingException import \
-        TwitchExpiresInMissingException
-    from twitch.twitchJsonException import TwitchJsonException
-    from twitch.twitchNetworkException import TwitchNetworkException
-    from twitch.twitchRefreshTokenMissingException import \
-        TwitchRefreshTokenMissingException
+    from twitch.twitchApiService import TwitchApiService
 
 
 class TwitchTokensRepository():
 
     def __init__(
         self,
-        networkClientProvider: NetworkClientProvider,
         timber: Timber,
-        oauth2TokenUrl: str = 'https://id.twitch.tv/oauth2/token',
-        oauth2ValidateUrl: str = 'https://id.twitch.tv/oauth2/validate',
+        twitchApiService: TwitchApiService,
         twitchTokensFile: str = 'CynanBotCommon/twitch/twitchTokensRepository.json',
-        tokensExpirationBuffer: timedelta = timedelta(minutes = 30)
+        tokensExpirationBuffer: timedelta = timedelta(minutes = 30),
+        timeZone: timezone = timezone.utc
     ):
-        if not isinstance(networkClientProvider, NetworkClientProvider):
-            raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
-        elif not isinstance(timber, Timber):
+        if not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif not utils.isValidUrl(oauth2TokenUrl):
-            raise ValueError(f'oauth2TokenUrl argument is malformed: \"{oauth2TokenUrl}\"')
-        elif not utils.isValidUrl(oauth2ValidateUrl):
-            raise ValueError(f'oauth2ValidateUrl argument is malformed: \"{oauth2ValidateUrl}\"')
+        elif not isinstance(twitchApiService, TwitchApiService):
+            raise ValueError(f'twitchApiService argument is malformed: \"{twitchApiService}\"')
         elif not utils.isValidStr(twitchTokensFile):
             raise ValueError(f'twitchTokensFile argument is malformed: \"{twitchTokensFile}\"')
         elif not isinstance(tokensExpirationBuffer, timedelta):
             raise ValueError(f'tokensExpirationBuffer argument is malformed: \"{tokensExpirationBuffer}\"')
+        elif not isinstance(timeZone, timezone):
+            raise ValueError(f'timeZone argument is malformed: \"{timeZone}\"')
 
-        self.__networkClientProvider: NetworkClientProvider = networkClientProvider
         self.__timber: Timber = timber
-        self.__oauth2TokenUrl: str = oauth2TokenUrl
-        self.__oauth2ValidateUrl: str = oauth2ValidateUrl
+        self.__twitchApiService: TwitchApiService = twitchApiService
         self.__twitchTokensFile: str = twitchTokensFile
         self.__tokensExpirationBuffer: timedelta = tokensExpirationBuffer
+        self.__timeZone: timezone = timeZone
 
         self.__jsonCache: Optional[Dict[str, Any]] = None
         self.__tokenExpirations: Dict[str, datetime] = dict()
@@ -88,7 +64,7 @@ class TwitchTokensRepository():
             return None
 
         expiringTwitchHandles: Set[str] = set()
-        nowDateTime = datetime.now(timezone.utc)
+        nowDateTime = datetime.now(self.__timeZone)
 
         for twitchHandle, expirationDateTime in self.__tokenExpirations.items():
             if expirationDateTime is None or nowDateTime + self.__tokensExpirationBuffer >= expirationDateTime:
@@ -110,6 +86,13 @@ class TwitchTokensRepository():
 
         jsonContents = await self.__readJsonForTwitchHandle(twitchHandle)
         return utils.getStrFromDict(jsonContents, 'refreshToken', fallback = '')
+
+    async def hasAccessToken(self, twitchHandle: str) -> bool:
+        if not utils.isValidStr(twitchHandle):
+            raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
+
+        accessToken = await self.getAccessToken(twitchHandle)
+        return utils.isValidStr(accessToken)
 
     async def __isDebugLoggingEnabled(self) -> bool:
         jsonContents = await self.__readAllJson()
@@ -162,70 +145,28 @@ class TwitchTokensRepository():
         # is a good bit easier to handle than throwing an exception, or something else like that.
         return dict()
 
-    async def __refreshTokens(
-        self,
-        twitchClientId: str,
-        twitchClientSecret: str,
-        twitchHandle: str
-    ):
-        if not utils.isValidStr(twitchClientId):
-            raise ValueError(f'twitchClientId argument is malformed: \"{twitchClientId}\"')
-        elif not utils.isValidStr(twitchClientSecret):
-            raise ValueError(f'twitchClientSecret argument is malformed: \"{twitchClientSecret}\"')
-        elif not utils.isValidStr(twitchHandle):
+    async def __refreshTokens(self, twitchHandle: str):
+        if not utils.isValidStr(twitchHandle):
             raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
 
         twitchHandle = twitchHandle.lower()
         self.__timber.log('TwitchTokensRepository', f'Refreshing Twitch tokens for \"{twitchHandle}\"...')
-        clientSession = await self.__networkClientProvider.get()
 
-        response: NetworkResponse = None
+        twitchRefreshToken = await self.requireRefreshToken(twitchHandle)
+
         try:
-            response = await clientSession.post(
-                url = self.__oauth2TokenUrl,
-                json = {
-                        'client_id': twitchClientId,
-                        'client_secret': twitchClientSecret,
-                        'grant_type': 'refresh_token',
-                        'refresh_token': await self.requireRefreshToken(twitchHandle)
-                }
+            tokens = await self.__twitchApiService.refreshTokens(
+                twitchRefreshToken = twitchRefreshToken
             )
         except GenericNetworkException as e:
-            self.__timber.log('TwitchTokensRepository', f'Encountered network error when requesting new Twitch tokens for \"{twitchHandle}\": {e}', e)
-            raise TwitchNetworkException(f'Encountered network error when requesting new Twitch tokens for \"{twitchHandle}\": {e}')
-
-        if response.getStatusCode() != 200:
-            self.__timber.log('TwitchTokensRepository', f'Encountered non-200 HTTP status code when requesting new Twitch tokens for \"{twitchHandle}\": {response.getStatusCode()}')
-            raise TwitchNetworkException(f'Encountered non-200 HTTP status code when requesting new Twitch tokens for \"{twitchHandle}\": {response.getStatusCode()}')
-
-        jsonResponse: Optional[Dict[str, Any]] = await response.json()
-        await response.close()
-
-        if not utils.hasItems(jsonResponse):
-            self.__timber.log('TwitchTokensRepository', f'Received malformed JSON response when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
-            raise TwitchJsonException(f'Received malformed JSON response when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
-
-        accessToken = utils.getStrFromDict(jsonResponse, 'access_token', fallback = '')
-        refreshToken = utils.getStrFromDict(jsonResponse, 'refresh_token', fallback = '')
-        expiresInSeconds = utils.getIntFromDict(jsonResponse, 'expires_in', fallback = -1)
-
-        if not utils.isValidStr(accessToken):
-            self.__timber.log('TwitchTokensRepository', f'Received malformed \"access_token\" ({accessToken}) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
-            raise TwitchAccessTokenMissingException(f'Received malformed \"access_token\" ({accessToken}) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
-        elif not utils.isValidStr(refreshToken):
-            self.__timber.log('TwitchTokensRepository', f'Received malformed \"refresh_token\" ({refreshToken}) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
-            raise TwitchRefreshTokenMissingException(f'Received malformed \"refresh_token\" ({refreshToken}) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
-        elif not utils.isValidNum(expiresInSeconds):
-            self.__timber.log('TwitchTokensRepository', f'Received malformed \"expires_in\" ({expiresInSeconds}) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
-            raise TwitchExpiresInMissingException(f'Received malformed \"expires_in\" ({expiresInSeconds}) when refreshing Twitch tokens for \"{twitchHandle}\": {jsonResponse}')
-
-        if await self.__isDebugLoggingEnabled():
-            self.__timber.log('TwitchTokensRepository', f'JSON response for \"{twitchHandle}\" Twitch tokens refresh: {jsonResponse}')
+            self.__timber.log('TwitchTokensRepository', f'Encountered network error when trying to refresh Twitch tokens for \"{twitchHandle}\": {e}', e)
+            raise GenericNetworkException(f'TwitchTokensRepository encountered network error when trying to refresh Twitch tokens for \"{twitchHandle}\": {e}')
 
         jsonContents = await self.__readAllJson()
+
         jsonContents['twitchHandles'][twitchHandle] = {
-            'accessToken': accessToken,
-            'refreshToken': refreshToken
+            'accessToken': tokens.getAccessToken(),
+            'refreshToken': tokens.getRefreshToken()
         }
 
         jsonString: str = ''
@@ -241,7 +182,7 @@ class TwitchTokensRepository():
 
         await self.__saveUserTokenExpirationTime(
             twitchHandle = twitchHandle,
-            expiresInSeconds = expiresInSeconds
+            expiresInSeconds = tokens.getExpiresInSeconds()
         )
 
     async def requireAccessToken(self, twitchHandle: str) -> str:
@@ -267,13 +208,13 @@ class TwitchTokensRepository():
     async def __saveUserTokenExpirationTime(self, twitchHandle: str, expiresInSeconds: int):
         if not utils.isValidStr(twitchHandle):
             raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
-        elif not utils.isValidNum(expiresInSeconds):
+        elif not utils.isValidInt(expiresInSeconds):
             raise ValueError(f'expiresInSeconds argument is malformed: \"{expiresInSeconds}\"')
         elif expiresInSeconds <= 0:
-            raise ValueError(f'expiresInSeconds can\'t be <= 0: {expiresInSeconds}')
+            raise ValueError(f'expiresInSeconds argument is out of bounds: {expiresInSeconds}')
 
         twitchHandle = twitchHandle.lower()
-        nowDateTime = datetime.now(timezone.utc)
+        nowDateTime = datetime.now(self.__timeZone)
         expiresInTimeDelta = timedelta(seconds = expiresInSeconds)
         expirationTime = nowDateTime + expiresInTimeDelta
         self.__tokenExpirations[twitchHandle] = expirationTime
@@ -284,54 +225,28 @@ class TwitchTokensRepository():
         if await self.__isDebugLoggingEnabled():
             self.__timber.log('TwitchTokensRepository', f'tokenExpirations contents: {self.__tokenExpirations}')
 
-    async def validateAndRefreshAccessToken(
-        self,
-        twitchClientId: str,
-        twitchClientSecret: str,
-        twitchHandle: str
-    ):
-        if not utils.isValidStr(twitchClientId):
-            raise ValueError(f'twitchClientId argument is malformed: \"{twitchClientId}\"')
-        elif not utils.isValidStr(twitchClientSecret):
-            raise ValueError(f'twitchClientSecret argument is malformed: \"{twitchClientSecret}\"')
-        elif not utils.isValidStr(twitchHandle):
+    async def validateAndRefreshAccessToken(self, twitchHandle: str):
+        if not utils.isValidStr(twitchHandle):
             raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
 
         twitchHandle = twitchHandle.lower()
-        self.__timber.log('TwitchTokensRepository', f'Validating Twitch access token for \"{twitchHandle}\"...')
-        clientSession = await self.__networkClientProvider.get()
+        self.__timber.log('TwitchTokensRepository', f'Validating Twitch tokens for \"{twitchHandle}\"...')
 
+        twitchAccessToken = await self.requireAccessToken(twitchHandle)
+
+        expiresInSeconds: Optional[int] = None
         try:
-            response = await clientSession.get(
-                url = self.__oauth2ValidateUrl,
-                headers = {
-                    'Authorization': f'OAuth {await self.requireAccessToken(twitchHandle)}'
-                }
+            expiresInSeconds = await self.__twitchApiService.validateTokens(
+                twitchAccessToken = twitchAccessToken
             )
         except GenericNetworkException as e:
-            self.__timber.log('TwitchTokensRepository', f'Encountered network error when validating Twitch access token for \"{twitchHandle}\": {e}', e)
-            raise TwitchNetworkException(f'Encountered network error when validating Twitch access token for \"{twitchHandle}\": {e}')
+            self.__timber.log('TwitchTokensRepository', f'Encountered network error when trying to validate Twitch tokens for \"{twitchHandle}\": {e}', e)
+            raise GenericNetworkException(f'TwitchTokensRepository encountered network error when trying to validate Twitch tokens for \"{twitchHandle}\": {e}')
 
-        responseStatus = response.getStatusCode()
-        jsonResponse: Optional[Dict[str, Any]] = await response.json()
-        await response.close()
-
-        clientId: Optional[str] = None
-        if jsonResponse is not None and utils.isValidStr(jsonResponse.get('client_id')):
-            clientId = utils.getStrFromDict(jsonResponse, 'client_id')
-
-        expiresInSeconds: int = -1
-        if jsonResponse is not None and utils.isValidNum(jsonResponse.get('expires_in')):
-            expiresInSeconds = utils.getIntFromDict(jsonResponse, 'expires_in')
-
-        if responseStatus != 200 or not utils.isValidStr(clientId) or expiresInSeconds < self.__tokensExpirationBuffer.total_seconds():
-            await self.__refreshTokens(
-                twitchClientId = twitchClientId,
-                twitchClientSecret = twitchClientSecret,
-                twitchHandle = twitchHandle
-            )
-        else:
+        if utils.isValidInt(expiresInSeconds) and expiresInSeconds >= self.__tokensExpirationBuffer.total_seconds():
             await self.__saveUserTokenExpirationTime(
                 twitchHandle = twitchHandle,
                 expiresInSeconds = expiresInSeconds
             )
+        else:
+            await self.__refreshTokens(twitchHandle)
