@@ -24,6 +24,8 @@ try:
         OpenTriviaDatabaseTriviaQuestionRepository
     from CynanBotCommon.trivia.openTriviaQaTriviaQuestionRepository import \
         OpenTriviaQaTriviaQuestionRepository
+    from CynanBotCommon.trivia.pkmnTriviaQuestionRepository import \
+        PkmnTriviaQuestionRepository
     from CynanBotCommon.trivia.quizApiTriviaQuestionRepository import \
         QuizApiTriviaQuestionRepository
     from CynanBotCommon.trivia.triviaContentCode import TriviaContentCode
@@ -65,6 +67,8 @@ except:
         OpenTriviaDatabaseTriviaQuestionRepository
     from trivia.openTriviaQaTriviaQuestionRepository import \
         OpenTriviaQaTriviaQuestionRepository
+    from trivia.pkmnTriviaQuestionRepository import \
+        PkmnTriviaQuestionRepository
     from trivia.quizApiTriviaQuestionRepository import \
         QuizApiTriviaQuestionRepository
     from trivia.triviaContentCode import TriviaContentCode
@@ -99,6 +103,7 @@ class TriviaRepository():
         quizApiTriviaQuestionRepository: Optional[QuizApiTriviaQuestionRepository],
         openTriviaDatabaseTriviaQuestionRepository: OpenTriviaDatabaseTriviaQuestionRepository,
         openTriviaQaTriviaQuestionRepository: OpenTriviaQaTriviaQuestionRepository,
+        pkmnTriviaQuestionRepository: PkmnTriviaQuestionRepository,
         timber: Timber,
         triviaDatabaseTriviaQuestionRepository: TriviaDatabaseTriviaQuestionRepository,
         triviaSettingsRepository: TriviaSettingsRepository,
@@ -124,6 +129,8 @@ class TriviaRepository():
             raise ValueError(f'openTriviaDatabaseTriviaQuestionRepository argument is malformed: \"{openTriviaDatabaseTriviaQuestionRepository}\"')
         elif not isinstance(openTriviaQaTriviaQuestionRepository, OpenTriviaQaTriviaQuestionRepository):
             raise ValueError(f'openTriviaQaTriviaQuestionRepository argument is malformed: \"{openTriviaQaTriviaQuestionRepository}\"')
+        elif not isinstance(pkmnTriviaQuestionRepository, PkmnTriviaQuestionRepository):
+            raise ValueError(f'pkmnTriviaQuestionRepository argument is malformed: \"{pkmnTriviaQuestionRepository}\"')
         elif quizApiTriviaQuestionRepository is not None and not isinstance(quizApiTriviaQuestionRepository, QuizApiTriviaQuestionRepository):
             raise ValueError(f'quizApiTriviaQuestionRepository argument is malformed: \"{quizApiTriviaQuestionRepository}\"')
         elif not isinstance(timber, Timber):
@@ -152,7 +159,8 @@ class TriviaRepository():
         self.__lotrTriviaQuestionRepository: Optional[AbsTriviaQuestionRepository] = lotrTriviaQuestionRepository
         self.__millionaireTriviaQuestionRepository: AbsTriviaQuestionRepository = millionaireTriviaQuestionRepository
         self.__openTriviaDatabaseTriviaQuestionRepository: AbsTriviaQuestionRepository = openTriviaDatabaseTriviaQuestionRepository
-        self.__openTriviaQaTriviaQuestionRepository: OpenTriviaQaTriviaQuestionRepository = openTriviaQaTriviaQuestionRepository
+        self.__openTriviaQaTriviaQuestionRepository: AbsTriviaQuestionRepository = openTriviaQaTriviaQuestionRepository
+        self.__pkmnTriviaQuestionRepository: AbsTriviaQuestionRepository = pkmnTriviaQuestionRepository
         self.__quizApiTriviaQuestionRepository: Optional[AbsTriviaQuestionRepository] = quizApiTriviaQuestionRepository
         self.__timber: Timber = timber
         self.__triviaDatabaseTriviaQuestionRepository: AbsTriviaQuestionRepository = triviaDatabaseTriviaQuestionRepository
@@ -207,6 +215,7 @@ class TriviaRepository():
             TriviaSource.MILLIONAIRE: self.__millionaireTriviaQuestionRepository,
             TriviaSource.OPEN_TRIVIA_DATABASE: self.__openTriviaDatabaseTriviaQuestionRepository,
             TriviaSource.OPEN_TRIVIA_QA: self.__openTriviaQaTriviaQuestionRepository,
+            TriviaSource.POKE_API: self.__pkmnTriviaQuestionRepository,
             TriviaSource.QUIZ_API: self.__quizApiTriviaQuestionRepository,
             TriviaSource.TRIVIA_DATABASE: self.__triviaDatabaseTriviaQuestionRepository,
             TriviaSource.WILL_FRY_TRIVIA: self.__willFryTriviaQuestionRepository,

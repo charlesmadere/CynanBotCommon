@@ -67,6 +67,10 @@ class TestTriviaSource():
         result = TriviaSource.fromStr('open_trivia_qa')
         assert result is TriviaSource.OPEN_TRIVIA_QA
 
+    def test_fromStr_withPokeApiString(self):
+        result = TriviaSource.fromStr('poke_api')
+        assert result is TriviaSource.POKE_API
+
     def test_fromStr_withQuizApiString(self):
         result = TriviaSource.fromStr('quiz_api')
         assert result is TriviaSource.QUIZ_API
@@ -130,6 +134,10 @@ class TestTriviaSource():
     def test_toStr_withOpenTriviaQa(self):
         result = TriviaSource.OPEN_TRIVIA_QA.toStr()
         assert result == 'OPEN_TRIVIA_QA'
+
+    def test_toStr_withPokeApi(self):
+        result = TriviaSource.POKE_API.toStr()
+        assert result == 'POKE_API'
 
     def test_toStr_withQuizApi(self):
         result = TriviaSource.QUIZ_API.toStr()

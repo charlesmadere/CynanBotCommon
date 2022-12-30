@@ -88,25 +88,32 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self,
         generation: PokepediaGeneration,
         pokemon: PokepediaPokemon
-    ) -> MultipleChoiceTriviaQuestion:
+    ) -> Dict[str, str]:
         if not isinstance(generation, PokepediaGeneration):
             raise ValueError(f'generation argument is malformed: \"{generation}\"')
         elif not isinstance(pokemon, PokepediaPokemon):
             raise ValueError(f'pokemon argument is malformed: \"{pokemon}\"')
 
-        generationString = self.__getGenerationString(generation)
-
-        multipleChoiceQuestions = await self.__createTypesMultipleChoiceSet(
-            pokemon = pokemon,
-            generation = generation
-        )
-
-        question = f'In Pokémon {generationString}, {pokemon.getName()} is ONE of the following types?'
-
         actualTypes = pokemon.getGenerationElementTypes()[generation]
-        falseTypes = self.__selectRandomFalseTypes(actualTypes)
-        # TODO
-        pass
+        falseTypes = await self.__selectRandomFalseTypes(actualTypes)
+
+        finalTypes: List[PokepediaElementType] = list()
+        finalTypes.extend(falseTypes)
+
+        correctType = random.choice(actualTypes)
+        finalTypes.append(correctType)
+
+        finalTypesStrs: List[str] = list()
+        for finalType in finalTypes:
+            finalTypesStrs.append(finalType.toStr())
+
+        generationString = await self.__getGenerationString(generation)
+
+        return {
+            'correctAnswer': correctType.toStr(),
+            'incorrectAnswers': finalTypesStrs,
+            'question': f'In Pokémon {generationString}, {pokemon.getName()} is ONE of the following types?'
+        }
 
     async def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
         if not utils.isValidStr(twitchChannel):
@@ -124,35 +131,50 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         category = 'Pokémon'
         triviaDifficulty = TriviaDifficulty.UNKNOWN
-        randomGeneration = self.__selectRandomGeneration()
+        randomGeneration = await self.__selectRandomGeneration(pokemon)
 
-        return await self.__createTypeBasedQuestion(
+        triviaDict = await self.__createTypeBasedQuestion(
             generation = randomGeneration,
             pokemon = pokemon
         )
 
-        raise NotImplementedError()
-
-        triviaId = await self.__triviaIdGenerator.generate(
-            category = category,
-            difficulty = triviaDifficulty.toStr(),
-            question = question
-        )
-
         emote = await self.__triviaEmoteGenerator.getNextEmoteFor(twitchChannel)
 
-        return TrueFalseTriviaQuestion(
-            correctAnswers = correctAnswers,
-            category = category,
-            categoryId = None,
-            emote = emote,
+        question = utils.getStrFromDict(triviaDict, 'question')
+
+        triviaId = await self.__triviaIdGenerator.generate(
             question = question,
-            triviaId = triviaId,
-            triviaDifficulty = TriviaDifficulty.UNKNOWN,
-            triviaSource = triviaSource
+            category = category,
+            difficulty = triviaDifficulty.toStr()
         )
 
-    def __getGenerationString(self, generation: PokepediaGeneration) -> str:
+        triviaType = TriviaType.fromStr(utils.getStrFromDict(triviaDict, 'triviaType'))
+
+        if triviaType is TriviaType.MULTIPLE_CHOICE:
+            correctAnswers: List[str] = list()
+            correctAnswers.append(utils.getStrFromDict(triviaDict, 'correctAnswer'))
+            incorrectAnswers: List[str] = triviaDict['incorrectAnswers']
+
+            multipleChoiceResponses = await self._buildMultipleChoiceResponsesList(
+                correctAnswers = correctAnswers,
+                multipleChoiceResponses = incorrectAnswers
+            )
+
+            return MultipleChoiceTriviaQuestion(
+                correctAnswers = correctAnswers,
+                multipleChoiceResponses = multipleChoiceResponses,
+                category = category,
+                categoryId = None,
+                emote = emote,
+                question = question,
+                triviaId = triviaId,
+                triviaDifficulty = triviaDifficulty,
+                triviaSource = TriviaSource.POKE_API
+            )
+
+        raise UnsupportedTriviaTypeException(f'triviaType \"{triviaType}\" is not supported for Pkmn Trivia: {triviaDict}')
+
+    async def __getGenerationString(self, generation: PokepediaGeneration) -> str:
         if not isinstance(generation, PokepediaGeneration):
             raise ValueError(f'generation argument is malformed: \"{generation}\"')
 
@@ -179,9 +201,9 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
         return [ TriviaType.MULTIPLE_CHOICE ]
 
     def getTriviaSource(self) -> TriviaSource:
-        return TriviaSource.OPEN_TRIVIA_DATABASE
+        return TriviaSource.POKE_API
 
-    def __selectRandomFalseTypes(
+    async def __selectRandomFalseTypes(
         self,
         actualTypes: List[PokepediaElementType]
     ) -> Set[PokepediaElementType]:
@@ -199,13 +221,25 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         return falseTypes
 
-    def __selectRandomGeneration(self) -> PokepediaGeneration:
+    async def __selectRandomGeneration(self, pokemon: PokepediaPokemon) -> PokepediaGeneration:
+        if not isinstance(pokemon, PokepediaPokemon):
+            raise ValueError(f'pokemon argument is malformed: \"{pokemon}\"')
+
         allGenerations = list(PokepediaGeneration)
-        indexOfMax = 0
+        indexOfMax: Optional[int] = None
+        indexOfMin: Optional[int] = None
 
         for index, generation in enumerate(allGenerations):
             if generation is self.__maxGeneration:
                 indexOfMax = index
+
+            if generation is pokemon.getInitialGeneration():
+                indexOfMin = index
+
+            if utils.isValidInt(indexOfMax) and utils.isValidInt(indexOfMin):
                 break
 
-        return allGenerations[random.randint(0, indexOfMax)]
+        if not utils.isValidInt(indexOfMax) or not utils.isValidInt(indexOfMin) or indexOfMax < indexOfMin:
+            raise RuntimeError(f'indexOfMax ({indexOfMax}) or indexOfMin ({indexOfMin}) is incompatible with this Pokemon that has an initial generation of {pokemon.getInitialGeneration()}! (maxGeneration={self.__maxGeneration}))')
+
+        return allGenerations[random.randint(indexOfMin, indexOfMax)]
