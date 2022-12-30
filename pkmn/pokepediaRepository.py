@@ -1,3 +1,4 @@
+import random
 from typing import Any, Dict, List, Optional
 
 try:
@@ -41,6 +42,52 @@ class PokepediaRepository():
 
         self.__networkClientProvider: NetworkClientProvider = networkClientProvider
         self.__timber: Timber = timber
+
+    def __buildPokemonFromJsonResponse(self, jsonResponse: Dict[str, Any]) -> PokepediaPokemon:
+        if jsonResponse is None:
+            raise ValueError(f'jsonResponse argument is malformed: \"{jsonResponse}\"')
+
+        pokedexId = utils.getIntFromDict(jsonResponse, 'id')
+        initialGeneration = PokepediaGeneration.fromPokedexId(pokedexId)
+        generationElementTypes = self.__getElementTypeGenerationDictionary(
+            jsonResponse = jsonResponse,
+            initialGeneration = initialGeneration
+        )
+
+        return PokepediaPokemon(
+            generationElementTypes = generationElementTypes,
+            initialGeneration = initialGeneration,
+            height = utils.getIntFromDict(jsonResponse, 'height'),
+            pokedexId = pokedexId,
+            weight = utils.getIntFromDict(jsonResponse, 'weight'),
+            name = utils.getStrFromDict(jsonResponse, 'name').title()
+        )
+
+    async def fetchRandomPokemon(self, maxGeneration: PokepediaGeneration) -> PokepediaPokemon:
+        if not isinstance(maxGeneration, PokepediaGeneration):
+            raise ValueError(f'maxGeneration argument is malformed: \"{maxGeneration}\"')
+
+        randomPokemonId = random.randint(1, maxGeneration.getMaxPokedexId())
+        clientSession = await self.__networkClientProvider.get()
+
+        try:
+            response = await clientSession.get(f'https://pokeapi.co/api/v2/pokemon/{randomPokemonId}')
+        except GenericNetworkException as e:
+            self.__timber.log('PokepediaRepository', f'Encountered network error from PokeAPI when fetching Pokemon with ID \"{randomPokemonId}\": {e}', e)
+            raise GenericNetworkException(f'PokepediaRepository encountered network error from PokeAPI when fetching Pokemon with ID \"{randomPokemonId}\": {e}')
+
+        if response.getStatusCode() != 200:
+            self.__timber.log('PokepediaRepository', f'Encountered non-200 HTTP status code from PokeAPI when fetching Pokemon with ID \"{randomPokemonId}\": \"{response.getStatusCode()}\"')
+            raise GenericNetworkException(f'PokepediaRepository encountered non-200 HTTP status code from PokeAPI when fetching Pokemon with ID \"{randomPokemonId}\": \"{response.getStatusCode()}\"')
+
+        jsonResponse: Optional[Dict[str, Any]] = await response.json()
+        await response.close()
+
+        if not utils.hasItems(jsonResponse):
+            self.__timber.log('PokepediaRepository', f'Encountered data error from PokeAPI when fetching Pokemon with ID \"{randomPokemonId}\": {jsonResponse}')
+            raise GenericNetworkException(f'PokepediaRepository encountered data error from PokeAPI when fetching Pokemon with ID \"{randomPokemonId}\": {jsonResponse}')
+
+        return self.__buildPokemonFromJsonResponse(jsonResponse)
 
     def __getElementTypeGenerationDictionary(
         self,
@@ -267,14 +314,18 @@ class PokepediaRepository():
             response = await clientSession.get(f'https://pokeapi.co/api/v2/move/{name}/')
         except GenericNetworkException as e:
             self.__timber.log('PokepediaRepository', f'Encountered network error from PokeAPI when searching for \"{name}\" move: {e}', e)
-            raise RuntimeError(f'Encountered network error from PokeAPI when searching for \"{name}\" move: {e}')
+            raise RuntimeError(f'PokepediaRepository encountered network error from PokeAPI when searching for \"{name}\" move: {e}')
 
         if response.getStatusCode() != 200:
             self.__timber.log('PokepediaRepository', f'Encountered non-200 HTTP status code from PokeAPI when searching for \"{name}\" move: \"{response.getStatusCode()}\"')
-            raise RuntimeError(f'Exception occurred due to non-200 HTTP status code from PokeAPI when searching for \"{name}\" move: \"{response.getStatusCode()}\"')
+            raise RuntimeError(f'PokepediaRepository encountered non-200 HTTP status code from PokeAPI when searching for \"{name}\" move: \"{response.getStatusCode()}\"')
 
         jsonResponse: Optional[Dict[str, Any]] = await response.json()
         await response.close()
+
+        if not utils.hasItems(jsonResponse):
+            self.__timber.log('PokepediaRepository', f'Encountered data error from PokeAPI when searching for \"{name}\" move: {jsonResponse}')
+            raise RuntimeError(f'PokepediaRepository encountered data error from PokeAPI when searching for \"{name}\" move: {jsonResponse}')
 
         generationMoves = self.__getMoveGenerationDictionary(jsonResponse)
 
@@ -299,27 +350,17 @@ class PokepediaRepository():
             response = await clientSession.get(f'https://pokeapi.co/api/v2/pokemon/{name}/')
         except GenericNetworkException as e:
             self.__timber.log('PokepediaRepository', f'Encountered network error from PokeAPI when searching for \"{name}\" Pokemon: {e}', e)
-            raise RuntimeError(f'Encountered network error from PokeAPI when searching for \"{name}\" Pokemon: {e}')
+            raise RuntimeError(f'PokepediaRepository encountered network error from PokeAPI when searching for \"{name}\" Pokemon: {e}')
 
         if response.getStatusCode() != 200:
             self.__timber.log('PokepediaRepository', f'Encountered non-200 HTTP status code from PokeAPI when searching for \"{name}\" Pokemon: \"{response.getStatusCode()}\"')
-            raise RuntimeError(f'Exception occurred due to non-200 HTTP status code from PokeAPI when searching for \"{name}\" Pokemon: \"{response.getStatusCode()}\"')
+            raise RuntimeError(f'PokepediaRepository encountered non-200 HTTP status code from PokeAPI when searching for \"{name}\" Pokemon: \"{response.getStatusCode()}\"')
 
         jsonResponse: Optional[Dict[str, Any]] = await response.json()
         await response.close()
 
-        pokedexId = utils.getIntFromDict(jsonResponse, 'id')
-        initialGeneration = PokepediaGeneration.fromPokedexId(pokedexId)
-        generationElementTypes = self.__getElementTypeGenerationDictionary(
-            jsonResponse = jsonResponse,
-            initialGeneration = initialGeneration
-        )
+        if not utils.hasItems(jsonResponse):
+            self.__timber.log('PokepediaRepository', f'Encountered data error from PokeAPI when searching for \"{name}\" Pokemon: {jsonResponse}')
+            raise RuntimeError(f'PokepediaRepository encountered data error from PokeAPI when searching for \"{name}\" Pokemon: {jsonResponse}')
 
-        return PokepediaPokemon(
-            generationElementTypes = generationElementTypes,
-            initialGeneration = initialGeneration,
-            height = utils.getIntFromDict(jsonResponse, 'height'),
-            pokedexId = pokedexId,
-            weight = utils.getIntFromDict(jsonResponse, 'weight'),
-            name = utils.getStrFromDict(jsonResponse, 'name').title()
-        )
+        return self.__buildPokemonFromJsonResponse(jsonResponse)
