@@ -248,7 +248,7 @@ class TwitchApiService():
         clientSession = await self.__networkClientProvider.get()
 
         try:
-            response = await clientSession.post(
+            response = await clientSession.get(
                 url = 'https://id.twitch.tv/oauth2/validate',
                 headers = {
                     'Authorization': f'OAuth {twitchAccessToken}'

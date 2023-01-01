@@ -1,14 +1,16 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.pkmn.pokepediaGeneration import PokepediaGeneration
+    from CynanBotCommon.pkmn.pokepediaMachine import PokepediaMachine
     from CynanBotCommon.pkmn.pokepediaMoveGeneration import \
         PokepediaMoveGeneration
 except:
     import utils
 
     from pkmn.pokepediaGeneration import PokepediaGeneration
+    from pkmn.pokepediaMachine import PokepediaMachine
     from pkmn.pokepediaMoveGeneration import PokepediaMoveGeneration
 
 
@@ -16,6 +18,7 @@ class PokepediaMove():
 
     def __init__(
         self,
+        generationMachines: Optional[Dict[PokepediaGeneration, List[PokepediaMachine]]],
         generationMoves: Dict[PokepediaGeneration, PokepediaMoveGeneration],
         moveId: int,
         initialGeneration: PokepediaGeneration,
@@ -36,6 +39,7 @@ class PokepediaMove():
         elif not utils.isValidStr(rawName):
             raise ValueError(f'rawName argument is malformed: \"{rawName}\"')
 
+        self.__generationMachines: Optional[Dict[PokepediaGeneration, List[PokepediaMachine]]] = generationMachines
         self.__generationMoves: Dict[PokepediaGeneration, PokepediaMoveGeneration] = generationMoves
         self.__moveId: int = moveId
         self.__initialGeneration: PokepediaGeneration = initialGeneration
@@ -45,6 +49,9 @@ class PokepediaMove():
 
     def getDescription(self) -> str:
         return self.__description
+
+    def getGenerationMachines(self) -> Optional[Dict[PokepediaGeneration, List[PokepediaMachine]]]:
+        return self.__generationMachines
 
     def getGenerationMoves(self) -> Dict[PokepediaGeneration, PokepediaMoveGeneration]:
         return self.__generationMoves
@@ -60,6 +67,9 @@ class PokepediaMove():
 
     def getRawName(self) -> str:
         return self.__rawName
+
+    def hasMachines(self) -> bool:
+        return utils.hasItems(self.__generationMachines)
 
     def toStrList(self) -> List[str]:
         strings: List[str] = list()

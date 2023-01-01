@@ -71,6 +71,24 @@ class PokepediaPokemon():
         elementTypesString = delimiter.join(elementTypesStrings)
         return f'{damageMultiplier.toStr()} {damageMultiplier.getEffectDescription()} {elementTypesString}.'
 
+    def getCorrespondingGenerationElementTypes(
+        self,
+        generation: PokepediaGeneration
+    ) -> List[PokepediaElementType]:
+        if not isinstance(generation, PokepediaGeneration):
+            raise ValueError(f'generation argument is malformed: \"{generation}\"')
+
+        allGenerations = list(PokepediaGeneration)
+        index = allGenerations.index(generation)
+
+        while index >= 0:
+            if allGenerations[index] in self.__generationElementTypes:
+                return self.__generationElementTypes[allGenerations[index]]
+
+            index = index - 1
+
+        raise KeyError(f'No corresponding generation element types for \"{generation}\"!')
+
     def getGenerationElementTypes(self) -> Dict[PokepediaGeneration, List[PokepediaElementType]]:
         return self.__generationElementTypes
 
@@ -103,7 +121,7 @@ class PokepediaPokemon():
             raise ValueError(f'delimiter argument is malformed: \"{delimiter}\"')
 
         strings: List[str] = list()
-        strings.append(f'{self.__name} (#{self.getPokedexIdStr()}) — introduced in {self.__initialGeneration.toStr()}, weight is {self.getWeightStr()} and height is {self.getHeightStr()}.')
+        strings.append(f'{self.__name} (#{self.getPokedexIdStr()}) — introduced in {self.__initialGeneration.toShortStr()}, weight is {self.getWeightStr()} and height is {self.getHeightStr()}.')
 
         for gen in PokepediaGeneration:
             if gen in self.__generationElementTypes:
@@ -114,7 +132,7 @@ class PokepediaPokemon():
                     genElementTypesStrings.append(genElementType.toStr().lower())
 
                 genElementTypesString = delimiter.join(genElementTypesStrings)
-                message = f'{gen.toStr()} ({genElementTypesString}):'
+                message = f'{gen.toShortStr()} ({genElementTypesString}):'
 
                 typeChart = PokepediaTypeChart.fromPokepediaGeneration(gen)
                 weaknessesAndResistances = typeChart.getWeaknessesAndResistancesFor(genElementTypes)

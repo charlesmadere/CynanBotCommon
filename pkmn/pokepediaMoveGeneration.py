@@ -1,4 +1,5 @@
 import locale
+from typing import List, Optional
 
 try:
     import CynanBotCommon.utils as utils
@@ -17,8 +18,8 @@ class PokepediaMoveGeneration():
 
     def __init__(
         self,
-        accuracy: int,
-        power: int,
+        accuracy: Optional[int],
+        power: Optional[int],
         pp: int,
         damageClass: PokepediaDamageClass,
         elementType: PokepediaElementType,
@@ -26,21 +27,21 @@ class PokepediaMoveGeneration():
     ):
         if not utils.isValidNum(pp):
             raise ValueError(f'pp argument is malformed: \"{pp}\"')
-        elif damageClass is None:
+        elif not isinstance(damageClass, PokepediaDamageClass):
             raise ValueError(f'damageClass argument is malformed: \"{damageClass}\"')
-        elif elementType is None:
+        elif not isinstance(elementType, PokepediaElementType):
             raise ValueError(f'elementType argument is malformed: \"{elementType}\"')
-        elif generation is None:
+        elif not isinstance(generation, PokepediaGeneration):
             raise ValueError(f'generation argument is malformed: \"{generation}\"')
 
-        self.__accuracy: int = accuracy
-        self.__power: int = power
+        self.__accuracy: Optional[int] = accuracy
+        self.__power: Optional[int] = power
         self.__pp: int = pp
         self.__damageClass: PokepediaDamageClass = damageClass
         self.__elementType: PokepediaElementType = elementType
         self.__generation: PokepediaGeneration = generation
 
-    def getAccuracy(self) -> int:
+    def getAccuracy(self) -> Optional[int]:
         return self.__accuracy
 
     def getAccuracyStr(self) -> str:
@@ -59,7 +60,7 @@ class PokepediaMoveGeneration():
     def getGeneration(self) -> PokepediaGeneration:
         return self.__generation
 
-    def getPower(self) -> int:
+    def getPower(self) -> Optional[int]:
         return self.__power
 
     def getPowerStr(self) -> str:
@@ -90,4 +91,4 @@ class PokepediaMoveGeneration():
         if self.hasAccuracy():
             accuracyStr = f'🎯 {self.getAccuracyStr()}, '
 
-        return f'{self.__generation.toStr()}: {powerStr}{accuracyStr}{self.getPpStr()}, {self.__elementType.getEmojiOrStr().lower()} type, {self.__damageClass.toStr().lower()}'
+        return f'{self.__generation.toShortStr()}: {powerStr}{accuracyStr}{self.getPpStr()}, {self.__elementType.getEmojiOrStr().lower()} type, {self.__damageClass.toStr().lower()}'

@@ -1,4 +1,5 @@
 from enum import Enum, auto
+from typing import Optional
 
 try:
     import CynanBotCommon.utils as utils
@@ -25,6 +26,7 @@ class PokepediaElementType(Enum):
     PSYCHIC = auto()
     ROCK = auto()
     STEEL = auto()
+    UNKNOWN = auto()
     WATER = auto()
 
     @classmethod
@@ -68,12 +70,14 @@ class PokepediaElementType(Enum):
             return PokepediaElementType.ROCK
         elif text == 'steel':
             return PokepediaElementType.STEEL
+        elif text in ('unknown', '???'):
+            return PokepediaElementType.UNKNOWN
         elif text == 'water':
             return PokepediaElementType.WATER
         else:
             raise ValueError(f'unknown PokepediaElementType: \"{text}\"')
 
-    def getEmoji(self) -> str:
+    def getEmoji(self) -> Optional[str]:
         if self is PokepediaElementType.BUG:
             return '🐛'
         elif self is PokepediaElementType.DRAGON:
@@ -144,6 +148,8 @@ class PokepediaElementType(Enum):
             return 'Rock'
         elif self is PokepediaElementType.STEEL:
             return 'Steel'
+        elif self is PokepediaElementType.UNKNOWN:
+            return 'Unknown'
         elif self is PokepediaElementType.WATER:
             return 'Water'
         else:

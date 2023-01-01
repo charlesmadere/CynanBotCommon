@@ -1,5 +1,6 @@
 import random
-from typing import Any, Dict, List, Optional
+import re
+from typing import Any, Dict, List, Optional, Pattern
 
 try:
     import CynanBotCommon.utils as utils
@@ -9,6 +10,8 @@ try:
     from CynanBotCommon.pkmn.pokepediaDamageClass import PokepediaDamageClass
     from CynanBotCommon.pkmn.pokepediaElementType import PokepediaElementType
     from CynanBotCommon.pkmn.pokepediaGeneration import PokepediaGeneration
+    from CynanBotCommon.pkmn.pokepediaMachine import PokepediaMachine
+    from CynanBotCommon.pkmn.pokepediaMachineType import PokepediaMachineType
     from CynanBotCommon.pkmn.pokepediaMove import PokepediaMove
     from CynanBotCommon.pkmn.pokepediaMoveGeneration import \
         PokepediaMoveGeneration
@@ -23,6 +26,8 @@ except:
     from pkmn.pokepediaDamageClass import PokepediaDamageClass
     from pkmn.pokepediaElementType import PokepediaElementType
     from pkmn.pokepediaGeneration import PokepediaGeneration
+    from pkmn.pokepediaMachine import PokepediaMachine
+    from pkmn.pokepediaMachineType import PokepediaMachineType
     from pkmn.pokepediaMove import PokepediaMove
     from pkmn.pokepediaMoveGeneration import PokepediaMoveGeneration
     from pkmn.pokepediaPokemon import PokepediaPokemon
@@ -43,7 +48,51 @@ class PokepediaRepository():
         self.__networkClientProvider: NetworkClientProvider = networkClientProvider
         self.__timber: Timber = timber
 
-    def __buildPokemonFromJsonResponse(self, jsonResponse: Dict[str, Any]) -> PokepediaPokemon:
+        self.__machineIdRegEx: Pattern = re.compile(r'^.+\/(\d+)\/$', re.IGNORECASE)
+        self.__machineNumberRegEx: Pattern = re.compile(r'^(hm|tm|tr)(\d+)$', re.IGNORECASE)
+
+    async def __buildMachineFromJsonResponse(self, jsonResponse: Dict[str, Any]) -> PokepediaMachine:
+        if jsonResponse is None:
+            raise ValueError(f'jsonResponse argument is malformed: \"{jsonResponse}\"')
+
+        generation = PokepediaGeneration.fromStr(utils.getStrFromDict(jsonResponse['version_group'], 'name'))
+        machineName = utils.getStrFromDict(jsonResponse['item'], 'name').upper()
+        machineType = PokepediaMachineType.fromStr(machineName)
+
+        machineNumberMatch = self.__machineNumberRegEx.fullmatch(machineName)
+        machineNumber = int(machineNumberMatch.group(2))
+
+        return PokepediaMachine(
+            machineId = utils.getIntFromDict(jsonResponse, 'id'),
+            machineNumber = machineNumber,
+            generation = generation,
+            machineType = machineType,
+            machineName = machineName,
+            moveName = utils.getStrFromDict(jsonResponse['move'], 'name')
+        )
+
+    async def __buildMoveFromJsonResponse(self, jsonResponse: Dict[str, Any]) -> PokepediaMove:
+        if jsonResponse is None:
+            raise ValueError(f'jsonResponse argument is malformed: \"{jsonResponse}\"')
+
+        generationMachines: Optional[Dict[PokepediaGeneration, List[PokepediaMachine]]] = None
+        if utils.hasItems(jsonResponse.get('machines')):
+            generationMachines = await self.__fetchMoveMachines(jsonResponse['machines'])
+
+        generationMoves = await self.__getMoveGenerationDictionary(jsonResponse)
+        initialGeneration = PokepediaGeneration.fromStr(utils.getStrFromDict(jsonResponse['generation'], 'name'))
+
+        return PokepediaMove(
+            generationMachines = generationMachines,
+            generationMoves = generationMoves,
+            moveId = utils.getIntFromDict(jsonResponse, 'id'),
+            initialGeneration = initialGeneration,
+            description = self.__getEnDescription(jsonResponse),
+            name = self.__getEnName(jsonResponse),
+            rawName = utils.getStrFromDict(jsonResponse, 'name')
+        )
+
+    async def __buildPokemonFromJsonResponse(self, jsonResponse: Dict[str, Any]) -> PokepediaPokemon:
         if jsonResponse is None:
             raise ValueError(f'jsonResponse argument is malformed: \"{jsonResponse}\"')
 
@@ -62,6 +111,102 @@ class PokepediaRepository():
             weight = utils.getIntFromDict(jsonResponse, 'weight'),
             name = utils.getStrFromDict(jsonResponse, 'name').title()
         )
+
+    async def fetchMachine(self, machineId: int) -> PokepediaMachine:
+        if not utils.isValidInt(machineId):
+            raise ValueError(f'machineId argument is malformed: \"{machineId}\"')
+
+        clientSession = await self.__networkClientProvider.get()
+
+        try:
+            response = await clientSession.get(f'https://pokeapi.co/api/v2/machine/{machineId}')
+        except GenericNetworkException as e:
+            self.__timber.log('PokepediaRepository', f'Encountered network error from PokeAPI when fetching machine with ID \"{machineId}\": {e}', e)
+            raise GenericNetworkException(f'PokepediaRepository encountered network error from PokeAPI when fetching machine with ID \"{machineId}\": {e}')
+
+        if response.getStatusCode() != 200:
+            self.__timber.log('PokepediaRepository', f'Encountered non-200 HTTP status code from PokeAPI when fetching machine with ID \"{machineId}\": \"{response.getStatusCode()}\"')
+            raise GenericNetworkException(f'PokepediaRepository encountered non-200 HTTP status code from PokeAPI when fetching machine with ID \"{machineId}\": \"{response.getStatusCode()}\"')
+
+        jsonResponse: Optional[Dict[str, Any]] = await response.json()
+        await response.close()
+
+        if not utils.hasItems(jsonResponse):
+            self.__timber.log('PokepediaRepository', f'Encountered data error from PokeAPI when fetching machine with ID \"{machineId}\": {jsonResponse}')
+            raise GenericNetworkException(f'PokepediaRepository encountered data error from PokeAPI when fetching machine with ID \"{machineId}\": {jsonResponse}')
+
+        return await self.__buildMachineFromJsonResponse(jsonResponse)
+
+    async def __fetchMoveMachines(
+        self,
+        machinesJson: Optional[List[Dict[str, Any]]]
+    ) -> Optional[Dict[PokepediaGeneration, List[PokepediaMachine]]]:
+        if not utils.hasItems(machinesJson):
+            return None
+
+        generationMachines: Dict[PokepediaGeneration, List[PokepediaMachine]] = dict()
+
+        for machineJson in machinesJson:
+            machineUrl = utils.getStrFromDict(machineJson['machine'], 'url', fallback = '')
+
+            if not utils.isValidStr(machineUrl):
+                continue
+
+            machineIdMatch = self.__machineIdRegEx.fullmatch(machineUrl)
+            if machineIdMatch is None:
+                continue
+
+            machineIdStr = machineIdMatch.group(1)
+            if not utils.isValidStr(machineIdStr):
+                continue
+
+            machineIdInt: Optional[int] = None
+
+            try:
+                machineIdInt = int(machineIdStr)
+            except ValueError as e:
+                self.__timber.log('PokepediaRepository', f'Encountered exception when attempting to convert a machine ID into an int: \"{machineIdStr}\": {e}', e)
+
+            if not utils.isValidInt(machineIdInt):
+                continue
+
+            machine = await self.fetchMachine(machineIdInt)
+
+            if machine.getGeneration() not in generationMachines:
+                generationMachines[machine.getGeneration()] = list()
+
+            generationMachines[machine.getGeneration()].append(machine)
+
+        for machines in generationMachines.values():
+            machines.sort(key = lambda machine: (machine.getGeneration(), machine.getMachineId()))
+
+        return generationMachines
+
+    async def fetchRandomMove(self, maxGeneration: PokepediaGeneration) -> PokepediaMove:
+        if not isinstance(maxGeneration, PokepediaGeneration):
+            raise ValueError(f'maxGeneration argument is malformed: \"{maxGeneration}\"')
+
+        randomMoveId = random.randint(1, maxGeneration.getMaxMoveId())
+        clientSession = await self.__networkClientProvider.get()
+
+        try:
+            response = await clientSession.get(f'https://pokeapi.co/api/v2/move/{randomMoveId}')
+        except GenericNetworkException as e:
+            self.__timber.log('PokepediaRepository', f'Encountered network error from PokeAPI when fetching move with ID \"{randomMoveId}\": {e}', e)
+            raise GenericNetworkException(f'PokepediaRepository encountered network error from PokeAPI when fetching move with ID \"{randomMoveId}\": {e}')
+
+        if response.getStatusCode() != 200:
+            self.__timber.log('PokepediaRepository', f'Encountered non-200 HTTP status code from PokeAPI when fetching move with ID \"{randomMoveId}\": \"{response.getStatusCode()}\"')
+            raise GenericNetworkException(f'PokepediaRepository encountered non-200 HTTP status code from PokeAPI when fetching move with ID \"{randomMoveId}\": \"{response.getStatusCode()}\"')
+
+        jsonResponse: Optional[Dict[str, Any]] = await response.json()
+        await response.close()
+
+        if not utils.hasItems(jsonResponse):
+            self.__timber.log('PokepediaRepository', f'Encountered data error from PokeAPI when fetching move with ID \"{randomMoveId}\": {jsonResponse}')
+            raise GenericNetworkException(f'PokepediaRepository encountered data error from PokeAPI when fetching move with ID \"{randomMoveId}\": {jsonResponse}')
+
+        return await self.__buildMoveFromJsonResponse(jsonResponse)
 
     async def fetchRandomPokemon(self, maxGeneration: PokepediaGeneration) -> PokepediaPokemon:
         if not isinstance(maxGeneration, PokepediaGeneration):
@@ -87,7 +232,7 @@ class PokepediaRepository():
             self.__timber.log('PokepediaRepository', f'Encountered data error from PokeAPI when fetching Pokemon with ID \"{randomPokemonId}\": {jsonResponse}')
             raise GenericNetworkException(f'PokepediaRepository encountered data error from PokeAPI when fetching Pokemon with ID \"{randomPokemonId}\": {jsonResponse}')
 
-        return self.__buildPokemonFromJsonResponse(jsonResponse)
+        return await self.__buildPokemonFromJsonResponse(jsonResponse)
 
     def __getElementTypeGenerationDictionary(
         self,
@@ -178,13 +323,16 @@ class PokepediaRepository():
 
         raise RuntimeError(f'can\'t find \"en\" language name in \"names\" field: {jsonResponse}')
 
-    def __getMoveGenerationDictionary(self, jsonResponse: Dict[str, Any]) -> Dict[PokepediaGeneration, PokepediaMoveGeneration]:
+    async def __getMoveGenerationDictionary(
+        self,
+        jsonResponse: Dict[str, Any]
+    ) -> Dict[PokepediaGeneration, PokepediaMoveGeneration]:
         if not utils.hasItems(jsonResponse):
             raise ValueError(f'jsonResponse argument is malformed: \"{jsonResponse}\"')
 
         # begin with current generation stats
-        accuracy: int = jsonResponse.get('accuracy')
-        power: int = jsonResponse.get('power')
+        accuracy: Optional[int] = jsonResponse.get('accuracy')
+        power: Optional[int] = jsonResponse.get('power')
         pp = utils.getIntFromDict(jsonResponse, 'pp')
         damageClass = PokepediaDamageClass.fromStr(jsonResponse['damage_class']['name'])
         elementType = PokepediaElementType.fromStr(jsonResponse['type']['name'])
@@ -229,7 +377,7 @@ class PokepediaRepository():
 
         generation = PokepediaGeneration.fromStr(jsonResponse['generation']['name'])
 
-        if generation.isEarlyGeneration() and  damageClass is not PokepediaDamageClass.STATUS:
+        if generation.isEarlyGeneration() and damageClass is not PokepediaDamageClass.STATUS:
             damageClass = PokepediaDamageClass.getTypeBasedDamageClass(elementType)
 
         move = PokepediaMoveGeneration(
@@ -294,7 +442,7 @@ class PokepediaRepository():
             else:
                 comparison = moveGenerationDictionary[pokepediaGeneration]
 
-                if move.getAccuracy() == comparison.getAccuracy() and move.getDamageClass() == comparison.getDamageClass() and move.getElementType() == comparison.getElementType() and move.getPower() == comparison.getPower() and move.getPp() == comparison.getPp():
+                if move.getAccuracy() == comparison.getAccuracy() and move.getDamageClass() is comparison.getDamageClass() and move.getElementType() is comparison.getElementType() and move.getPower() == comparison.getPower() and move.getPp() == comparison.getPp():
                     del moveGenerationDictionary[pokepediaGeneration]
 
                 move = comparison
@@ -327,16 +475,7 @@ class PokepediaRepository():
             self.__timber.log('PokepediaRepository', f'Encountered data error from PokeAPI when searching for \"{name}\" move: {jsonResponse}')
             raise RuntimeError(f'PokepediaRepository encountered data error from PokeAPI when searching for \"{name}\" move: {jsonResponse}')
 
-        generationMoves = self.__getMoveGenerationDictionary(jsonResponse)
-
-        return PokepediaMove(
-            generationMoves = generationMoves,
-            moveId = utils.getIntFromDict(jsonResponse, 'id'),
-            initialGeneration = PokepediaGeneration.fromStr(jsonResponse['generation']['name']),
-            description = self.__getEnDescription(jsonResponse),
-            name = self.__getEnName(jsonResponse),
-            rawName = utils.getStrFromDict(jsonResponse, 'name')
-        )
+        return await self.__buildMoveFromJsonResponse(jsonResponse)
 
     async def searchPokemon(self, name: str) -> PokepediaPokemon:
         if not utils.isValidStr(name):
@@ -364,4 +503,4 @@ class PokepediaRepository():
             self.__timber.log('PokepediaRepository', f'Encountered data error from PokeAPI when searching for \"{name}\" Pokemon: {jsonResponse}')
             raise RuntimeError(f'PokepediaRepository encountered data error from PokeAPI when searching for \"{name}\" Pokemon: {jsonResponse}')
 
-        return self.__buildPokemonFromJsonResponse(jsonResponse)
+        return await self.__buildPokemonFromJsonResponse(jsonResponse)

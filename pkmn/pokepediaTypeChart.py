@@ -118,7 +118,10 @@ class PokepediaTypeChart(Enum):
         else:
             return PokepediaTypeChart.GENERATION_6_AND_ON
 
-    def __getGenerationOneWeaknessesAndResistancesFor(self, types: List[PokepediaElementType]) -> Dict[PokepediaDamageMultiplier, List[PokepediaElementType]]:
+    def __getGenerationOneWeaknessesAndResistancesFor(
+        self,
+        types: List[PokepediaElementType]
+    ) -> Dict[PokepediaDamageMultiplier, List[PokepediaElementType]]:
         if not utils.hasItems(types):
             raise ValueError(f'types argument is malformed: \"{types}\"')
 
@@ -224,6 +227,8 @@ class PokepediaTypeChart(Enum):
                 weaknesses.append(PokepediaElementType.WATER)
             elif elementType is PokepediaElementType.STEEL:
                 raise ValueError(f'illegal PokepediaElementType for this type chart ({self}): \"{elementType}\"')
+            elif elementType is PokepediaElementType.UNKNOWN:
+                raise ValueError(f'illegal PokepediaElementType for this type chart ({self}): \"{elementType}\"')
             elif elementType is PokepediaElementType.WATER:
                 resistances.append(PokepediaElementType.FIRE)
                 resistances.append(PokepediaElementType.ICE)
@@ -237,7 +242,10 @@ class PokepediaTypeChart(Enum):
             weaknesses = weaknesses
         )
 
-    def __getGenerationTwoThruFiveWeaknessesAndResistancesFor(self, types: List[PokepediaElementType]) -> Dict[PokepediaDamageMultiplier, List[PokepediaElementType]]:
+    def __getGenerationTwoThruFiveWeaknessesAndResistancesFor(
+        self,
+        types: List[PokepediaElementType]
+    ) -> Dict[PokepediaDamageMultiplier, List[PokepediaElementType]]:
         if not utils.hasItems(types):
             raise ValueError(f'types argument is malformed: \"{types}\"')
 
