@@ -21,9 +21,8 @@ class SuperTriviaGameState(AbsTriviaGameState):
         isShiny: bool,
         perUserAttempts: int,
         pointsForWinning: int,
-        pointsMultiplier: int,
         secondsToLive: int,
-        shinyTriviaMultiplier: int,
+        shinyMultiplier: int,
         actionId: str,
         twitchChannel: str
     ):
@@ -32,7 +31,7 @@ class SuperTriviaGameState(AbsTriviaGameState):
             isShiny = isShiny,
             pointsForWinning = pointsForWinning,
             secondsToLive = secondsToLive,
-            shinyTriviaMultiplier = shinyTriviaMultiplier,
+            shinyMultiplier = shinyMultiplier,
             actionId = actionId,
             twitchChannel = twitchChannel,
             triviaGameType = TriviaGameType.SUPER
@@ -42,21 +41,13 @@ class SuperTriviaGameState(AbsTriviaGameState):
             raise ValueError(f'perUserAttempts argument is malformed: \"{perUserAttempts}\"')
         elif perUserAttempts < 1 or perUserAttempts > 5:
             raise ValueError(f'perUserAttempts argument is out of bounds: {perUserAttempts}')
-        elif not utils.isValidInt(pointsMultiplier):
-            raise ValueError(f'pointsMultiplier argument is malformed: \"{pointsMultiplier}\"')
-        elif pointsMultiplier < 1 or pointsMultiplier >= utils.getIntMaxSafeSize():
-            raise ValueError(f'pointsMultiplier argument is out of bounds: {pointsMultiplier}')
 
         self.__perUserAttempts: int = perUserAttempts
-        self.__pointsMultiplier: int = pointsMultiplier
 
         self.__answeredUserIds: Dict[str, int] = defaultdict(lambda: 0)
 
     def getPerUserAttempts(self) -> int:
         return self.__perUserAttempts
-
-    def getPointsMultiplier(self) -> int:
-        return self.__pointsMultiplier
 
     def incrementAnswerCount(self, userId: str):
         if not utils.isValidStr(userId):

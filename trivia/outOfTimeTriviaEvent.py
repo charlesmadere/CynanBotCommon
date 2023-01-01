@@ -21,6 +21,7 @@ class OutOfTimeTriviaEvent(AbsTriviaEvent):
         triviaQuestion: AbsTriviaQuestion,
         isShiny: bool,
         pointsForWinning: int,
+        shinyMultiplier: int,
         actionId: str,
         gameId: str,
         twitchChannel: str,
@@ -41,6 +42,10 @@ class OutOfTimeTriviaEvent(AbsTriviaEvent):
             raise ValueError(f'pointsForWinning argument is malformed: \"{pointsForWinning}\"')
         elif pointsForWinning < 1 or pointsForWinning >= utils.getIntMaxSafeSize():
             raise ValueError(f'pointsForWinning argument is out of bounds: {pointsForWinning}')
+        elif not utils.isValidInt(shinyMultiplier):
+            raise ValueError(f'shinyMultiplier argument is malformed: \"{shinyMultiplier}\"')
+        elif shinyMultiplier < 1 or shinyMultiplier >= utils.getIntMaxSafeSize():
+            raise ValueError(f'shinyMultiplier argument is out of bounds: {shinyMultiplier}')
         elif not utils.isValidStr(gameId):
             raise ValueError(f'gameId argument is malformed: \"{gameId}\"')
         elif not utils.isValidStr(twitchChannel):
@@ -55,6 +60,7 @@ class OutOfTimeTriviaEvent(AbsTriviaEvent):
         self.__triviaQuestion: AbsTriviaQuestion = triviaQuestion
         self.__isShiny: bool = isShiny
         self.__pointsForWinning: int = pointsForWinning
+        self.__shinyMultiplier: int = shinyMultiplier
         self.__gameId: str = gameId
         self.__twitchChannel: str = twitchChannel
         self.__userId: str = userId
@@ -69,6 +75,12 @@ class OutOfTimeTriviaEvent(AbsTriviaEvent):
 
     def getPointsForWinningStr(self) -> str:
         return locale.format_string("%d", self.__pointsForWinning, grouping = True)
+
+    def getShinyMultiplier(self) -> int:
+        return self.__shinyMultiplier
+
+    def getShinyMultiplierStr(self) -> str:
+        return locale.format_string("%d", self.__shinyMultiplier, grouping = True)
 
     def getTriviaQuestion(self) -> AbsTriviaQuestion:
         return self.__triviaQuestion

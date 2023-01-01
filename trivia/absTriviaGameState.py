@@ -21,7 +21,7 @@ class AbsTriviaGameState(ABC):
         isShiny: bool,
         pointsForWinning: int,
         secondsToLive: int,
-        shinyTriviaMultiplier: int,
+        shinyMultiplier: int,
         actionId: str,
         twitchChannel: str,
         triviaGameType: TriviaGameType
@@ -38,10 +38,10 @@ class AbsTriviaGameState(ABC):
             raise ValueError(f'secondsToLive argument is malformed: \"{secondsToLive}\"')
         elif secondsToLive < 1 or secondsToLive >= utils.getIntMaxSafeSize():
             raise ValueError(f'secondsToLive argument is out of bounds: {secondsToLive}')
-        elif not utils.isValidInt(shinyTriviaMultiplier):
-            raise ValueError(f'shinyTriviaMultiplier argument is malformed: \"{shinyTriviaMultiplier}\"')
-        elif shinyTriviaMultiplier < 1 or shinyTriviaMultiplier >= utils.getIntMaxSafeSize():
-            raise ValueError(f'shinyTriviaMultiplier argument is out of bounds: {shinyTriviaMultiplier}')
+        elif not utils.isValidInt(shinyMultiplier):
+            raise ValueError(f'shinyMultiplier argument is malformed: \"{shinyMultiplier}\"')
+        elif shinyMultiplier < 1 or shinyMultiplier >= utils.getIntMaxSafeSize():
+            raise ValueError(f'shinyMultiplier argument is out of bounds: {shinyMultiplier}')
         elif not utils.isValidStr(actionId):
             raise ValueError(f'actionId argument is malformed: \"{actionId}\"')
         elif not utils.isValidStr(twitchChannel):
@@ -53,7 +53,7 @@ class AbsTriviaGameState(ABC):
         self.__isShiny: bool = isShiny
         self.__pointsForWinning: int = pointsForWinning
         self.__secondsToLive: int = secondsToLive
-        self.__shinyTriviaMultiplier: int = shinyTriviaMultiplier
+        self.__shinyMultiplier: int = shinyMultiplier
         self.__actionId: str = actionId
         self.__twitchChannel: str = twitchChannel
         self.__triviaGameType: TriviaGameType = triviaGameType
@@ -76,8 +76,8 @@ class AbsTriviaGameState(ABC):
     def getSecondsToLive(self) -> int:
         return self.__secondsToLive
 
-    def getShinyTriviaMultiplier(self) -> int:
-        return self.__shinyTriviaMultiplier
+    def getShinyMultiplier(self) -> int:
+        return self.__shinyMultiplier
 
     def getTriviaGameType(self) -> TriviaGameType:
         return self.__triviaGameType

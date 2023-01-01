@@ -583,8 +583,8 @@ class TriviaGameMachine():
             await self.__submitEvent(NewQueuedSuperTriviaGameEvent(
                 numberOfGames = queueResult.getAmountAdded(),
                 pointsForWinning = action.getPointsForWinning(),
-                pointsMultiplier = action.getPointsMultiplier(),
                 secondsToLive = action.getSecondsToLive(),
+                shinyMultiplier = action.getShinyMultiplier(),
                 actionId = action.getActionId(),
                 twitchChannel = action.getTwitchChannel()
             ))
@@ -617,18 +617,15 @@ class TriviaGameMachine():
 
         pointsForWinning = action.getPointsForWinning()
         if isShiny:
-            pointsForWinning = pointsForWinning * action.getShinyTriviaMultiplier()
-        else:
-            pointsForWinning = pointsForWinning * action.getPointsMultiplier()
+            pointsForWinning = pointsForWinning * action.getShinyMultiplier()
 
         state = SuperTriviaGameState(
             triviaQuestion = triviaQuestion,
             isShiny = isShiny,
             perUserAttempts = action.getPerUserAttempts(),
             pointsForWinning = pointsForWinning,
-            pointsMultiplier = action.getPointsMultiplier(),
             secondsToLive = action.getSecondsToLive(),
-            shinyTriviaMultiplier = action.getShinyTriviaMultiplier(),
+            shinyMultiplier = action.getShinyMultiplier(),
             actionId = action.getActionId(),
             twitchChannel = action.getTwitchChannel()
         )
@@ -639,9 +636,8 @@ class TriviaGameMachine():
             triviaQuestion = triviaQuestion,
             isShiny = isShiny,
             pointsForWinning = pointsForWinning,
-            pointsMultiplier = action.getPointsMultiplier(),
             secondsToLive = action.getSecondsToLive(),
-            shinyTriviaMultiplier = action.getShinyTriviaMultiplier(),
+            shinyMultiplier = action.getShinyMultiplier(),
             actionId = action.getActionId(),
             gameId = state.getGameId(),
             twitchChannel = action.getTwitchChannel(),
@@ -678,6 +674,7 @@ class TriviaGameMachine():
                     triviaQuestion = normalGameState.getTriviaQuestion(),
                     isShiny = normalGameState.isShiny(),
                     pointsForWinning = normalGameState.getPointsForWinning(),
+                    shinyMultiplier = normalGameState.getShinyMultiplier(),
                     actionId = normalGameState.getActionId(),
                     gameId = normalGameState.getGameId(),
                     twitchChannel = normalGameState.getTwitchChannel(),
@@ -697,8 +694,8 @@ class TriviaGameMachine():
                     triviaQuestion = superGameState.getTriviaQuestion(),
                     isShiny = superGameState.isShiny(),
                     pointsForWinning = superGameState.getPointsForWinning(),
-                    pointsMultiplier = superGameState.getPointsMultiplier(),
                     remainingQueueSize = remainingQueueSize,
+                    shinyMultiplier = superGameState.getShinyMultiplier(),
                     actionId = superGameState.getActionId(),
                     gameId = superGameState.getGameId(),
                     twitchChannel = superGameState.getTwitchChannel()

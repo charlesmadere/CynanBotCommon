@@ -21,9 +21,8 @@ class StartNewSuperTriviaGameAction(AbsTriviaAction):
         numberOfGames: int,
         perUserAttempts: int,
         pointsForWinning: int,
-        pointsMultiplier: int,
         secondsToLive: int,
-        shinyTriviaMultiplier: int,
+        shinyMultiplier: int,
         twitchChannel: str,
         triviaFetchOptions: TriviaFetchOptions
     ):
@@ -45,18 +44,14 @@ class StartNewSuperTriviaGameAction(AbsTriviaAction):
             raise ValueError(f'pointsForWinning argument is malformed: \"{pointsForWinning}\"')
         elif pointsForWinning < 1 or pointsForWinning >= utils.getIntMaxSafeSize():
             raise ValueError(f'pointsForWinning argument is out of bounds: {pointsForWinning}')
-        elif not utils.isValidInt(pointsMultiplier):
-            raise ValueError(f'pointsMultiplier argument is malformed: \"{pointsMultiplier}\"')
-        elif pointsMultiplier < 1 or pointsForWinning >= utils.getIntMaxSafeSize():
-            raise ValueError(f'pointsMultiplier argument is out of bounds: {pointsMultiplier}')
         elif not utils.isValidInt(secondsToLive):
             raise ValueError(f'secondsToLive argument is malformed: \"{secondsToLive}\"')
         elif secondsToLive < 1 or secondsToLive >= utils.getIntMaxSafeSize():
             raise ValueError(f'secondsToLive argument is out of bounds: {secondsToLive}')
-        elif not utils.isValidInt(shinyTriviaMultiplier):
-            raise ValueError(f'shinyTriviaMultiplier argument is malformed: \"{shinyTriviaMultiplier}\"')
-        elif shinyTriviaMultiplier < 1 or shinyTriviaMultiplier >= utils.getIntMaxSafeSize():
-            raise ValueError(f'shinyTriviaMultiplier argument is out of bounds: {shinyTriviaMultiplier}')
+        elif not utils.isValidInt(shinyMultiplier):
+            raise ValueError(f'shinyMultiplier argument is malformed: \"{shinyMultiplier}\"')
+        elif shinyMultiplier < 1 or shinyMultiplier >= utils.getIntMaxSafeSize():
+            raise ValueError(f'shinyMultiplier argument is out of bounds: {shinyMultiplier}')
         elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
         elif not isinstance(triviaFetchOptions, TriviaFetchOptions):
@@ -67,9 +62,8 @@ class StartNewSuperTriviaGameAction(AbsTriviaAction):
         self.__numberOfGames: int = numberOfGames
         self.__perUserAttempts: int = perUserAttempts
         self.__pointsForWinning: int = pointsForWinning
-        self.__pointsMultiplier: int = pointsMultiplier
         self.__secondsToLive: int = secondsToLive
-        self.__shinyTriviaMultiplier: int = shinyTriviaMultiplier
+        self.__shinyMultiplier: int = shinyMultiplier
         self.__twitchChannel: str = twitchChannel
         self.__triviaFetchOptions: TriviaFetchOptions = triviaFetchOptions
 
@@ -91,23 +85,17 @@ class StartNewSuperTriviaGameAction(AbsTriviaAction):
     def getPointsForWinningStr(self) -> str:
         return locale.format_string("%d", self.__pointsForWinning, grouping = True)
 
-    def getPointsMultiplier(self) -> int:
-        return self.__pointsMultiplier
-
-    def getPointsMulitplierStr(self) -> str:
-        return locale.format_string("%d", self.__pointsMultiplier, grouping = True)
-
     def getSecondsToLive(self) -> int:
         return self.__secondsToLive
 
     def getSecondsToLiveStr(self) -> str:
         return locale.format_string("%d", self.__secondsToLive, grouping = True)
 
-    def getShinyTriviaMultiplier(self) -> int:
-        return self.__shinyTriviaMultiplier
+    def getShinyMultiplier(self) -> int:
+        return self.__shinyMultiplier
 
-    def getShinyTriviaMultiplierStr(self) -> str:
-        return locale.format_string("%d", self.__shinyTriviaMultiplier, grouping = True)
+    def getShinyMultiplierStr(self) -> str:
+        return locale.format_string("%d", self.__shinyMultiplier, grouping = True)
 
     def getTriviaFetchOptions(self) -> TriviaFetchOptions:
         return self.__triviaFetchOptions
