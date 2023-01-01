@@ -2,6 +2,7 @@ from typing import Dict, List, Optional
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.pkmn.pokepediaContestType import PokepediaContestType
     from CynanBotCommon.pkmn.pokepediaGeneration import PokepediaGeneration
     from CynanBotCommon.pkmn.pokepediaMachine import PokepediaMachine
     from CynanBotCommon.pkmn.pokepediaMoveGeneration import \
@@ -9,6 +10,7 @@ try:
 except:
     import utils
 
+    from pkmn.pokepediaContestType import PokepediaContestType
     from pkmn.pokepediaGeneration import PokepediaGeneration
     from pkmn.pokepediaMachine import PokepediaMachine
     from pkmn.pokepediaMoveGeneration import PokepediaMoveGeneration
@@ -18,6 +20,7 @@ class PokepediaMove():
 
     def __init__(
         self,
+        contestType: PokepediaContestType,
         generationMachines: Optional[Dict[PokepediaGeneration, List[PokepediaMachine]]],
         generationMoves: Dict[PokepediaGeneration, PokepediaMoveGeneration],
         moveId: int,
@@ -26,7 +29,9 @@ class PokepediaMove():
         name: str,
         rawName: str
     ):
-        if not utils.hasItems(generationMoves):
+        if not isinstance(contestType, PokepediaContestType):
+            raise ValueError(f'contestType argument is malformed: \"{contestType}\"')
+        elif not utils.hasItems(generationMoves):
             raise ValueError(f'generationMoves argument is malformed: \"{generationMoves}\"')
         elif not utils.isValidInt(moveId):
             raise ValueError(f'moveId argument is malformed: \"{moveId}\"')
@@ -39,6 +44,7 @@ class PokepediaMove():
         elif not utils.isValidStr(rawName):
             raise ValueError(f'rawName argument is malformed: \"{rawName}\"')
 
+        self.__contestType: PokepediaContestType = contestType
         self.__generationMachines: Optional[Dict[PokepediaGeneration, List[PokepediaMachine]]] = generationMachines
         self.__generationMoves: Dict[PokepediaGeneration, PokepediaMoveGeneration] = generationMoves
         self.__moveId: int = moveId
@@ -46,6 +52,9 @@ class PokepediaMove():
         self.__description: str = description
         self.__name: str = name
         self.__rawName: str = rawName
+
+    def getContestType(self) -> PokepediaContestType:
+        return self.__contestType
 
     def getDescription(self) -> str:
         return self.__description

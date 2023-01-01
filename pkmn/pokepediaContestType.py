@@ -1,0 +1,49 @@
+from enum import Enum, auto
+
+try:
+    import CynanBotCommon.utils as utils
+except:
+    import utils
+
+
+class PokepediaContestType(Enum):
+
+    BEAUTY = auto()
+    COOL = auto()
+    CUTE = auto()
+    SMART = auto()
+    TOUGH = auto()
+
+    @classmethod
+    def fromStr(cls, text: str):
+        if not utils.isValidStr(text):
+            raise ValueError(f'text argument is malformed: \"{text}\"')
+
+        text = text.lower()
+
+        if text == 'beauty':
+            return PokepediaContestType.BEAUTY
+        elif text == 'cool':
+            return PokepediaContestType.COOL
+        elif text == 'cute':
+            return PokepediaContestType.CUTE
+        elif text == 'smart':
+            return PokepediaContestType.SMART
+        elif text == 'tough':
+            return PokepediaContestType.TOUGH
+        else:
+            raise ValueError(f'unknown PokepediaContestType: \"{text}\"')
+
+    def toStr(self) -> str:
+        if self is PokepediaContestType.BEAUTY:
+            return 'Beauty'
+        elif self is PokepediaContestType.COOL:
+            return 'Cool'
+        elif self is PokepediaContestType.CUTE:
+            return 'Cute'
+        elif self is PokepediaContestType.SMART:
+            return 'Smart'
+        elif self is PokepediaContestType.TOUGH:
+            return 'Tough'
+        else:
+            raise RuntimeError(f'unknown PokepediaContestType: \"{self}\"')

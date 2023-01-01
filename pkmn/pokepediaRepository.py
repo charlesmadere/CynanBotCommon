@@ -7,6 +7,7 @@ try:
     from CynanBotCommon.network.exceptions import GenericNetworkException
     from CynanBotCommon.network.networkClientProvider import \
         NetworkClientProvider
+    from CynanBotCommon.pkmn.pokepediaContestType import PokepediaContestType
     from CynanBotCommon.pkmn.pokepediaDamageClass import PokepediaDamageClass
     from CynanBotCommon.pkmn.pokepediaElementType import PokepediaElementType
     from CynanBotCommon.pkmn.pokepediaGeneration import PokepediaGeneration
@@ -23,6 +24,7 @@ except:
     from network.networkClientProvider import NetworkClientProvider
     from timber.timber import Timber
 
+    from pkmn.pokepediaContestType import PokepediaContestType
     from pkmn.pokepediaDamageClass import PokepediaDamageClass
     from pkmn.pokepediaElementType import PokepediaElementType
     from pkmn.pokepediaGeneration import PokepediaGeneration
@@ -72,8 +74,10 @@ class PokepediaRepository():
         )
 
     async def __buildMoveFromJsonResponse(self, jsonResponse: Dict[str, Any]) -> PokepediaMove:
-        if jsonResponse is None:
+        if not utils.hasItems(jsonResponse):
             raise ValueError(f'jsonResponse argument is malformed: \"{jsonResponse}\"')
+
+        contestType = PokepediaContestType.fromStr(utils.getStrFromDict(jsonResponse['contest_type'], 'name'))
 
         generationMachines: Optional[Dict[PokepediaGeneration, List[PokepediaMachine]]] = None
         if utils.hasItems(jsonResponse.get('machines')):
@@ -83,6 +87,7 @@ class PokepediaRepository():
         initialGeneration = PokepediaGeneration.fromStr(utils.getStrFromDict(jsonResponse['generation'], 'name'))
 
         return PokepediaMove(
+            contestType = contestType,
             generationMachines = generationMachines,
             generationMoves = generationMoves,
             moveId = utils.getIntFromDict(jsonResponse, 'id'),
