@@ -91,7 +91,6 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
             raise GenericTriviaNetworkException(self.getTriviaSource(), e)
 
         randomGeneration = await self.__selectRandomGeneration(move.getInitialGeneration())
-
         moveExistsAsTmInThisGeneration = move.hasMachines() and randomGeneration in move.getGenerationMachines()
 
         if not moveExistsAsTmInThisGeneration or utils.randomBool():
@@ -118,7 +117,7 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
         return {
             'correctAnswer': machine.getMachineName(),
             'incorrectAnswers': falseMachineNumbersStrs,
-            'question': f'In Pokémon {randomGeneration.toLongStr()}, {move.getName()} can be taught via which TM?',
+            'question': f'In Pokémon {randomGeneration.toLongStr()}, {move.getName()} can be taught via which {machinePrefix}?',
             'triviaType': TriviaType.MULTIPLE_CHOICE
         }
 
