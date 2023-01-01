@@ -42,7 +42,7 @@
         },
         "poke_api": {
             "is_enabled": true,
-            "weight": 25
+            "weight": 150
         },
         "quiz_api": {
             "is_enabled": true,
