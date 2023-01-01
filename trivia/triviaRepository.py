@@ -231,12 +231,6 @@ class TriviaRepository():
         if not isinstance(triviaFetchOptions, TriviaFetchOptions):
             raise ValueError(f'triviaFetchOptions argument is malformed: \"{triviaFetchOptions}\"')
 
-        return await self.__fetchTrivia(triviaFetchOptions)
-
-    async def __fetchTrivia(self, triviaFetchOptions: TriviaFetchOptions) -> Optional[AbsTriviaQuestion]:
-        if not isinstance(triviaFetchOptions, TriviaFetchOptions):
-            raise ValueError(f'triviaFetchOptions argument is malformed: \"{triviaFetchOptions}\"')
-
         triviaQuestion: Optional[AbsTriviaQuestion] = None
         retryCount: int = 0
         maxRetryCount = await self.__triviaSettingsRepository.getMaxRetryCount()

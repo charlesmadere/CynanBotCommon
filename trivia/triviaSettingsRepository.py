@@ -41,9 +41,8 @@ class TriviaSettingsRepository():
 
         triviaSources: Dict[TriviaSource, int] = dict()
 
-        for key in triviaSourcesJson:
+        for key, triviaSourceJson in triviaSourcesJson.items():
             triviaSource = TriviaSource.fromStr(key)
-            triviaSourceJson: Dict[str, Any] = triviaSourcesJson[key]
 
             isEnabled = utils.getBoolFromDict(triviaSourceJson, 'is_enabled', False)
             if not isEnabled:
@@ -73,10 +72,10 @@ class TriviaSettingsRepository():
         maxMultipleChoiceResponses = utils.getIntFromDict(jsonContents, 'max_multiple_choice_responses', 6)
         minMultipleChoiceResponses = utils.getIntFromDict(jsonContents, 'min_multiple_choice_responses', 2)
 
-        if minMultipleChoiceResponses < 2:
-            raise ValueError(f'min_multiple_choice_responses is too small: {minMultipleChoiceResponses}')
+        if minMultipleChoiceResponses < 2 or minMultipleChoiceResponses >= utils.getIntMaxSafeSize():
+            raise ValueError(f'\"min_multiple_choice_responses\" is out of bounds: {minMultipleChoiceResponses}')
         elif maxMultipleChoiceResponses < minMultipleChoiceResponses:
-            raise ValueError(f'min_multiple_choice_responses ({minMultipleChoiceResponses}) is less than max_multiple_choice_responses ({maxMultipleChoiceResponses})')
+            raise ValueError(f'\"min_multiple_choice_responses\" ({minMultipleChoiceResponses}) is less than \"max_multiple_choice_responses\" ({maxMultipleChoiceResponses})')
 
         return maxMultipleChoiceResponses
 
@@ -119,10 +118,10 @@ class TriviaSettingsRepository():
         maxMultipleChoiceResponses = utils.getIntFromDict(jsonContents, 'max_multiple_choice_responses', 6)
         minMultipleChoiceResponses = utils.getIntFromDict(jsonContents, 'min_multiple_choice_responses', 2)
 
-        if minMultipleChoiceResponses < 2:
-            raise ValueError(f'min_multiple_choice_responses is too small: {minMultipleChoiceResponses}')
+        if minMultipleChoiceResponses < 2 or minMultipleChoiceResponses >= utils.getIntMaxSafeSize():
+            raise ValueError(f'\"min_multiple_choice_responses\" is out of bounds: {minMultipleChoiceResponses}')
         elif maxMultipleChoiceResponses < minMultipleChoiceResponses:
-            raise ValueError(f'min_multiple_choice_responses ({minMultipleChoiceResponses}) is less than max_multiple_choice_responses ({maxMultipleChoiceResponses})')
+            raise ValueError(f'\"min_multiple_choice_responses\" ({minMultipleChoiceResponses}) is less than \"max_multiple_choice_responses\" ({maxMultipleChoiceResponses})')
 
         return minMultipleChoiceResponses
 
