@@ -28,7 +28,7 @@ class PokepediaMachineType(Enum):
         else:
             raise ValueError(f'unknown PokepediaMachineType: \"{text}\"')
 
-    def getPrefix(self) -> str:
+    def toStr(self) -> str:
         if self is PokepediaMachineType.HM:
             return 'HM'
         elif self is PokepediaMachineType.TM:

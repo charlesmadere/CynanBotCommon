@@ -133,9 +133,14 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         randomGeneration = await self.__selectRandomGeneration(move.getInitialGeneration())
 
+        machinesStrs: List[str] = list()
+        for machineType in PokepediaMachineType:
+            machinesStrs.append(machineType.toStr())
+        machinesStr = '/'.join(machinesStrs)
+
         return {
             'correctAnswer': move.hasMachines() and randomGeneration in move.getGenerationMachines(),
-            'question': f'In Pokémon {randomGeneration.toLongStr()}, {move.getName()} can be taught via TM.',
+            'question': f'In Pokémon {randomGeneration.toLongStr()}, {move.getName()} can be taught via {machinesStr}.',
             'triviaType': TriviaType.TRUE_FALSE
         }
 
@@ -149,7 +154,7 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
         randomGeneration = await self.__selectRandomGeneration(move.getInitialGeneration())
         machine = move.getGenerationMachines()[randomGeneration][0]
         correctMachineNumber = machine.getMachineNumber()
-        machinePrefix = machine.getMachineType().getPrefix()
+        machinePrefix = machine.getMachineType().toStr()
 
         falseMachineNumbers = await self.__selectRandomFalseMachineNumbers(
             actualMachineNumber = correctMachineNumber,
