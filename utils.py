@@ -125,7 +125,7 @@ def getBoolFromDict(d: Optional[Dict[str, Any]], key: str, fallback: bool = None
 
     if not hasItems(d):
         if fallback is None:
-            raise ValueError(f'there is no fallback and d is None/empty: \"{d}\"')
+            raise ValueError(f'there is no fallback for key \"{key}\" and d is None/empty: \"{d}\"')
         else:
             value = fallback
     elif key in d and d[key] is not None:
@@ -186,7 +186,7 @@ def getFloatFromDict(d: Optional[Dict[str, Any]], key: str, fallback: float = No
 
     if not hasItems(d):
         if fallback is None:
-            raise ValueError(f'there is no fallback and d is None/empty: \"{d}\"')
+            raise ValueError(f'there is no fallback for key \"{key}\" and d is None/empty: \"{d}\"')
         else:
             value = fallback
     elif key in d and d[key] is not None:
@@ -214,7 +214,7 @@ def getIntFromDict(d: Optional[Dict[str, Any]], key: str, fallback: int = None) 
 
     if not hasItems(d):
         if fallback is None:
-            raise ValueError(f'there is no fallback and d is None/empty: \"{d}\"')
+            raise ValueError(f'there is no fallback for key \"{key}\" and d is None/empty: \"{d}\"')
         else:
             value = fallback
     elif key in d and d[key] is not None:
@@ -281,7 +281,7 @@ def getStrFromDict(
 
     if not hasItems(d):
         if fallback is None:
-            raise ValueError(f'there is no fallback and d is None/empty: \"{d}\"')
+            raise ValueError(f'there is no fallback for key \"{key}\" and d is None/empty: \"{d}\"')
         else:
             value = fallback
     if key in d and d[key] is not None:
