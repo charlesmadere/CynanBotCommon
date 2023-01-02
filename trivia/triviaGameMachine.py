@@ -533,14 +533,14 @@ class TriviaGameMachine():
 
         pointsForWinning = action.getPointsForWinning()
         if isShiny:
-            pointsForWinning = pointsForWinning * action.getShinyTriviaMultiplier()
+            pointsForWinning = pointsForWinning * action.getShinyMultiplier()
 
         state = TriviaGameState(
             triviaQuestion = triviaQuestion,
             isShiny = isShiny,
             pointsForWinning = action.getPointsForWinning(),
             secondsToLive = action.getSecondsToLive(),
-            shinyTriviaMultiplier = action.getShinyTriviaMultiplier(),
+            shinyMultiplier = action.getShinyMultiplier(),
             actionId = action.getActionId(),
             twitchChannel = action.getTwitchChannel(),
             userId = action.getUserId(),
@@ -554,7 +554,7 @@ class TriviaGameMachine():
             isShiny = isShiny,
             pointsForWinning = pointsForWinning,
             secondsToLive = action.getSecondsToLive(),
-            shinyTriviaMultiplier = action.getShinyTriviaMultiplier(),
+            shinyMultiplier = action.getShinyMultiplier(),
             actionId = action.getActionId(),
             gameId = state.getGameId(),
             twitchChannel = action.getTwitchChannel(),

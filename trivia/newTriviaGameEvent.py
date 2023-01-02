@@ -20,7 +20,7 @@ class NewTriviaGameEvent(AbsTriviaEvent):
         isShiny: bool,
         pointsForWinning: int,
         secondsToLive: int,
-        shinyTriviaMultiplier: int,
+        shinyMultiplier: int,
         actionId: str,
         gameId: str,
         twitchChannel: str,
@@ -44,10 +44,10 @@ class NewTriviaGameEvent(AbsTriviaEvent):
             raise ValueError(f'secondsToLive argument is malformed: \"{secondsToLive}\"')
         elif secondsToLive < 1 or secondsToLive >= utils.getIntMaxSafeSize():
             raise ValueError(f'secondsToLive argument is out of bounds: {secondsToLive}')
-        elif not utils.isValidInt(shinyTriviaMultiplier):
-            raise ValueError(f'shinyTriviaMultiplier argument is malformed: \"{shinyTriviaMultiplier}\"')
-        elif shinyTriviaMultiplier < 1 or shinyTriviaMultiplier >= utils.getIntMaxSafeSize():
-            raise ValueError(f'shinyTriviaMultiplier argument is out of bounds: {shinyTriviaMultiplier}')
+        elif not utils.isValidInt(shinyMultiplier):
+            raise ValueError(f'shinyMultiplier argument is malformed: \"{shinyMultiplier}\"')
+        elif shinyMultiplier < 1 or shinyMultiplier >= utils.getIntMaxSafeSize():
+            raise ValueError(f'shinyMultiplier argument is out of bounds: {shinyMultiplier}')
         elif not utils.isValidStr(gameId):
             raise ValueError(f'gameId argument is malformed: \"{gameId}\"')
         elif not utils.isValidStr(twitchChannel):
@@ -61,7 +61,7 @@ class NewTriviaGameEvent(AbsTriviaEvent):
         self.__isShiny: bool = isShiny
         self.__pointsForWinning: int = pointsForWinning
         self.__secondsToLive: int = secondsToLive
-        self.__shinyTriviaMultiplier: int = shinyTriviaMultiplier
+        self.__shinyMultiplier: int = shinyMultiplier
         self.__gameId: str = gameId
         self.__twitchChannel: str = twitchChannel
         self.__userId: str = userId
@@ -82,11 +82,11 @@ class NewTriviaGameEvent(AbsTriviaEvent):
     def getSecondsToLiveStr(self) -> str:
         return locale.format_string("%d", self.__secondsToLive, grouping = True)
 
-    def getShinyTriviaMultiplier(self) -> int:
-        return self.__shinyTriviaMultiplier
+    def getShinyMultiplier(self) -> int:
+        return self.__shinyMultiplier
 
-    def getShinyTriviaMultiplierStr(self) -> str:
-        return locale.format_string("%d", self.__shinyTriviaMultiplier, grouping = True)
+    def getShinyMultiplierStr(self) -> str:
+        return locale.format_string("%d", self.__shinyMultiplier, grouping = True)
 
     def getTriviaQuestion(self) -> AbsTriviaQuestion:
         return self.__triviaQuestion
