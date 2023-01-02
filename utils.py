@@ -115,7 +115,7 @@ def formatTimeShort(time, includeSeconds: bool = False) -> str:
     else:
         return time.strftime("%b %d %I:%M%p")
 
-def getBoolFromDict(d: Optional[Dict[str, Any]], key: str, fallback: bool = None) -> bool:
+def getBoolFromDict(d: Optional[Dict[str, Any]], key: str, fallback: Optional[bool] = None) -> bool:
     if not isValidStr(key):
         raise ValueError(f'key argument is malformed: \"{key}\"')
     elif fallback is not None and not isValidBool(fallback):
@@ -176,7 +176,7 @@ def getDateTimeFromStr(text: Optional[str]) -> Optional[datetime]:
 
     return datetime.fromisoformat(text)
 
-def getFloatFromDict(d: Optional[Dict[str, Any]], key: str, fallback: float = None) -> float:
+def getFloatFromDict(d: Optional[Dict[str, Any]], key: str, fallback: Optional[float] = None) -> float:
     if not isValidStr(key):
         raise ValueError(f'key argument is malformed: \"{key}\"')
     elif fallback is not None and not isValidNum(fallback):
@@ -204,7 +204,7 @@ def getFloatFromDict(d: Optional[Dict[str, Any]], key: str, fallback: float = No
 
     return value
 
-def getIntFromDict(d: Optional[Dict[str, Any]], key: str, fallback: int = None) -> int:
+def getIntFromDict(d: Optional[Dict[str, Any]], key: str, fallback: Optional[int] = None) -> int:
     if not isValidStr(key):
         raise ValueError(f'key argument is malformed: \"{key}\"')
     elif fallback is not None and not isValidNum(fallback):
@@ -261,7 +261,7 @@ def getRandomSpaceEmoji() -> str:
 def getStrFromDict(
     d: Optional[Dict[str, Any]],
     key: str,
-    fallback: str = None,
+    fallback: Optional[str] = None,
     clean: bool = False,
     htmlUnescape: bool = False,
     removeCarrots: bool = False
