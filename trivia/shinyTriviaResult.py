@@ -16,8 +16,7 @@ class ShinyTriviaResult():
         newShinyCount: int,
         oldShinyCount: int,
         twitchChannel: str,
-        userId: str,
-        userName: str
+        userId: str
     ):
         if mostRecent is not None and not isinstance(mostRecent, datetime):
             raise ValueError(f'mostRecent argument is malformed: \"{mostRecent}\"')
@@ -33,15 +32,12 @@ class ShinyTriviaResult():
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
         elif not utils.isValidStr(userId):
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
-        elif not utils.isValidStr(userName):
-            raise ValueError(f'userName argument is malformed: \"{userName}\"')
 
         self.__mostRecent: Optional[datetime] = mostRecent
         self.__newShinyCount: int = newShinyCount
         self.__oldShinyCount: int = oldShinyCount
         self.__twitchChannel: str = twitchChannel
         self.__userId: str = userId
-        self.__userName: str = userName
 
     def getMostRecent(self) -> Optional[datetime]:
         return self.__mostRecent

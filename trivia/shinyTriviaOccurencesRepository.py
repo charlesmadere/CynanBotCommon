@@ -6,18 +6,13 @@ try:
     from CynanBotCommon.storage.backingDatabase import BackingDatabase
     from CynanBotCommon.storage.databaseConnection import DatabaseConnection
     from CynanBotCommon.storage.databaseType import DatabaseType
-    from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.shinyTriviaResult import ShinyTriviaResult
-    from CynanBotCommon.users.userIdsRepository import UserIdsRepository
 except:
     import utils
     from storage.backingDatabase import BackingDatabase
     from storage.databaseConnection import DatabaseConnection
     from storage.databaseType import DatabaseType
-    from timber.timber import Timber
     from trivia.shinyTriviaResult import ShinyTriviaResult
-
-    from users.userIdsRepository import UserIdsRepository
 
 
 class ShinyTriviaOccurencesRepository():
@@ -25,22 +20,14 @@ class ShinyTriviaOccurencesRepository():
     def __init__(
         self,
         backingDatabase: BackingDatabase,
-        timber: Timber,
-        userIdsRepository: UserIdsRepository,
         timeZone: timezone = timezone.utc
     ):
         if not isinstance(backingDatabase, BackingDatabase):
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
-        elif not isinstance(timber, Timber):
-            raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif not isinstance(userIdsRepository, UserIdsRepository):
-            raise ValueError(f'userIdsRepository argument is malformed: \"{userIdsRepository}\"')
         elif not isinstance(timeZone, timezone):
             raise ValueError(f'timeZone argument is malformed: \"{timeZone}\"')
 
         self.__backingDatabase: BackingDatabase = backingDatabase
-        self.__timber: Timber = timber
-        self.__userIdsRepository: UserIdsRepository = userIdsRepository
         self.__timeZone: timezone = timeZone
 
         self.__isDatabaseReady: bool = False
@@ -56,8 +43,6 @@ class ShinyTriviaOccurencesRepository():
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
         elif userId == '0':
             raise ValueError(f'userId argument is an illegal value: \"{userId}\"')
-
-        userName = await self.__userIdsRepository.fetchUserName(userId)
 
         connection = await self.__getDatabaseConnection()
         record = await connection.fetchRow(
@@ -83,8 +68,7 @@ class ShinyTriviaOccurencesRepository():
             newShinyCount = shinyCount,
             oldShinyCount = shinyCount,
             twitchChannel = twitchChannel,
-            userId = userId,
-            userName = userName
+            userId = userId
         )
 
     async def __getDatabaseConnection(self) -> DatabaseConnection:
@@ -115,15 +99,13 @@ class ShinyTriviaOccurencesRepository():
             newShinyCount = newShinyCount,
             oldShinyCount = result.getOldShinyCount(),
             twitchChannel = result.getTwitchChannel(),
-            userId = result.getUserId(),
-            userName = result.getUserName()
+            userId = result.getUserId()
         )
 
         await self.__updateShinyCount(
             newShinyCount = newResult.getNewShinyCount(),
             twitchChannel = newResult.getTwitchChannel(),
-            userId = newResult.getUserId(),
-            userName = newResult.getUserName()
+            userId = newResult.getUserId()
         )
 
         return newResult
@@ -168,8 +150,7 @@ class ShinyTriviaOccurencesRepository():
         self,
         newShinyCount: int,
         twitchChannel: str,
-        userId: str,
-        userName: str
+        userId: str
     ):
         if not utils.isValidInt(newShinyCount):
             raise ValueError(f'newShinyCount argument is malformed: \"{newShinyCount}\"')
@@ -181,8 +162,6 @@ class ShinyTriviaOccurencesRepository():
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
         elif userId == '0':
             raise ValueError(f'userId argument is an illegal value: \"{userId}\"')
-        elif not utils.isValidStr(userName):
-            raise ValueError(f'userName argument is malformed: \"{userName}\"')
 
         nowDateTime = datetime.now(self.__timeZone)
         nowDateTimeStr = nowDateTime.isoformat()
@@ -198,4 +177,3 @@ class ShinyTriviaOccurencesRepository():
         )
 
         await connection.close()
-        self.__timber.log('ShinyTriviaOccurencesRepository', f'Shiny count for {userName}:{userId} in {twitchChannel} is now {newShinyCount}')

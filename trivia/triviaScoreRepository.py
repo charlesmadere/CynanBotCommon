@@ -19,6 +19,7 @@ class TriviaScoreRepository():
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
 
         self.__backingDatabase: BackingDatabase = backingDatabase
+
         self.__isDatabaseReady: bool = False
 
     async def fetchTriviaScore(
