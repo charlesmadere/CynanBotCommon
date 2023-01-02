@@ -1,12 +1,14 @@
 import random
-from typing import Any, Dict, List, Set
+from typing import Any, Dict, List, Optional, Set
 
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.network.exceptions import GenericNetworkException
+    from CynanBotCommon.pkmn.pokepediaContestType import PokepediaContestType
     from CynanBotCommon.pkmn.pokepediaElementType import PokepediaElementType
     from CynanBotCommon.pkmn.pokepediaGeneration import PokepediaGeneration
     from CynanBotCommon.pkmn.pokepediaMachineType import PokepediaMachineType
+    from CynanBotCommon.pkmn.pokepediaMove import PokepediaMove
     from CynanBotCommon.pkmn.pokepediaRepository import PokepediaRepository
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
@@ -45,9 +47,11 @@ except:
     from trivia.triviaType import TriviaType
     from trivia.trueFalseTriviaQuestion import TrueFalseTriviaQuestion
 
+    from pkmn.pokepediaContestType import PokepediaContestType
     from pkmn.pokepediaElementType import PokepediaElementType
     from pkmn.pokepediaGeneration import PokepediaGeneration
     from pkmn.pokepediaMachineType import PokepediaMachineType
+    from pkmn.pokepediaMove import PokepediaMove
     from pkmn.pokepediaRepository import PokepediaRepository
 
 
@@ -81,7 +85,7 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self.__triviaIdGenerator: TriviaIdGenerator = triviaIdGenerator
         self.__maxGeneration: PokepediaGeneration = maxGeneration
 
-    async def __createMoveIsAvailableAsTmQuestion(self) -> Dict[str, Any]:
+    async def __createMoveQuestion(self) -> Dict[str, Any]:
         try:
             move = await self.__pokepediaRepository.fetchRandomMove(
                 maxGeneration = self.__maxGeneration
@@ -90,17 +94,59 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
             self.__timber.log('PkmnTriviaQuestionRepository', f'Encountered network error when fetching trivia question: {e}', e)
             raise GenericTriviaNetworkException(self.getTriviaSource(), e)
 
+        triviaDict: Optional[Dict[str, Any]] = None
+
+        while triviaDict is None:
+            randomTriviaType = random.randint(0, 2)
+
+            if randomTriviaType == 0:
+                triviaDict = await self.__createMoveContestTypeQuestion(move)
+            elif randomTriviaType == 1:
+                triviaDict = await self.__createMoveIsAvailableAsMachineQuestion(move)
+            elif randomTriviaType == 2:
+                triviaDict = await self.__createMoveIsAvailableAsWhichMachineQuestion(move)
+            else:
+                raise RuntimeError(f'PkmnTriviaQuestionRepository\'s randomTriviaType value is out of bounds: \"{randomTriviaType}\"!')
+
+        return triviaDict
+
+    async def __createMoveContestTypeQuestion(self, move: PokepediaMove) -> Dict[str, Any]:
+        if not isinstance(move, PokepediaMove):
+            raise ValueError(f'move argument is malformed: \"{move}\"')
+
+        falseContestTypes = await self.__selectRandomFalseContestTypes(move.getContestType())
+
+        falseContestTypeStrs: List[str] = list()
+        for falseContestType in falseContestTypes:
+            falseContestTypeStrs.append(falseContestType.toStr())
+
+        return {
+            'correctAnswer': move.getContestType().toStr(),
+            'incorrectAnswers': falseContestTypeStrs,
+            'question': f'In Pokémon, what is the contest type of {move.getName()}?',
+            'triviaType': TriviaType.MULTIPLE_CHOICE
+        }
+
+    async def __createMoveIsAvailableAsMachineQuestion(self, move: PokepediaMove) -> Dict[str, Any]:
+        if not isinstance(move, PokepediaMove):
+            raise ValueError(f'move argument is malformed: \"{move}\"')
+
         randomGeneration = await self.__selectRandomGeneration(move.getInitialGeneration())
-        moveExistsAsTmInThisGeneration = move.hasMachines() and randomGeneration in move.getGenerationMachines()
 
-        if not moveExistsAsTmInThisGeneration or utils.randomBool():
-            # only ask if the move simply exists as a TM in the given generation
-            return {
-                'correctAnswer': move.hasMachines() and randomGeneration in move.getGenerationMachines(),
-                'question': f'In Pokémon {randomGeneration.toLongStr()}, {move.getName()} can be taught via TM.',
-                'triviaType': TriviaType.TRUE_FALSE
-            }
+        return {
+            'correctAnswer': move.hasMachines() and randomGeneration in move.getGenerationMachines(),
+            'question': f'In Pokémon {randomGeneration.toLongStr()}, {move.getName()} can be taught via TM.',
+            'triviaType': TriviaType.TRUE_FALSE
+        }
 
+    async def __createMoveIsAvailableAsWhichMachineQuestion(self, move: PokepediaMove) -> Optional[Dict[str, Any]]:
+        if not isinstance(move, PokepediaMove):
+            raise ValueError(f'move argument is malformed: \"{move}\"')
+
+        if not move.hasMachines():
+            return None
+
+        randomGeneration = await self.__selectRandomGeneration(move.getInitialGeneration())
         machine = move.getGenerationMachines()[randomGeneration][0]
         correctMachineNumber = machine.getMachineNumber()
         machinePrefix = machine.getMachineType().getPrefix()
@@ -121,7 +167,7 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
             'triviaType': TriviaType.MULTIPLE_CHOICE
         }
 
-    async def __createPokemonTypeQuestion(self) -> Dict[str, Any]:
+    async def __createPokemonQuestion(self) -> Dict[str, Any]:
         try:
             pokemon = await self.__pokepediaRepository.fetchRandomPokemon(
                 maxGeneration = self.__maxGeneration
@@ -131,11 +177,10 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
             raise GenericTriviaNetworkException(self.getTriviaSource(), e)
 
         randomGeneration = await self.__selectRandomGeneration(pokemon.getInitialGeneration())
-
         correctTypes = pokemon.getCorrespondingGenerationElementTypes(randomGeneration)
         correctType = random.choice(correctTypes)
 
-        falseTypes = await self.__selectRandomFalseTypes(correctTypes)
+        falseTypes = await self.__selectRandomFalseElementTypes(correctTypes)
 
         falseTypesStrs: List[str] = list()
         for falseType in falseTypes:
@@ -158,11 +203,11 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
         triviaDict: Dict[str, Any] = None
 
         if randomTriviaType == 0:
-            triviaDict = await self.__createMoveIsAvailableAsTmQuestion()
+            triviaDict = await self.__createMoveQuestion()
         elif randomTriviaType == 1:
-            triviaDict = await self.__createPokemonTypeQuestion()
+            triviaDict = await self.__createPokemonQuestion()
         else:
-            raise ValueError(f'PkmnTriviaQuestionRepository\'s randomTriviaType value is out of bounds: \"{randomTriviaType}\"!')
+            raise RuntimeError(f'PkmnTriviaQuestionRepository\'s randomTriviaType value is out of bounds: \"{randomTriviaType}\"!')
 
         if not utils.hasItems(triviaDict):
             raise MalformedTriviaJsonException(f'PkmnTriviaQuestionRepository\'s triviaDict is null/empty: \"{triviaDict}\"!')
@@ -223,7 +268,30 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
     def getTriviaSource(self) -> TriviaSource:
         return TriviaSource.POKE_API
 
-    async def __selectRandomFalseTypes(
+    async def __selectRandomFalseContestTypes(
+        self,
+        actualType: PokepediaContestType
+    ) -> Set[PokepediaContestType]:
+        if not isinstance(actualType, PokepediaContestType):
+            raise ValueError(f'actualType argument is malformed: \"{actualType}\"')
+
+        allTypes = list(PokepediaContestType)
+        falseTypes: Set[PokepediaContestType] = set()
+
+        minResponses = await self._triviaSettingsRepository.getMinMultipleChoiceResponses()
+        maxResponses = await self._triviaSettingsRepository.getMaxMultipleChoiceResponses()
+        maxResponses = min(maxResponses, len(PokepediaContestType) - 1)
+        responses = random.randint(minResponses, maxResponses)
+
+        while len(falseTypes) < responses:
+            randomType = random.choice(allTypes)
+
+            if randomType is not actualType:
+                falseTypes.add(randomType)
+
+        return falseTypes
+
+    async def __selectRandomFalseElementTypes(
         self,
         actualTypes: List[PokepediaElementType]
     ) -> Set[PokepediaElementType]:
@@ -235,6 +303,7 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         minResponses = await self._triviaSettingsRepository.getMinMultipleChoiceResponses()
         maxResponses = await self._triviaSettingsRepository.getMaxMultipleChoiceResponses()
+        maxResponses = min(maxResponses, len(PokepediaElementType) - 1)
         responses = random.randint(minResponses, maxResponses)
 
         while len(falseTypes) < responses:
@@ -269,7 +338,7 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
         elif actualMachineType is PokepediaMachineType.TR:
             maxMachineNumber = 90
         else:
-            raise ValueError(f'Can\'t determine `maxMachineNumber` due to unknown PokepediaMachineType: \"{actualMachineType}\"!')
+            raise RuntimeError(f'Can\'t determine `maxMachineNumber` due to unknown PokepediaMachineType: \"{actualMachineType}\"!')
 
         while len(falseMachineNumbers) < responses:
             randomInt = random.randint(1, maxMachineNumber)
@@ -279,7 +348,10 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         return falseMachineNumbers
 
-    async def __selectRandomGeneration(self, initialGeneration: PokepediaGeneration) -> PokepediaGeneration:
+    async def __selectRandomGeneration(
+        self,
+        initialGeneration: PokepediaGeneration
+    ) -> PokepediaGeneration:
         if not isinstance(initialGeneration, PokepediaGeneration):
             raise ValueError(f'initialGeneration argument is malformed: \"{initialGeneration}\"')
 
