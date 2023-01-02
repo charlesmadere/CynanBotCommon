@@ -136,6 +136,7 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
         machinesStrs: List[str] = list()
         for machineType in PokepediaMachineType:
             machinesStrs.append(machineType.toStr())
+
         machinesStr = '/'.join(machinesStrs)
 
         return {
