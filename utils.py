@@ -284,7 +284,7 @@ def getStrFromDict(
             raise ValueError(f'there is no fallback for key \"{key}\" and d is None/empty: \"{d}\"')
         else:
             value = fallback
-    if key in d and d[key] is not None:
+    elif key in d and d[key] is not None:
         value = d[key]
     elif fallback is not None:
         value = fallback
