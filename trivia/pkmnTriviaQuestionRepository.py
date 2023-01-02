@@ -205,7 +205,7 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self.__timber.log('PkmnTriviaQuestionRepository', f'Fetching trivia question... (twitchChannel={twitchChannel})')
 
         randomTriviaType = random.randint(0, 1)
-        triviaDict: Dict[str, Any] = None
+        triviaDict: Optional[Dict[str, Any]] = None
 
         if randomTriviaType == 0:
             triviaDict = await self.__createMoveQuestion()
