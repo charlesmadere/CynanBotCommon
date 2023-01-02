@@ -67,7 +67,7 @@ class UserIdsRepository():
         if utils.isValidStr(userId):
             return userId
         elif not utils.isValidStr(twitchAccessToken):
-            raise RuntimeError(f'UserIdsRepository can\'t lookup Twitch user ID for \"{userName}\" as not twitchAccessToken was specified')
+            raise RuntimeError(f'UserIdsRepository can\'t lookup Twitch user ID for \"{userName}\" as no twitchAccessToken was specified')
 
         self.__timber.log('UserIdsRepository', f'User ID for userName \"{userName}\" wasn\'t found locally, so performing a network call to fetch instead...')
 
