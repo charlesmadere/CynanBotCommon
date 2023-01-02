@@ -110,9 +110,12 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         return triviaDict
 
-    async def __createMoveContestTypeQuestion(self, move: PokepediaMove) -> Dict[str, Any]:
+    async def __createMoveContestTypeQuestion(self, move: PokepediaMove) -> Optional[Dict[str, Any]]:
         if not isinstance(move, PokepediaMove):
             raise ValueError(f'move argument is malformed: \"{move}\"')
+
+        if not move.hasContestType():
+            return None
 
         falseContestTypes = await self.__selectRandomFalseContestTypes(move.getContestType())
 

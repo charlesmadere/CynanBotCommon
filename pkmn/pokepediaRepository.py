@@ -77,7 +77,7 @@ class PokepediaRepository():
         if not utils.hasItems(jsonResponse):
             raise ValueError(f'jsonResponse argument is malformed: \"{jsonResponse}\"')
 
-        contestType = PokepediaContestType.fromStr(utils.getStrFromDict(jsonResponse['contest_type'], 'name'))
+        contestType = PokepediaContestType.fromStr(utils.getStrFromDict(jsonResponse.get('contest_type'), 'name', fallback = ''))
 
         generationMachines: Optional[Dict[PokepediaGeneration, List[PokepediaMachine]]] = None
         if utils.hasItems(jsonResponse.get('machines')):

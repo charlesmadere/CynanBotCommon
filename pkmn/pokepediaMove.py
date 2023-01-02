@@ -20,7 +20,7 @@ class PokepediaMove():
 
     def __init__(
         self,
-        contestType: PokepediaContestType,
+        contestType: Optional[PokepediaContestType],
         generationMachines: Optional[Dict[PokepediaGeneration, List[PokepediaMachine]]],
         generationMoves: Dict[PokepediaGeneration, PokepediaMoveGeneration],
         moveId: int,
@@ -29,7 +29,7 @@ class PokepediaMove():
         name: str,
         rawName: str
     ):
-        if not isinstance(contestType, PokepediaContestType):
+        if contestType is not None and not isinstance(contestType, PokepediaContestType):
             raise ValueError(f'contestType argument is malformed: \"{contestType}\"')
         elif not utils.hasItems(generationMoves):
             raise ValueError(f'generationMoves argument is malformed: \"{generationMoves}\"')
@@ -44,7 +44,7 @@ class PokepediaMove():
         elif not utils.isValidStr(rawName):
             raise ValueError(f'rawName argument is malformed: \"{rawName}\"')
 
-        self.__contestType: PokepediaContestType = contestType
+        self.__contestType: Optional[PokepediaContestType] = contestType
         self.__generationMachines: Optional[Dict[PokepediaGeneration, List[PokepediaMachine]]] = generationMachines
         self.__generationMoves: Dict[PokepediaGeneration, PokepediaMoveGeneration] = generationMoves
         self.__moveId: int = moveId
@@ -53,7 +53,7 @@ class PokepediaMove():
         self.__name: str = name
         self.__rawName: str = rawName
 
-    def getContestType(self) -> PokepediaContestType:
+    def getContestType(self) -> Optional[PokepediaContestType]:
         return self.__contestType
 
     def getDescription(self) -> str:
@@ -76,6 +76,9 @@ class PokepediaMove():
 
     def getRawName(self) -> str:
         return self.__rawName
+
+    def hasContestType(self) -> bool:
+        return self.__contestType is not None
 
     def hasMachines(self) -> bool:
         return utils.hasItems(self.__generationMachines)

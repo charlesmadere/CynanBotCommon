@@ -1,4 +1,5 @@
 from enum import Enum, auto
+from typing import Optional
 
 try:
     import CynanBotCommon.utils as utils
@@ -15,9 +16,9 @@ class PokepediaContestType(Enum):
     TOUGH = auto()
 
     @classmethod
-    def fromStr(cls, text: str):
+    def fromStr(cls, text: Optional[str]):
         if not utils.isValidStr(text):
-            raise ValueError(f'text argument is malformed: \"{text}\"')
+            return None
 
         text = text.lower()
 
