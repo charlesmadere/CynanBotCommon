@@ -22,8 +22,6 @@ except:
     import utils
     from network.exceptions import GenericNetworkException
     from network.networkClientProvider import NetworkClientProvider
-    from timber.timber import Timber
-
     from pkmn.pokepediaContestType import PokepediaContestType
     from pkmn.pokepediaDamageClass import PokepediaDamageClass
     from pkmn.pokepediaElementType import PokepediaElementType
@@ -33,6 +31,7 @@ except:
     from pkmn.pokepediaMove import PokepediaMove
     from pkmn.pokepediaMoveGeneration import PokepediaMoveGeneration
     from pkmn.pokepediaPokemon import PokepediaPokemon
+    from timber.timber import Timber
 
 
 class PokepediaRepository():
@@ -77,7 +76,9 @@ class PokepediaRepository():
         if not utils.hasItems(jsonResponse):
             raise ValueError(f'jsonResponse argument is malformed: \"{jsonResponse}\"')
 
-        contestType = PokepediaContestType.fromStr(utils.getStrFromDict(jsonResponse.get('contest_type'), 'name', fallback = ''))
+        contestType: Optional[PokepediaContestType] = None
+        if utils.hasItems(jsonResponse.get('contest_type')):
+            contestType = PokepediaContestType.fromStr(utils.getStrFromDict(jsonResponse['contest_type'], 'name', fallback = ''))
 
         generationMachines: Optional[Dict[PokepediaGeneration, List[PokepediaMachine]]] = None
         if utils.hasItems(jsonResponse.get('machines')):
