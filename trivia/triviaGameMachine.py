@@ -340,8 +340,13 @@ class TriviaGameMachine():
             ))
             return
 
+        pointsForWinning = state.getPointsForWinning()
+
+        if state.isShiny():
+            pointsForWinning = pointsForWinning * state.getShinyMultiplier()
+
         cutenessResult = await self.__cutenessRepository.fetchCutenessIncrementedBy(
-            incrementAmount = state.getPointsForWinning(),
+            incrementAmount = pointsForWinning,
             twitchChannel = state.getTwitchChannel(),
             userId = action.getUserId(),
             userName = action.getUserName()
@@ -356,7 +361,7 @@ class TriviaGameMachine():
             triviaQuestion = state.getTriviaQuestion(),
             isShiny = state.isShiny(),
             cutenessResult = cutenessResult,
-            pointsForWinning = state.getPointsForWinning(),
+            pointsForWinning = pointsForWinning,
             actionId = action.getActionId(),
             answer = action.getAnswer(),
             gameId = state.getGameId(),
@@ -430,8 +435,10 @@ class TriviaGameMachine():
             return
 
         await self.__removeSuperTriviaGame(action.getTwitchChannel())
+        pointsForWinning = state.getPointsForWinning()
 
         if state.isShiny():
+            pointsForWinning = pointsForWinning * state.getShinyMultiplier()
             await self.__shinyTriviaHelper.shinySuperTriviaWin(
                 twitchChannel = state.getTwitchChannel(),
                 userId = action.getUserId(),
@@ -439,7 +446,7 @@ class TriviaGameMachine():
             )
 
         cutenessResult = await self.__cutenessRepository.fetchCutenessIncrementedBy(
-            incrementAmount = state.getPointsForWinning(),
+            incrementAmount = pointsForWinning,
             twitchChannel = state.getTwitchChannel(),
             userId = action.getUserId(),
             userName = action.getUserName()
@@ -458,7 +465,7 @@ class TriviaGameMachine():
             triviaQuestion = state.getTriviaQuestion(),
             isShiny = state.isShiny(),
             cutenessResult = cutenessResult,
-            pointsForWinning = state.getPointsForWinning(),
+            pointsForWinning = pointsForWinning,
             remainingQueueSize = remainingQueueSize,
             actionId = action.getActionId(),
             answer = action.getAnswer(),
