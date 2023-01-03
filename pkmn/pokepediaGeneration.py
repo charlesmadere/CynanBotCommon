@@ -105,12 +105,25 @@ class PokepediaGeneration(Enum):
         else:
             raise ValueError(f'`other` is an unsupported type: \"{other}\"')
 
-    def __gt__(self, other: Any) -> bool:
-        if isinstance(other, PokepediaGeneration):
-            all = list(PokepediaGeneration)
-            return all.index(self) > all.index(other)
+    def getId(self) -> int:
+        if self is PokepediaGeneration.GENERATION_1:
+            return 1
+        elif self is PokepediaGeneration.GENERATION_2:
+            return 2
+        elif self is PokepediaGeneration.GENERATION_3:
+            return 3
+        elif self is PokepediaGeneration.GENERATION_4:
+            return 4
+        elif self is PokepediaGeneration.GENERATION_5:
+            return 5
+        elif self is PokepediaGeneration.GENERATION_6:
+            return 6
+        elif self is PokepediaGeneration.GENERATION_7:
+            return 7
+        elif self is PokepediaGeneration.GENERATION_8:
+            return 8
         else:
-            raise ValueError(f'`other` is an unsupported type: \"{other}\"')
+            raise RuntimeError(f'unknown PokepediaGeneration: \"{self}\"')
 
     def getMaxMoveId(self) -> int:
         if self is PokepediaGeneration.GENERATION_1:
@@ -151,6 +164,13 @@ class PokepediaGeneration(Enum):
             return 905
         else:
             raise RuntimeError(f'unknown PokepediaGeneration: \"{self}\"')
+
+    def __gt__(self, other: Any) -> bool:
+        if isinstance(other, PokepediaGeneration):
+            all = list(PokepediaGeneration)
+            return all.index(self) > all.index(other)
+        else:
+            raise ValueError(f'`other` is an unsupported type: \"{other}\"')
 
     def __hash__(self) -> int:
         all = list(PokepediaGeneration)
