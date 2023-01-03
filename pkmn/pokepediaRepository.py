@@ -53,7 +53,7 @@ class PokepediaRepository():
         self.__machineNumberRegEx: Pattern = re.compile(r'^(hm|tm|tr)(\d+)$', re.IGNORECASE)
 
     async def __buildMachineFromJsonResponse(self, jsonResponse: Dict[str, Any]) -> PokepediaMachine:
-        if jsonResponse is None:
+        if not utils.hasItems(jsonResponse):
             raise ValueError(f'jsonResponse argument is malformed: \"{jsonResponse}\"')
 
         generation = PokepediaGeneration.fromStr(utils.getStrFromDict(jsonResponse['version_group'], 'name'))
@@ -104,7 +104,8 @@ class PokepediaRepository():
 
         pokedexId = utils.getIntFromDict(jsonResponse, 'id')
         initialGeneration = PokepediaGeneration.fromPokedexId(pokedexId)
-        generationElementTypes = self.__getElementTypeGenerationDictionary(
+
+        generationElementTypes = await self.__getElementTypeGenerationDictionary(
             jsonResponse = jsonResponse,
             initialGeneration = initialGeneration
         )
@@ -240,7 +241,7 @@ class PokepediaRepository():
 
         return await self.__buildPokemonFromJsonResponse(jsonResponse)
 
-    def __getElementTypeGenerationDictionary(
+    async def __getElementTypeGenerationDictionary(
         self,
         jsonResponse: Dict[str, Any],
         initialGeneration: PokepediaGeneration
