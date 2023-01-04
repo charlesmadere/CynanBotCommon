@@ -8,6 +8,7 @@ try:
     from CynanBotCommon.storage.databaseType import DatabaseType
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.twitch.twitchApiService import TwitchApiService
+    from CynanBotCommon.twitch.twitchUserDetails import TwitchUserDetails
 except:
     import utils
     from network.exceptions import GenericNetworkException
@@ -15,8 +16,8 @@ except:
     from storage.databaseConnection import DatabaseConnection
     from storage.databaseType import DatabaseType
     from timber.timber import Timber
-
     from twitch.twitchApiService import TwitchApiService
+    from twitch.twitchUserDetails import TwitchUserDetails
 
 
 class UserIdsRepository():
@@ -71,6 +72,8 @@ class UserIdsRepository():
 
         self.__timber.log('UserIdsRepository', f'User ID for userName \"{userName}\" wasn\'t found locally, so performing a network call to fetch instead...')
 
+        userDetails: Optional[TwitchUserDetails] = None
+
         try:
             userDetails = await self.__twitchApiService.fetchUserDetails(
                 twitchAccessToken = twitchAccessToken,
@@ -79,6 +82,9 @@ class UserIdsRepository():
         except GenericNetworkException as e:
             self.__timber.log('UserIdsRepository', f'Received a network error of some kind when fetching userId for userName \"{userName}\": {e}', e)
             raise GenericNetworkException(f'UserIdsRepository received a network error of some kind when fetching userId for userName \"{userName}\": {e}')
+
+        if userDetails is None:
+            raise RuntimeError(f'Unable to retrieve user ID for userName \"{userName}\" from the Twitch API')
 
         userId = userDetails.getUserId()
         await self.setUser(userId = userId, userName = userName)
