@@ -10,7 +10,6 @@ try:
     from CynanBotCommon.pkmn.pokepediaTypeChart import PokepediaTypeChart
 except:
     import utils
-
     from pkmn.pokepediaDamageMultiplier import PokepediaDamageMultiplier
     from pkmn.pokepediaElementType import PokepediaElementType
     from pkmn.pokepediaGeneration import PokepediaGeneration

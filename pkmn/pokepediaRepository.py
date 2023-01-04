@@ -16,7 +16,9 @@ try:
     from CynanBotCommon.pkmn.pokepediaMove import PokepediaMove
     from CynanBotCommon.pkmn.pokepediaMoveGeneration import \
         PokepediaMoveGeneration
+    from CynanBotCommon.pkmn.pokepediaNature import PokepediaNature
     from CynanBotCommon.pkmn.pokepediaPokemon import PokepediaPokemon
+    from CynanBotCommon.pkmn.pokepediaStat import PokepediaStat
     from CynanBotCommon.timber.timber import Timber
 except:
     import utils
@@ -30,7 +32,9 @@ except:
     from pkmn.pokepediaMachineType import PokepediaMachineType
     from pkmn.pokepediaMove import PokepediaMove
     from pkmn.pokepediaMoveGeneration import PokepediaMoveGeneration
+    from pkmn.pokepediaNature import PokepediaNature
     from pkmn.pokepediaPokemon import PokepediaPokemon
+    from pkmn.pokepediaStat import PokepediaStat
     from timber.timber import Timber
 
 
@@ -49,8 +53,8 @@ class PokepediaRepository():
         self.__networkClientProvider: NetworkClientProvider = networkClientProvider
         self.__timber: Timber = timber
 
-        self.__machineIdRegEx: Pattern = re.compile(r'^.+\/(\d+)\/$', re.IGNORECASE)
         self.__machineNumberRegEx: Pattern = re.compile(r'^(hm|tm|tr)(\d+)$', re.IGNORECASE)
+        self.__pokeApiIdRegEx: Pattern = re.compile(r'^.+\/(\d+)\/$', re.IGNORECASE)
 
     async def __buildMachineFromJsonResponse(self, jsonResponse: Dict[str, Any]) -> PokepediaMachine:
         if not utils.hasItems(jsonResponse):
@@ -85,21 +89,33 @@ class PokepediaRepository():
             generationMachines = await self.__fetchMoveMachines(jsonResponse['machines'])
 
         generationMoves = await self.__getMoveGenerationDictionary(jsonResponse)
+
+        critRate = 0
+        drain = 0
+        flinchChance = 0
+        if 'meta' in jsonResponse and utils.hasItems(jsonResponse['meta']):
+            critRate = utils.getIntFromDict(jsonResponse['meta'], 'crit_rate', fallback = 0)
+            drain = utils.getIntFromDict(jsonResponse['meta'], 'drain', fallback = 0)
+            flinchChance = utils.getIntFromDict(jsonResponse['meta'], 'flinch_chance', fallback = 0)
+
         initialGeneration = PokepediaGeneration.fromStr(utils.getStrFromDict(jsonResponse['generation'], 'name'))
 
         return PokepediaMove(
             contestType = contestType,
             generationMachines = generationMachines,
             generationMoves = generationMoves,
+            critRate = critRate,
+            drain = drain,
+            flinchChance = flinchChance,
             moveId = utils.getIntFromDict(jsonResponse, 'id'),
             initialGeneration = initialGeneration,
-            description = self.__getEnDescription(jsonResponse),
-            name = self.__getEnName(jsonResponse),
+            description = await self.__getEnDescription(jsonResponse),
+            name = await self.__getEnName(jsonResponse),
             rawName = utils.getStrFromDict(jsonResponse, 'name')
         )
 
     async def __buildPokemonFromJsonResponse(self, jsonResponse: Dict[str, Any]) -> PokepediaPokemon:
-        if jsonResponse is None:
+        if not utils.hasItems(jsonResponse):
             raise ValueError(f'jsonResponse argument is malformed: \"{jsonResponse}\"')
 
         pokedexId = utils.getIntFromDict(jsonResponse, 'id')
@@ -155,11 +171,10 @@ class PokepediaRepository():
 
         for machineJson in machinesJson:
             machineUrl = utils.getStrFromDict(machineJson['machine'], 'url', fallback = '')
-
             if not utils.isValidStr(machineUrl):
                 continue
 
-            machineIdMatch = self.__machineIdRegEx.fullmatch(machineUrl)
+            machineIdMatch = self.__pokeApiIdRegEx.fullmatch(machineUrl)
             if machineIdMatch is None:
                 continue
 
@@ -189,6 +204,12 @@ class PokepediaRepository():
 
         return generationMachines
 
+    async def fetchNature(self, natureId: int) -> PokepediaNature:
+        if not utils.isValidInt(natureId):
+            raise ValueError(f'natureId argument is malformed: \"{natureId}\"')
+
+        return PokepediaNature.fromInt(natureId)
+
     async def fetchRandomMove(self, maxGeneration: PokepediaGeneration) -> PokepediaMove:
         if not isinstance(maxGeneration, PokepediaGeneration):
             raise ValueError(f'maxGeneration argument is malformed: \"{maxGeneration}\"')
@@ -215,6 +236,11 @@ class PokepediaRepository():
 
         return await self.__buildMoveFromJsonResponse(jsonResponse)
 
+    async def fetchRandomNature(self) -> PokepediaNature:
+        allNatures = list(PokepediaNature)
+        randomNature = random.choice(allNatures)
+        return await self.fetchNature(randomNature.getNatureId())
+
     async def fetchRandomPokemon(self, maxGeneration: PokepediaGeneration) -> PokepediaPokemon:
         if not isinstance(maxGeneration, PokepediaGeneration):
             raise ValueError(f'maxGeneration argument is malformed: \"{maxGeneration}\"')
@@ -240,6 +266,17 @@ class PokepediaRepository():
             raise GenericNetworkException(f'PokepediaRepository encountered data error from PokeAPI when fetching Pokemon with ID \"{randomPokemonId}\": {jsonResponse}')
 
         return await self.__buildPokemonFromJsonResponse(jsonResponse)
+
+    async def fetchRandomStat(self) -> PokepediaStat:
+        allStats = list(PokepediaStat)
+        randomStat = random.choice(allStats)
+        return await self.fetchStat(randomStat.getStatId())
+
+    async def fetchStat(self, statId: int) -> PokepediaStat:
+        if not utils.isValidInt(statId):
+            raise ValueError(f'statId argument is malformed: \"{statId}\"')
+
+        return PokepediaStat.fromInt(statId)
 
     async def __getElementTypeGenerationDictionary(
         self,
@@ -302,7 +339,7 @@ class PokepediaRepository():
 
         return elementTypeGenerationDictionary
 
-    def __getEnDescription(self, jsonResponse: Dict[str, Any]) -> str:
+    async def __getEnDescription(self, jsonResponse: Dict[str, Any]) -> str:
         if not utils.hasItems(jsonResponse):
             raise ValueError(f'jsonResponse argument is malformed: \"{jsonResponse}\"')
 
@@ -316,7 +353,7 @@ class PokepediaRepository():
 
         raise RuntimeError(f'can\'t find \"en\" language name in \"flavor_text_entries\" field: {jsonResponse}')
 
-    def __getEnName(self, jsonResponse: Dict[str, Any]) -> str:
+    async def __getEnName(self, jsonResponse: Dict[str, Any]) -> str:
         if not utils.hasItems(jsonResponse):
             raise ValueError(f'jsonResponse argument is malformed: \"{jsonResponse}\"')
 
@@ -469,18 +506,18 @@ class PokepediaRepository():
             response = await clientSession.get(f'https://pokeapi.co/api/v2/move/{name}/')
         except GenericNetworkException as e:
             self.__timber.log('PokepediaRepository', f'Encountered network error from PokeAPI when searching for \"{name}\" move: {e}', e)
-            raise RuntimeError(f'PokepediaRepository encountered network error from PokeAPI when searching for \"{name}\" move: {e}')
+            raise GenericNetworkException(f'PokepediaRepository encountered network error from PokeAPI when searching for \"{name}\" move: {e}')
 
         if response.getStatusCode() != 200:
             self.__timber.log('PokepediaRepository', f'Encountered non-200 HTTP status code from PokeAPI when searching for \"{name}\" move: \"{response.getStatusCode()}\"')
-            raise RuntimeError(f'PokepediaRepository encountered non-200 HTTP status code from PokeAPI when searching for \"{name}\" move: \"{response.getStatusCode()}\"')
+            raise GenericNetworkException(f'PokepediaRepository encountered non-200 HTTP status code from PokeAPI when searching for \"{name}\" move: \"{response.getStatusCode()}\"')
 
         jsonResponse: Optional[Dict[str, Any]] = await response.json()
         await response.close()
 
         if not utils.hasItems(jsonResponse):
             self.__timber.log('PokepediaRepository', f'Encountered data error from PokeAPI when searching for \"{name}\" move: {jsonResponse}')
-            raise RuntimeError(f'PokepediaRepository encountered data error from PokeAPI when searching for \"{name}\" move: {jsonResponse}')
+            raise GenericNetworkException(f'PokepediaRepository encountered data error from PokeAPI when searching for \"{name}\" move: {jsonResponse}')
 
         return await self.__buildMoveFromJsonResponse(jsonResponse)
 
@@ -497,17 +534,17 @@ class PokepediaRepository():
             response = await clientSession.get(f'https://pokeapi.co/api/v2/pokemon/{name}/')
         except GenericNetworkException as e:
             self.__timber.log('PokepediaRepository', f'Encountered network error from PokeAPI when searching for \"{name}\" Pokemon: {e}', e)
-            raise RuntimeError(f'PokepediaRepository encountered network error from PokeAPI when searching for \"{name}\" Pokemon: {e}')
+            raise GenericNetworkException(f'PokepediaRepository encountered network error from PokeAPI when searching for \"{name}\" Pokemon: {e}')
 
         if response.getStatusCode() != 200:
             self.__timber.log('PokepediaRepository', f'Encountered non-200 HTTP status code from PokeAPI when searching for \"{name}\" Pokemon: \"{response.getStatusCode()}\"')
-            raise RuntimeError(f'PokepediaRepository encountered non-200 HTTP status code from PokeAPI when searching for \"{name}\" Pokemon: \"{response.getStatusCode()}\"')
+            raise GenericNetworkException(f'PokepediaRepository encountered non-200 HTTP status code from PokeAPI when searching for \"{name}\" Pokemon: \"{response.getStatusCode()}\"')
 
         jsonResponse: Optional[Dict[str, Any]] = await response.json()
         await response.close()
 
         if not utils.hasItems(jsonResponse):
             self.__timber.log('PokepediaRepository', f'Encountered data error from PokeAPI when searching for \"{name}\" Pokemon: {jsonResponse}')
-            raise RuntimeError(f'PokepediaRepository encountered data error from PokeAPI when searching for \"{name}\" Pokemon: {jsonResponse}')
+            raise GenericNetworkException(f'PokepediaRepository encountered data error from PokeAPI when searching for \"{name}\" Pokemon: {jsonResponse}')
 
         return await self.__buildPokemonFromJsonResponse(jsonResponse)

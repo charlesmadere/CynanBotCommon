@@ -4,12 +4,15 @@ from typing import Any, Dict, List, Optional, Set
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.network.exceptions import GenericNetworkException
+    from CynanBotCommon.pkmn.pokepediaBerryFlavor import PokepediaBerryFlavor
     from CynanBotCommon.pkmn.pokepediaContestType import PokepediaContestType
     from CynanBotCommon.pkmn.pokepediaElementType import PokepediaElementType
     from CynanBotCommon.pkmn.pokepediaGeneration import PokepediaGeneration
     from CynanBotCommon.pkmn.pokepediaMachineType import PokepediaMachineType
     from CynanBotCommon.pkmn.pokepediaMove import PokepediaMove
+    from CynanBotCommon.pkmn.pokepediaNature import PokepediaNature
     from CynanBotCommon.pkmn.pokepediaRepository import PokepediaRepository
+    from CynanBotCommon.pkmn.pokepediaStat import PokepediaStat
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.absTriviaQuestionRepository import \
@@ -31,6 +34,15 @@ try:
 except:
     import utils
     from network.exceptions import GenericNetworkException
+    from pkmn.pokepediaBerryFlavor import PokepediaBerryFlavor
+    from pkmn.pokepediaContestType import PokepediaContestType
+    from pkmn.pokepediaElementType import PokepediaElementType
+    from pkmn.pokepediaGeneration import PokepediaGeneration
+    from pkmn.pokepediaMachineType import PokepediaMachineType
+    from pkmn.pokepediaMove import PokepediaMove
+    from pkmn.pokepediaNature import PokepediaNature
+    from pkmn.pokepediaRepository import PokepediaRepository
+    from pkmn.pokepediaStat import PokepediaStat
     from timber.timber import Timber
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.absTriviaQuestionRepository import AbsTriviaQuestionRepository
@@ -46,13 +58,6 @@ except:
     from trivia.triviaSource import TriviaSource
     from trivia.triviaType import TriviaType
     from trivia.trueFalseTriviaQuestion import TrueFalseTriviaQuestion
-
-    from pkmn.pokepediaContestType import PokepediaContestType
-    from pkmn.pokepediaElementType import PokepediaElementType
-    from pkmn.pokepediaGeneration import PokepediaGeneration
-    from pkmn.pokepediaMachineType import PokepediaMachineType
-    from pkmn.pokepediaMove import PokepediaMove
-    from pkmn.pokepediaRepository import PokepediaRepository
 
 
 class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
@@ -84,31 +89,6 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self.__triviaEmoteGenerator: TriviaEmoteGenerator = triviaEmoteGenerator
         self.__triviaIdGenerator: TriviaIdGenerator = triviaIdGenerator
         self.__maxGeneration: PokepediaGeneration = maxGeneration
-
-    async def __createMoveQuestion(self) -> Dict[str, Any]:
-        try:
-            move = await self.__pokepediaRepository.fetchRandomMove(
-                maxGeneration = self.__maxGeneration
-            )
-        except GenericNetworkException as e:
-            self.__timber.log('PkmnTriviaQuestionRepository', f'Encountered network error when fetching trivia question: {e}', e)
-            raise GenericTriviaNetworkException(self.getTriviaSource(), e)
-
-        triviaDict: Optional[Dict[str, Any]] = None
-
-        while triviaDict is None:
-            randomTriviaType = random.randint(0, 2)
-
-            if randomTriviaType == 0:
-                triviaDict = await self.__createMoveContestTypeQuestion(move)
-            elif randomTriviaType == 1:
-                triviaDict = await self.__createMoveIsAvailableAsMachineQuestion(move)
-            elif randomTriviaType == 2:
-                triviaDict = await self.__createMoveIsAvailableAsWhichMachineQuestion(move)
-            else:
-                raise RuntimeError(f'PkmnTriviaQuestionRepository\'s randomTriviaType value is out of bounds: \"{randomTriviaType}\"!')
-
-        return triviaDict
 
     async def __createMoveContestTypeQuestion(self, move: PokepediaMove) -> Optional[Dict[str, Any]]:
         if not isinstance(move, PokepediaMove):
@@ -176,6 +156,66 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
             'triviaType': TriviaType.MULTIPLE_CHOICE
         }
 
+    async def __createMoveQuestion(self) -> Dict[str, Any]:
+        try:
+            move = await self.__pokepediaRepository.fetchRandomMove(
+                maxGeneration = self.__maxGeneration
+            )
+        except GenericNetworkException as e:
+            self.__timber.log('PkmnTriviaQuestionRepository', f'Encountered network error when fetching trivia question: {e}', e)
+            raise GenericTriviaNetworkException(self.getTriviaSource(), e)
+
+        triviaDict: Optional[Dict[str, Any]] = None
+
+        while triviaDict is None:
+            randomTriviaType = random.randint(0, 2)
+
+            if randomTriviaType == 0:
+                triviaDict = await self.__createMoveContestTypeQuestion(move)
+            elif randomTriviaType == 1:
+                triviaDict = await self.__createMoveIsAvailableAsMachineQuestion(move)
+            elif randomTriviaType == 2:
+                triviaDict = await self.__createMoveIsAvailableAsWhichMachineQuestion(move)
+            else:
+                raise RuntimeError(f'PkmnTriviaQuestionRepository\'s randomTriviaType value is out of bounds: \"{randomTriviaType}\"!')
+
+        return triviaDict
+
+    async def __createNatureQuestion(self) -> Dict[str, Any]:
+        try:
+            nature = await self.__pokepediaRepository.fetchRandomNature()
+        except GenericNetworkException as e:
+            self.__timber.log('PkmnTriviaQuestionRepository', f'Encountered network error when fetching trivia question: {e}', e)
+            raise GenericTriviaNetworkException(self.getTriviaSource(), e)
+
+        triviaDict: Optional[Dict[str, Any]] = None
+
+        while triviaDict is None:
+            randomTriviaType = random.randint(0, 1)
+
+            if randomTriviaType == 0:
+                triviaDict = await self.__createNatureLikesBerryFlavorQuestion(nature)
+            elif randomTriviaType == 1:
+                triviaDict = await self.__createNatureHatesBerryFlavorQuestion(nature)
+            else:
+                raise RuntimeError(f'PkmnTriviaQuestionRepository\'s randomTriviaType value is out of bounds: \"{randomTriviaType}\"!')
+
+        return triviaDict
+
+    async def __createNatureHatesBerryFlavorQuestion(self, nature: PokepediaNature) -> Dict[str, Any]:
+        if not isinstance(nature, PokepediaNature):
+            raise ValueError(f'nature argument is malformed: \"{self}\"')
+
+        # TODO
+        raise NotImplementedError()
+
+    async def __createNatureLikesBerryFlavorQuestion(self, nature: PokepediaNature) -> Dict[str, Any]:
+        if not isinstance(nature, PokepediaNature):
+            raise ValueError(f'nature argument is malformed: \"{self}\"')
+
+        # TODO
+        raise NotImplementedError()
+
     async def __createPokemonQuestion(self) -> Dict[str, Any]:
         try:
             pokemon = await self.__pokepediaRepository.fetchRandomPokemon(
@@ -202,19 +242,78 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
             'triviaType': TriviaType.MULTIPLE_CHOICE
         }
 
+    async def __createStatOrNatureQuestion(self) -> Dict[str, Any]:
+        randomTriviaType = random.randint(0, 1)
+
+        if randomTriviaType == 0:
+            return await self.__createStatQuestion()
+        elif randomTriviaType == 1:
+            return await self.__createNatureQuestion()
+        else:
+            raise RuntimeError(f'PkmnTriviaQuestionRepository\'s randomTriviaType value is out of bounds: \"{randomTriviaType}\"!')
+
+    async def __createStatQuestion(self) -> Dict[str, Any]:
+        try:
+            stat = await self.__pokepediaRepository.fetchRandomStat()
+        except GenericNetworkException as e:
+            self.__timber.log('PkmnTriviaQuestionRepository', f'Encountered network error when fetching trivia question: {e}', e)
+            raise GenericTriviaNetworkException(self.getTriviaSource(), e)
+
+        triviaDict: Optional[Dict[str, Any]] = None
+
+        while triviaDict is None:
+            randomTriviaType = random.randint(0, 1)
+
+            if randomTriviaType == 0:
+                triviaDict = await self.__createStatDecreasingNaturesQuestion(stat)
+            elif randomTriviaType == 1:
+                triviaDict = await self.__createStatIncreasingNaturesQuestion(stat)
+            else:
+                raise RuntimeError(f'PkmnTriviaQuestionRepository\'s randomTriviaType value is out of bounds: \"{randomTriviaType}\"!')
+
+        return triviaDict
+
+    async def __createStatDecreasingNaturesQuestion(self, stat: PokepediaStat) -> Dict[str, Any]:
+        if not isinstance(stat, PokepediaStat):
+            raise ValueError(f'stat argument is malformed: \"{stat}\"')
+
+        decreasingNatures = stat.getDecreasingNatures()
+        randomNature = random.choice(list(PokepediaNature))
+
+        return {
+            'correctAnswer': decreasingNatures is not None and randomNature in decreasingNatures,
+            'question': f'In Pokémon, the {stat.toStr()} stat is negatively impacted by the {randomNature.toStr()} nature.',
+            'triviaType': TriviaType.TRUE_FALSE
+        }
+
+    async def __createStatIncreasingNaturesQuestion(self, stat: PokepediaStat) -> Dict[str, Any]:
+        if not isinstance(stat, PokepediaStat):
+            raise ValueError(f'stat argument is malformed: \"{stat}\"')
+
+        increasingNatures = stat.getIncreasingNatures()
+        randomNature = random.choice(list(PokepediaNature))
+
+        return {
+            'correctAnswer': increasingNatures is not None and randomNature in increasingNatures,
+            'question': f'In Pokémon, the {stat.toStr()} stat is positively impacted by the {randomNature.toStr()} nature.',
+            'triviaType': TriviaType.TRUE_FALSE
+        }
+
     async def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
         self.__timber.log('PkmnTriviaQuestionRepository', f'Fetching trivia question... (twitchChannel={twitchChannel})')
 
-        randomTriviaType = random.randint(0, 1)
+        randomTriviaType = random.randint(0, 2)
         triviaDict: Optional[Dict[str, Any]] = None
 
         if randomTriviaType == 0:
             triviaDict = await self.__createMoveQuestion()
         elif randomTriviaType == 1:
             triviaDict = await self.__createPokemonQuestion()
+        elif randomTriviaType == 2:
+            triviaDict = await self.__createStatQuestion()
         else:
             raise RuntimeError(f'PkmnTriviaQuestionRepository\'s randomTriviaType value is out of bounds: \"{randomTriviaType}\"!')
 
