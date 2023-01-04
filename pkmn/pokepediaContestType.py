@@ -22,18 +22,11 @@ class PokepediaContestType(Enum):
 
         text = text.lower()
 
-        if text == 'beauty':
-            return PokepediaContestType.BEAUTY
-        elif text == 'cool':
-            return PokepediaContestType.COOL
-        elif text == 'cute':
-            return PokepediaContestType.CUTE
-        elif text == 'smart':
-            return PokepediaContestType.SMART
-        elif text == 'tough':
-            return PokepediaContestType.TOUGH
-        else:
-            raise ValueError(f'unknown PokepediaContestType: \"{text}\"')
+        for contestType in PokepediaContestType:
+            if contestType.toStr().lower() == text:
+                return contestType
+
+        raise ValueError(f'unknown PokepediaContestType: \"{text}\"')
 
     def toStr(self) -> str:
         if self is PokepediaContestType.BEAUTY:
