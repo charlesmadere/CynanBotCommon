@@ -4,11 +4,10 @@ from typing import Optional
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.pkmn.pokepediaBerryFlavor import PokepediaBerryFlavor
-    from CynanBotCommon.pkmn.pokepediaStat import PokepediaStat
 except:
     import utils
+
     from pkmn.pokepediaBerryFlavor import PokepediaBerryFlavor
-    from pkmn.pokepediaStat import PokepediaStat
 
 
 class PokepediaNature(Enum):
@@ -49,60 +48,6 @@ class PokepediaNature(Enum):
                 return nature
 
         raise ValueError(f'number argument does not match any PokepediaNature: {number}')
-
-    def getDecreasedStat(self) -> Optional[PokepediaStat]:
-        if self is PokepediaNature.HARDY:
-            return None
-        elif self is PokepediaNature.LONELY:
-            return PokepediaStat.DEFENSE
-        elif self is PokepediaNature.BRAVE:
-            return PokepediaStat.SPEED
-        elif self is PokepediaNature.ADAMANT:
-            return PokepediaStat.SPECIAL_ATTACK
-        elif self is PokepediaNature.NAUGHTY:
-            return PokepediaStat.SPECIAL_DEFENSE
-        elif self is PokepediaNature.BOLD:
-            return PokepediaStat.ATTACK
-        elif self is PokepediaNature.DOCILE:
-            return None
-        elif self is PokepediaNature.RELAXED:
-            return PokepediaStat.SPEED
-        elif self is PokepediaNature.IMPISH:
-            return PokepediaStat.SPECIAL_ATTACK
-        elif self is PokepediaNature.LAX:
-            return PokepediaStat.SPECIAL_DEFENSE
-        elif self is PokepediaNature.TIMID:
-            return PokepediaStat.ATTACK
-        elif self is PokepediaNature.HASTY:
-            return PokepediaStat.DEFENSE
-        elif self is PokepediaNature.SERIOUS:
-            return None
-        elif self is PokepediaNature.JOLLY:
-            return PokepediaStat.SPECIAL_ATTACK
-        elif self is PokepediaNature.NAIVE:
-            return PokepediaStat.SPECIAL_DEFENSE
-        elif self is PokepediaNature.MODEST:
-            return PokepediaStat.ATTACK
-        elif self is PokepediaNature.MILD:
-            return PokepediaStat.DEFENSE
-        elif self is PokepediaNature.QUIET:
-            return PokepediaStat.SPEED
-        elif self is PokepediaNature.BASHFUL:
-            return None
-        elif self is PokepediaNature.RASH:
-            return PokepediaStat.SPECIAL_DEFENSE
-        elif self is PokepediaNature.CALM:
-            return PokepediaStat.ATTACK
-        elif self is PokepediaNature.GENTLE:
-            return PokepediaStat.DEFENSE
-        elif self is PokepediaNature.SASSY:
-            return PokepediaStat.DEFENSE
-        elif self is PokepediaNature.CAREFUL:
-            return PokepediaStat.SPECIAL_ATTACK
-        elif self is PokepediaNature.QUIRKY:
-            return None
-        else:
-            raise RuntimeError(f'unknown PokepediaNature: \"{self}\"')
 
     def getHatesFlavor(self) -> Optional[PokepediaBerryFlavor]:
         if self is PokepediaNature.HARDY:
@@ -153,60 +98,6 @@ class PokepediaNature(Enum):
             return PokepediaBerryFlavor.SWEET
         elif self is PokepediaNature.CAREFUL:
             return PokepediaBerryFlavor.DRY
-        elif self is PokepediaNature.QUIRKY:
-            return None
-        else:
-            raise RuntimeError(f'unknown PokepediaNature: \"{self}\"')
-
-    def getIncreasedStat(self) -> Optional[PokepediaStat]:
-        if self is PokepediaNature.HARDY:
-            return None
-        elif self is PokepediaNature.LONELY:
-            return PokepediaStat.ATTACK
-        elif self is PokepediaNature.BRAVE:
-            return PokepediaStat.ATTACK
-        elif self is PokepediaNature.ADAMANT:
-            return PokepediaStat.ATTACK
-        elif self is PokepediaNature.NAUGHTY:
-            return PokepediaStat.ATTACK
-        elif self is PokepediaNature.BOLD:
-            return PokepediaStat.DEFENSE
-        elif self is PokepediaNature.DOCILE:
-            return None
-        elif self is PokepediaNature.RELAXED:
-            return PokepediaStat.DEFENSE
-        elif self is PokepediaNature.IMPISH:
-            return PokepediaStat.DEFENSE
-        elif self is PokepediaNature.LAX:
-            return PokepediaStat.DEFENSE
-        elif self is PokepediaNature.TIMID:
-            return PokepediaStat.SPEED
-        elif self is PokepediaNature.HASTY:
-            return PokepediaStat.SPEED
-        elif self is PokepediaNature.SERIOUS:
-            return None
-        elif self is PokepediaNature.JOLLY:
-            return PokepediaStat.SPEED
-        elif self is PokepediaNature.NAIVE:
-            return PokepediaStat.SPEED
-        elif self is PokepediaNature.MODEST:
-            return PokepediaStat.SPECIAL_ATTACK
-        elif self is PokepediaNature.MILD:
-            return PokepediaStat.SPECIAL_ATTACK
-        elif self is PokepediaNature.QUIET:
-            return PokepediaStat.SPECIAL_ATTACK
-        elif self is PokepediaNature.BASHFUL:
-            return None
-        elif self is PokepediaNature.RASH:
-            return PokepediaStat.SPECIAL_ATTACK
-        elif self is PokepediaNature.CALM:
-            return PokepediaStat.SPECIAL_DEFENSE
-        elif self is PokepediaNature.GENTLE:
-            return PokepediaStat.SPECIAL_DEFENSE
-        elif self is PokepediaNature.SASSY:
-            return PokepediaStat.SPECIAL_DEFENSE
-        elif self is PokepediaNature.CAREFUL:
-            return PokepediaStat.SPECIAL_DEFENSE
         elif self is PokepediaNature.QUIRKY:
             return None
         else:

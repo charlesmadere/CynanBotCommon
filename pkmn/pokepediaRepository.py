@@ -24,6 +24,8 @@ except:
     import utils
     from network.exceptions import GenericNetworkException
     from network.networkClientProvider import NetworkClientProvider
+    from timber.timber import Timber
+
     from pkmn.pokepediaContestType import PokepediaContestType
     from pkmn.pokepediaDamageClass import PokepediaDamageClass
     from pkmn.pokepediaElementType import PokepediaElementType
@@ -35,7 +37,6 @@ except:
     from pkmn.pokepediaNature import PokepediaNature
     from pkmn.pokepediaPokemon import PokepediaPokemon
     from pkmn.pokepediaStat import PokepediaStat
-    from timber.timber import Timber
 
 
 class PokepediaRepository():

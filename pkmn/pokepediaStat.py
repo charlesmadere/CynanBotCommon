@@ -6,6 +6,7 @@ try:
     from CynanBotCommon.pkmn.pokepediaNature import PokepediaNature
 except:
     import utils
+
     from pkmn.pokepediaNature import PokepediaNature
 
 
