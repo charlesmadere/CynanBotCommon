@@ -2,6 +2,8 @@ from typing import List, Optional
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.administratorProviderInterface import \
+        AdministratorProviderInterface
     from CynanBotCommon.storage.backingDatabase import BackingDatabase
     from CynanBotCommon.storage.databaseConnection import DatabaseConnection
     from CynanBotCommon.storage.databaseType import DatabaseType
@@ -17,6 +19,7 @@ try:
     from CynanBotCommon.users.userIdsRepository import UserIdsRepository
 except:
     import utils
+    from administratorProviderInterface import AdministratorProviderInterface
     from storage.backingDatabase import BackingDatabase
     from storage.databaseConnection import DatabaseConnection
     from storage.databaseType import DatabaseType
@@ -35,16 +38,16 @@ class TriviaGameGlobalControllersRepository():
 
     def __init__(
         self,
+        administratorProviderInterface: AdministratorProviderInterface,
         backingDatabase: BackingDatabase,
-        administrator: str,
         timber: Timber,
         twitchTokensRepository: TwitchTokensRepository,
         userIdsRepository: UserIdsRepository
     ):
-        if not isinstance(backingDatabase, BackingDatabase):
+        if not isinstance(administratorProviderInterface, AdministratorProviderInterface):
+            raise ValueError(f'administratorProviderInterface argument is malformed: \"{administratorProviderInterface}\"')
+        elif not isinstance(backingDatabase, BackingDatabase):
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
-        elif not utils.isValidStr(administrator):
-            raise ValueError(f'administrator argument is malformed: \"{administrator}\"')
         elif not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(twitchTokensRepository, TwitchTokensRepository):
@@ -52,8 +55,8 @@ class TriviaGameGlobalControllersRepository():
         elif not isinstance(userIdsRepository, UserIdsRepository):
             raise ValueError(f'userIdsRepository argument is malformed: \"{userIdsRepository}\"')
 
+        self.__administratorProviderInterface: AdministratorProviderInterface = administratorProviderInterface
         self.__backingDatabase: BackingDatabase = backingDatabase
-        self.__administrator: str = administrator
         self.__timber: Timber = timber
         self.__twitchTokensRepository: TwitchTokensRepository = twitchTokensRepository
         self.__userIdsRepository: UserIdsRepository = userIdsRepository
@@ -64,7 +67,8 @@ class TriviaGameGlobalControllersRepository():
         if not utils.isValidStr(userName):
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
 
-        twitchAccessToken = await self.__twitchTokensRepository.getAccessToken(self.__administrator)
+        administrator = await self.__administratorProviderInterface.getAdministrator()
+        twitchAccessToken = await self.__twitchTokensRepository.getAccessToken(administrator)
         userId: Optional[str] = None
 
         try:
