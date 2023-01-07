@@ -34,15 +34,6 @@ try:
 except:
     import utils
     from network.exceptions import GenericNetworkException
-    from pkmn.pokepediaBerryFlavor import PokepediaBerryFlavor
-    from pkmn.pokepediaContestType import PokepediaContestType
-    from pkmn.pokepediaElementType import PokepediaElementType
-    from pkmn.pokepediaGeneration import PokepediaGeneration
-    from pkmn.pokepediaMachineType import PokepediaMachineType
-    from pkmn.pokepediaMove import PokepediaMove
-    from pkmn.pokepediaNature import PokepediaNature
-    from pkmn.pokepediaRepository import PokepediaRepository
-    from pkmn.pokepediaStat import PokepediaStat
     from timber.timber import Timber
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.absTriviaQuestionRepository import AbsTriviaQuestionRepository
@@ -58,6 +49,16 @@ except:
     from trivia.triviaSource import TriviaSource
     from trivia.triviaType import TriviaType
     from trivia.trueFalseTriviaQuestion import TrueFalseTriviaQuestion
+
+    from pkmn.pokepediaBerryFlavor import PokepediaBerryFlavor
+    from pkmn.pokepediaContestType import PokepediaContestType
+    from pkmn.pokepediaElementType import PokepediaElementType
+    from pkmn.pokepediaGeneration import PokepediaGeneration
+    from pkmn.pokepediaMachineType import PokepediaMachineType
+    from pkmn.pokepediaMove import PokepediaMove
+    from pkmn.pokepediaNature import PokepediaNature
+    from pkmn.pokepediaRepository import PokepediaRepository
+    from pkmn.pokepediaStat import PokepediaStat
 
 
 class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
@@ -194,27 +195,56 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
             randomTriviaType = random.randint(0, 1)
 
             if randomTriviaType == 0:
-                triviaDict = await self.__createNatureLikesBerryFlavorQuestion(nature)
+                triviaDict = await self.__createNatureBerryFlavorQuestion(
+                    nature = nature,
+                    berryFlavor = nature.getLikesFlavor(),
+                    likeOrDislikeStr = 'like'
+                )
             elif randomTriviaType == 1:
-                triviaDict = await self.__createNatureHatesBerryFlavorQuestion(nature)
+                triviaDict = await self.__createNatureBerryFlavorQuestion(
+                    nature = nature,
+                    berryFlavor = nature.getHatesFlavor(),
+                    likeOrDislikeStr = 'dislike'
+                )
             else:
                 raise RuntimeError(f'PkmnTriviaQuestionRepository\'s randomTriviaType value is out of bounds: \"{randomTriviaType}\"!')
 
         return triviaDict
 
-    async def __createNatureHatesBerryFlavorQuestion(self, nature: PokepediaNature) -> Dict[str, Any]:
+    async def __createNatureBerryFlavorQuestion(
+        self,
+        nature: PokepediaNature,
+        berryFlavor: Optional[PokepediaBerryFlavor],
+        likeOrDislikeStr: str
+    ) -> Dict[str, Any]:
         if not isinstance(nature, PokepediaNature):
-            raise ValueError(f'nature argument is malformed: \"{self}\"')
+            raise ValueError(f'nature argument is malformed: \"{nature}\"')
+        elif berryFlavor is not None and not isinstance(berryFlavor, PokepediaBerryFlavor):
+            raise ValueError(f'berryFlavor argument is malformed: \"{berryFlavor}\"')
+        elif not utils.isValidStr(likeOrDislikeStr):
+            raise ValueError(f'likeOrDislikeStr argument is malformed: \"{likeOrDislikeStr}\"')
 
-        # TODO
-        raise NotImplementedError()
+        randomFlavors = await self.__selectRandomFalseBerryFlavors(berryFlavor)
 
-    async def __createNatureLikesBerryFlavorQuestion(self, nature: PokepediaNature) -> Dict[str, Any]:
-        if not isinstance(nature, PokepediaNature):
-            raise ValueError(f'nature argument is malformed: \"{self}\"')
+        flavorsStrs: List[str] = list()
+        for randomFlavor in randomFlavors:
+            flavorsStrs.append(randomFlavor.toStr())
 
-        # TODO
-        raise NotImplementedError()
+        noneOfThese = 'None of these'
+        flavorsStrs.append(noneOfThese)
+
+        correctAnswer = ''
+        if berryFlavor is None:
+            correctAnswer = noneOfThese
+        else:
+            correctAnswer = berryFlavor.toStr()
+
+        return {
+            'correctAnswer': correctAnswer,
+            'incorrectAnswers': flavorsStrs,
+            'question': f'Pokémon with the nature {nature.toStr()} {likeOrDislikeStr} ONE of the following flavors.',
+            'triviaType': TriviaType.MULTIPLE_CHOICE
+        }
 
     async def __createPokemonQuestion(self) -> Dict[str, Any]:
         try:
@@ -313,7 +343,7 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
         elif randomTriviaType == 1:
             triviaDict = await self.__createPokemonQuestion()
         elif randomTriviaType == 2:
-            triviaDict = await self.__createStatQuestion()
+            triviaDict = await self.__createStatOrNatureQuestion()
         else:
             raise RuntimeError(f'PkmnTriviaQuestionRepository\'s randomTriviaType value is out of bounds: \"{randomTriviaType}\"!')
 
@@ -375,6 +405,29 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
     def getTriviaSource(self) -> TriviaSource:
         return TriviaSource.POKE_API
+
+    async def __selectRandomFalseBerryFlavors(
+        self,
+        actualFlavor: Optional[PokepediaBerryFlavor]
+    ) -> Set[PokepediaBerryFlavor]:
+        if actualFlavor is not None and not isinstance(actualFlavor, PokepediaBerryFlavor):
+            raise ValueError(f'actualFlavor argument is malformed: \"{actualFlavor}\"')
+
+        allFlavors = list(PokepediaBerryFlavor)
+        falseFlavors: Set[PokepediaBerryFlavor] = set()
+
+        minResponses = await self._triviaSettingsRepository.getMinMultipleChoiceResponses()
+        maxResponses = await self._triviaSettingsRepository.getMaxMultipleChoiceResponses()
+        maxResponses = min(maxResponses, len(PokepediaBerryFlavor) - 1)
+        responses = random.randint(minResponses, maxResponses)
+
+        while len(falseFlavors) < responses:
+            randomFlavor = random.choice(allFlavors)
+
+            if randomFlavor is not actualFlavor:
+                falseFlavors.add(randomFlavor)
+
+        return randomFlavor
 
     async def __selectRandomFalseContestTypes(
         self,
