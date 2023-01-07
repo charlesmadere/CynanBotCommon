@@ -427,7 +427,7 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
             if randomFlavor is not actualFlavor:
                 falseFlavors.add(randomFlavor)
 
-        return randomFlavor
+        return falseFlavors
 
     async def __selectRandomFalseContestTypes(
         self,
