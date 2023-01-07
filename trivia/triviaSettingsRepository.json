@@ -30,7 +30,7 @@
         },
         "millionaire": {
             "is_enabled": true,
-            "weight": 700
+            "weight": 600
         },
         "open_trivia": {
             "is_enabled": true,
@@ -42,7 +42,7 @@
         },
         "poke_api": {
             "is_enabled": true,
-            "weight": 175
+            "weight": 150
         },
         "quiz_api": {
             "is_enabled": true,
@@ -50,7 +50,7 @@
         },
         "trivia_database": {
             "is_enabled": true,
-            "weight": 600
+            "weight": 700
         },
         "will_fry_trivia": {
             "is_enabled": true,
