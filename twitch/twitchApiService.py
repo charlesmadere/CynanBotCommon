@@ -28,6 +28,7 @@ except:
     from network.exceptions import GenericNetworkException
     from network.networkClientProvider import NetworkClientProvider
     from timber.timber import Timber
+
     from twitch.exceptions import (TwitchAccessTokenMissingException,
                                    TwitchErrorException, TwitchJsonException,
                                    TwitchRefreshTokenMissingException,
@@ -76,6 +77,7 @@ class TwitchApiService():
         elif len(userNames) > 100:
             raise ValueError(f'userNames argument has too many values (len is {len(userNames)}, max is 100): \"{userNames}\"')
 
+        userNames = userNames.sort(key = lambda userName: userName.lower())
         self.__timber.log('TwitchApiService', f'Fetching live user details... (userNames=\"{userNames}\")')
 
         userNamesStr = '&user_login='.join(userNames)
@@ -101,10 +103,12 @@ class TwitchApiService():
         if not utils.hasItems(jsonResponse):
             self.__timber.log('TwitchApiService', f'Received a null/empty JSON response when fetching live user details (userNames=\"{userNames}\"): {jsonResponse}')
             raise TwitchJsonException(f'TwitchApiService received a null/empty JSON response when fetching live user details (userNames=\"{userNames}\"): {jsonResponse}')
-
-        if responseStatusCode == 401 or ('error' in jsonResponse and len(jsonResponse['error']) >= 1):
+        elif responseStatusCode == 401 or ('error' in jsonResponse and len(jsonResponse['error']) >= 1):
             self.__timber.log('TwitchApiService', f'Received an error ({responseStatusCode}) when fetching live user details (userNames=\"{userNames}\"): {jsonResponse}')
             raise TwitchTokenIsExpiredException(f'TwitchApiService received an error ({responseStatusCode}) when fetching live user details (userNames=\"{userNames}\"): {jsonResponse}')
+        elif responseStatusCode != 200:
+            self.__timber.log('TwitchApiService', f'Encountered non-200 HTTP status code when fetching live user details (userNames=\"{userNames}\"): {responseStatusCode}')
+            raise GenericNetworkException(f'TwitchApiService encountered non-200 HTTP status code when fetching live user details (userNames=\"{userNames}\"): {responseStatusCode}')
 
         data: Optional[List[Dict[str, Any]]] = jsonResponse.get('data')
         users: List[TwitchLiveUserDetails] = list()
