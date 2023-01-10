@@ -6,6 +6,7 @@ try:
     from CynanBotCommon.network.exceptions import GenericNetworkException
     from CynanBotCommon.pkmn.pokepediaBerryFlavor import PokepediaBerryFlavor
     from CynanBotCommon.pkmn.pokepediaContestType import PokepediaContestType
+    from CynanBotCommon.pkmn.pokepediaDamageClass import PokepediaDamageClass
     from CynanBotCommon.pkmn.pokepediaElementType import PokepediaElementType
     from CynanBotCommon.pkmn.pokepediaGeneration import PokepediaGeneration
     from CynanBotCommon.pkmn.pokepediaMachineType import PokepediaMachineType
@@ -52,6 +53,7 @@ except:
 
     from pkmn.pokepediaBerryFlavor import PokepediaBerryFlavor
     from pkmn.pokepediaContestType import PokepediaContestType
+    from pkmn.pokepediaDamageClass import PokepediaDamageClass
     from pkmn.pokepediaElementType import PokepediaElementType
     from pkmn.pokepediaGeneration import PokepediaGeneration
     from pkmn.pokepediaMachineType import PokepediaMachineType
@@ -246,6 +248,50 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
             'triviaType': TriviaType.MULTIPLE_CHOICE
         }
 
+    async def __createPhysicalOrSpecialQuestion(self) -> Dict[str, Any]:
+        applicableDamageClasses: List[PokepediaDamageClass] = [
+            PokepediaDamageClass.PHYSICAL, PokepediaDamageClass.SPECIAL
+        ]
+
+        actualDamageClass = random.choice(applicableDamageClasses)
+
+        applicableElementTypes: List[PokepediaElementType] = [
+            PokepediaElementType.BUG, PokepediaElementType.DARK, PokepediaElementType.DRAGON,
+            PokepediaElementType.ELECTRIC, PokepediaElementType.FIGHTING, PokepediaElementType.FIRE,
+            PokepediaElementType.FLYING, PokepediaElementType.GHOST, PokepediaElementType.GRASS,
+            PokepediaElementType.GROUND, PokepediaElementType.ICE, PokepediaElementType.NORMAL,
+            PokepediaElementType.POISON, PokepediaElementType.PSYCHIC, PokepediaElementType.ROCK,
+            PokepediaElementType.STEEL, PokepediaElementType.WATER
+        ]
+
+        actualElementType = random.choice(applicableElementTypes)
+
+        while actualElementType is None or PokepediaDamageClass.getTypeBasedDamageClass(actualElementType) is not actualDamageClass:
+            actualElementType = random.choice(applicableElementTypes)
+
+        minResponses = await self._triviaSettingsRepository.getMinMultipleChoiceResponses()
+        maxResponses = await self._triviaSettingsRepository.getMaxMultipleChoiceResponses()
+        maxResponses = min(maxResponses, len(PokepediaElementType) - 1)
+        responses = random.randint(minResponses, maxResponses)
+
+        falseElementTypes: Set[PokepediaElementType] = set()
+        while len(falseElementTypes) < responses:
+            falseElementType = random.choice(applicableElementTypes)
+
+            if PokepediaDamageClass.getTypeBasedDamageClass(falseElementType) is not actualDamageClass:
+                falseElementTypes.add(falseElementType)
+
+        falseElementTypesStrs: List[str] = list()
+        for falseElementType in falseElementTypes:
+            falseElementTypesStrs.append(falseElementType.toStr())
+
+        return {
+            'correctAnswer': actualElementType.toStr(),
+            'incorrectAnswers': falseElementTypesStrs,
+            'question': f'In Pokémon generations 1 through 3, which one of the following types has a {actualDamageClass.toStr().lower()} damage class?',
+            'triviaType': TriviaType.MULTIPLE_CHOICE
+        }
+
     async def __createPokemonQuestion(self) -> Dict[str, Any]:
         try:
             pokemon = await self.__pokepediaRepository.fetchRandomPokemon(
@@ -335,15 +381,17 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         self.__timber.log('PkmnTriviaQuestionRepository', f'Fetching trivia question... (twitchChannel={twitchChannel})')
 
-        randomTriviaType = random.randint(0, 2)
+        randomTriviaType = random.randint(0, 6)
         triviaDict: Optional[Dict[str, Any]] = None
 
-        if randomTriviaType == 0:
-            triviaDict = await self.__createMoveQuestion()
-        elif randomTriviaType == 1:
+        if randomTriviaType <= 2:
             triviaDict = await self.__createPokemonQuestion()
-        elif randomTriviaType == 2:
+        elif randomTriviaType == 4:
+            triviaDict = await self.__createMoveQuestion()
+        elif randomTriviaType == 5:
             triviaDict = await self.__createStatOrNatureQuestion()
+        elif randomTriviaType == 6:
+            triviaDict = await self.__createPhysicalOrSpecialQuestion()
         else:
             raise RuntimeError(f'PkmnTriviaQuestionRepository\'s randomTriviaType value is out of bounds: \"{randomTriviaType}\"!')
 
