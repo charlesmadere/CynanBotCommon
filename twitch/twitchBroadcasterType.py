@@ -25,4 +25,4 @@ class TwitchBroadcasterType(Enum):
         elif text == 'partner':
             return TwitchBroadcasterType.PARTNER
         else:
-            raise RuntimeError(f'unknown TwitchBroadcasterType: \"{text}\"')
+            raise ValueError(f'unknown TwitchBroadcasterType: \"{text}\"')

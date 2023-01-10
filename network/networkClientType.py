@@ -23,4 +23,4 @@ class NetworkClientType(Enum):
         elif text == 'requests':
             return NetworkClientType.REQUESTS
         else:
-            raise RuntimeError(f'unknown NetworkClientType: \"{text}\"')
+            raise ValueError(f'unknown NetworkClientType: \"{text}\"')

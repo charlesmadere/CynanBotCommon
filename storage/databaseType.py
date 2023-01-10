@@ -23,4 +23,4 @@ class DatabaseType(Enum):
         elif text == 'sqlite':
             return DatabaseType.SQLITE
         else:
-            raise RuntimeError(f'unknown DatabaseType: \"{text}\"')
+            raise ValueError(f'unknown DatabaseType: \"{text}\"')
