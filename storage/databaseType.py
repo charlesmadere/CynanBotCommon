@@ -18,7 +18,7 @@ class DatabaseType(Enum):
 
         text = text.lower()
 
-        if text == 'postgres' or text == 'postgresql':
+        if text in ('postgres', 'postgresql'):
             return DatabaseType.POSTGRESQL
         elif text == 'sqlite':
             return DatabaseType.SQLITE

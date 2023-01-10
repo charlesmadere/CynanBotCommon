@@ -41,7 +41,7 @@ class TriviaSource(Enum):
             return TriviaSource.LORD_OF_THE_RINGS
         elif text == 'millionaire':
             return TriviaSource.MILLIONAIRE
-        elif text == 'open_trivia' or text == 'open_trivia_database':
+        elif text in ('open_trivia', 'open_trivia_database'):
             return TriviaSource.OPEN_TRIVIA_DATABASE
         elif text == 'open_trivia_qa':
             return TriviaSource.OPEN_TRIVIA_QA
@@ -51,7 +51,7 @@ class TriviaSource(Enum):
             return TriviaSource.QUIZ_API
         elif text == 'trivia_database':
             return TriviaSource.TRIVIA_DATABASE
-        elif text == 'will_fry_trivia' or text == 'will_fry_trivia_api':
+        elif text in ('will_fry_trivia', 'will_fry_trivia_api'):
             return TriviaSource.WILL_FRY_TRIVIA
         elif text == 'wwtbam':
             return TriviaSource.WWTBAM

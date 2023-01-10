@@ -19,11 +19,11 @@ class TriviaType(Enum):
 
         text = text.lower()
 
-        if text == 'bool' or text == 'boolean' or text == 'true-false' or text == 'true_false' or text == 'true false':
+        if text in ('bool', 'boolean', 'true-false', 'true_false', 'true false'):
             return TriviaType.TRUE_FALSE
-        elif text == 'multiple' or text == 'multiple-choice' or text == 'multiple_choice' or text == 'multiple choice':
+        elif text in ('multiple', 'multiple-choice', 'multiple_choice', 'multiple choice'):
             return TriviaType.MULTIPLE_CHOICE
-        elif text == 'question-answer' or text == 'question_answer' or text == 'question answer':
+        elif text in ('question-answer', 'question_answer', 'question answer'):
             return TriviaType.QUESTION_ANSWER
         else:
             raise ValueError(f'unknown TriviaType: \"{text}\"')
