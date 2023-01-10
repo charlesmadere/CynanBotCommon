@@ -161,6 +161,31 @@ class PokepediaRepository():
 
         return await self.__buildMachineFromJsonResponse(jsonResponse)
 
+    async def fetchMove(self, moveId: int) -> PokepediaMove:
+        if not utils.isValidInt(moveId):
+            raise ValueError(f'moveId argument is malformed: \"{moveId}\"')
+
+        clientSession = await self.__networkClientProvider.get()
+
+        try:
+            response = await clientSession.get(f'https://pokeapi.co/api/v2/move/{moveId}')
+        except GenericNetworkException as e:
+            self.__timber.log('PokepediaRepository', f'Encountered network error from PokeAPI when fetching move with ID \"{moveId}\": {e}', e)
+            raise GenericNetworkException(f'PokepediaRepository encountered network error from PokeAPI when fetching move with ID \"{moveId}\": {e}')
+
+        if response.getStatusCode() != 200:
+            self.__timber.log('PokepediaRepository', f'Encountered non-200 HTTP status code from PokeAPI when fetching move with ID \"{moveId}\": \"{response.getStatusCode()}\"')
+            raise GenericNetworkException(f'PokepediaRepository encountered non-200 HTTP status code from PokeAPI when fetching move with ID \"{moveId}\": \"{response.getStatusCode()}\"')
+
+        jsonResponse: Optional[Dict[str, Any]] = await response.json()
+        await response.close()
+
+        if not utils.hasItems(jsonResponse):
+            self.__timber.log('PokepediaRepository', f'Encountered data error from PokeAPI when fetching move with ID \"{moveId}\": {jsonResponse}')
+            raise GenericNetworkException(f'PokepediaRepository encountered data error from PokeAPI when fetching move with ID \"{moveId}\": {jsonResponse}')
+
+        return await self.__buildMoveFromJsonResponse(jsonResponse)
+
     async def __fetchMoveMachines(
         self,
         machinesJson: Optional[List[Dict[str, Any]]]
@@ -216,26 +241,7 @@ class PokepediaRepository():
             raise ValueError(f'maxGeneration argument is malformed: \"{maxGeneration}\"')
 
         randomMoveId = random.randint(1, maxGeneration.getMaxMoveId())
-        clientSession = await self.__networkClientProvider.get()
-
-        try:
-            response = await clientSession.get(f'https://pokeapi.co/api/v2/move/{randomMoveId}')
-        except GenericNetworkException as e:
-            self.__timber.log('PokepediaRepository', f'Encountered network error from PokeAPI when fetching move with ID \"{randomMoveId}\": {e}', e)
-            raise GenericNetworkException(f'PokepediaRepository encountered network error from PokeAPI when fetching move with ID \"{randomMoveId}\": {e}')
-
-        if response.getStatusCode() != 200:
-            self.__timber.log('PokepediaRepository', f'Encountered non-200 HTTP status code from PokeAPI when fetching move with ID \"{randomMoveId}\": \"{response.getStatusCode()}\"')
-            raise GenericNetworkException(f'PokepediaRepository encountered non-200 HTTP status code from PokeAPI when fetching move with ID \"{randomMoveId}\": \"{response.getStatusCode()}\"')
-
-        jsonResponse: Optional[Dict[str, Any]] = await response.json()
-        await response.close()
-
-        if not utils.hasItems(jsonResponse):
-            self.__timber.log('PokepediaRepository', f'Encountered data error from PokeAPI when fetching move with ID \"{randomMoveId}\": {jsonResponse}')
-            raise GenericNetworkException(f'PokepediaRepository encountered data error from PokeAPI when fetching move with ID \"{randomMoveId}\": {jsonResponse}')
-
-        return await self.__buildMoveFromJsonResponse(jsonResponse)
+        return await self.fetchMove(randomMoveId)
 
     async def fetchRandomNature(self) -> PokepediaNature:
         allNatures = list(PokepediaNature)
