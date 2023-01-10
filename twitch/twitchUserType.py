@@ -25,6 +25,8 @@ class TwitchUserType(Enum):
             return TwitchUserType.ADMIN
         elif text == 'global_mod':
             return TwitchUserType.GLOBAL_MOD
+        elif text == 'normal':
+            return TwitchUserType.NORMAL
         elif text == 'staff':
             return TwitchUserType.STAFF
         else:
