@@ -299,32 +299,40 @@ class TriviaAnswerChecker():
                 yield 'saint'
 
             # geographical features/streets
-            if word == 'aly':
+            if word in ('aly', 'ally'):
                 yield 'alley'
+            if word in ('anx', 'annx'):
+                yield 'anex'
             if word == 'arc':
                 yield 'arcade'
-            if word == 'ave':
+            if word in ('av', 'ave', 'avn'):
                 yield 'avenue'
             if word == 'bch':
                 yield 'beach'
-            if word == 'blvd':
+            if word in ('blvd', 'boul'):
                 yield 'boulevard'
+            if word in ('br', 'brnch'):
+                yield 'branch'
             if word == 'brg':
                 yield 'bridge'
             if word == 'brk':
                 yield 'brook'
             if word == 'byu':
                 yield 'bayou'
+            if word in ('canyn', 'cnyn'):
+                yield 'canyon'
+            if word in ('cir', 'cir', 'circl', 'crcl'):
+                yield 'circle'
             if word == 'clb':
                 yield 'club'
             if word == 'cty':
                 yield 'city'
             if word in ('ct', 'crt'):
                 yield 'court'
+            if word in ('cts', 'crts'):
+                yield 'courts'
             if word == 'crk':
                 yield 'creek'
-            if word in ('canyn', 'cnyn'):
-                yield 'canyon'
             if word == 'cswy':
                 yield 'causeway'
             if word in ('cen', 'cntr', 'ctr'):
@@ -351,12 +359,18 @@ class TriviaAnswerChecker():
                 yield 'green'
             if word == 'grv':
                 yield 'grove'
-            if word == 'hwy':
-                yield 'highway'
+            if word == 'hvn':
+                yield 'haven'
             if word in ('ht', 'hgt', 'hts'):
                 yield 'height'
+            if word in ('hiwy', 'hiway', 'hway', 'hwy'):
+                yield 'highway'
             if word in ('is', 'isl'):
                 yield 'island'
+            if word == 'kr':
+                yield 'korea'
+            if word in ('jp', 'jpn'):
+                yield 'japan'
             if word in ('ldg', 'ldge'):
                 yield 'lodge'
             if word == 'lk':
@@ -461,6 +475,8 @@ class TriviaAnswerChecker():
                 yield 'integer'
             if word in ('ms', 'msft'):
                 yield 'microsoft'
+            if word == 'ppi':
+                yield 'pixels per inch'
             if word == 'pt':
                 yield 'point'
             if word == 'px':
@@ -555,12 +571,14 @@ class TriviaAnswerChecker():
                 yield 'terabyte'
             if word == 'w':
                 yield 'watt'
-            if word == 'yd':
+            if word in ('yd', 'yds', 'yrd', 'yrds'):
                 yield 'yard'
 
             # other
             if word == 'ac':
                 yield 'alternating current'
+            if word == 'bday':
+                yield 'birthday'
             if word == 'dc':
                 yield 'direct current'
             if word == 'dept':
