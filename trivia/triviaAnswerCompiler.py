@@ -16,13 +16,14 @@ class TriviaAnswerCompiler():
 
     def __init__(self):
         self.__ampersandRegEx: Pattern = re.compile(r'(^&\s+)|(\s+&\s+)|(\s+&$)', re.IGNORECASE)
-        self.__decadeRegEx: Pattern = re.compile(r'(\d{4})\'?s', re.IGNORECASE)
+        self.__decadeRegEx: Pattern = re.compile(r'^(\d{4})\'?s$', re.IGNORECASE)
+        self.__honoraryPrefixRegEx: Pattern = re.compile(r'^(king|mr|mrs|ms|queen|saint|sir).?\s+', re.IGNORECASE)
         self.__japaneseSuffixRegEx: Pattern = re.compile(r'(\s|-)+(chan|kun|sama|san)$', re.IGNORECASE)
         self.__multipleChoiceAnswerRegEx: Pattern = re.compile(r'[a-z]', re.IGNORECASE)
         self.__newLineRegEx: Pattern = re.compile(r'(\n)+', re.IGNORECASE)
         self.__parenGroupRegEx: Pattern = re.compile(r'(\(.*?\))', re.IGNORECASE)
         self.__phraseAnswerRegEx: Pattern = re.compile(r'[^A-Za-z0-9 ]|(?<=\s)\s+', re.IGNORECASE)
-        self.__prefixRegEx: Pattern = re.compile(r'^(a|an|and|of|miss|mr|mrs|or|saint|sir|the|this|to)\s+', re.IGNORECASE)
+        self.__prefixRegEx: Pattern = re.compile(r'^(a|an|and|of|the|this|to)\s+', re.IGNORECASE)
         self.__tagRemovalRegEx: Pattern = re.compile(r'[<\[]\/?\w+[>\]]', re.IGNORECASE)
         self.__whiteSpaceRegEx: Pattern = re.compile(r'\s\s*', re.IGNORECASE)
 
@@ -95,28 +96,37 @@ class TriviaAnswerCompiler():
         # removes common phrase prefixes
         answer = self.__prefixRegEx.sub('', answer).strip()
 
-        # removes common Japanese name suffixes
-        answer = self.__japaneseSuffixRegEx.sub('', answer).strip()
-
         # convert special characters to latin where possible
         answer = self.__fancyToLatin(answer).strip()
+
+        japaneseSuffixMatch = self.__japaneseSuffixRegEx.search(answer)
+        if japaneseSuffixMatch is not None:
+            japaneseSuffix = japaneseSuffixMatch.group()
+
+            if japaneseSuffix.startswith('-'):
+                answerList = list(answer)
+                answerList[japaneseSuffixMatch.start()] = ' '
+                answer = ''.join(answerList)
 
         # removes all special characters
         answer = self.__phraseAnswerRegEx.sub('', answer).strip()
 
         # Special case: check for an answer that is all digits except for an ending "s" character.
         # If this is the case, remove the ending "s" character.
-        decadeRegExMatch = self.__decadeRegEx.fullmatch(answer)
-        if decadeRegExMatch is not None:
-            answer = decadeRegExMatch.group(1)
+        decadeMatch = self.__decadeRegEx.fullmatch(answer)
+        if decadeMatch is not None:
+            answer = decadeMatch.group(1)
 
         return answer
 
     async def compileTextAnswersList(
         self,
-        answers: List[Optional[str]],
+        answers: Optional[List[Optional[str]]],
         expandParentheses: bool = True
     ) -> List[str]:
+        if not utils.isValidBool(expandParentheses):
+            raise ValueError(f'expandParentheses argument is malformed: \"{expandParentheses}\"')
+
         if not utils.hasItems(answers):
             return list()
 
@@ -132,17 +142,18 @@ class TriviaAnswerCompiler():
                 if expandParentheses:
                     possibilities = await self.__getParentheticalPossibilities(case)
                 else:
-                    possibilities = [case]
+                    possibilities = [ case ]
 
                 for possibility in possibilities:
                     cleanedAnswer = await self.compileTextAnswer(possibility)
-                    cleanedAnswers.add(self.__whiteSpaceRegEx.sub(' ', cleanedAnswer))
+                    cleanedAnswers.add(self.__whiteSpaceRegEx.sub(' ', cleanedAnswer).strip())
 
         return list(answer for answer in cleanedAnswers if utils.isValidStr(answer))
 
     async def expandSpecialCases(self, answer: str) -> List[str]:
         # expand 'X=5' to ['5', 'X = 5', 'X is 5', 'X equals 5']
         match = self.__equationRegEx.search(answer)
+
         if match:
             return [
                 match.group(2),
@@ -155,11 +166,13 @@ class TriviaAnswerCompiler():
         split = self.__hashRegEx.split(answer)
         for i in range(1, len(split), 2):
             split[i] = ['number ', '#']
+
         return [''.join(item) for item in utils.permuteSubArrays(split)]
 
     # returns text answers with all arabic and roman numerals expanded into possible full-word forms
     async def expandNumerals(self, answer: str) -> List[str]:
         split = self.__numeralRegEx.split(answer)
+
         for i in range(1, len(split), 2):
             match = self.__groupedNumeralRegEx.fullmatch(split[i])
             if not match:
@@ -170,6 +183,7 @@ class TriviaAnswerCompiler():
             else:
                 # arabic numerals
                 split[i] = await self.__getArabicNumeralSubstitutes(match.group(1))
+
         return list(set(''.join(item) for item in utils.permuteSubArrays(split)))
 
     async def compileTextAnswerToMultipleChoiceOrdinal(self, answer: Optional[str]) -> int:
@@ -184,6 +198,7 @@ class TriviaAnswerCompiler():
     async def __getArabicNumeralSubstitutes(self, arabicNumerals: str) -> List[str]:
         individualDigits = ' '.join([num2words(int(digit)) for digit in arabicNumerals])
         n = int(arabicNumerals)
+
         return [
                 num2words(n, to='ordinal').replace('-', ' ').replace(',', ''),
                 'the ' + num2words(n, to='ordinal').replace('-', ' ').replace(',', ''),
@@ -194,6 +209,7 @@ class TriviaAnswerCompiler():
 
     async def __getRomanNumeralSubstitutes(self, romanNumerals: str) -> List[str]:
         n = roman.fromRoman(romanNumerals.upper())
+
         return [
             romanNumerals.lower(),
             num2words(n, to='ordinal').replace('-', ' ').replace(',', ''),
@@ -204,8 +220,20 @@ class TriviaAnswerCompiler():
 
     # Returns all possibilities with parenthesized phrases both included and excluded
     async def __getParentheticalPossibilities(self, answer: str) -> List[str]:
+        honoraryPrefixMatch = self.__honoraryPrefixRegEx.match(answer)
+        if honoraryPrefixMatch is not None and utils.isValidStr(honoraryPrefixMatch.group()):
+            oldHonoraryString = honoraryPrefixMatch.group()
+            newHonoraryString = f'({oldHonoraryString.strip()})'
+            answer = answer.replace(oldHonoraryString, newHonoraryString)
+
+        japaneseSuffixMatch = self.__japaneseSuffixRegEx.match(answer)
+        if japaneseSuffixMatch is not None and utils.isValidStr(japaneseSuffixMatch.group()):
+            oldHonoraryString = japaneseSuffixMatch.group()
+            newHonoraryString = f'({oldHonoraryString.strip()})'
+            answer = answer.replace(oldHonoraryString, newHonoraryString)
+
         # Split the uncleaned answer with this regex to find all parentheticals
-        splitPossibilities = self.__parenGroupRegEx.split(answer)
+        splitPossibilities: List[str] = self.__parenGroupRegEx.split(answer)
 
         # join the split possibilities back to strings and substitute multiple whitespaces back to a single space.
         return [ self.__whiteSpaceRegEx.sub(' ', ''.join(p).strip()) for p in await self.__getSubPossibilities(splitPossibilities) ]

@@ -717,7 +717,7 @@ class TestTriviaAnswerChecker():
 
     @pytest.mark.asyncio
     async def test_checkAnswer_withQuestionAnswerQuestion_withMrPotatoHead(self):
-        answer = 'Mr. Potato Head'
+        answer = '(Mr) Potato Head'
 
         correctAnswers = await self.triviaQuestionCompiler.compileResponses([ answer ])
         cleanedCorrectAnswers = await self.triviaAnswerCompiler.compileTextAnswersList([ answer ])
@@ -741,10 +741,31 @@ class TestTriviaAnswerChecker():
         result = await self.triviaAnswerChecker.checkAnswer('mr potato head', question)
         assert result is TriviaAnswerCheckResult.CORRECT
 
+        result = await self.triviaAnswerChecker.checkAnswer('mister potato head', question)
+        assert result is TriviaAnswerCheckResult.CORRECT
+
+        result = await self.triviaAnswerChecker.checkAnswer('ms potato head', question)
+        assert result is TriviaAnswerCheckResult.INCORRECT
+
+        result = await self.triviaAnswerChecker.checkAnswer('miss potato head', question)
+        assert result is TriviaAnswerCheckResult.INCORRECT
+
+        result = await self.triviaAnswerChecker.checkAnswer('mrs potato head', question)
+        assert result is TriviaAnswerCheckResult.INCORRECT
+
+        result = await self.triviaAnswerChecker.checkAnswer('missus potato head', question)
+        assert result is TriviaAnswerCheckResult.INCORRECT
+
         result = await self.triviaAnswerChecker.checkAnswer('mr', question)
         assert result is TriviaAnswerCheckResult.INCORRECT
 
+        result = await self.triviaAnswerChecker.checkAnswer('mister', question)
+        assert result is TriviaAnswerCheckResult.INCORRECT
+
         result = await self.triviaAnswerChecker.checkAnswer('potato', question)
+        assert result is TriviaAnswerCheckResult.INCORRECT
+
+        result = await self.triviaAnswerChecker.checkAnswer('head', question)
         assert result is TriviaAnswerCheckResult.INCORRECT
 
     def test_sanity(self):

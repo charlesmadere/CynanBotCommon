@@ -153,18 +153,17 @@ class TriviaAnswerChecker():
         elif triviaQuestion.getTriviaType() is not TriviaType.QUESTION_ANSWER:
             raise RuntimeError(f'TriviaType is not {TriviaType.QUESTION_ANSWER}: \"{triviaQuestion.getTriviaType()}\"')
 
-        # prevent potential answer insanity
+        # prevent potential for insane answer lengths
         maxPhraseGuessLength = await self.__triviaSettingsRepository.getMaxPhraseGuessLength()
         if utils.isValidStr(answer) and len(answer) > maxPhraseGuessLength:
             answer = answer[0:maxPhraseGuessLength]
 
         cleanedAnswers = await self.__triviaAnswerCompiler.compileTextAnswersList([ answer ], False)
-
         if not all(utils.isValidStr(cleanedAnswer) for cleanedAnswer in cleanedAnswers):
             return TriviaAnswerCheckResult.INCORRECT
 
         cleanedCorrectAnswers = triviaQuestion.getCleanedCorrectAnswers()
-        self.__timber.log('TriviaAnswerChecker', f'answer:\"{answer}\", cleanedAnswers:\"{cleanedAnswers}\", correctAnswers:\"{triviaQuestion.getCorrectAnswers()}\", cleanedCorrectAnswers:\"{cleanedCorrectAnswers}\", extras:\"{extras}\"')
+        self.__timber.log('TriviaAnswerChecker', f'In depth question/answer debug information — (answer=\"{answer}\") (cleanedAnswers=\"{cleanedAnswers}\") (correctAnswers=\"{triviaQuestion.getCorrectAnswers()}\") (cleanedCorrectAnswers=\"{cleanedCorrectAnswers}\") (extras=\"{extras}\")')
 
         for cleanedCorrectAnswer in cleanedCorrectAnswers:
             for cleanedAnswer in cleanedAnswers:

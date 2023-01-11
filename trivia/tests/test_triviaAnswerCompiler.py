@@ -225,10 +225,10 @@ class TestTriviaAnswerCompiler():
     @pytest.mark.asyncio
     async def test_compileTextAnswer_withMiyamotoSan(self):
         result: str = await self.triviaAnswerCompiler.compileTextAnswer('Miyamoto san')
-        assert result == 'miyamoto'
+        assert result == 'miyamoto san'
 
         result: str = await self.triviaAnswerCompiler.compileTextAnswer('Miyamoto-san')
-        assert result == 'miyamoto'
+        assert result == 'miyamoto san'
 
     @pytest.mark.asyncio
     async def test_compileTextAnswer_withNewLines(self):
@@ -243,10 +243,10 @@ class TestTriviaAnswerCompiler():
     @pytest.mark.asyncio
     async def test_compileTextAnswer_withOkyakuSama(self):
         result: str = await self.triviaAnswerCompiler.compileTextAnswer('Okyaku sama')
-        assert result == 'okyaku'
+        assert result == 'okyaku sama'
 
         result: str = await self.triviaAnswerCompiler.compileTextAnswer('Okyaku-sama')
-        assert result == 'okyaku'
+        assert result == 'okyaku sama'
 
     @pytest.mark.asyncio
     async def test_compileTextAnswer_withPrefixA(self):
@@ -261,20 +261,20 @@ class TestTriviaAnswerCompiler():
     @pytest.mark.asyncio
     async def test_compileTextAnswer_withRinonChan(self):
         result: str = await self.triviaAnswerCompiler.compileTextAnswer('Rinon chan')
-        assert result == 'rinon'
+        assert result == 'rinon chan'
 
         result: str = await self.triviaAnswerCompiler.compileTextAnswer('Rinon-chan')
-        assert result == 'rinon'
+        assert result == 'rinon chan'
 
     @pytest.mark.asyncio
     async def test_compileTextAnswer_withSaintNicholas(self):
         result: str = await self.triviaAnswerCompiler.compileTextAnswer('Saint Nicholas')
-        assert result == 'nicholas'
+        assert result == 'saint nicholas'
 
     @pytest.mark.asyncio
     async def test_compileTextAnswer_withSirPeter(self):
         result: str = await self.triviaAnswerCompiler.compileTextAnswer('Sir Peter')
-        assert result == 'peter'
+        assert result == 'sir peter'
 
     @pytest.mark.asyncio
     async def test_compileTextAnswer_withToRun(self):
