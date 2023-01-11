@@ -17,8 +17,8 @@ class TriviaAnswerCompiler():
     def __init__(self):
         self.__ampersandRegEx: Pattern = re.compile(r'(^&\s+)|(\s+&\s+)|(\s+&$)', re.IGNORECASE)
         self.__decadeRegEx: Pattern = re.compile(r'^(\d{4})\'?s$', re.IGNORECASE)
-        self.__honoraryPrefixRegEx: Pattern = re.compile(r'^(king|mr|mrs|ms|queen|saint|sir).?\s+', re.IGNORECASE)
-        self.__japaneseSuffixRegEx: Pattern = re.compile(r'(\s|-)+(chan|kun|sama|san)$', re.IGNORECASE)
+        self.__honoraryPrefixRegEx: Pattern = re.compile(r'^(bishop|captain|chancellor|chief|doctor|dr\.?|earl|father|general|king|lady|lord|madame|mother|mr\.?|mrs\.?|ms\.?|priest|president|professor|queen|saint|sir)\s+', re.IGNORECASE)
+        self.__japaneseHonorarySuffixRegEx: Pattern = re.compile(r'(\s|-)(chan|kun|sama|san|senpai|sensei|tan)$', re.IGNORECASE)
         self.__multipleChoiceAnswerRegEx: Pattern = re.compile(r'[a-z]', re.IGNORECASE)
         self.__newLineRegEx: Pattern = re.compile(r'(\n)+', re.IGNORECASE)
         self.__parenGroupRegEx: Pattern = re.compile(r'(\(.*?\))', re.IGNORECASE)
@@ -211,17 +211,45 @@ class TriviaAnswerCompiler():
 
     # Returns all possibilities with parenthesized phrases both included and excluded
     async def __getParentheticalPossibilities(self, answer: str) -> List[str]:
-        honoraryPrefixMatch = self.__honoraryPrefixRegEx.match(answer)
-        if honoraryPrefixMatch is not None and utils.isValidStr(honoraryPrefixMatch.group()):
-            oldHonoraryString = honoraryPrefixMatch.group()
-            newHonoraryString = f'({oldHonoraryString.strip()})'
-            answer = answer.replace(oldHonoraryString, newHonoraryString)
+        answer = await self.__patchAnswerHonoraryPrefixes(answer)
+        answer = await self.__patchAnswerJapaneseHonorarySuffixes(answer)
 
         # Split the uncleaned answer with this regex to find all parentheticals
         splitPossibilities: List[str] = self.__parenGroupRegEx.split(answer)
 
         # join the split possibilities back to strings and substitute multiple whitespaces back to a single space.
         return [ self.__whiteSpaceRegEx.sub(' ', ''.join(p).strip()) for p in await self.__getSubPossibilities(splitPossibilities) ]
+
+    # This method checks to see if an answer starts with an honorary prefix, like "Mr.", "Mrs.",
+    # etc. If it does, we patch this answer so that it will play nicely with our paren-checking.
+    # For example, this method will transform the string "Mr. Potato Head" into "(Mr) Potato Head".
+    async def __patchAnswerHonoraryPrefixes(self, answer: str) -> str:
+        honoraryMatch = self.__honoraryPrefixRegEx.match(answer)
+
+        if honoraryMatch is None or not utils.isValidStr(honoraryMatch.group()):
+            # return the unmodified answer
+            return answer
+
+        oldHonoraryString = honoraryMatch.group()
+
+        # make sure to remove the '.' character so that "Mr." becomes "(Mr)" rather than "(Mr.)"
+        newHonoraryString = f'({oldHonoraryString.strip()}) '.replace('.', '')
+
+        return answer.replace(oldHonoraryString, newHonoraryString)
+
+    # This method checks to see if an answer ends with a Japanese honorary suffix, like "chan", "sama",
+    # etc. If it does, we patch this answer so that it will play nicely with our paren-checking logic.
+    # For example, this method will transform the string "Miyamoto-sama" into "Miyamoto (sama)".
+    async def __patchAnswerJapaneseHonorarySuffixes(self, answer: str) -> str:
+        honoraryMatch = self.__japaneseHonorarySuffixRegEx.search(answer)
+
+        if honoraryMatch is None or not utils.isValidStr(honoraryMatch.group()):
+            # return the unmodified answer
+            return answer
+
+        oldHonoraryString = honoraryMatch.group()
+        newHonoraryString = f' ({oldHonoraryString[1:len(oldHonoraryString)].strip()})'
+        return answer.replace(oldHonoraryString, newHonoraryString)
 
     # Recursively resolves the possibilities for each word in the answer.
     async def __getSubPossibilities(self, splitAnswer: str) -> List[str]:
