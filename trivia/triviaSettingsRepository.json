@@ -14,7 +14,7 @@
         },
         "funtoon": {
             "is_enabled": true,
-            "weight": 150
+            "weight": 1000
         },
         "joke_trivia_repository": {
             "is_enabled": false,
@@ -22,7 +22,7 @@
         },
         "j_service": {
             "is_enabled": true,
-            "weight": 25
+            "weight": 100
         },
         "lord_of_the_rings": {
             "is_enabled": true,
