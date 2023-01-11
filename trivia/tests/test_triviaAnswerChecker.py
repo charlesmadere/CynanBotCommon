@@ -715,6 +715,44 @@ class TestTriviaAnswerChecker():
         result = await self.triviaAnswerChecker.checkAnswer('the new', question)
         assert result is TriviaAnswerCheckResult.INCORRECT
 
+    # @pytest.mark.asyncio
+    # async def test_checkAnswer_withQuestionAnswerQuestion_withMiyamotoSan(self):
+    #     answer = 'Miyamoto-san'
+
+    #     correctAnswers = await self.triviaQuestionCompiler.compileResponses([ answer ])
+    #     cleanedCorrectAnswers = await self.triviaAnswerCompiler.compileTextAnswersList([ answer ])
+
+    #     expandedCleanedCorrectAnswers: Set[str] = set()
+    #     for cleanedCorrectAnswer in cleanedCorrectAnswers:
+    #         expandedCleanedCorrectAnswers.update(await self.triviaAnswerCompiler.expandNumerals(cleanedCorrectAnswer))
+
+    #     question: AbsTriviaQuestion = QuestionAnswerTriviaQuestion(
+    #         correctAnswers=correctAnswers,
+    #         cleanedCorrectAnswers=list(expandedCleanedCorrectAnswers),
+    #         category='Test Category',
+    #         categoryId=None,
+    #         emote = '🏫',
+    #         question='Something about Nintendo',
+    #         triviaId='abc123',
+    #         triviaDifficulty=TriviaDifficulty.UNKNOWN,
+    #         triviaSource=TriviaSource.J_SERVICE
+    #     )
+
+    #     result = await self.triviaAnswerChecker.checkAnswer('miyamoto san', question)
+    #     assert result is TriviaAnswerCheckResult.CORRECT
+
+    #     result = await self.triviaAnswerChecker.checkAnswer('miyamoto', question)
+    #     assert result is TriviaAnswerCheckResult.CORRECT
+
+    #     result = await self.triviaAnswerChecker.checkAnswer('miyamoto chan', question)
+    #     assert result is TriviaAnswerCheckResult.INCORRECT
+
+    #     result = await self.triviaAnswerChecker.checkAnswer('miyamoto kun', question)
+    #     assert result is TriviaAnswerCheckResult.INCORRECT
+
+    #     result = await self.triviaAnswerChecker.checkAnswer('miyamoto sama', question)
+    #     assert result is TriviaAnswerCheckResult.INCORRECT
+
     @pytest.mark.asyncio
     async def test_checkAnswer_withQuestionAnswerQuestion_withMrPotatoHead(self):
         answer = '(Mr) Potato Head'

@@ -99,15 +99,6 @@ class TriviaAnswerCompiler():
         # convert special characters to latin where possible
         answer = self.__fancyToLatin(answer).strip()
 
-        japaneseSuffixMatch = self.__japaneseSuffixRegEx.search(answer)
-        if japaneseSuffixMatch is not None:
-            japaneseSuffix = japaneseSuffixMatch.group()
-
-            if japaneseSuffix.startswith('-'):
-                answerList = list(answer)
-                answerList[japaneseSuffixMatch.start()] = ' '
-                answer = ''.join(answerList)
-
         # removes all special characters
         answer = self.__phraseAnswerRegEx.sub('', answer).strip()
 
@@ -223,12 +214,6 @@ class TriviaAnswerCompiler():
         honoraryPrefixMatch = self.__honoraryPrefixRegEx.match(answer)
         if honoraryPrefixMatch is not None and utils.isValidStr(honoraryPrefixMatch.group()):
             oldHonoraryString = honoraryPrefixMatch.group()
-            newHonoraryString = f'({oldHonoraryString.strip()})'
-            answer = answer.replace(oldHonoraryString, newHonoraryString)
-
-        japaneseSuffixMatch = self.__japaneseSuffixRegEx.match(answer)
-        if japaneseSuffixMatch is not None and utils.isValidStr(japaneseSuffixMatch.group()):
-            oldHonoraryString = japaneseSuffixMatch.group()
             newHonoraryString = f'({oldHonoraryString.strip()})'
             answer = answer.replace(oldHonoraryString, newHonoraryString)
 
