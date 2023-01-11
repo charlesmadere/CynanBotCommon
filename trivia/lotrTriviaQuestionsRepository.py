@@ -135,8 +135,8 @@ class LotrTriviaQuestionRepository(AbsTriviaQuestionRepository):
         await connection.close()
         return triviaQuestionDict
 
-    def getSupportedTriviaTypes(self) -> List[TriviaType]:
-        return [ TriviaType.QUESTION_ANSWER ]
+    def getSupportedTriviaTypes(self) -> Set[TriviaType]:
+        return { TriviaType.QUESTION_ANSWER }
 
     def getTriviaSource(self) -> TriviaSource:
         return TriviaSource.LORD_OF_THE_RINGS

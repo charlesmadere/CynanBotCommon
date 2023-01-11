@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 try:
     import CynanBotCommon.utils as utils
@@ -191,8 +191,8 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         raise UnsupportedTriviaTypeException(f'triviaType \"{triviaType}\" is not supported for Quiz API: {jsonResponse}')
 
-    def getSupportedTriviaTypes(self) -> List[TriviaType]:
-        return [ TriviaType.MULTIPLE_CHOICE, TriviaType.TRUE_FALSE ]
+    def getSupportedTriviaTypes(self) -> Set[TriviaType]:
+        return { TriviaType.MULTIPLE_CHOICE, TriviaType.TRUE_FALSE }
 
     def getTriviaSource(self) -> TriviaSource:
         return TriviaSource.QUIZ_API

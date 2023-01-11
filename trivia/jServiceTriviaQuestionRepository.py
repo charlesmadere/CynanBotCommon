@@ -176,8 +176,8 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         return questions
 
-    def getSupportedTriviaTypes(self) -> List[TriviaType]:
-        return [ TriviaType.QUESTION_ANSWER ]
+    def getSupportedTriviaTypes(self) -> Set[TriviaType]:
+        return { TriviaType.QUESTION_ANSWER }
 
     def getTriviaSource(self) -> TriviaSource:
         return TriviaSource.J_SERVICE

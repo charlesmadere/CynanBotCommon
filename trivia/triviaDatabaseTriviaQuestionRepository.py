@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Set
 
 import aiosqlite
 
@@ -155,8 +155,8 @@ class TriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
         await connection.close()
         return triviaQuestionDict
 
-    def getSupportedTriviaTypes(self) -> List[TriviaType]:
-        return [ TriviaType.MULTIPLE_CHOICE, TriviaType.TRUE_FALSE ]
+    def getSupportedTriviaTypes(self) -> Set[TriviaType]:
+        return { TriviaType.MULTIPLE_CHOICE, TriviaType.TRUE_FALSE }
 
     def getTriviaSource(self) -> TriviaSource:
         return TriviaSource.TRIVIA_DATABASE

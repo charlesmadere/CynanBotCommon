@@ -1,6 +1,6 @@
 import json
 import random
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set
 
 import aiofiles
 import aiofiles.ospath
@@ -139,8 +139,8 @@ class JokeTriviaQuestionRepository(AbsTriviaQuestionRepository):
         else:
             return None
 
-    def getSupportedTriviaTypes(self) -> List[TriviaType]:
-        return [ TriviaType.MULTIPLE_CHOICE, TriviaType.TRUE_FALSE ]
+    def getSupportedTriviaTypes(self) -> Set[TriviaType]:
+        return { TriviaType.MULTIPLE_CHOICE, TriviaType.TRUE_FALSE }
 
     def getTriviaSource(self) -> TriviaSource:
         return TriviaSource.JOKE_TRIVIA_REPOSITORY

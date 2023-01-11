@@ -448,8 +448,8 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         raise UnsupportedTriviaTypeException(f'triviaType \"{triviaType}\" is not supported for Pkmn Trivia: {triviaDict}')
 
-    def getSupportedTriviaTypes(self) -> List[TriviaType]:
-        return [ TriviaType.MULTIPLE_CHOICE, TriviaType.TRUE_FALSE ]
+    def getSupportedTriviaTypes(self) -> Set[TriviaType]:
+        return { TriviaType.MULTIPLE_CHOICE, TriviaType.TRUE_FALSE }
 
     def getTriviaSource(self) -> TriviaSource:
         return TriviaSource.POKE_API

@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set
 
 try:
     import CynanBotCommon.utils as utils
@@ -172,8 +172,8 @@ class WillFryTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         raise UnsupportedTriviaTypeException(f'triviaType \"{triviaType}\" is not supported for Will Fry Trivia: {jsonResponse}')
 
-    def getSupportedTriviaTypes(self) -> List[TriviaType]:
-        return [ TriviaType.MULTIPLE_CHOICE, TriviaType.TRUE_FALSE ]
+    def getSupportedTriviaTypes(self) -> Set[TriviaType]:
+        return { TriviaType.MULTIPLE_CHOICE, TriviaType.TRUE_FALSE }
 
     def getTriviaSource(self) -> TriviaSource:
         return TriviaSource.WILL_FRY_TRIVIA
