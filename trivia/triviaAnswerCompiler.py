@@ -156,7 +156,7 @@ class TriviaAnswerCompiler():
         # expand 'mambo #5' to ['mambo #5', 'mambo number 5']
         split = self.__hashRegEx.split(answer)
         for i in range(1, len(split), 2):
-            split[i] = ['number ', '#']
+            split[i] = [ 'number ', '#' ]
 
         return [''.join(item) for item in utils.permuteSubArrays(split)]
 
