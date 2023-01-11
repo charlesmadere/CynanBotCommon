@@ -11,7 +11,7 @@ except:
 class NonceRepository():
 
     def __init__(self, timber: Timber):
-        if timber is None:
+        if not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
 
         self.__timber: Timber = timber
