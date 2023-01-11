@@ -27,4 +27,4 @@ class TwitchSubscriberTier(Enum):
         elif text == '3000':
             return TwitchSubscriberTier.TIER_THREE
         else:
-            raise RuntimeError(f'unknown TwitchSubscriberTier: \"{text}\"')
+            raise ValueError(f'unknown TwitchSubscriberTier: \"{text}\"')

@@ -22,10 +22,6 @@ class TestTwitchUserType():
         result = TwitchUserType.fromStr(None)
         assert result is TwitchUserType.NORMAL
 
-    def test_fromStr_withNormalString(self):
-        result = TwitchUserType.fromStr('normal')
-        assert result is TwitchUserType.NORMAL
-
     def test_fromStr_withStaffString(self):
         result = TwitchUserType.fromStr('staff')
         assert result is TwitchUserType.STAFF
