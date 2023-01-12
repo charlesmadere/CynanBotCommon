@@ -10,12 +10,15 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.network.exceptions import GenericNetworkException
     from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.twitch.exceptions import \
+        TwitchTokensAlreadyExistForGivenTwitchHandle
     from CynanBotCommon.twitch.twitchApiService import TwitchApiService
 except:
     import utils
     from network.exceptions import GenericNetworkException
     from timber.timber import Timber
 
+    from twitch.exceptions import TwitchTokensAlreadyExistForGivenTwitchHandle
     from twitch.twitchApiService import TwitchApiService
 
 
@@ -26,7 +29,7 @@ class TwitchTokensRepository():
         timber: Timber,
         twitchApiService: TwitchApiService,
         twitchTokensFile: str = 'CynanBotCommon/twitch/twitchTokensRepository.json',
-        tokensExpirationBuffer: timedelta = timedelta(minutes = 30),
+        tokensExpirationBuffer: timedelta = timedelta(minutes = 15),
         timeZone: timezone = timezone.utc
     ):
         if not isinstance(timber, Timber):
@@ -48,6 +51,42 @@ class TwitchTokensRepository():
 
         self.__jsonCache: Optional[Dict[str, Any]] = None
         self.__tokenExpirations: Dict[str, datetime] = dict()
+
+    async def addUser(self, twitchHandle: str, code: str):
+        if not utils.isValidStr(twitchHandle):
+            raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
+        elif not utils.isValidStr(code):
+            raise ValueError(f'code argument is malformed: \"{code}\"')
+
+        twitchHandle = twitchHandle.lower()
+        self.__timber.log('TwitchTokensRepository', f'Adding user \"{twitchHandle}\"...')
+
+        if await self.hasAccessToken(twitchHandle):
+            raise TwitchTokensAlreadyExistForGivenTwitchHandle(f'Attempted to add user \"{twitchHandle}\", but they already have Twitch tokens!')
+
+        try:
+            tokens = await self.__twitchApiService.fetchTokens(code = code)
+        except GenericNetworkException as e:
+            self.__timber.log('TwitchTokensRepository', f'Encountered network error when trying to add user \"{twitchHandle}\": {e}', e)
+            raise GenericNetworkException(f'TwitchTokensRepository encountered network error when trying to add user \"{twitchHandle}\": {e}')
+
+        jsonContents = await self.__readAllJson()
+
+        jsonContents['twitchHandles'][twitchHandle] = {
+            'accessToken': tokens.getAccessToken(),
+            'refreshToken': tokens.getRefreshToken()
+        }
+
+        jsonString: str = ''
+        async with aiofiles.open(self.__twitchTokensFile, mode = 'w') as file:
+            jsonString = json.dumps(jsonContents, indent = 4, sort_keys = True)
+            await file.write(jsonString)
+
+        # be sure to clear caches, as JSON file contents have now been updated
+        await self.clearCaches()
+
+        if await self.__isDebugLoggingEnabled():
+            self.__timber.log('TwitchTokensRepository', f'{self.__twitchTokensFile} contents: {jsonString}')
 
     async def clearCaches(self):
         self.__jsonCache = None
@@ -123,10 +162,10 @@ class TwitchTokensRepository():
 
     async def __readAllTwitchHandleJson(self) -> Dict[str, Any]:
         jsonContents = await self.__readAllJson()
-        twitchHandlesJson: Dict[str, Any] = jsonContents.get('twitchHandles')
+        twitchHandlesJson: Optional[Dict[str, Any]] = jsonContents.get('twitchHandles')
 
-        if not utils.hasItems(twitchHandlesJson):
-            raise ValueError(f'\"twitchHandles\" JSON contents of Twitch tokens file \"{self.__twitchTokensFile}\" is missing/empty')
+        if twitchHandlesJson is None:
+            return dict()
 
         return twitchHandlesJson
 
@@ -137,9 +176,9 @@ class TwitchTokensRepository():
         twitchHandlesJson = await self.__readAllTwitchHandleJson()
         twitchHandle = twitchHandle.lower()
 
-        for key in twitchHandlesJson:
+        for key, userJson in twitchHandlesJson.items():
             if key.lower() == twitchHandle:
-                return twitchHandlesJson[key]
+                return userJson
 
         # Return an empty dictionary if the given user isn't found in the Twitch tokens file. This
         # is a good bit easier to handle than throwing an exception, or something else like that.

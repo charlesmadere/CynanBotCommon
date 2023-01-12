@@ -8,6 +8,12 @@ except:
 
 class UsersRepositoryInterface():
 
+    def containsUser(self, handle: str) -> bool:
+        pass
+
+    async def containsUserAsync(self, handle: str) -> bool:
+        pass
+
     def getUser(self, handle: str) -> UserInterface:
         pass
 
