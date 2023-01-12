@@ -23,18 +23,20 @@ class CutenessResult():
     ):
         if not isinstance(cutenessDate, CutenessDate):
             raise ValueError(f'cutenessDate argument is malformed: \"{cutenessDate}\"')
+        elif cuteness is not None and not utils.isValidInt(cuteness):
+            raise ValueError(f'cuteness argument is malformed: \"{cuteness}\"')
         elif not utils.isValidStr(userId):
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
         elif not utils.isValidStr(userName):
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
 
         self.__cutenessDate: CutenessDate = cutenessDate
-        self.__cuteness: int = cuteness
-        self.__localLeaderboard: List[CutenessEntry] = localLeaderboard
+        self.__cuteness: Optional[int] = cuteness
+        self.__localLeaderboard: Optional[List[CutenessEntry]] = localLeaderboard
         self.__userId: str = userId
         self.__userName: str = userName
 
-    def getCuteness(self) -> int:
+    def getCuteness(self) -> Optional[int]:
         return self.__cuteness
 
     def getCutenessDate(self) -> CutenessDate:
@@ -43,7 +45,7 @@ class CutenessResult():
     def getCutenessStr(self) -> str:
         return locale.format_string("%d", self.__cuteness, grouping = True)
 
-    def getLocalLeaderboard(self) -> List[CutenessEntry]:
+    def getLocalLeaderboard(self) -> Optional[List[CutenessEntry]]:
         return self.__localLeaderboard
 
     def getUserId(self) -> str:
@@ -53,7 +55,7 @@ class CutenessResult():
         return self.__userName
 
     def hasCuteness(self) -> bool:
-        return utils.isValidNum(self.__cuteness)
+        return utils.isValidInt(self.__cuteness)
 
     def hasLocalLeaderboard(self) -> bool:
         return utils.hasItems(self.__localLeaderboard)
