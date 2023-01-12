@@ -28,6 +28,7 @@ except:
     from network.exceptions import GenericNetworkException
     from network.networkClientProvider import NetworkClientProvider
     from timber.timber import Timber
+
     from twitch.exceptions import (TwitchAccessTokenMissingException,
                                    TwitchErrorException, TwitchJsonException,
                                    TwitchRefreshTokenMissingException,
@@ -134,6 +135,54 @@ class TwitchApiService():
 
         users.sort(key = lambda user: user.getUserName().lower())
         return users
+
+    async def fetchTokens(self, code: str) -> TwitchTokensDetails:
+        if not utils.isValidStr(code):
+            raise ValueError(f'code argument is malformed: \"{code}\"')
+
+        self.__timber.log('TwitchApiService', f'Fetching tokens... (code=\"{code}\")')
+
+        twitchClientId = await self.__twitchCredentialsProviderInterface.getTwitchClientId()
+        twitchClientSecret = await self.__twitchCredentialsProviderInterface.getTwitchClientSecret()
+        clientSession = await self.__networkClientProvider.get()
+
+        try:
+            response = await clientSession.post(
+                url = f'https://id.twitch.tv/oauth2/token?client_id={twitchClientId}&client_secret={twitchClientSecret}&code={code}&grant_type=authorization_code&redirect_uri=http://localhost'
+            )
+        except GenericNetworkException as e:
+            self.__timber.log('TwitchApiService', f'Encountered network error when fetching tokens (code=\"{code}\"): {e}', e)
+            raise GenericNetworkException(f'TwitchApiService encountered network error when fetching tokens (code=\"{code}\"): {e}')
+
+        if response.getStatusCode() != 200:
+            self.__timber.log('TwitchApiService', f'Encountered non-200 HTTP status code when fetching tokens (code=\"{code}\"): {response.getStatusCode()}')
+            raise GenericNetworkException(f'TwitchApiService encountered non-200 HTTP status code when fetching tokens (code=\"{code}\"): {response.getStatusCode()}')
+
+        jsonResponse: Optional[Dict[str, Any]] = await response.json()
+        await response.close()
+
+        if not utils.hasItems(jsonResponse):
+            self.__timber.log('TwitchApiService', f'Received a null/empty JSON response when fetching tokens (code=\"{code}\"): {jsonResponse}')
+            raise TwitchJsonException(f'TwitchApiService received a null/empty JSON response when fetching tokens (code=\"{code}\"): {jsonResponse}')
+        elif 'error' in jsonResponse and len(jsonResponse['error']) >= 1:
+            self.__timber.log('TwitchApiService', f'Received an error of some kind when fetching tokens (code=\"{code}\"): {jsonResponse}')
+            raise TwitchErrorException(f'TwitchApiService received an error of some kind when fetching tokens (code=\"{code}\"): {jsonResponse}')
+
+        accessToken = utils.getStrFromDict(jsonResponse, 'access_token', fallback = '')
+        if not utils.isValidStr(accessToken):
+            self.__timber.log('TwitchApiService', f'Received malformed \"access_token\" ({accessToken}) when fetching tokens (code=\"{code}\"): {jsonResponse}')
+            raise TwitchAccessTokenMissingException(f'TwitchApiService received malformed \"access_token\" ({accessToken}) when fetching tokens (code=\"{code}\"): {jsonResponse}')
+
+        refreshToken = utils.getStrFromDict(jsonResponse, 'refresh_token', fallback = '')
+        if not utils.isValidStr(refreshToken):
+            self.__timber.log('TwitchApiService', f'Received malformed \"refresh_token\" ({refreshToken}) when fetching tokens (code=\"{code}\"): {jsonResponse}')
+            raise TwitchRefreshTokenMissingException(f'TwitchApiService received malformed \"refresh_token\" ({refreshToken}) when fetching tokens (code=\"{code}\"): {jsonResponse}')
+
+        return TwitchTokensDetails(
+            expiresInSeconds = utils.getIntFromDict(jsonResponse, 'expires_in', fallback = -1),
+            accessToken = accessToken,
+            refreshToken = refreshToken
+        )
 
     async def fetchUserDetails(
         self,
