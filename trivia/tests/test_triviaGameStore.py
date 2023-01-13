@@ -92,7 +92,6 @@ class TriviaGameStoreTests():
         isShiny = False,
         pointsForWinning = 5,
         secondsToLive = 60,
-        shinyMultiplier = 8,
         actionId = 'abc123',
         twitchChannel = 'smCharles',
         userId = '111111',
@@ -104,7 +103,6 @@ class TriviaGameStoreTests():
         isShiny = False,
         pointsForWinning = 5,
         secondsToLive = 60,
-        shinyMultiplier = 8,
         actionId = 'abc123',
         twitchChannel = 'smCharles',
         userId = '222222',
@@ -116,7 +114,6 @@ class TriviaGameStoreTests():
         isShiny = False,
         pointsForWinning = 5,
         secondsToLive = 60,
-        shinyMultiplier = 8,
         actionId = 'abc123',
         twitchChannel = 'Imyt',
         userId = '222222',
@@ -129,7 +126,6 @@ class TriviaGameStoreTests():
         perUserAttempts = 2,
         pointsForWinning = 25,
         secondsToLive = 60,
-        shinyMultiplier = 8,
         actionId = 'abc123',
         twitchChannel = 'smCharles'
     )
@@ -140,7 +136,6 @@ class TriviaGameStoreTests():
         perUserAttempts = 2,
         pointsForWinning = 25,
         secondsToLive = 60,
-        shinyMultiplier = 8,
         actionId = 'abc123',
         twitchChannel = 'Imyt'
     )
