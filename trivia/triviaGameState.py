@@ -18,7 +18,6 @@ class TriviaGameState(AbsTriviaGameState):
         isShiny: bool,
         pointsForWinning: int,
         secondsToLive: int,
-        shinyMultiplier: int,
         actionId: str,
         twitchChannel: str,
         userId: str,
@@ -29,7 +28,6 @@ class TriviaGameState(AbsTriviaGameState):
             isShiny = isShiny,
             pointsForWinning = pointsForWinning,
             secondsToLive = secondsToLive,
-            shinyMultiplier = shinyMultiplier,
             actionId = actionId,
             twitchChannel = twitchChannel,
             triviaGameType = TriviaGameType.NORMAL
