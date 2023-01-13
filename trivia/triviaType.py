@@ -36,4 +36,4 @@ class TriviaType(Enum):
         elif self is TriviaType.TRUE_FALSE:
             return 'true-false'
         else:
-            raise ValueError(f'unknown TriviaType: \"{self}\"')
+            raise RuntimeError(f'unknown TriviaType: \"{self}\"')

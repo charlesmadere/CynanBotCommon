@@ -84,7 +84,7 @@ class TriviaSource(Enum):
         elif self is TriviaSource.WWTBAM:
             return True
         else:
-            raise ValueError(f'unknown TriviaSource: \"{self}\"')
+            raise RuntimeError(f'unknown TriviaSource: \"{self}\"')
 
     def toStr(self) -> str:
         if self is TriviaSource.BONGO:
@@ -114,4 +114,4 @@ class TriviaSource(Enum):
         elif self is TriviaSource.WWTBAM:
             return 'WWTBAM'
         else:
-            raise ValueError(f'unknown TriviaSource: \"{self}\"')
+            raise RuntimeError(f'unknown TriviaSource: \"{self}\"')
