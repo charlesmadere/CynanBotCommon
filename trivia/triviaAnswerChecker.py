@@ -123,7 +123,7 @@ class TriviaAnswerChecker():
             self.__timber.log('TriviaAnswerChecker', f'Unable to convert multiple choice answer to ordinal: \"{answer}\": {e}', e)
             return TriviaAnswerCheckResult.INVALID_INPUT
 
-        if not utils.isValidNum(answerOrdinal):
+        if not utils.isValidInt(answerOrdinal):
             # this should be impossible, but let's just check anyway
             self.__timber.log('TriviaAnswerChecker', f'Unable to convert multiple choice answer to ordinal: (answer=\"{answer}\", answerOrdinal={answerOrdinal})')
             return TriviaAnswerCheckResult.INVALID_INPUT
