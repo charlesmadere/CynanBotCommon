@@ -1,5 +1,3 @@
-from typing import List
-
 try:
     from ...trivia.triviaDifficulty import TriviaDifficulty
 except:
@@ -7,6 +5,42 @@ except:
 
 
 class TestTriviaDifficulty():
+
+    def test_fromInt_withFour(self):
+        result = TriviaDifficulty.fromInt(4)
+        assert result is TriviaDifficulty.UNKNOWN
+
+    def test_fromInt_withNegativeOne(self):
+        result = TriviaDifficulty.fromInt(-1)
+        assert result is TriviaDifficulty.UNKNOWN
+
+    def test_fromInt_withNone(self):
+        result: TriviaDifficulty = None
+        exception: Exception = None
+
+        try:
+            result = TriviaDifficulty.fromInt(None)
+        except Exception as e:
+            exception = e
+
+        assert result is TriviaDifficulty.UNKNOWN
+        assert exception is None
+
+    def test_fromInt_withOne(self):
+        result = TriviaDifficulty.fromInt(1)
+        assert result is TriviaDifficulty.EASY
+
+    def test_fromInt_withThree(self):
+        result = TriviaDifficulty.fromInt(3)
+        assert result is TriviaDifficulty.HARD
+
+    def test_fromInt_withTwo(self):
+        result = TriviaDifficulty.fromInt(2)
+        assert result is TriviaDifficulty.MEDIUM
+
+    def test_fromInt_withZero(self):
+        result = TriviaDifficulty.fromInt(0)
+        assert result is TriviaDifficulty.UNKNOWN
 
     def test_fromStr_withEmptyString(self):
         result: TriviaDifficulty = None
