@@ -1,4 +1,5 @@
 from enum import Enum, auto
+from typing import Optional
 
 try:
     import CynanBotCommon.utils as utils
@@ -14,8 +15,8 @@ class TriviaDifficulty(Enum):
     UNKNOWN = auto()
 
     @classmethod
-    def fromInt(cls, number: int):
-        if not utils.isValidNum(number):
+    def fromInt(cls, number: Optional[int]):
+        if not utils.isValidInt(number):
             return TriviaDifficulty.UNKNOWN
 
         if number == 1:
@@ -28,7 +29,7 @@ class TriviaDifficulty(Enum):
             return TriviaDifficulty.UNKNOWN
 
     @classmethod
-    def fromStr(cls, text: str):
+    def fromStr(cls, text: Optional[str]):
         if not utils.isValidStr(text):
             return TriviaDifficulty.UNKNOWN
 
@@ -53,7 +54,7 @@ class TriviaDifficulty(Enum):
         elif self is TriviaDifficulty.UNKNOWN:
             return 0
         else:
-            raise ValueError(f'unknown TriviaDifficulty: \"{self}\"')
+            raise RuntimeError(f'unknown TriviaDifficulty: \"{self}\"')
 
     def toStr(self) -> str:
         if self is TriviaDifficulty.EASY:
@@ -65,4 +66,4 @@ class TriviaDifficulty(Enum):
         elif self is TriviaDifficulty.UNKNOWN:
             return 'unknown'
         else:
-            raise ValueError(f'unknown TriviaDifficulty: \"{self}\"')
+            raise RuntimeError(f'unknown TriviaDifficulty: \"{self}\"')
