@@ -77,6 +77,15 @@ class TwitchTokensRepository():
             'refreshToken': tokens.getRefreshToken()
         }
 
+        await self.__flush(jsonContents)
+
+    async def clearCaches(self):
+        self.__jsonCache = None
+
+    async def __flush(self, jsonContents: Dict[str, Any]):
+        if not utils.hasItems(jsonContents):
+            raise ValueError(f'jsonContents argument is malformed: \"{jsonContents}\"')
+
         jsonString: str = ''
         async with aiofiles.open(self.__twitchTokensFile, mode = 'w') as file:
             jsonString = json.dumps(jsonContents, indent = 4, sort_keys = True)
@@ -87,9 +96,6 @@ class TwitchTokensRepository():
 
         if await self.__isDebugLoggingEnabled():
             self.__timber.log('TwitchTokensRepository', f'{self.__twitchTokensFile} contents: {jsonString}')
-
-    async def clearCaches(self):
-        self.__jsonCache = None
 
     async def getAccessToken(self, twitchHandle: str) -> Optional[str]:
         if not utils.isValidStr(twitchHandle):
@@ -184,6 +190,24 @@ class TwitchTokensRepository():
         # is a good bit easier to handle than throwing an exception, or something else like that.
         return dict()
 
+    async def removeUser(self, twitchHandle: str):
+        if not utils.isValidStr(twitchHandle):
+            raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
+
+        twitchHandle = twitchHandle.lower()
+        self.__timber.log('TwitchTokensRepository', f'Adding user \"{twitchHandle}\"...')
+
+        if not await self.hasAccessToken(twitchHandle):
+            self.__timber.log(f'Attempted to remove user \"{twitchHandle}\", but they do not have Twitch tokens')
+            return
+
+        jsonContents = await self.__readAllJson()
+
+        if twitchHandle in jsonContents['twitchHandles']:
+            del jsonContents['twitchHandles'][twitchHandle]
+
+        await self.__flush(jsonContents)
+
     async def __refreshTokens(self, twitchHandle: str):
         if not utils.isValidStr(twitchHandle):
             raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
@@ -208,16 +232,7 @@ class TwitchTokensRepository():
             'refreshToken': tokens.getRefreshToken()
         }
 
-        jsonString: str = ''
-        async with aiofiles.open(self.__twitchTokensFile, mode = 'w') as file:
-            jsonString = json.dumps(jsonContents, indent = 4, sort_keys = True)
-            await file.write(jsonString)
-
-        # be sure to clear caches, as JSON file contents have now been updated
-        await self.clearCaches()
-
-        if await self.__isDebugLoggingEnabled():
-            self.__timber.log('TwitchTokensRepository', f'{self.__twitchTokensFile} contents: {jsonString}')
+        await self.__flush(jsonContents)
 
         await self.__saveUserTokenExpirationTime(
             twitchHandle = twitchHandle,
