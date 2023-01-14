@@ -37,6 +37,8 @@ try:
         NoTriviaMultipleChoiceResponsesException, NoTriviaQuestionException,
         TooManyTriviaFetchAttemptsException)
     from CynanBotCommon.trivia.triviaFetchOptions import TriviaFetchOptions
+    from CynanBotCommon.trivia.triviaQuestionCompanyTriviaQuestionRepository import \
+        TriviaQuestionCompanyTriviaQuestionRepository
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
     from CynanBotCommon.trivia.triviaSource import TriviaSource
@@ -80,6 +82,8 @@ except:
         NoTriviaMultipleChoiceResponsesException, NoTriviaQuestionException,
         TooManyTriviaFetchAttemptsException)
     from trivia.triviaFetchOptions import TriviaFetchOptions
+    from trivia.triviaQuestionCompanyTriviaQuestionRepository import \
+        TriviaQuestionCompanyTriviaQuestionRepository
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
     from trivia.triviaSourceInstabilityHelper import \
@@ -106,6 +110,7 @@ class TriviaRepository():
         pkmnTriviaQuestionRepository: PkmnTriviaQuestionRepository,
         timber: Timber,
         triviaDatabaseTriviaQuestionRepository: TriviaDatabaseTriviaQuestionRepository,
+        triviaQuestionCompanyTriviaQuestionRepository: TriviaQuestionCompanyTriviaQuestionRepository,
         triviaSettingsRepository: TriviaSettingsRepository,
         triviaSourceInstabilityHelper: TriviaSourceInstabilityHelper,
         triviaVerifier: TriviaVerifier,
@@ -137,6 +142,8 @@ class TriviaRepository():
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(triviaDatabaseTriviaQuestionRepository, TriviaDatabaseTriviaQuestionRepository):
             raise ValueError(f'triviaDatabaseTriviaQuestionRepository argument is malformed: \"{triviaDatabaseTriviaQuestionRepository}\"')
+        elif not isinstance(triviaQuestionCompanyTriviaQuestionRepository, TriviaQuestionCompanyTriviaQuestionRepository):
+            raise ValueError(f'triviaQuestionCompanyTriviaQuestionRepository argument is malformed: \"{triviaQuestionCompanyTriviaQuestionRepository}\"')
         elif not isinstance(triviaSettingsRepository, TriviaSettingsRepository):
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
         elif not isinstance(triviaSourceInstabilityHelper, TriviaSourceInstabilityHelper):
@@ -164,6 +171,7 @@ class TriviaRepository():
         self.__quizApiTriviaQuestionRepository: Optional[AbsTriviaQuestionRepository] = quizApiTriviaQuestionRepository
         self.__timber: Timber = timber
         self.__triviaDatabaseTriviaQuestionRepository: AbsTriviaQuestionRepository = triviaDatabaseTriviaQuestionRepository
+        self.__triviaQuestionCompanyTriviaQuestionRepository: AbsTriviaQuestionRepository = triviaQuestionCompanyTriviaQuestionRepository
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
         self.__triviaSourceInstabilityHelper: TriviaSourceInstabilityHelper = triviaSourceInstabilityHelper
         self.__triviaVerifier: TriviaVerifier = triviaVerifier
@@ -217,6 +225,7 @@ class TriviaRepository():
             TriviaSource.OPEN_TRIVIA_QA: self.__openTriviaQaTriviaQuestionRepository,
             TriviaSource.POKE_API: self.__pkmnTriviaQuestionRepository,
             TriviaSource.QUIZ_API: self.__quizApiTriviaQuestionRepository,
+            TriviaSource.THE_QUESTION_CO: self.__triviaQuestionCompanyTriviaQuestionRepository,
             TriviaSource.TRIVIA_DATABASE: self.__triviaDatabaseTriviaQuestionRepository,
             TriviaSource.WILL_FRY_TRIVIA: self.__willFryTriviaQuestionRepository,
             TriviaSource.WWTBAM: self.__wwtbamTriviaQuestionRepository

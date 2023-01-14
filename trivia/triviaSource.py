@@ -18,6 +18,7 @@ class TriviaSource(Enum):
     OPEN_TRIVIA_QA = auto()
     POKE_API = auto()
     QUIZ_API = auto()
+    THE_QUESTION_CO = auto()
     TRIVIA_DATABASE = auto()
     WILL_FRY_TRIVIA = auto()
     WWTBAM = auto()
@@ -49,6 +50,8 @@ class TriviaSource(Enum):
             return TriviaSource.POKE_API
         elif text == 'quiz_api':
             return TriviaSource.QUIZ_API
+        elif text == 'the_question_co':
+            return TriviaSource.THE_QUESTION_CO
         elif text == 'trivia_database':
             return TriviaSource.TRIVIA_DATABASE
         elif text in ('will_fry_trivia', 'will_fry_trivia_api'):
@@ -77,6 +80,8 @@ class TriviaSource(Enum):
             return True
         elif self is TriviaSource.POKE_API:
             return False
+        elif self is TriviaSource.THE_QUESTION_CO:
+            return True
         elif self is TriviaSource.TRIVIA_DATABASE:
             return True
         elif self is TriviaSource.WILL_FRY_TRIVIA:
@@ -107,6 +112,8 @@ class TriviaSource(Enum):
             return 'POKE_API'
         elif self is TriviaSource.QUIZ_API:
             return 'QUIZ_API'
+        elif self is TriviaSource.THE_QUESTION_CO:
+            return 'THE_QUESTION_CO'
         elif self is TriviaSource.TRIVIA_DATABASE:
             return 'TRIVIA_DATABASE'
         elif self is TriviaSource.WILL_FRY_TRIVIA:

@@ -48,6 +48,10 @@
             "is_enabled": true,
             "weight": 5
         },
+        "the_question_co": {
+            "is_enabled": true,
+            "weight": 400
+        },
         "trivia_database": {
             "is_enabled": true,
             "weight": 700
@@ -58,7 +62,7 @@
         },
         "wwtbam": {
             "is_enabled": true,
-            "weight": 400
+            "weight": 250
         }
     }
 }
