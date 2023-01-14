@@ -29,7 +29,7 @@ class BannedWordsRepository():
         self.__bannedWordsFile: str = bannedWordsFile
 
         self.__quoteRegEx: Pattern = re.compile(r'^".+"$', re.IGNORECASE)
-        self.__bannedWordsCache: Optional[List[str]] = None
+        self.__bannedWordsCache: Optional[Set[str]] = None
 
     async def clearCaches(self):
         self.__bannedWordsCache = None
@@ -38,22 +38,19 @@ class BannedWordsRepository():
     def __createCleanedBannedWordsSetFromLines(
         self,
         lines: Optional[List[Optional[str]]]
-    ) -> List[str]:
-        cleanedBannedWordsSet: Set[str] = set()
+    ) -> Set[str]:
+        cleanedBannedWords: Set[str] = set()
 
         if not utils.hasItems(lines):
-            return cleanedBannedWordsSet
+            return cleanedBannedWords
 
         for line in lines:
             processedLine = self.__processWord(line)
 
             if utils.isValidStr(processedLine):
-                cleanedBannedWordsSet.add(processedLine)
+                cleanedBannedWords.add(processedLine)
 
-        cleanedBannedWordsList = list(cleanedBannedWordsSet)
-        cleanedBannedWordsList.sort(key = lambda word: word.lower())
-
-        return cleanedBannedWordsList
+        return cleanedBannedWords
 
     def __fetchBannedWords(self) -> Set[str]:
         if not os.path.exists(self.__bannedWordsFile):
@@ -77,7 +74,7 @@ class BannedWordsRepository():
 
         return self.__createCleanedBannedWordsSetFromLines(lines)
 
-    def getBannedWords(self) -> List[str]:
+    def getBannedWords(self) -> Set[str]:
         if self.__bannedWordsCache is not None:
             return self.__bannedWordsCache
 
