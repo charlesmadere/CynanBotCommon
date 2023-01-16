@@ -540,7 +540,7 @@ class TriviaGameMachine():
         state = TriviaGameState(
             triviaQuestion = triviaQuestion,
             isShiny = isShiny,
-            pointsForWinning = action.getPointsForWinning(),
+            pointsForWinning = pointsForWinning,
             secondsToLive = action.getSecondsToLive(),
             actionId = action.getActionId(),
             twitchChannel = action.getTwitchChannel(),
