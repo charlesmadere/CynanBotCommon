@@ -71,7 +71,7 @@ class TriviaQuestionCompanyTriviaQuestionRepository(AbsTriviaQuestionRepository)
         if await self._triviaSettingsRepository.isDebugLoggingEnabled():
             self.__timber.log('TriviaQuestionCompanyTriviaQuestionRepository', f'{triviaDict}')
 
-        questionDifficulty = TriviaDifficulty.fromInt(utils.getIntFromDict(triviaDict, 'questionDifficulty'))
+        difficulty = TriviaDifficulty.fromInt(utils.getIntFromDict(triviaDict, 'difficulty'))
         questionId = utils.getStrFromDict(triviaDict, 'questionId')
         questionType = TriviaType.fromStr(utils.getStrFromDict(triviaDict, 'questionType'))
 
@@ -102,7 +102,7 @@ class TriviaQuestionCompanyTriviaQuestionRepository(AbsTriviaQuestionRepository)
                 emote = emote,
                 question = question,
                 triviaId = questionId,
-                triviaDifficulty = questionDifficulty,
+                triviaDifficulty = difficulty,
                 triviaSource = self.getTriviaSource()
             )
 
