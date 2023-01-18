@@ -1,3 +1,5 @@
+from typing import Optional
+
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.language.languageEntry import LanguageEntry
@@ -12,32 +14,38 @@ class WordOfTheDayResponse():
         self,
         languageEntry: LanguageEntry,
         definition: str,
-        englishExample: str,
-        foreignExample: str,
-        transliteration: str,
+        englishExample: Optional[str],
+        foreignExample: Optional[str],
+        transliteration: Optional[str],
         word: str
     ):
         if not isinstance(languageEntry, LanguageEntry):
             raise ValueError(f'languageEntry argument is malformed: \"{languageEntry}\"')
         elif not utils.isValidStr(definition):
             raise ValueError(f'definition argument is malformed: \"{definition}\"')
+        elif englishExample is not None and not isinstance(englishExample, str):
+            raise ValueError(f'englishExample argument is malformed: \"{englishExample}\"')
+        elif foreignExample is not None and not isinstance(foreignExample, str):
+            raise ValueError(f'foreignExample argument is malformed: \"{foreignExample}\"')
+        elif transliteration is not None and not isinstance(transliteration, str):
+            raise ValueError(f'transliteration argument is malformed: \"{transliteration}\"')
         elif not utils.isValidStr(word):
             raise ValueError(f'word argument is malformed: \"{word}\"')
 
         self.__languageEntry: LanguageEntry = languageEntry
         self.__definition: str = definition
-        self.__englishExample: str = englishExample
-        self.__foreignExample: str = foreignExample
-        self.__transliteration: str = transliteration
+        self.__englishExample: Optional[str] = englishExample
+        self.__foreignExample: Optional[str] = foreignExample
+        self.__transliteration: Optional[str] = transliteration
         self.__word: str = word
 
     def getDefinition(self) -> str:
         return self.__definition
 
-    def getEnglishExample(self) -> str:
+    def getEnglishExample(self) -> Optional[str]:
         return self.__englishExample
 
-    def getForeignExample(self) -> str:
+    def getForeignExample(self) -> Optional[str]:
         return self.__foreignExample
 
     def getLanguageEntry(self) -> LanguageEntry:
@@ -46,7 +54,7 @@ class WordOfTheDayResponse():
     def getLanguageName(self) -> str:
         return self.__languageEntry.getName()
 
-    def getTransliteration(self) -> str:
+    def getTransliteration(self) -> Optional[str]:
         return self.__transliteration
 
     def getWord(self) -> str:

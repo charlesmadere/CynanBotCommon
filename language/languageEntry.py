@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 try:
     import CynanBotCommon.utils as utils
@@ -12,25 +12,31 @@ class LanguageEntry():
         self,
         commandNames: List[str],
         name: str,
-        flag: str = None,
-        iso6391Code: str = None,
-        wotdApiCode: str = None
+        flag: Optional[str] = None,
+        iso6391Code: Optional[str] = None,
+        wotdApiCode: Optional[str] = None
     ):
-        if not utils.hasItems(commandNames):
+        if not utils.areValidStrs(commandNames):
             raise ValueError(f'commandNames argument is malformed: \"{commandNames}\"')
         elif not utils.isValidStr(name):
             raise ValueError(f'name argument is malformed: \"{name}\"')
+        elif flag is not None and not isinstance(flag, str):
+            raise ValueError(f'flag argument is malformed: \"{flag}\"')
+        elif iso6391Code is not None and not isinstance(iso6391Code, str):
+            raise ValueError(f'iso6391Code argument is malformed: \"{iso6391Code}\"')
+        elif wotdApiCode is not None and not isinstance(wotdApiCode, str):
+            raise ValueError(f'wotdApiCode argument is malformed: \"{wotdApiCode}\"')
 
         self.__commandNames: List[str] = commandNames
         self.__name: str = name
-        self.__flag: str = flag
-        self.__iso6391Code: str = iso6391Code
-        self.__wotdApiCode: str = wotdApiCode
+        self.__flag: Optional[str] = flag
+        self.__iso6391Code: Optional[str] = iso6391Code
+        self.__wotdApiCode: Optional[str] = wotdApiCode
 
     def getCommandNames(self) -> List[str]:
         return self.__commandNames
 
-    def getFlag(self) -> str:
+    def getFlag(self) -> Optional[str]:
         return self.__flag
 
     def getIso6391Code(self) -> str:
