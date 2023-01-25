@@ -122,7 +122,7 @@ class LanguagesRepository():
 
         languagesList.append(LanguageEntry(
             commandNames = [ 'pt', 'portuguese', 'português' ],
-            flag = '🇧🇷',
+            flag = '🇵🇹',
             iso6391Code = 'pt',
             name = 'Portuguese',
             wotdApiCode = 'pt'
