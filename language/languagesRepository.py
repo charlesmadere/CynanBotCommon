@@ -67,6 +67,14 @@ class LanguagesRepository():
         ))
 
         languagesList.append(LanguageEntry(
+            commandNames = [ 'hi', 'hin', 'hindi' ],
+            flag = '🇮🇳',
+            iso6391Code = 'hi',
+            name = 'Hindi',
+            wotdApiCode = 'hindi'
+        ))
+
+        languagesList.append(LanguageEntry(
             commandNames = [ 'it', 'italian', 'italiano', 'italy' ],
             flag = '🇮🇹',
             iso6391Code = 'it',
