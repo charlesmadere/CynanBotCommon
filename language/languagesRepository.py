@@ -170,7 +170,7 @@ class LanguagesRepository():
         return languagesList
 
     def getAllWotdApiCodes(self, delimiter: str = ', ') -> str:
-        if delimiter is None:
+        if not isinstance(delimiter, str):
             raise ValueError(f'delimiter argument is malformed: \"{delimiter}\"')
 
         wotdApiCodes: List[str] = list()
