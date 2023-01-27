@@ -10,15 +10,12 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.network.exceptions import GenericNetworkException
     from CynanBotCommon.timber.timber import Timber
-    from CynanBotCommon.twitch.exceptions import \
-        TwitchTokensAlreadyExistForGivenTwitchHandle
     from CynanBotCommon.twitch.twitchApiService import TwitchApiService
 except:
     import utils
     from network.exceptions import GenericNetworkException
     from timber.timber import Timber
 
-    from twitch.exceptions import TwitchTokensAlreadyExistForGivenTwitchHandle
     from twitch.twitchApiService import TwitchApiService
 
 
@@ -62,7 +59,7 @@ class TwitchTokensRepository():
         self.__timber.log('TwitchTokensRepository', f'Adding user \"{twitchHandle}\"...')
 
         if await self.hasAccessToken(twitchHandle):
-            raise TwitchTokensAlreadyExistForGivenTwitchHandle(f'Attempted to add user \"{twitchHandle}\", but they already have Twitch tokens!')
+            self.__timber.log('TwitchTokensRepository', f'User \"{twitchHandle}\" already has Twitch tokens that are going to be overwritten!')
 
         try:
             tokens = await self.__twitchApiService.fetchTokens(code = code)
