@@ -30,7 +30,7 @@ class TwitchLiveUserDetails():
             raise ValueError(f'isMature argument is malformed: \"{isMature}\"')
         elif not utils.isValidInt(viewerCount):
             raise ValueError(f'viewerCount argument is malformed: \"{viewerCount}\"')
-        elif viewerCount < 0 or viewerCount >= utils.getIntMaxSafeSize():
+        elif viewerCount < 0 or viewerCount > utils.getIntMaxSafeSize():
             raise ValueError(f'viewerCount argument is out of bounds: {viewerCount}')
         elif not utils.isValidStr(streamId):
             raise ValueError(f'streamId argument is malformed: \"{streamId}\"')

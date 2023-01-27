@@ -26,11 +26,11 @@ class ClearedSuperTriviaQueueTriviaEvent(AbsTriviaEvent):
 
         if not utils.isValidInt(numberOfGamesRemoved):
             raise ValueError(f'numberOfGamesRemoved argument is malformed: \"{numberOfGamesRemoved}\"')
-        elif numberOfGamesRemoved < 0 or numberOfGamesRemoved >= utils.getIntMaxSafeSize():
+        elif numberOfGamesRemoved < 0 or numberOfGamesRemoved > utils.getIntMaxSafeSize():
             raise ValueError(f'numberOfGamesRemoved argument is out of bounds: {numberOfGamesRemoved}')
         elif not utils.isValidInt(previousQueueSize):
             raise ValueError(f'previousQueueSize argument is malformed: \"{previousQueueSize}\"')
-        elif previousQueueSize < 0 or previousQueueSize >= utils.getIntMaxSafeSize():
+        elif previousQueueSize < 0 or previousQueueSize > utils.getIntMaxSafeSize():
             raise ValueError(f'previousQueueSize argument is malformed: \"{previousQueueSize}\"')
         elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')

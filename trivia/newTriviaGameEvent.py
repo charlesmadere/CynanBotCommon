@@ -37,11 +37,11 @@ class NewTriviaGameEvent(AbsTriviaEvent):
             raise ValueError(f'isShiny argument is malformed: \"{isShiny}\"')
         elif not utils.isValidInt(pointsForWinning):
             raise ValueError(f'pointsForWinning argument is malformed: \"{pointsForWinning}\"')
-        elif pointsForWinning < 1 or pointsForWinning >= utils.getIntMaxSafeSize():
+        elif pointsForWinning < 1 or pointsForWinning > utils.getIntMaxSafeSize():
             raise ValueError(f'pointsForWinning argument is out of bounds: {pointsForWinning}')
         elif not utils.isValidInt(secondsToLive):
             raise ValueError(f'secondsToLive argument is malformed: \"{secondsToLive}\"')
-        elif secondsToLive < 1 or secondsToLive >= utils.getIntMaxSafeSize():
+        elif secondsToLive < 1 or secondsToLive > utils.getIntMaxSafeSize():
             raise ValueError(f'secondsToLive argument is out of bounds: {secondsToLive}')
         elif not utils.isValidStr(gameId):
             raise ValueError(f'gameId argument is malformed: \"{gameId}\"')

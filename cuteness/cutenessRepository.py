@@ -327,10 +327,8 @@ class CutenessRepository():
     ) -> CutenessResult:
         if not utils.isValidInt(incrementAmount):
             raise ValueError(f'incrementAmount argument is malformed: \"{incrementAmount}\"')
-        elif incrementAmount >= utils.getLongMaxSafeSize():
-            raise ValueError(f'incrementAmount ({incrementAmount}) is >= maximum value ({utils.getLongMaxSafeSize()})')
-        elif incrementAmount <= utils.getLongMinSafeSize():
-            raise ValueError(f'incrementAmount ({incrementAmount}) is <= minimum value ({utils.getLongMinSafeSize()})')
+        elif incrementAmount < utils.getLongMaxSafeSize() or incrementAmount > utils.getLongMaxSafeSize():
+            raise ValueError(f'incrementAmount argument is out of bounds: {incrementAmount}')
         elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
         elif not utils.isValidStr(userId):

@@ -31,15 +31,15 @@ class StartNewTriviaGameAction(AbsTriviaAction):
             raise ValueError(f'isShinyTriviaEnabled argument is malformed: \"{isShinyTriviaEnabled}\"')
         elif not utils.isValidInt(pointsForWinning):
             raise ValueError(f'pointsForWinning argument is malformed: \"{pointsForWinning}\"')
-        elif pointsForWinning < 1 or pointsForWinning >= utils.getIntMaxSafeSize():
+        elif pointsForWinning < 1 or pointsForWinning > utils.getIntMaxSafeSize():
             raise ValueError(f'pointsForWinning argument is out of bounds: {pointsForWinning}')
         elif not utils.isValidInt(secondsToLive):
             raise ValueError(f'secondsToLive argument is malformed: \"{secondsToLive}\"')
-        elif secondsToLive < 1 or secondsToLive >= utils.getIntMaxSafeSize():
+        elif secondsToLive < 1 or secondsToLive > utils.getIntMaxSafeSize():
             raise ValueError(f'secondsToLive argument is out of bounds: {secondsToLive}')
         elif not utils.isValidInt(shinyMultiplier):
             raise ValueError(f'shinyMultiplier argument is malformed: \"{shinyMultiplier}\"')
-        elif shinyMultiplier < 1 or shinyMultiplier >= utils.getIntMaxSafeSize():
+        elif shinyMultiplier < 1 or shinyMultiplier > utils.getIntMaxSafeSize():
             raise ValueError(f'shinyMultiplier argument is out of bounds: {shinyMultiplier}')
         elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')

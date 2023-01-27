@@ -72,7 +72,7 @@ class TriviaSettingsRepository():
         maxMultipleChoiceResponses = utils.getIntFromDict(jsonContents, 'max_multiple_choice_responses', 6)
         minMultipleChoiceResponses = utils.getIntFromDict(jsonContents, 'min_multiple_choice_responses', 2)
 
-        if minMultipleChoiceResponses < 2 or minMultipleChoiceResponses >= utils.getIntMaxSafeSize():
+        if minMultipleChoiceResponses < 2 or minMultipleChoiceResponses > utils.getIntMaxSafeSize():
             raise ValueError(f'\"min_multiple_choice_responses\" is out of bounds: {minMultipleChoiceResponses}')
         elif maxMultipleChoiceResponses < minMultipleChoiceResponses:
             raise ValueError(f'\"min_multiple_choice_responses\" ({minMultipleChoiceResponses}) is less than \"max_multiple_choice_responses\" ({maxMultipleChoiceResponses})')
@@ -118,7 +118,7 @@ class TriviaSettingsRepository():
         maxMultipleChoiceResponses = utils.getIntFromDict(jsonContents, 'max_multiple_choice_responses', 6)
         minMultipleChoiceResponses = utils.getIntFromDict(jsonContents, 'min_multiple_choice_responses', 2)
 
-        if minMultipleChoiceResponses < 2 or minMultipleChoiceResponses >= utils.getIntMaxSafeSize():
+        if minMultipleChoiceResponses < 2 or minMultipleChoiceResponses > utils.getIntMaxSafeSize():
             raise ValueError(f'\"min_multiple_choice_responses\" is out of bounds: {minMultipleChoiceResponses}')
         elif maxMultipleChoiceResponses < minMultipleChoiceResponses:
             raise ValueError(f'\"min_multiple_choice_responses\" ({minMultipleChoiceResponses}) is less than \"max_multiple_choice_responses\" ({maxMultipleChoiceResponses})')

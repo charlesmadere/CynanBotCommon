@@ -46,11 +46,11 @@ class CorrectSuperAnswerTriviaEvent(AbsTriviaEvent):
             raise ValueError(f'cutenessResult argument is malformed: \"{cutenessResult}\"')
         elif not utils.isValidInt(pointsForWinning):
             raise ValueError(f'pointsForWinning argument is malformed: \"{pointsForWinning}\"')
-        elif pointsForWinning < 1 or pointsForWinning >= utils.getIntMaxSafeSize():
+        elif pointsForWinning < 1 or pointsForWinning > utils.getIntMaxSafeSize():
             raise ValueError(f'pointsForWinning argument is out of bounds: {pointsForWinning}')
         elif not utils.isValidInt(remainingQueueSize):
             raise ValueError(f'remainingQueueSize argument is malformed: \"{remainingQueueSize}\"')
-        elif remainingQueueSize < 0 or remainingQueueSize >= utils.getIntMaxSafeSize():
+        elif remainingQueueSize < 0 or remainingQueueSize > utils.getIntMaxSafeSize():
             raise ValueError(f'remainingQueueSize argument is out of bounds: {remainingQueueSize}')
         elif not utils.isValidStr(gameId):
             raise ValueError(f'gameId argument is malformed: \"{gameId}\"')
