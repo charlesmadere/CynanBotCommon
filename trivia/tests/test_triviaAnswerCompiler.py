@@ -297,8 +297,16 @@ class TestTriviaAnswerCompiler():
         result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ 'her ponytail' ])
         assert result is not None
         assert len(result) == 2
-        assert '(her) ponytail' in result
+        assert 'her ponytail' in result
         assert 'ponytail' in result
+
+    @pytest.mark.asyncio
+    async def test_compileTextAnswersList_withHisCar(self):
+        result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ 'his car' ])
+        assert result is not None
+        assert len(result) == 2
+        assert 'his car' in result
+        assert 'car' in result
 
     @pytest.mark.asyncio
     async def test_compileTextAnswersList_withKurtVonnegutJr(self):
@@ -364,6 +372,14 @@ class TestTriviaAnswerCompiler():
         assert 'five zero' in result  # cardinal, year, individual digits
         assert 'fiftieth' in result  # ordinal
         assert 'the fiftieth' in result  # ordinal preceded by 'the'
+
+    @pytest.mark.asyncio
+    async def test_compileTextAnswersList_withTheirHouse(self):
+        result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ 'their house' ])
+        assert result is not None
+        assert len(result) == 2
+        assert 'their house' in result
+        assert 'house' in result
 
     @pytest.mark.asyncio
     async def test_expandNumerals_withYear(self):
