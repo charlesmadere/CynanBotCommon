@@ -223,7 +223,7 @@ class TriviaAnswerCompiler():
         return [ self.__whiteSpaceRegEx.sub(' ', ''.join(p).strip()) for p in await self.__getSubPossibilities(splitPossibilities) ]
 
     # This method checks to see if an answer starts with an honorary prefix, like "Mr.", "Mrs.",
-    # etc. If it does, we patch this answer so that it will play nicely with our paren-checking.
+    # etc. If it does, we patch this answer so that it will play nicely with our paren-checking logic.
     # For example, this method will transform the string "Mr. Potato Head" into "(Mr) Potato Head".
     async def __patchAnswerHonoraryPrefixes(self, answer: str) -> str:
         honoraryMatch = self.__honoraryPrefixRegEx.match(answer)
@@ -253,6 +253,9 @@ class TriviaAnswerCompiler():
         newHonoraryString = f' ({oldHonoraryString[1:len(oldHonoraryString)].strip()})'
         return answer.replace(oldHonoraryString, newHonoraryString)
 
+    # This method checks to see if an answer starts with a possessive pronoun prefix, such as "her"
+    # or "his". If it does, we patch this answer so that it will play nicely with our paren-checking
+    # logic. For example, this method will transform the string "his car" into "(his) car".
     async def __patchAnswerPossessivePronounPrefixes(self, answer: str) -> str:
         possessivePronounMatch = self.__possessivePronounPrefixRegEx.match(answer)
 
