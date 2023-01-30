@@ -23,6 +23,7 @@ class TriviaAnswerCompiler():
         self.__newLineRegEx: Pattern = re.compile(r'(\n)+', re.IGNORECASE)
         self.__parenGroupRegEx: Pattern = re.compile(r'(\(.*?\))', re.IGNORECASE)
         self.__phraseAnswerRegEx: Pattern = re.compile(r'[^A-Za-z0-9 ]|(?<=\s)\s+', re.IGNORECASE)
+        self.__possessivePronounPrefixRegEx: Pattern = re.compile(r'(her|his|their)\s+', re.IGNORECASE)
         self.__prefixRegEx: Pattern = re.compile(r'^(a|an|and|of|the|this|to)\s+', re.IGNORECASE)
         self.__tagRemovalRegEx: Pattern = re.compile(r'[<\[]\/?\w+[>\]]', re.IGNORECASE)
         self.__whiteSpaceRegEx: Pattern = re.compile(r'\s\s*', re.IGNORECASE)
@@ -213,6 +214,7 @@ class TriviaAnswerCompiler():
     async def __getParentheticalPossibilities(self, answer: str) -> List[str]:
         answer = await self.__patchAnswerHonoraryPrefixes(answer)
         answer = await self.__patchAnswerJapaneseHonorarySuffixes(answer)
+        answer = await self.__patchAnswerPossessivePronounPrefixes(answer)
 
         # Split the uncleaned answer with this regex to find all parentheticals
         splitPossibilities: List[str] = self.__parenGroupRegEx.split(answer)
@@ -250,6 +252,17 @@ class TriviaAnswerCompiler():
         oldHonoraryString = honoraryMatch.group()
         newHonoraryString = f' ({oldHonoraryString[1:len(oldHonoraryString)].strip()})'
         return answer.replace(oldHonoraryString, newHonoraryString)
+
+    async def __patchAnswerPossessivePronounPrefixes(self, answer: str) -> str:
+        possessivePronounMatch = self.__possessivePronounPrefixRegEx.match(answer)
+
+        if possessivePronounMatch is None or not utils.isValidStr(possessivePronounMatch.group()):
+            # return the unmodified answer
+            return answer
+
+        oldPossessivePronounString = possessivePronounMatch.group()
+        newPossessivePronounString = f'({oldPossessivePronounString.strip()}) '
+        return answer.replace(oldPossessivePronounString, newPossessivePronounString)
 
     # Recursively resolves the possibilities for each word in the answer.
     async def __getSubPossibilities(self, splitAnswer: str) -> List[str]:
