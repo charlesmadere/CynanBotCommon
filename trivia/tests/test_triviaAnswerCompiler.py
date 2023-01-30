@@ -222,14 +222,6 @@ class TestTriviaAnswerCompiler():
         result: str = await self.triviaAnswerCompiler.compileTextAnswer('Hello, World!')
         assert result == 'hello world'
 
-    # @pytest.mark.asyncio
-    # async def test_compileTextAnswer_withMiyamotoSan(self):
-    #     result: str = await self.triviaAnswerCompiler.compileTextAnswer('Miyamoto san')
-    #     assert result == 'miyamoto san'
-
-    #     result: str = await self.triviaAnswerCompiler.compileTextAnswer('Miyamoto-san')
-    #     assert result == 'miyamoto san'
-
     @pytest.mark.asyncio
     async def test_compileTextAnswer_withNewLines(self):
         result: str = await self.triviaAnswerCompiler.compileTextAnswer('\nDream Theater\nOctavarium\n')
@@ -240,14 +232,6 @@ class TestTriviaAnswerCompiler():
         result: str = await self.triviaAnswerCompiler.compileTextAnswer(None)
         assert result == ''
 
-    # @pytest.mark.asyncio
-    # async def test_compileTextAnswer_withOkyakuSama(self):
-    #     result: str = await self.triviaAnswerCompiler.compileTextAnswer('Okyaku sama')
-    #     assert result == 'okyaku sama'
-
-    #     result: str = await self.triviaAnswerCompiler.compileTextAnswer('Okyaku-sama')
-    #     assert result == 'okyaku sama'
-
     @pytest.mark.asyncio
     async def test_compileTextAnswer_withPrefixA(self):
         result: str = await self.triviaAnswerCompiler.compileTextAnswer('A View From the Top of the World')
@@ -257,14 +241,6 @@ class TestTriviaAnswerCompiler():
     async def test_compileTextAnswer_withPrefixAn(self):
         result: str = await self.triviaAnswerCompiler.compileTextAnswer('An Orange')
         assert result == 'orange'
-
-    # @pytest.mark.asyncio
-    # async def test_compileTextAnswer_withRinonChan(self):
-    #     result: str = await self.triviaAnswerCompiler.compileTextAnswer('Rinon chan')
-    #     assert result == 'rinon chan'
-
-    #     result: str = await self.triviaAnswerCompiler.compileTextAnswer('Rinon-chan')
-    #     assert result == 'rinon chan'
 
     @pytest.mark.asyncio
     async def test_compileTextAnswer_withSaintNicholas(self):
