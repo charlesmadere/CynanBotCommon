@@ -285,6 +285,14 @@ class TestTriviaAnswerCompiler():
         assert len(result) == 0
 
     @pytest.mark.asyncio
+    async def test_compileTextAnswersList_withGeorgeSchultz(self):
+        result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ 'George P. Schultz' ])
+        assert result is not None
+        assert len(result) == 2
+        assert 'george p schultz' in result
+        assert 'george schultz' in result
+
+    @pytest.mark.asyncio
     async def test_compileTextAnswersList_withHash(self):
         result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ 'mambo #5' ])
         assert result is not None
@@ -317,6 +325,26 @@ class TestTriviaAnswerCompiler():
         assert 'kurt vonnegut jr' in result
         assert 'vonnegut' in result
         assert 'vonnegut jr' in result
+
+    @pytest.mark.asyncio
+    async def test_compileTextAnswersList_withLuigiMarioJunior(self):
+        result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ 'Luigi M. Mario Jr.' ])
+        assert result is not None
+        assert len(result) == 4
+        assert 'luigi m mario jr' in result
+        assert 'luigi m mario' in result
+        assert 'luigi mario jr' in result
+        assert 'luigi mario' in result
+
+    @pytest.mark.asyncio
+    async def test_compileTextAnswersList_withMarioMarioSenior(self):
+        result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ 'Mario M Mario Senior' ])
+        assert result is not None
+        assert len(result) == 4
+        assert 'mario m mario senior' in result
+        assert 'mario m mario' in result
+        assert 'mario mario senior' in result
+        assert 'mario mario' in result
 
     @pytest.mark.asyncio
     async def test_compileTextAnswersList_withNone(self):
@@ -355,6 +383,22 @@ class TestTriviaAnswerCompiler():
         assert 'second' in result
 
     @pytest.mark.asyncio
+    async def test_compileTextAnswersList_withTheirHouse(self):
+        result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ 'their house' ])
+        assert result is not None
+        assert len(result) == 2
+        assert 'their house' in result
+        assert 'house' in result
+
+    @pytest.mark.asyncio
+    async def test_compileTextAnswersList_withYourName(self):
+        result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ 'your name' ])
+        assert result is not None
+        assert len(result) == 2
+        assert 'your name' in result
+        assert 'name' in result
+
+    @pytest.mark.asyncio
     async def test_expandNumerals_withSimpleDigit1(self):
         result: List[str] = await self.triviaAnswerCompiler.expandNumerals('3')
         assert result is not None
@@ -372,14 +416,6 @@ class TestTriviaAnswerCompiler():
         assert 'five zero' in result  # cardinal, year, individual digits
         assert 'fiftieth' in result  # ordinal
         assert 'the fiftieth' in result  # ordinal preceded by 'the'
-
-    @pytest.mark.asyncio
-    async def test_compileTextAnswersList_withTheirHouse(self):
-        result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ 'their house' ])
-        assert result is not None
-        assert len(result) == 2
-        assert 'their house' in result
-        assert 'house' in result
 
     @pytest.mark.asyncio
     async def test_expandNumerals_withYear(self):
