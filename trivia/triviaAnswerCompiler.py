@@ -236,7 +236,7 @@ class TriviaAnswerCompiler():
 
         indexOfFirstSpace = answer.find(' ') + 1
         indexOfSecondSpace = answer.find(' ', indexOfFirstSpace)
-        answer = answer[:indexOfFirstSpace] + '(' + firstMiddleLastNameMatch.group(1) + ')' + answer[:indexOfSecondSpace]
+        answer = answer[:indexOfFirstSpace] + '(' + firstMiddleLastNameMatch.group(1) + ')' + answer[indexOfSecondSpace:]
 
         if not utils.isValidStr(firstMiddleLastNameMatch.group(3)):
             # this name does not have a suffix like "Jr" or "Sr"
