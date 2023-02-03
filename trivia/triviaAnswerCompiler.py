@@ -17,13 +17,14 @@ class TriviaAnswerCompiler():
     def __init__(self):
         self.__ampersandRegEx: Pattern = re.compile(r'(^&\s+)|(\s+&\s+)|(\s+&$)', re.IGNORECASE)
         self.__decadeRegEx: Pattern = re.compile(r'^(\d{4})\'?s$', re.IGNORECASE)
-        self.__honoraryPrefixRegEx: Pattern = re.compile(r'^(bishop|captain|chancellor|chief|doctor|dr\.?|earl|father|general|king|lady|lord|madame|mother|mr\.?|mrs\.?|ms\.?|priest|president|professor|queen|saint|sir)\s+', re.IGNORECASE)
+        self.__firstMiddleLastNameRegEx: Pattern = re.compile(r'^\w+\s+(\w\.?)\s+\w+(\s+(i{0,3}|iv|vi{0,3}|i?x|jr\.?|junior|senior|sr\.?)\.?)?$', re.IGNORECASE)
+        self.__honoraryPrefixRegEx: Pattern = re.compile(r'^(bishop|brother|captain|chancellor|chief|doctor|dr\.?|earl|father|general|king|lady|lord|madame|mother|mr\.?|mrs\.?|ms\.?|priest|president|professor|queen|saint|senior|sister|sir|sire)\s+', re.IGNORECASE)
         self.__japaneseHonorarySuffixRegEx: Pattern = re.compile(r'(\s|-)(chan|kun|sama|san|senpai|sensei|tan)$', re.IGNORECASE)
         self.__multipleChoiceAnswerRegEx: Pattern = re.compile(r'[a-z]', re.IGNORECASE)
         self.__newLineRegEx: Pattern = re.compile(r'(\n)+', re.IGNORECASE)
         self.__parenGroupRegEx: Pattern = re.compile(r'(\(.*?\))', re.IGNORECASE)
         self.__phraseAnswerRegEx: Pattern = re.compile(r'[^A-Za-z0-9 ]|(?<=\s)\s+', re.IGNORECASE)
-        self.__possessivePronounPrefixRegEx: Pattern = re.compile(r'(her|his|their)\s+', re.IGNORECASE)
+        self.__possessivePronounPrefixRegEx: Pattern = re.compile(r'^(her|his|their|your)\s+', re.IGNORECASE)
         self.__prefixRegEx: Pattern = re.compile(r'^(a|an|and|of|the|this|to)\s+', re.IGNORECASE)
         self.__tagRemovalRegEx: Pattern = re.compile(r'[<\[]\/?\w+[>\]]', re.IGNORECASE)
         self.__whiteSpaceRegEx: Pattern = re.compile(r'\s\s*', re.IGNORECASE)
@@ -94,14 +95,14 @@ class TriviaAnswerCompiler():
         # replaces the '&' character, when used like the word "and", with the word "and"
         answer = self.__ampersandRegEx.sub(' and ', answer).strip()
 
-        # removes common phrase prefixes
-        answer = self.__prefixRegEx.sub('', answer).strip()
-
         # convert special characters to latin where possible
         answer = self.__fancyToLatin(answer).strip()
 
         # removes all special characters
         answer = self.__phraseAnswerRegEx.sub('', answer).strip()
+
+        # removes common phrase prefixes
+        answer = self.__prefixRegEx.sub('', answer).strip()
 
         # Special case: check for an answer that is all digits except for an ending "s" character.
         # If this is the case, remove the ending "s" character.
@@ -212,6 +213,7 @@ class TriviaAnswerCompiler():
 
     # Returns all possibilities with parenthesized phrases both included and excluded
     async def __getParentheticalPossibilities(self, answer: str) -> List[str]:
+        answer = await self.__patchAnswerFirstMiddleLastName(answer)
         answer = await self.__patchAnswerHonoraryPrefixes(answer)
         answer = await self.__patchAnswerJapaneseHonorarySuffixes(answer)
         answer = await self.__patchAnswerPossessivePronounPrefixes(answer)
@@ -221,6 +223,29 @@ class TriviaAnswerCompiler():
 
         # join the split possibilities back to strings and substitute multiple whitespaces back to a single space.
         return [ self.__whiteSpaceRegEx.sub(' ', ''.join(p).strip()) for p in await self.__getSubPossibilities(splitPossibilities) ]
+
+    # This method checks to see if an answer appears to be a first name, middle initial, and last
+    # name (with optional suffix), such as "George H. Richard III". This method would then transform
+    # that full name into "George (H.) Richard (III)".
+    async def __patchAnswerFirstMiddleLastName(self, answer: str) -> str:
+        firstMiddleLastNameMatch = self.__firstMiddleLastNameRegEx.fullmatch(answer)
+
+        if firstMiddleLastNameMatch is None or not utils.isValidStr(firstMiddleLastNameMatch.group()):
+            # return the unmodified answer
+            return answer
+
+        indexOfFirstSpace = answer.find(' ') + 1
+        indexOfSecondSpace = answer.find(' ', indexOfFirstSpace)
+        answer = answer[:indexOfFirstSpace] + '(' + firstMiddleLastNameMatch.group(1) + ')' + answer[:indexOfSecondSpace]
+
+        if not utils.isValidStr(firstMiddleLastNameMatch.group(3)):
+            # this name does not have a suffix like "Jr" or "Sr"
+            return answer
+
+        indexOfThirdSpace = answer.rfind(' ') + 1
+        answer = answer[:indexOfThirdSpace] + '(' + answer[indexOfThirdSpace:len(answer)] + ')'
+
+        return answer
 
     # This method checks to see if an answer starts with an honorary prefix, like "Mr.", "Mrs.",
     # etc. If it does, we patch this answer so that it will play nicely with our paren-checking logic.
