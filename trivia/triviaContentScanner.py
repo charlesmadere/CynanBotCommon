@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Set
 
 try:
     import CynanBotCommon.utils as utils
@@ -85,12 +85,18 @@ class TriviaContentScanner():
         return TriviaContentCode.OK
 
     async def __verifyQuestionContentSanity(self, question: AbsTriviaQuestion) -> TriviaContentCode:
-        strings: List[str] = list()
-        strings.append(question.getQuestion().lower())
-        strings.append(question.getPrompt().lower())
+        strings: Set[str] = set()
+        strings.add(question.getQuestion().lower())
+        strings.add(question.getPrompt().lower())
+
+        if question.hasCategory():
+            strings.add(question.getCategory().lower())
+
+        for correctAnswer in question.getCorrectAnswers():
+            strings.add(correctAnswer.lower())
 
         for response in question.getResponses():
-            strings.append(response.lower())
+            strings.add(response.lower())
 
         bannedWords = await self.__bannedWordsRepository.getBannedWordsAsync()
 
@@ -101,11 +107,11 @@ class TriviaContentScanner():
             elif utils.containsUrl(string):
                 self.__timber.log('TriviaContentScanner', f'Trivia content contains a URL: \"{string}\"')
                 return TriviaContentCode.CONTAINS_URL
-            elif utils.hasItems(bannedWords):
-                for bannedWord in bannedWords:
-                    if bannedWord in string:
-                        self.__timber.log('TriviaContentScanner', f'Trivia content contains a banned word ({bannedWord}): \"{string}\"')
-                        return TriviaContentCode.CONTAINS_BANNED_WORD
+
+            for bannedWord in bannedWords:
+                if bannedWord in string:
+                    self.__timber.log('TriviaContentScanner', f'Trivia content contains a banned word ({bannedWord}): \"{string}\"')
+                    return TriviaContentCode.CONTAINS_BANNED_WORD
 
         return TriviaContentCode.OK
 
