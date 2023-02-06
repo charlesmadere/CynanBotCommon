@@ -1,7 +1,9 @@
 import asyncio
 import queue
 from asyncio import AbstractEventLoop
+from collections import defaultdict
 from queue import SimpleQueue
+from typing import Dict, List
 
 import aiofiles
 import aiofiles.os
@@ -15,7 +17,6 @@ try:
     from CynanBotCommon.chatLogger.raidMessage import RaidMessage
 except:
     import utils
-
     from chatLogger.absChatMessage import AbsChatMessage
     from chatLogger.chatEventType import ChatEventType
     from chatLogger.chatMessage import ChatMessage
@@ -27,7 +28,7 @@ class ChatLogger():
     def __init__(
         self,
         eventLoop: AbstractEventLoop,
-        sleepTimeSeconds: float = 10,
+        sleepTimeSeconds: float = 15,
         logRootDirectory: str = 'CynanBotCommon/chatLogger'
     ):
         if not isinstance(eventLoop, AbstractEventLoop):
@@ -45,7 +46,7 @@ class ChatLogger():
         self.__messageQueue: SimpleQueue[AbsChatMessage] = SimpleQueue()
         eventLoop.create_task(self.__startMessageLoop())
 
-    def __getLogStatement(self, message: AbsChatMessage) -> str:
+    async def __getLogStatement(self, message: AbsChatMessage) -> str:
         if not isinstance(message, AbsChatMessage):
             raise ValueError(f'message argument is malformed: \"{message}\"')
 
@@ -101,27 +102,37 @@ class ChatLogger():
 
     async def __startMessageLoop(self):
         while True:
+            messages: List[AbsChatMessage] = list()
+
             try:
                 while not self.__messageQueue.empty():
                     message = self.__messageQueue.get_nowait()
-                    await self.__writeToLogFile(message)
+                    messages.append(message)
             except queue.Empty:
                 pass
 
+            await self.__writeToLogFiles(messages)
             await asyncio.sleep(self.__sleepTimeSeconds)
 
-    async def __writeToLogFile(self, message: AbsChatMessage):
-        if not isinstance(message, AbsChatMessage):
-            raise ValueError(f'message argument is malformed: \"{message}\"')
+    async def __writeToLogFiles(self, messages: List[AbsChatMessage]):
+        if len(messages) == 0:
+            return
 
-        sdt = message.getSimpleDateTime()
-        messageDirectory = f'{self.__logRootDirectory}/{message.getTwitchChannel().lower()}/{sdt.getYearStr()}/{sdt.getMonthStr()}'
-        messageFile = f'{messageDirectory}/{sdt.getDayStr()}.log'
+        structure: Dict[str, Dict[str, List[AbsChatMessage]]] = defaultdict(lambda: defaultdict(lambda: list()))
 
-        if not await aiofiles.ospath.exists(messageDirectory):
-            await aiofiles.os.makedirs(messageDirectory)
+        for message in messages:
+            twitchChannel = message.getTwitchChannel().lower()
+            simpleDateTime = message.getSimpleDateTime()
+            messageDirectory = f'{self.__logRootDirectory}/{twitchChannel}/{simpleDateTime.getYearStr()}/{simpleDateTime.getMonthStr()}'
+            messageFile = f'{messageDirectory}/{simpleDateTime.getDayStr()}.log'
+            structure[messageDirectory][messageFile].append(message)
 
-        logStatement = self.__getLogStatement(message)
+        for messageDirectory, messageFileToMessagesDict in structure.items():
+            if not await aiofiles.ospath.exists(messageDirectory):
+                await aiofiles.os.makedirs(messageDirectory)
 
-        async with aiofiles.open(messageFile, mode = 'a') as file:
-            await file.write(logStatement)
+            for messageFile, messagesList in messageFileToMessagesDict.items():
+                async with aiofiles.open(messageFile, mode = 'a') as file:
+                    for message in messagesList:
+                        logStatement = await self.__getLogStatement(message)
+                        await file.write(logStatement)
