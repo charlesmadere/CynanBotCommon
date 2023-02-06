@@ -82,18 +82,12 @@ class Timber():
 
         self.__entryQueue.put(timberEntry)
 
-    async def __log(self, timberEntry: TimberEntry):
-        if not isinstance(timberEntry, TimberEntry):
-            raise ValueError(f'timberEntry argument is malformed: \"{timberEntry}\"')
-
-        await self.__writeToLogFile(timberEntry)
-
     async def __startEventLoop(self):
         while True:
             try:
                 while not self.__entryQueue.empty():
                     timberEntry = self.__entryQueue.get_nowait()
-                    await self.__log(timberEntry)
+                    await self.__writeToLogFile(timberEntry)
             except queue.Empty:
                 pass
 
