@@ -46,7 +46,7 @@ class ChatLogger():
         self.__messageQueue: SimpleQueue[AbsChatMessage] = SimpleQueue()
         eventLoop.create_task(self.__startMessageLoop())
 
-    async def __getLogStatement(self, message: AbsChatMessage) -> str:
+    def __getLogStatement(self, message: AbsChatMessage) -> str:
         if not isinstance(message, AbsChatMessage):
             raise ValueError(f'message argument is malformed: \"{message}\"')
 
@@ -134,5 +134,5 @@ class ChatLogger():
             for messageFile, messagesList in messageFileToMessagesDict.items():
                 async with aiofiles.open(messageFile, mode = 'a') as file:
                     for message in messagesList:
-                        logStatement = await self.__getLogStatement(message)
+                        logStatement = self.__getLogStatement(message)
                         await file.write(logStatement)
