@@ -68,6 +68,8 @@ class Timber():
             raise ValueError(f'tag argument is malformed: \"{tag}\"')
         elif not utils.isValidStr(msg):
             raise ValueError(f'msg argument is malformed: \"{msg}\"')
+        elif exception is not None and not isinstance(exception, Exception):
+            raise ValueError(f'exception argument is malformed: \"{exception}\"')
 
         timberEntry = TimberEntry(
             tag = tag,
