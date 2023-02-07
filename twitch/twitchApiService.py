@@ -194,6 +194,7 @@ class TwitchApiService():
         elif not utils.isValidStr(userName):
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
 
+        userName = userName.lower()
         self.__timber.log('TwitchApiService', f'Fetching user details... (userName=\"{userName}\")')
 
         twitchClientId = await self.__twitchCredentialsProviderInterface.getTwitchClientId()
@@ -234,7 +235,7 @@ class TwitchApiService():
         entry: Optional[Dict[str, Any]] = None
 
         for dataEntry in data:
-            if dataEntry.get('login') == userName:
+            if utils.getStrFromDict(dataEntry, 'login').lower() == userName:
                 entry = dataEntry
                 break
 
