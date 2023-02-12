@@ -60,8 +60,5 @@ class ShinyTriviaResult():
     def getUserId(self) -> str:
         return self.__userId
 
-    def getUserName(self) -> str:
-        return self.__userName
-
     def hasMostRecent(self) -> bool:
         return self.__mostRecent is not None
