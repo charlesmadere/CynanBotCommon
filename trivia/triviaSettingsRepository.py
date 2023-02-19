@@ -102,7 +102,7 @@ class TriviaSettingsRepository():
 
     async def getMaxSuperGameQueueSize(self) -> int:
         jsonContents = await self.__readJson()
-        maxSuperGameQueueSize = utils.getIntFromDict(jsonContents, 'max_super_game_queue_size', 25)
+        maxSuperGameQueueSize = utils.getIntFromDict(jsonContents, 'max_super_game_queue_size', 50)
 
         if maxSuperGameQueueSize < -1:
             raise ValueError(f'max_super_game_queue_size is too small: \"{maxSuperGameQueueSize}\"')
