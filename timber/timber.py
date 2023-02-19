@@ -1,8 +1,9 @@
 import asyncio
 import queue
 from asyncio import AbstractEventLoop
+from collections import defaultdict
 from queue import SimpleQueue
-from typing import Optional
+from typing import Dict, List, Optional
 
 import aiofiles
 import aiofiles.os
@@ -84,41 +85,63 @@ class Timber():
 
     async def __startEventLoop(self):
         while True:
+            entries: List[TimberEntry] = list()
+
             try:
                 while not self.__entryQueue.empty():
-                    timberEntry = self.__entryQueue.get_nowait()
-                    await self.__writeToLogFile(timberEntry)
+                    entry = self.__entryQueue.get_nowait()
+                    entries.append(entry)
             except queue.Empty:
                 pass
 
+            await self.__writeToLogFiles(entries)
             await asyncio.sleep(self.__sleepTimeSeconds)
 
-    async def __writeToLogFile(self, timberEntry: TimberEntry):
-        if not isinstance(timberEntry, TimberEntry):
-            raise ValueError(f'timberEntry argument is malformed: \"{timberEntry}\"')
-
-        sdt = timberEntry.getSimpleDateTime()
-        timberDirectory = f'{self.__timberRootDirectory}/{sdt.getYearStr()}/{sdt.getMonthStr()}'
-        timberFile = f'{timberDirectory}/{sdt.getDayStr()}.log'
-
-        if not await aiofiles.ospath.exists(timberDirectory):
-            await aiofiles.os.makedirs(timberDirectory)
-
-        logStatement = self.__getLogStatement(True, timberEntry)
-
-        async with aiofiles.open(timberFile, mode = 'a') as file:
-            await file.write(logStatement)
-
-        if not timberEntry.hasException():
+    async def __writeToLogFiles(self, entries: List[TimberEntry]):
+        if len(entries) == 0:
             return
 
-        timberErrorDirectory = f'{timberDirectory}/errors'
-        timberErrorFile = f'{timberErrorDirectory}/{sdt.getDayStr()}.log'
+        # The logic below is kind of intense, but we do this in order to favor logical complexity
+        # in exchange for I/O simplicity. By doing things this way, we only need to attempt to
+        # create folders once, files once, and we also just open a file handle one time too.
 
-        if not await aiofiles.ospath.exists(timberErrorDirectory):
-            await aiofiles.os.makedirs(timberErrorDirectory)
+        # This dictionary stores a directory, and then a list of files, and then the contents to
+        # write into the files themselves. This dictionary does not make any attempt at handling
+        # error logging.
+        structure: Dict[str, Dict[str, List[TimberEntry]]] = defaultdict(lambda: defaultdict(lambda: list()))
 
-        errorStatement = self.__getErrorStatement(timberEntry.getException())
+        # This dictionary is used for error logging, and just like the dictionary above, stores
+        # a directory, and then a list of files, and then the contents to write into the files
+        # themselves.
+        errorStructure: Dict[str, Dict[str, List[TimberEntry]]] = defaultdict(lambda: defaultdict(lambda: list()))
 
-        async with aiofiles.open(timberErrorFile, mode = 'a') as file:
-            await file.write(errorStatement)
+        for entry in entries:
+            simpleDateTime = entry.getSimpleDateTime()
+            timberDirectory = f'{self.__timberRootDirectory}/{simpleDateTime.getYearStr()}/{simpleDateTime.getMonthStr()}'
+            timberFile = f'{timberDirectory}/{simpleDateTime.getDayStr()}.log'
+            structure[timberDirectory][timberFile].append(entry)
+
+            if entry.hasException():
+                timberErrorDirectory = f'{timberDirectory}/errors'
+                timberErrorFile = f'{timberErrorDirectory}/{simpleDateTime.getDayStr()}.log'
+                errorStructure[timberErrorDirectory][timberErrorFile].append(entry)
+
+        for timberDirectory, timberFileToEntriesDict in structure.items():
+            if not await aiofiles.ospath.exists(timberDirectory):
+                await aiofiles.os.makedirs(timberDirectory)
+
+            for timberFile, entriesList in timberFileToEntriesDict.items():
+                async with aiofiles.open(timberFile, mode = 'a') as file:
+                    for entry in entriesList:
+                        logStatement = self.__getLogStatement(True, entry)
+                        await file.write(logStatement)
+
+        for timberErrorDirectory, timberErrorFileToEntriesDict in errorStructure.items():
+            if not await aiofiles.ospath.exists(timberErrorDirectory):
+                await aiofiles.os.makedirs(timberErrorDirectory)
+
+            for timberErrorFile, entriesList in timberErrorFileToEntriesDict.items():
+                async with aiofiles.open(timberErrorFile, mode = 'a') as file:
+                    for entry in entriesList:
+                        errorStatement = self.__getErrorStatement(entry.getException())
+                        await file.write(errorStatement)
