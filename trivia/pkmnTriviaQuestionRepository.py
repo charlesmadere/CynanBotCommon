@@ -384,7 +384,7 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
         randomTriviaType = random.randint(0, 6)
         triviaDict: Optional[Dict[str, Any]] = None
 
-        if randomTriviaType <= 2:
+        if randomTriviaType <= 3:
             triviaDict = await self.__createPokemonQuestion()
         elif randomTriviaType == 4:
             triviaDict = await self.__createMoveQuestion()
@@ -461,7 +461,7 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
         if actualFlavor is not None and not isinstance(actualFlavor, PokepediaBerryFlavor):
             raise ValueError(f'actualFlavor argument is malformed: \"{actualFlavor}\"')
 
-        allFlavors = list(PokepediaBerryFlavor)
+        allFlavors: List[PokepediaBerryFlavor] = list(PokepediaBerryFlavor)
         falseFlavors: Set[PokepediaBerryFlavor] = set()
 
         minResponses = await self._triviaSettingsRepository.getMinMultipleChoiceResponses()
@@ -484,7 +484,7 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
         if not isinstance(actualType, PokepediaContestType):
             raise ValueError(f'actualType argument is malformed: \"{actualType}\"')
 
-        allTypes = list(PokepediaContestType)
+        allTypes: List[PokepediaContestType] = list(PokepediaContestType)
         falseTypes: Set[PokepediaContestType] = set()
 
         minResponses = await self._triviaSettingsRepository.getMinMultipleChoiceResponses()
@@ -507,7 +507,7 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
         if not utils.hasItems(actualTypes):
             raise ValueError(f'actualTypes argument is malformed: \"{actualTypes}\"')
 
-        allTypes = list(PokepediaElementType)
+        allTypes: List[PokepediaElementType] = list(PokepediaElementType)
         falseTypes: Set[PokepediaElementType] = set()
 
         minResponses = await self._triviaSettingsRepository.getMinMultipleChoiceResponses()
@@ -539,15 +539,16 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
         maxResponses = await self._triviaSettingsRepository.getMaxMultipleChoiceResponses()
         responses = random.randint(minResponses, maxResponses)
 
-        maxMachineNumber: int = None
+        maxMachineNumber: Optional[int] = None
         if actualMachineType is PokepediaMachineType.HM:
             maxMachineNumber = 12
         elif actualMachineType is PokepediaMachineType.TM:
             maxMachineNumber = 112
         elif actualMachineType is PokepediaMachineType.TR:
             maxMachineNumber = 90
-        else:
-            raise RuntimeError(f'Can\'t determine `maxMachineNumber` due to unknown PokepediaMachineType: \"{actualMachineType}\"!')
+
+        if not utils.isValidInt(maxMachineNumber):
+            raise RuntimeError(f'Can\'t determine value for maxMachineNumber due to unknown PokepediaMachineType: \"{actualMachineType}\"!')
 
         while len(falseMachineNumbers) < responses:
             randomInt = random.randint(1, maxMachineNumber)
@@ -564,7 +565,7 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
         if not isinstance(initialGeneration, PokepediaGeneration):
             raise ValueError(f'initialGeneration argument is malformed: \"{initialGeneration}\"')
 
-        allGenerations = list(PokepediaGeneration)
+        allGenerations: List[PokepediaGeneration] = list(PokepediaGeneration)
         indexOfMax = allGenerations.index(self.__maxGeneration)
         indexOfMin = allGenerations.index(initialGeneration)
 
