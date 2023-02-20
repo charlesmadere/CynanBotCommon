@@ -9,13 +9,20 @@ except:
 
 class TimedDict():
 
-    def __init__(self, timeDelta: timedelta):
-        if timeDelta is None:
+    def __init__(
+        self,
+        timeDelta: timedelta,
+        timeZone: timezone = timezone.utc
+    ):
+        if not isinstance(timeDelta, timedelta):
             raise ValueError(f'timeDelta argument is malformed: \"{timeDelta}\"')
+        elif not isinstance(timeZone, timezone):
+            raise ValueError(f'timeZone argument is malformed: \"{timeZone}\"')
 
         self.__timeDelta: timedelta = timeDelta
-        self.__times: Dict[str, Any] = dict()
-        self.__values: Dict[str, Any] = dict()
+        self.__timeZone: timezone = timeZone
+        self.__times: Dict[str, Optional[Any]] = dict()
+        self.__values: Dict[str, Optional[Any]] = dict()
 
     def clear(self):
         self.__times.clear()
@@ -35,7 +42,7 @@ class TimedDict():
         if key not in self.__times or key not in self.__values:
             return None
 
-        nowDateTime = datetime.now(timezone.utc)
+        nowDateTime = datetime.now(self.__timeZone)
 
         if nowDateTime > self.__times[key]:
             return None
@@ -62,12 +69,12 @@ class TimedDict():
         if not utils.isValidStr(key):
             raise ValueError(f'key argument is malformed: \"{key}\"')
 
-        self.__times[key] = datetime.now(timezone.utc) + self.__timeDelta
+        self.__times[key] = datetime.now(self.__timeZone) + self.__timeDelta
         self.__values[key] = value
 
     def update(self, key: str):
         if not utils.isValidStr(key):
             raise ValueError(f'key argument is malformed: \"{key}\"')
 
-        self.__times[key] = datetime.now(timezone.utc) + self.__timeDelta
+        self.__times[key] = datetime.now(self.__timeZone) + self.__timeDelta
         self.__values[key] = self.__times[key]
