@@ -5,6 +5,7 @@ from typing import Set
 import pytest
 
 try:
+    from ...backgroundTaskHelper import BackgroundTaskHelper
     from ...timber.timber import Timber
     from ...trivia.absTriviaQuestion import AbsTriviaQuestion
     from ...trivia.multipleChoiceTriviaQuestion import \
@@ -20,6 +21,7 @@ try:
     from ...trivia.triviaSource import TriviaSource
     from ...trivia.trueFalseTriviaQuestion import TrueFalseTriviaQuestion
 except:
+    from backgroundTaskHelper import BackgroundTaskHelper
     from timber.timber import Timber
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.multipleChoiceTriviaQuestion import \
@@ -39,9 +41,8 @@ except:
 class TestTriviaAnswerChecker():
 
     eventLoop: AbstractEventLoop = asyncio.get_event_loop()
-    timber: Timber = Timber(
-        eventLoop = eventLoop
-    )
+    backgroundTaskHelper = BackgroundTaskHelper(eventLoop = eventLoop)
+    timber = Timber(backgroundTaskHelper = backgroundTaskHelper)
     triviaAnswerCompiler: TriviaAnswerCompiler = TriviaAnswerCompiler()
     triviaQuestionCompiler: TriviaQuestionCompiler = TriviaQuestionCompiler()
     triviaSettingsRepository: TriviaSettingsRepository = TriviaSettingsRepository()

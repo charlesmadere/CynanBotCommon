@@ -4,11 +4,13 @@ from asyncio import AbstractEventLoop
 import pytest
 
 try:
+    from ...backgroundTaskHelper import BackgroundTaskHelper
     from ...storage.backingDatabase import BackingDatabase
     from ...storage.backingSqliteDatabase import BackingSqliteDatabase
     from ...timber.timber import Timber
     from ...trivia.triviaEmoteGenerator import TriviaEmoteGenerator
 except:
+    from backgroundTaskHelper import BackgroundTaskHelper
     from storage.backingDatabase import BackingDatabase
     from storage.backingSqliteDatabase import BackingSqliteDatabase
     from timber.timber import Timber
@@ -18,12 +20,9 @@ except:
 class TestTriviaEmoteGenerator():
 
     eventLoop: AbstractEventLoop = asyncio.get_event_loop()
-    backingDatabase: BackingDatabase = BackingSqliteDatabase(
-        eventLoop = eventLoop
-    )
-    timber: Timber = Timber(
-        eventLoop = eventLoop
-    )
+    backgroundTaskHelper = BackgroundTaskHelper(eventLoop = eventLoop)
+    backingDatabase: BackingDatabase = BackingSqliteDatabase(eventLoop = eventLoop)
+    timber: Timber = Timber(backgroundTaskHelper = backgroundTaskHelper)
     triviaEmoteGenerator: TriviaEmoteGenerator = TriviaEmoteGenerator(
         backingDatabase = backingDatabase,
         timber = timber

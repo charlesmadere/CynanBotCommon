@@ -4,6 +4,7 @@ from asyncio import AbstractEventLoop
 import pytest
 
 try:
+    from ...backgroundTaskHelper import BackgroundTaskHelper
     from ...timber.timber import Timber
     from ...trivia.questionAnswerTriviaConditions import \
         QuestionAnswerTriviaConditions
@@ -13,6 +14,7 @@ try:
     from ...trivia.triviaFetchOptions import TriviaFetchOptions
     from ...trivia.triviaSettingsRepository import TriviaSettingsRepository
 except:
+    from backgroundTaskHelper import BackgroundTaskHelper
     from timber.timber import Timber
     from trivia.questionAnswerTriviaConditions import \
         QuestionAnswerTriviaConditions
@@ -26,11 +28,8 @@ except:
 class TestQueuedTriviaGameStore1():
 
     eventLoop: AbstractEventLoop = asyncio.get_event_loop()
-
-    timber = Timber(
-        eventLoop = eventLoop
-    )
-
+    backgroundTaskHelper = BackgroundTaskHelper(eventLoop = eventLoop)
+    timber = Timber(backgroundTaskHelper = backgroundTaskHelper)
     triviaSettingsRepository = TriviaSettingsRepository()
 
     queuedTriviaGameStore = QueuedTriviaGameStore(
@@ -159,11 +158,8 @@ class TestQueuedTriviaGameStore1():
 class TestQueuedTriviaGameStore2():
 
     eventLoop: AbstractEventLoop = asyncio.get_event_loop()
-
-    timber = Timber(
-        eventLoop = eventLoop
-    )
-
+    backgroundTaskHelper = BackgroundTaskHelper(eventLoop = eventLoop)
+    timber = Timber(backgroundTaskHelper = backgroundTaskHelper)
     triviaSettingsRepository = TriviaSettingsRepository()
 
     queuedTriviaGameStore = QueuedTriviaGameStore(
@@ -184,11 +180,8 @@ class TestQueuedTriviaGameStore2():
 class TestQueuedTriviaGameStore3():
 
     eventLoop: AbstractEventLoop = asyncio.get_event_loop()
-
-    timber = Timber(
-        eventLoop = eventLoop
-    )
-
+    backgroundTaskHelper = BackgroundTaskHelper(eventLoop = eventLoop)
+    timber = Timber(backgroundTaskHelper = backgroundTaskHelper)
     triviaSettingsRepository = TriviaSettingsRepository()
 
     queuedTriviaGameStore = QueuedTriviaGameStore(
@@ -210,11 +203,8 @@ class TestQueuedTriviaGameStore3():
 class TestQueuedTriviaGameStore4():
 
     eventLoop: AbstractEventLoop = asyncio.get_event_loop()
-
-    timber = Timber(
-        eventLoop = eventLoop
-    )
-
+    backgroundTaskHelper = BackgroundTaskHelper(eventLoop = eventLoop)
+    timber = Timber(backgroundTaskHelper = backgroundTaskHelper)
     triviaSettingsRepository = TriviaSettingsRepository()
 
     queuedTriviaGameStore = QueuedTriviaGameStore(
@@ -260,11 +250,8 @@ class TestQueuedTriviaGameStore4():
 class TestQueuedTriviaGameStore5():
 
     eventLoop: AbstractEventLoop = asyncio.get_event_loop()
-
-    timber = Timber(
-        eventLoop = eventLoop
-    )
-
+    backgroundTaskHelper = BackgroundTaskHelper(eventLoop = eventLoop)
+    timber = Timber(backgroundTaskHelper = backgroundTaskHelper)
     triviaSettingsRepository = TriviaSettingsRepository()
 
     queuedTriviaGameStore = QueuedTriviaGameStore(
@@ -310,11 +297,8 @@ class TestQueuedTriviaGameStore5():
 class TestQueuedTriviaGameStore6():
 
     eventLoop: AbstractEventLoop = asyncio.get_event_loop()
-
-    timber = Timber(
-        eventLoop = eventLoop
-    )
-
+    backgroundTaskHelper = BackgroundTaskHelper(eventLoop = eventLoop)
+    timber = Timber(backgroundTaskHelper = backgroundTaskHelper)
     triviaSettingsRepository = TriviaSettingsRepository()
 
     queuedTriviaGameStore = QueuedTriviaGameStore(
@@ -381,11 +365,8 @@ class TestQueuedTriviaGameStore6():
 class TestQueuedTriviaGameStore7():
 
     eventLoop: AbstractEventLoop = asyncio.get_event_loop()
-
-    timber = Timber(
-        eventLoop = eventLoop
-    )
-
+    backgroundTaskHelper = BackgroundTaskHelper(eventLoop = eventLoop)
+    timber = Timber(backgroundTaskHelper = backgroundTaskHelper)
     triviaSettingsRepository = TriviaSettingsRepository()
 
     queuedTriviaGameStore = QueuedTriviaGameStore(
