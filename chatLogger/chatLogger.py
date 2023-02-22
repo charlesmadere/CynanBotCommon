@@ -1,6 +1,5 @@
 import asyncio
 import queue
-from asyncio import AbstractEventLoop
 from collections import defaultdict
 from queue import SimpleQueue
 from typing import Dict, List
@@ -11,12 +10,14 @@ import aiofiles.ospath
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.backgroundTaskHelper import BackgroundTaskHelper
     from CynanBotCommon.chatLogger.absChatMessage import AbsChatMessage
     from CynanBotCommon.chatLogger.chatEventType import ChatEventType
     from CynanBotCommon.chatLogger.chatMessage import ChatMessage
     from CynanBotCommon.chatLogger.raidMessage import RaidMessage
 except:
     import utils
+    from backgroundTaskHelper import BackgroundTaskHelper
     from chatLogger.absChatMessage import AbsChatMessage
     from chatLogger.chatEventType import ChatEventType
     from chatLogger.chatMessage import ChatMessage
@@ -27,12 +28,12 @@ class ChatLogger():
 
     def __init__(
         self,
-        eventLoop: AbstractEventLoop,
+        backgroundTaskHelper: BackgroundTaskHelper,
         sleepTimeSeconds: float = 15,
         logRootDirectory: str = 'CynanBotCommon/chatLogger'
     ):
-        if not isinstance(eventLoop, AbstractEventLoop):
-            raise ValueError(f'eventLoop argument is malformed: \"{eventLoop}\"')
+        if not isinstance(backgroundTaskHelper, BackgroundTaskHelper):
+            raise ValueError(f'backgroundTaskHelper argument is malformed: \"{backgroundTaskHelper}\"')
         elif not utils.isValidNum(sleepTimeSeconds):
             raise ValueError(f'sleepTimeSeconds argument is malformed: \"{sleepTimeSeconds}\"')
         elif sleepTimeSeconds < 1 or sleepTimeSeconds > 60:
@@ -44,7 +45,7 @@ class ChatLogger():
         self.__logRootDirectory: str = logRootDirectory
 
         self.__messageQueue: SimpleQueue[AbsChatMessage] = SimpleQueue()
-        eventLoop.create_task(self.__startMessageLoop())
+        backgroundTaskHelper.createTask(self.__startMessageLoop())
 
     def __getLogStatement(self, message: AbsChatMessage) -> str:
         if not isinstance(message, AbsChatMessage):
@@ -117,6 +118,9 @@ class ChatLogger():
     async def __writeToLogFiles(self, messages: List[AbsChatMessage]):
         if len(messages) == 0:
             return
+
+        # The below logic is kind of intense, however, there is a very similar/nearly identical
+        # flow within the Timber class. Check that out for more information and context.
 
         structure: Dict[str, Dict[str, List[AbsChatMessage]]] = defaultdict(lambda: defaultdict(lambda: list()))
 

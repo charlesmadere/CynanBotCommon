@@ -1,12 +1,12 @@
 import asyncio
 import queue
-from asyncio import AbstractEventLoop
 from datetime import datetime, timezone
 from queue import SimpleQueue
 from typing import Any, Dict, List, Optional, Set
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.backgroundTaskHelper import BackgroundTaskHelper
     from CynanBotCommon.cuteness.cutenessRepository import CutenessRepository
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.absTriviaAction import AbsTriviaAction
@@ -81,6 +81,7 @@ try:
         WrongUserCheckAnswerTriviaEvent
 except:
     import utils
+    from backgroundTaskHelper import BackgroundTaskHelper
     from cuteness.cutenessRepository import CutenessRepository
     from timber.timber import Timber
     from trivia.absTriviaAction import AbsTriviaAction
@@ -149,7 +150,7 @@ class TriviaGameMachine():
 
     def __init__(
         self,
-        eventLoop: AbstractEventLoop,
+        backgroundTaskHelper: BackgroundTaskHelper,
         cutenessRepository: CutenessRepository,
         queuedTriviaGameStore: QueuedTriviaGameStore,
         shinyTriviaHelper: ShinyTriviaHelper,
@@ -163,8 +164,8 @@ class TriviaGameMachine():
         queueTimeoutSeconds: int = 3,
         timeZone: timezone = timezone.utc
     ):
-        if not isinstance(eventLoop, AbstractEventLoop):
-            raise ValueError(f'eventLoop argument is malformed: \"{eventLoop}\"')
+        if not isinstance(backgroundTaskHelper, BackgroundTaskHelper):
+            raise ValueError(f'backgroundTaskHelper argument is malformed: \"{backgroundTaskHelper}\"')
         elif not isinstance(cutenessRepository, CutenessRepository):
             raise ValueError(f'cutenessRepository argument is malformed: \"{cutenessRepository}\"')
         elif not isinstance(queuedTriviaGameStore, QueuedTriviaGameStore):
@@ -210,8 +211,8 @@ class TriviaGameMachine():
         self.__eventListener: Optional[TriviaEventListener] = None
         self.__actionQueue: SimpleQueue[AbsTriviaAction] = SimpleQueue()
         self.__eventQueue: SimpleQueue[AbsTriviaEvent] = SimpleQueue()
-        eventLoop.create_task(self.__startActionLoop())
-        eventLoop.create_task(self.__startEventLoop())
+        backgroundTaskHelper.createTask(self.__startActionLoop())
+        backgroundTaskHelper.createTask(self.__startEventLoop())
 
     async def __beginQueuedTriviaGames(self):
         activeChannelsSet: Set[str] = set()
@@ -718,6 +719,9 @@ class TriviaGameMachine():
         await self.__superTriviaCooldownHelper.update(twitchChannel)
 
     def setEventListener(self, listener: Optional[TriviaEventListener]):
+        if listener is not None and not isinstance(listener, TriviaEventListener):
+            raise ValueError(f'listener argument is malformed: \"{listener}\"')
+
         self.__eventListener = listener
 
     async def __startActionLoop(self):

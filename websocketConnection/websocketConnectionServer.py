@@ -1,7 +1,6 @@
 import asyncio
 import json
 import queue
-from asyncio import AbstractEventLoop
 from datetime import datetime, timedelta, timezone
 from queue import SimpleQueue
 from typing import Any, Dict, Optional
@@ -12,11 +11,13 @@ import websockets
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.backgroundTaskHelper import BackgroundTaskHelper
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.websocketConnection.websocketEvent import \
         WebsocketEvent
 except:
     import utils
+    from backgroundTaskHelper import BackgroundTaskHelper
     from timber.timber import Timber
     from websocketConnection.websocketEvent import WebsocketEvent
 
@@ -25,7 +26,7 @@ class WebsocketConnectionServer():
 
     def __init__(
         self,
-        eventLoop: AbstractEventLoop,
+        backgroundTaskHelper: BackgroundTaskHelper,
         timber: Timber,
         sleepTimeSeconds: float = 5,
         port: int = 8765,
@@ -33,8 +34,8 @@ class WebsocketConnectionServer():
         websocketSettingsFile: str = 'CynanBotCommon/websocketConnection/websocketSettings.json',
         eventTimeToLive: timedelta = timedelta(seconds = 30)
     ):
-        if not isinstance(eventLoop, AbstractEventLoop):
-            raise ValueError(f'eventLoop argument is malformed: \"{eventLoop}\"')
+        if not isinstance(backgroundTaskHelper, BackgroundTaskHelper):
+            raise ValueError(f'backgroundTaskHelper argument is malformed: \"{backgroundTaskHelper}\"')
         elif not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not utils.isValidNum(sleepTimeSeconds):
@@ -61,7 +62,7 @@ class WebsocketConnectionServer():
 
         self.__cache: Optional[Dict[str, Any]] = None
         self.__eventQueue: SimpleQueue[WebsocketEvent] = SimpleQueue()
-        eventLoop.create_task(self.__startEventLoop())
+        backgroundTaskHelper.createTask(self.__startEventLoop())
 
     async def clearCaches(self):
         self.__cache = None

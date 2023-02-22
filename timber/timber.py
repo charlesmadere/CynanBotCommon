@@ -1,6 +1,5 @@
 import asyncio
 import queue
-from asyncio import AbstractEventLoop
 from collections import defaultdict
 from queue import SimpleQueue
 from typing import Dict, List, Optional
@@ -11,9 +10,11 @@ import aiofiles.ospath
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.backgroundTaskHelper import BackgroundTaskHelper
     from CynanBotCommon.timber.timberEntry import TimberEntry
 except:
     import utils
+    from backgroundTaskHelper import BackgroundTaskHelper
     from timber.timberEntry import TimberEntry
 
 
@@ -21,13 +22,13 @@ class Timber():
 
     def __init__(
         self,
-        eventLoop: AbstractEventLoop,
+        backgroundTaskHelper: BackgroundTaskHelper,
         alsoPrintToStandardOut: bool = True,
         sleepTimeSeconds: float = 10,
         timberRootDirectory: str = 'CynanBotCommon/timber'
     ):
-        if not isinstance(eventLoop, AbstractEventLoop):
-            raise ValueError(f'eventLoop argument is malformed: \"{eventLoop}\"')
+        if not isinstance(backgroundTaskHelper, BackgroundTaskHelper):
+            raise ValueError(f'backgroundTaskHelper argument is malformed: \"{backgroundTaskHelper}\"')
         elif not utils.isValidBool(alsoPrintToStandardOut):
             raise ValueError(f'alsoPrintToStandardOut argument is malformed: \"{alsoPrintToStandardOut}\"')
         elif not utils.isValidNum(sleepTimeSeconds):
@@ -42,7 +43,7 @@ class Timber():
         self.__timberRootDirectory: str = timberRootDirectory
 
         self.__entryQueue: SimpleQueue[TimberEntry] = SimpleQueue()
-        eventLoop.create_task(self.__startEventLoop())
+        backgroundTaskHelper.createTask(self.__startEventLoop())
 
     def __getErrorStatement(self, exception: Exception) -> str:
         if not isinstance(exception, Exception):
