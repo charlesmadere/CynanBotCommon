@@ -700,6 +700,7 @@ class TriviaGameMachine():
                     isShiny = normalGameState.isShiny(),
                     pointsForWinning = normalGameState.getPointsForWinning(),
                     actionId = normalGameState.getActionId(),
+                    emote = normalGameState.getEmote(),
                     gameId = normalGameState.getGameId(),
                     twitchChannel = normalGameState.getTwitchChannel(),
                     userId = normalGameState.getUserId(),
@@ -720,6 +721,7 @@ class TriviaGameMachine():
                     pointsForWinning = superGameState.getPointsForWinning(),
                     remainingQueueSize = remainingQueueSize,
                     actionId = superGameState.getActionId(),
+                    emote = superGameState.getEmote(),
                     gameId = superGameState.getGameId(),
                     twitchChannel = superGameState.getTwitchChannel()
                 ))
