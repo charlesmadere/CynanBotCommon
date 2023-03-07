@@ -21,7 +21,6 @@ try:
     from CynanBotCommon.trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
-    from CynanBotCommon.trivia.triviaEmoteGenerator import TriviaEmoteGenerator
     from CynanBotCommon.trivia.triviaExceptions import (
         GenericTriviaNetworkException, MalformedTriviaJsonException,
         UnsupportedTriviaTypeException)
@@ -41,7 +40,6 @@ except:
     from trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
     from trivia.triviaDifficulty import TriviaDifficulty
-    from trivia.triviaEmoteGenerator import TriviaEmoteGenerator
     from trivia.triviaExceptions import (GenericTriviaNetworkException,
                                          MalformedTriviaJsonException,
                                          UnsupportedTriviaTypeException)
@@ -69,7 +67,6 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self,
         pokepediaRepository: PokepediaRepository,
         timber: Timber,
-        triviaEmoteGenerator: TriviaEmoteGenerator,
         triviaIdGenerator: TriviaIdGenerator,
         triviaSettingsRepository: TriviaSettingsRepository,
         maxGeneration: PokepediaGeneration = PokepediaGeneration.GENERATION_3
@@ -80,8 +77,6 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
             raise ValueError(f'pokepediaRepository argument is malformed: \"{pokepediaRepository}\"')
         elif not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif not isinstance(triviaEmoteGenerator, TriviaEmoteGenerator):
-            raise ValueError(f'triviaEmoteGenerator argument is malformed: \"{triviaEmoteGenerator}\"')
         elif not isinstance(triviaIdGenerator, TriviaIdGenerator):
             raise ValueError(f'triviaIdGenerator argument is malformed: \"{triviaIdGenerator}\"')
         elif not isinstance(maxGeneration, PokepediaGeneration):
@@ -89,7 +84,6 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         self.__pokepediaRepository: PokepediaRepository = pokepediaRepository
         self.__timber: Timber = timber
-        self.__triviaEmoteGenerator: TriviaEmoteGenerator = triviaEmoteGenerator
         self.__triviaIdGenerator: TriviaIdGenerator = triviaIdGenerator
         self.__maxGeneration: PokepediaGeneration = maxGeneration
 
@@ -401,7 +395,6 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
         category = 'Pokémon'
         triviaDifficulty = TriviaDifficulty.UNKNOWN
         triviaType: TriviaType = triviaDict['triviaType']
-        emote = await self.__triviaEmoteGenerator.getNextEmoteFor(twitchChannel)
         question = utils.getStrFromDict(triviaDict, 'question')
 
         triviaId = await self.__triviaIdGenerator.generate(
@@ -425,7 +418,6 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
                 multipleChoiceResponses = multipleChoiceResponses,
                 category = category,
                 categoryId = None,
-                emote = emote,
                 question = question,
                 triviaId = triviaId,
                 triviaDifficulty = triviaDifficulty,
@@ -439,7 +431,6 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
                 correctAnswers = correctAnswers,
                 category = category,
                 categoryId = None,
-                emote = emote,
                 question = question,
                 triviaId = triviaId,
                 triviaDifficulty = triviaDifficulty,

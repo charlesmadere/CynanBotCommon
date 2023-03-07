@@ -13,7 +13,6 @@ try:
         QuestionAnswerTriviaQuestion
     from CynanBotCommon.trivia.triviaAnswerCompiler import TriviaAnswerCompiler
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
-    from CynanBotCommon.trivia.triviaEmoteGenerator import TriviaEmoteGenerator
     from CynanBotCommon.trivia.triviaExceptions import (
         GenericTriviaNetworkException, MalformedTriviaJsonException)
     from CynanBotCommon.trivia.triviaQuestionCompiler import \
@@ -33,7 +32,6 @@ except:
         QuestionAnswerTriviaQuestion
     from trivia.triviaAnswerCompiler import TriviaAnswerCompiler
     from trivia.triviaDifficulty import TriviaDifficulty
-    from trivia.triviaEmoteGenerator import TriviaEmoteGenerator
     from trivia.triviaExceptions import (GenericTriviaNetworkException,
                                          MalformedTriviaJsonException)
     from trivia.triviaQuestionCompiler import TriviaQuestionCompiler
@@ -49,7 +47,6 @@ class FuntoonTriviaQuestionRepository(AbsTriviaQuestionRepository):
         networkClientProvider: NetworkClientProvider,
         timber: Timber,
         triviaAnswerCompiler: TriviaAnswerCompiler,
-        triviaEmoteGenerator: TriviaEmoteGenerator,
         triviaQuestionCompiler: TriviaQuestionCompiler,
         triviaSettingsRepository: TriviaSettingsRepository
     ):
@@ -57,8 +54,6 @@ class FuntoonTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         if not isinstance(networkClientProvider, NetworkClientProvider):
             raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
-        elif not isinstance(triviaEmoteGenerator, TriviaEmoteGenerator):
-            raise ValueError(f'triviaEmoteGenerator argument is malformed: \"{triviaEmoteGenerator}\"')
         elif not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(triviaAnswerCompiler, TriviaAnswerCompiler):
@@ -69,7 +64,6 @@ class FuntoonTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self.__networkClientProvider: NetworkClientProvider = networkClientProvider
         self.__timber: Timber = timber
         self.__triviaAnswerCompiler: TriviaAnswerCompiler = triviaAnswerCompiler
-        self.__triviaEmoteGenerator: TriviaEmoteGenerator = triviaEmoteGenerator
         self.__triviaQuestionCompiler: TriviaQuestionCompiler = triviaQuestionCompiler
 
     async def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
@@ -125,14 +119,11 @@ class FuntoonTriviaQuestionRepository(AbsTriviaQuestionRepository):
         # TODO In the future, we will also check some additional fields (`formatted_answer` and
         # `format_type`). These will assist in providing computer-readable answer logic.
 
-        emote = await self.__triviaEmoteGenerator.getNextEmoteFor(twitchChannel)
-
         return QuestionAnswerTriviaQuestion(
             correctAnswers = correctAnswers,
             cleanedCorrectAnswers = list(expandedCorrectAnswers),
             category = category,
             categoryId = categoryId,
-            emote = emote,
             question = question,
             triviaId = triviaId,
             triviaDifficulty = TriviaDifficulty.UNKNOWN,

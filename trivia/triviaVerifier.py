@@ -1,6 +1,8 @@
 from typing import Optional
 
 try:
+    import utils
+
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.bannedTriviaIdsRepository import \
@@ -20,6 +22,8 @@ except:
     from trivia.triviaFetchOptions import TriviaFetchOptions
     from trivia.triviaHistoryRepository import TriviaHistoryRepository
     from trivia.triviaType import TriviaType
+
+    import CynanBotCommon.utils as utils
 
 
 class TriviaVerifier():
@@ -48,10 +52,13 @@ class TriviaVerifier():
     async def verify(
         self,
         question: Optional[AbsTriviaQuestion],
+        emote: str,
         triviaFetchOptions: TriviaFetchOptions
     ) -> TriviaContentCode:
         if question is not None and not isinstance(question, AbsTriviaQuestion):
             raise ValueError(f'question argument is malformed: \"{question}\"')
+        elif not utils.isValidStr(emote):
+            raise ValueError(f'emote argument is malformed: \"{emote}\"')
         elif not isinstance(triviaFetchOptions, TriviaFetchOptions):
             raise ValueError(f'triviaFetchOptions argument is malformed: \"{triviaFetchOptions}\"')
 
@@ -75,7 +82,12 @@ class TriviaVerifier():
         if contentScannerCode is not TriviaContentCode.OK:
             return contentScannerCode
 
-        historyRepositoryCode = await self.__triviaHistoryRepository.verify(question, triviaFetchOptions.getTwitchChannel())
+        historyRepositoryCode = await self.__triviaHistoryRepository.verify(
+            question = question, 
+            emote = emote,
+            twitchChannel = triviaFetchOptions.getTwitchChannel()
+        )
+
         if historyRepositoryCode is not TriviaContentCode.OK:
             return historyRepositoryCode
 

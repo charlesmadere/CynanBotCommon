@@ -26,6 +26,7 @@ class CorrectAnswerTriviaEvent(AbsTriviaEvent):
         pointsForWinning: int,
         actionId: str,
         answer: str,
+        emote: str,
         gameId: str,
         twitchChannel: str,
         userId: str,
@@ -47,12 +48,14 @@ class CorrectAnswerTriviaEvent(AbsTriviaEvent):
             raise ValueError(f'pointsForWinning argument is malformed: \"{pointsForWinning}\"')
         elif pointsForWinning < 1 or pointsForWinning > utils.getIntMaxSafeSize():
             raise ValueError(f'pointsForWinning argument is out of bounds: {pointsForWinning}')
+        elif not utils.isValidStr(answer):
+            raise ValueError(f'answer argument is malformed: \"{answer}\"')
+        elif not utils.isValidStr(emote):
+            raise ValueError(f'emote argument is malformed: \"{emote}\"')
         elif not utils.isValidStr(gameId):
             raise ValueError(f'gameId argument is malformed: \"{gameId}\"')
         elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
-        elif not utils.isValidStr(answer):
-            raise ValueError(f'answer argument is malformed: \"{answer}\"')
         elif not utils.isValidStr(userId):
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
         elif not utils.isValidStr(userName):
@@ -65,6 +68,7 @@ class CorrectAnswerTriviaEvent(AbsTriviaEvent):
         self.__cutenessResult: CutenessResult = cutenessResult
         self.__pointsForWinning: int = pointsForWinning
         self.__answer: str = answer
+        self.__emote: str = emote
         self.__gameId: str = gameId
         self.__twitchChannel: str = twitchChannel
         self.__userId: str = userId
@@ -76,6 +80,9 @@ class CorrectAnswerTriviaEvent(AbsTriviaEvent):
 
     def getCutenessResult(self) -> CutenessResult:
         return self.__cutenessResult
+
+    def getEmote(self) -> str:
+        return self.__emote
 
     def getGameId(self) -> str:
         return self.__gameId

@@ -28,7 +28,6 @@ class MultipleChoiceTriviaQuestion(AbsTriviaQuestion):
         multipleChoiceResponses: List[str],
         category: Optional[str],
         categoryId: Optional[str],
-        emote: str,
         question: str,
         triviaId: str,
         triviaDifficulty: TriviaDifficulty,
@@ -37,7 +36,6 @@ class MultipleChoiceTriviaQuestion(AbsTriviaQuestion):
         super().__init__(
             category = category,
             categoryId = categoryId,
-            emote = emote,
             question = question,
             triviaId = triviaId,
             triviaDifficulty = triviaDifficulty,
@@ -102,7 +100,7 @@ class MultipleChoiceTriviaQuestion(AbsTriviaQuestion):
         return ordinals
 
     def getPrompt(self, delimiter: str = ' ') -> str:
-        if delimiter is None:
+        if not isinstance(delimiter, str):
             raise ValueError(f'delimiter argument is malformed: \"{delimiter}\"')
 
         responsesList: List[str] = list()

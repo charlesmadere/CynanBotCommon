@@ -24,7 +24,6 @@ class TrueFalseTriviaQuestion(AbsTriviaQuestion):
         correctAnswers: List[bool],
         category: Optional[str],
         categoryId: Optional[str],
-        emote: str,
         question: str,
         triviaId: str,
         triviaDifficulty: TriviaDifficulty,
@@ -33,7 +32,6 @@ class TrueFalseTriviaQuestion(AbsTriviaQuestion):
         super().__init__(
             category = category,
             categoryId = categoryId,
-            emote = emote,
             question = question,
             triviaId = triviaId,
             triviaDifficulty = triviaDifficulty,
@@ -57,7 +55,7 @@ class TrueFalseTriviaQuestion(AbsTriviaQuestion):
     def getCorrectAnswerBools(self) -> List[bool]:
         return self.__correctAnswers
 
-    def getPrompt(self, delimiter: str = None) -> str:
+    def getPrompt(self, delimiter: str = ' ') -> str:
         return f'True or false! {self.getQuestion()}'
 
     def getResponses(self) -> List[str]:

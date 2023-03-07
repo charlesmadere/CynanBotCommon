@@ -10,7 +10,6 @@ try:
     from CynanBotCommon.trivia.triviaType import TriviaType
 except:
     import utils
-
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.triviaDifficulty import TriviaDifficulty
     from trivia.triviaExceptions import NoTriviaCorrectAnswersException
@@ -26,7 +25,6 @@ class QuestionAnswerTriviaQuestion(AbsTriviaQuestion):
         cleanedCorrectAnswers: List[str],
         category: Optional[str],
         categoryId: Optional[str],
-        emote: str,
         question: str,
         triviaId: str,
         triviaDifficulty: TriviaDifficulty,
@@ -35,7 +33,6 @@ class QuestionAnswerTriviaQuestion(AbsTriviaQuestion):
         super().__init__(
             category = category,
             categoryId = categoryId,
-            emote = emote,
             question = question,
             triviaId = triviaId,
             triviaDifficulty = triviaDifficulty,
@@ -57,7 +54,7 @@ class QuestionAnswerTriviaQuestion(AbsTriviaQuestion):
     def getCleanedCorrectAnswers(self) -> List[str]:
         return utils.copyList(self.__cleanedCorrectAnswers)
 
-    def getPrompt(self, delimiter: str = None) -> str:
+    def getPrompt(self, delimiter: str = ' ') -> str:
         if self.hasCategory():
             return f'(category is \"{self.getCategory()}\") {self.getQuestion()}'
         else:

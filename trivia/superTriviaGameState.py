@@ -23,6 +23,7 @@ class SuperTriviaGameState(AbsTriviaGameState):
         pointsForWinning: int,
         secondsToLive: int,
         actionId: str,
+        emote: str,
         twitchChannel: str
     ):
         super().__init__(
@@ -31,6 +32,7 @@ class SuperTriviaGameState(AbsTriviaGameState):
             pointsForWinning = pointsForWinning,
             secondsToLive = secondsToLive,
             actionId = actionId,
+            emote = emote,
             twitchChannel = twitchChannel,
             triviaGameType = TriviaGameType.SUPER
         )

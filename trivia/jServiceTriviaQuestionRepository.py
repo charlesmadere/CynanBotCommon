@@ -13,7 +13,6 @@ try:
         QuestionAnswerTriviaQuestion
     from CynanBotCommon.trivia.triviaAnswerCompiler import TriviaAnswerCompiler
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
-    from CynanBotCommon.trivia.triviaEmoteGenerator import TriviaEmoteGenerator
     from CynanBotCommon.trivia.triviaExceptions import (
         GenericTriviaNetworkException, MalformedTriviaJsonException)
     from CynanBotCommon.trivia.triviaIdGenerator import TriviaIdGenerator
@@ -34,7 +33,6 @@ except:
         QuestionAnswerTriviaQuestion
     from trivia.triviaAnswerCompiler import TriviaAnswerCompiler
     from trivia.triviaDifficulty import TriviaDifficulty
-    from trivia.triviaEmoteGenerator import TriviaEmoteGenerator
     from trivia.triviaExceptions import (GenericTriviaNetworkException,
                                          MalformedTriviaJsonException)
     from trivia.triviaIdGenerator import TriviaIdGenerator
@@ -51,7 +49,6 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
         networkClientProvider: NetworkClientProvider,
         timber: Timber,
         triviaAnswerCompiler: TriviaAnswerCompiler,
-        triviaEmoteGenerator: TriviaEmoteGenerator,
         triviaIdGenerator: TriviaIdGenerator,
         triviaQuestionCompiler: TriviaQuestionCompiler,
         triviaSettingsRepository: TriviaSettingsRepository
@@ -64,8 +61,6 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(triviaAnswerCompiler, TriviaAnswerCompiler):
             raise ValueError(f'triviaAnswerCompiler argument is malformed: \"{triviaAnswerCompiler}\"')
-        elif not isinstance(triviaEmoteGenerator, TriviaEmoteGenerator):
-            raise ValueError(f'triviaEmoteGenerator argument is malformed: \"{triviaEmoteGenerator}\"')
         elif not isinstance(triviaIdGenerator, TriviaIdGenerator):
             raise ValueError(f'triviaIdGenerator argument is malformed: \"{triviaIdGenerator}\"')
         elif not isinstance(triviaQuestionCompiler, TriviaQuestionCompiler):
@@ -74,7 +69,6 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self.__networkClientProvider: NetworkClientProvider = networkClientProvider
         self.__timber: Timber = timber
         self.__triviaAnswerCompiler: TriviaAnswerCompiler = triviaAnswerCompiler
-        self.__triviaEmoteGenerator: TriviaEmoteGenerator = triviaEmoteGenerator
         self.__triviaIdGenerator: TriviaIdGenerator = triviaIdGenerator
         self.__triviaQuestionCompiler: TriviaQuestionCompiler = triviaQuestionCompiler
 
@@ -153,14 +147,11 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
             for answer in cleanedCorrectAnswers:
                 expandedCorrectAnswers.update(await self.__triviaAnswerCompiler.expandNumerals(answer))
 
-            emote = await self.__triviaEmoteGenerator.getNextEmoteFor(twitchChannel)
-
             questions.append(QuestionAnswerTriviaQuestion(
                 correctAnswers = correctAnswers,
                 cleanedCorrectAnswers = list(expandedCorrectAnswers),
                 category = category,
                 categoryId = None,
-                emote = emote,
                 question = question,
                 triviaId = triviaId,
                 triviaDifficulty = TriviaDifficulty.UNKNOWN,

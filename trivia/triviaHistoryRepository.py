@@ -132,14 +132,16 @@ class TriviaHistoryRepository():
     async def verify(
         self,
         question: AbsTriviaQuestion,
+        emote: str,
         twitchChannel: str
     ) -> TriviaContentCode:
         if not isinstance(question, AbsTriviaQuestion):
             raise ValueError(f'question argument is malformed: \"{question}\"')
+        elif not utils.isValidStr(emote):
+            raise ValueError(f'emote argument is malformed: \"{emote}\"')
         elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
-        emote = question.getEmote()
         triviaId = question.getTriviaId()
         triviaSource = question.getTriviaSource().toStr()
 

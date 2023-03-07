@@ -21,6 +21,7 @@ class NewSuperTriviaGameEvent(AbsTriviaEvent):
         pointsForWinning: int,
         secondsToLive: int,
         actionId: str,
+        emote: str,
         gameId: str,
         twitchChannel: str
     ):
@@ -41,6 +42,8 @@ class NewSuperTriviaGameEvent(AbsTriviaEvent):
             raise ValueError(f'secondsToLive argument is malformed: \"{secondsToLive}\"')
         elif secondsToLive < 1 or secondsToLive > utils.getIntMaxSafeSize():
             raise ValueError(f'secondsToLive argument is out of bounds: {secondsToLive}')
+        elif not utils.isValidStr(emote):
+            raise ValueError(f'emote argument is malformed: \"{emote}\"')
         elif not utils.isValidStr(gameId):
             raise ValueError(f'gameId argument is malformed: \"{gameId}\"')
         elif not utils.isValidStr(twitchChannel):
@@ -50,8 +53,12 @@ class NewSuperTriviaGameEvent(AbsTriviaEvent):
         self.__isShiny: bool = isShiny
         self.__pointsForWinning: int = pointsForWinning
         self.__secondsToLive: int = secondsToLive
+        self.__emote: str = emote
         self.__gameId: str = gameId
         self.__twitchChannel: str = twitchChannel
+
+    def getEmote(self) -> str:
+        return self.__emote
 
     def getGameId(self) -> str:
         return self.__gameId

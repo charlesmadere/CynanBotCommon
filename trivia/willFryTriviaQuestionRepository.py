@@ -12,7 +12,6 @@ try:
     from CynanBotCommon.trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
-    from CynanBotCommon.trivia.triviaEmoteGenerator import TriviaEmoteGenerator
     from CynanBotCommon.trivia.triviaExceptions import (
         GenericTriviaNetworkException, MalformedTriviaJsonException,
         UnsupportedTriviaTypeException)
@@ -35,7 +34,6 @@ except:
     from trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
     from trivia.triviaDifficulty import TriviaDifficulty
-    from trivia.triviaEmoteGenerator import TriviaEmoteGenerator
     from trivia.triviaExceptions import (GenericTriviaNetworkException,
                                          MalformedTriviaJsonException,
                                          UnsupportedTriviaTypeException)
@@ -53,7 +51,6 @@ class WillFryTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self,
         networkClientProvider: NetworkClientProvider,
         timber: Timber,
-        triviaEmoteGenerator: TriviaEmoteGenerator,
         triviaIdGenerator: TriviaIdGenerator,
         triviaQuestionCompiler: TriviaQuestionCompiler,
         triviaSettingsRepository: TriviaSettingsRepository
@@ -64,8 +61,6 @@ class WillFryTriviaQuestionRepository(AbsTriviaQuestionRepository):
             raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
         elif not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif not isinstance(triviaEmoteGenerator, TriviaEmoteGenerator):
-            raise ValueError(f'triviaEmoteGenerator argument is malformed: \"{triviaEmoteGenerator}\"')
         elif not isinstance(triviaIdGenerator, TriviaIdGenerator):
             raise ValueError(f'triviaIdGenerator argument is malformed: \"{triviaIdGenerator}\"')
         elif not isinstance(triviaQuestionCompiler, TriviaQuestionCompiler):
@@ -73,7 +68,6 @@ class WillFryTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         self.__networkClientProvider: NetworkClientProvider = networkClientProvider
         self.__timber: Timber = timber
-        self.__triviaEmoteGenerator: TriviaEmoteGenerator = triviaEmoteGenerator
         self.__triviaIdGenerator: TriviaIdGenerator = triviaIdGenerator
         self.__triviaQuestionCompiler: TriviaQuestionCompiler = triviaQuestionCompiler
 
@@ -118,8 +112,6 @@ class WillFryTriviaQuestionRepository(AbsTriviaQuestionRepository):
         if not utils.isValidStr(triviaId):
             triviaId = await self.__triviaIdGenerator.generate(category = category, question = question)
 
-        emote = await self.__triviaEmoteGenerator.getNextEmoteFor(twitchChannel)
-
         if triviaType is TriviaType.MULTIPLE_CHOICE:
             correctAnswer = await self.__triviaQuestionCompiler.compileResponse(
                 response = utils.getStrFromDict(triviaJson, 'correctAnswer'),
@@ -144,7 +136,6 @@ class WillFryTriviaQuestionRepository(AbsTriviaQuestionRepository):
                     multipleChoiceResponses = multipleChoiceResponses,
                     category = category,
                     categoryId = None,
-                    emote = emote,
                     question = question,
                     triviaId = triviaId,
                     triviaDifficulty = TriviaDifficulty.UNKNOWN,
@@ -163,7 +154,6 @@ class WillFryTriviaQuestionRepository(AbsTriviaQuestionRepository):
                 correctAnswers = correctAnswers,
                 category = category,
                 categoryId = None,
-                emote = emote,
                 question = question,
                 triviaId = triviaId,
                 triviaDifficulty = TriviaDifficulty.UNKNOWN,

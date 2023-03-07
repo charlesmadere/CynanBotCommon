@@ -21,6 +21,7 @@ class OutOfTimeSuperTriviaEvent(AbsTriviaEvent):
         pointsForWinning: int,
         remainingQueueSize: int,
         actionId: str,
+        emote: str,
         gameId: str,
         twitchChannel: str
     ):
@@ -41,6 +42,8 @@ class OutOfTimeSuperTriviaEvent(AbsTriviaEvent):
             raise ValueError(f'remainingQueueSize argument is malformed: \"{remainingQueueSize}\"')
         elif remainingQueueSize < 0 or remainingQueueSize > utils.getIntMaxSafeSize():
             raise ValueError(f'remainingQueueSize argument is out of bounds: {remainingQueueSize}')
+        elif not utils.isValidStr(emote):
+            raise ValueError(f'emote argument is malformed: \"{emote}\"')
         elif not utils.isValidStr(gameId):
             raise ValueError(f'gameId argument is malformed: \"{gameId}\"')
         elif not utils.isValidStr(twitchChannel):
@@ -50,8 +53,12 @@ class OutOfTimeSuperTriviaEvent(AbsTriviaEvent):
         self.__isShiny: bool = isShiny
         self.__pointsForWinning: int = pointsForWinning
         self.__remainingQueueSize: int = remainingQueueSize
+        self.__emote: str = emote
         self.__gameId: str = gameId
         self.__twitchChannel: str = twitchChannel
+
+    def getEmote(self) -> str:
+        return self.__emote
 
     def getGameId(self) -> str:
         return self.__gameId

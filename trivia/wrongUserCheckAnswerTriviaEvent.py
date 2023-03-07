@@ -19,6 +19,7 @@ class WrongUserCheckAnswerTriviaEvent(AbsTriviaEvent):
         triviaQuestion: AbsTriviaQuestion,
         actionId: str,
         answer: Optional[str],
+        emote: str,
         gameId: str,
         twitchChannel: str,
         userId: str,
@@ -31,6 +32,8 @@ class WrongUserCheckAnswerTriviaEvent(AbsTriviaEvent):
 
         if not isinstance(triviaQuestion, AbsTriviaQuestion):
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
+        elif not utils.isValidStr(emote):
+            raise ValueError(f'emote argument is malformed: \"{emote}\"')
         elif not utils.isValidStr(gameId):
             raise ValueError(f'gameId argument is malformed: \"{gameId}\"')
         elif not utils.isValidStr(twitchChannel):
@@ -42,6 +45,7 @@ class WrongUserCheckAnswerTriviaEvent(AbsTriviaEvent):
 
         self.__triviaQuestion: AbsTriviaQuestion = triviaQuestion
         self.__answer: Optional[str] = answer
+        self.__emote: str = emote
         self.__gameId: str = gameId
         self.__twitchChannel: str = twitchChannel
         self.__userId: str = userId
@@ -49,6 +53,9 @@ class WrongUserCheckAnswerTriviaEvent(AbsTriviaEvent):
 
     def getAnswer(self) -> Optional[str]:
         return self.__answer
+
+    def getEmote(self) -> str:
+        return self.__emote
 
     def getGameId(self) -> str:
         return self.__gameId

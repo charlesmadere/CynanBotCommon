@@ -22,6 +22,7 @@ class AbsTriviaGameState(ABC):
         pointsForWinning: int,
         secondsToLive: int,
         actionId: str,
+        emote: str,
         twitchChannel: str,
         triviaGameType: TriviaGameType
     ):
@@ -39,6 +40,8 @@ class AbsTriviaGameState(ABC):
             raise ValueError(f'secondsToLive argument is out of bounds: {secondsToLive}')
         elif not utils.isValidStr(actionId):
             raise ValueError(f'actionId argument is malformed: \"{actionId}\"')
+        elif not utils.isValidStr(emote):
+            raise ValueError(f'emote argument is malformed: \"{emote}\"')
         elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
         elif not isinstance(triviaGameType, TriviaGameType):
@@ -49,6 +52,7 @@ class AbsTriviaGameState(ABC):
         self.__pointsForWinning: int = pointsForWinning
         self.__secondsToLive: int = secondsToLive
         self.__actionId: str = actionId
+        self.__emote: str = emote
         self.__twitchChannel: str = twitchChannel
         self.__triviaGameType: TriviaGameType = triviaGameType
 
@@ -57,6 +61,9 @@ class AbsTriviaGameState(ABC):
 
     def getActionId(self) -> str:
         return self.__actionId
+
+    def getEmote(self) -> str:
+        return self.__emote
 
     def getEndTime(self) -> datetime:
         return self.__endTime

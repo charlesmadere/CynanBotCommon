@@ -236,11 +236,17 @@ class TriviaRepository():
 
         return triviaSourceToRepositoryMap
 
-    async def fetchTrivia(self, triviaFetchOptions: TriviaFetchOptions) -> Optional[AbsTriviaQuestion]:
-        if not isinstance(triviaFetchOptions, TriviaFetchOptions):
+    async def fetchTrivia(
+        self,
+        emote: str,
+        triviaFetchOptions: TriviaFetchOptions
+    ) -> Optional[AbsTriviaQuestion]:
+        if not utils.isValidStr(emote):
+            raise ValueError(f'emote argument is malformed: \"{emote}\"')
+        elif not isinstance(triviaFetchOptions, TriviaFetchOptions):
             raise ValueError(f'triviaFetchOptions argument is malformed: \"{triviaFetchOptions}\"')
 
-        triviaQuestion: Optional[AbsTriviaQuestion] = None
+        question: Optional[AbsTriviaQuestion] = None
         retryCount: int = 0
         maxRetryCount = await self.__triviaSettingsRepository.getMaxRetryCount()
         attemptedTriviaSources: List[TriviaSource] = list()
@@ -251,7 +257,7 @@ class TriviaRepository():
             attemptedTriviaSources.append(triviaSource)
 
             try:
-                triviaQuestion = await triviaQuestionRepository.fetchTriviaQuestion(triviaFetchOptions.getTwitchChannel())
+                question = await triviaQuestionRepository.fetchTriviaQuestion(triviaFetchOptions.getTwitchChannel())
             except (NoTriviaCorrectAnswersException, NoTriviaMultipleChoiceResponsesException, NoTriviaQuestionException) as e:
                 self.__timber.log('TriviaRepository', f'Failed to fetch trivia question due to malformed data (trivia source was \"{triviaSource}\"): {e}', e)
             except GenericTriviaNetworkException as e:
@@ -264,8 +270,12 @@ class TriviaRepository():
                 errorCount = self.__triviaSourceInstabilityHelper.incrementErrorCount(triviaSource)
                 self.__timber.log('TriviaRepository', f'Encountered unknown Exception when fetching trivia question (trivia source was \"{triviaSource}\") (new error count is {errorCount}): {e}', e)
 
-            if await self.__verifyGoodTriviaQuestion(triviaQuestion, triviaFetchOptions):
-                return triviaQuestion
+            if await self.__verifyGoodTriviaQuestion(
+                question = question,
+                emote = emote,
+                triviaFetchOptions = triviaFetchOptions
+            ):
+                return question
 
             retryCount = retryCount + 1
             await asyncio.sleep(self.__sleepTimeSeconds * float(retryCount))
@@ -337,13 +347,22 @@ class TriviaRepository():
 
     async def __verifyGoodTriviaQuestion(
         self,
-        triviaQuestion: Optional[AbsTriviaQuestion],
+        question: Optional[AbsTriviaQuestion],
+        emote: str,
         triviaFetchOptions: TriviaFetchOptions
     ) -> bool:
-        if not isinstance(triviaFetchOptions, TriviaFetchOptions):
+        if question is not None and not isinstance(question, AbsTriviaQuestion):
+            raise ValueError(f'question argument is malformed: \"{question}\"')
+        elif not utils.isValidStr(emote):
+            raise ValueError(f'emote argument is malformed: \"{emote}\"')
+        elif not isinstance(triviaFetchOptions, TriviaFetchOptions):
             raise ValueError(f'triviaFetchOptions argument is malformed: \"{triviaFetchOptions}\"')
 
-        triviaContentCode = await self.__triviaVerifier.verify(triviaQuestion, triviaFetchOptions)
+        triviaContentCode = await self.__triviaVerifier.verify(
+            question = question,
+            emote = emote,
+            triviaFetchOptions = triviaFetchOptions
+        )
 
         if triviaContentCode == TriviaContentCode.OK:
             return True

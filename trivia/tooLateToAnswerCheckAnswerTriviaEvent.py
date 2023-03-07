@@ -22,6 +22,7 @@ class TooLateToAnswerCheckAnswerTriviaEvent(AbsTriviaEvent):
         isShiny: bool,
         actionId: str,
         answer: Optional[str],
+        emote: str,
         gameId: str,
         twitchChannel: str,
         userId: str,
@@ -39,6 +40,8 @@ class TooLateToAnswerCheckAnswerTriviaEvent(AbsTriviaEvent):
             raise ValueError(f'isShiny argument is malformed: \"{isShiny}\"')
         elif not utils.isValidStr(answer):
             raise ValueError(f'answer argument is malformed: \"{answer}\"')
+        elif not utils.isValidStr(emote):
+            raise ValueError(f'emote argument is malformed: \"{emote}\"')
         elif not utils.isValidStr(gameId):
             raise ValueError(f'gameId argument is malformed: \"{gameId}\"')
         elif not utils.isValidStr(twitchChannel):
@@ -53,6 +56,7 @@ class TooLateToAnswerCheckAnswerTriviaEvent(AbsTriviaEvent):
         self.__triviaQuestion: AbsTriviaQuestion = triviaQuestion
         self.__isShiny: bool = isShiny
         self.__answer: Optional[str] = answer
+        self.__emote: str = emote
         self.__gameId: str = gameId
         self.__twitchChannel: str = twitchChannel
         self.__userId: str = userId
@@ -61,6 +65,9 @@ class TooLateToAnswerCheckAnswerTriviaEvent(AbsTriviaEvent):
 
     def getAnswer(self) -> Optional[str]:
         return self.__answer
+
+    def getEmote(self) -> str:
+        return self.__emote
 
     def getGameId(self) -> str:
         return self.__gameId

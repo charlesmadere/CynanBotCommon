@@ -18,12 +18,6 @@ class BadTriviaDifficultyException(Exception):
         super().__init__(message)
 
 
-class BadTriviaEmoteException(Exception):
-
-    def __init__(self, message: str):
-        super().__init__(message)
-
-
 class BadTriviaIdException(Exception):
 
     def __init__(self, message: str):

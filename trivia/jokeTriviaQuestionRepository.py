@@ -14,7 +14,6 @@ try:
     from CynanBotCommon.trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
-    from CynanBotCommon.trivia.triviaEmoteGenerator import TriviaEmoteGenerator
     from CynanBotCommon.trivia.triviaExceptions import \
         UnsupportedTriviaTypeException
     from CynanBotCommon.trivia.triviaSettingsRepository import \
@@ -29,7 +28,6 @@ except:
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.absTriviaQuestionRepository import AbsTriviaQuestionRepository
     from trivia.triviaDifficulty import TriviaDifficulty
-    from trivia.triviaEmoteGenerator import TriviaEmoteGenerator
     from trivia.triviaExceptions import UnsupportedTriviaTypeException
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
@@ -42,7 +40,6 @@ class JokeTriviaQuestionRepository(AbsTriviaQuestionRepository):
     def __init__(
         self,
         timber: Timber,
-        triviaEmoteGenerator: TriviaEmoteGenerator,
         triviaSettingsRepository: TriviaSettingsRepository,
         jokeTriviaQuestionFile: str = 'CynanBotCommon/trivia/jokeTriviaQuestionRepository.json'
     ):
@@ -50,13 +47,10 @@ class JokeTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         if not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif not isinstance(triviaEmoteGenerator, TriviaEmoteGenerator):
-            raise ValueError(f'triviaEmoteGenerator argument is malformed: \"{triviaEmoteGenerator}\"')
         elif not utils.isValidStr(jokeTriviaQuestionFile):
             raise ValueError(f'jokeTriviaQuestionFile argument is malformed: \"{jokeTriviaQuestionFile}\"')
 
         self.__timber: Timber = timber
-        self.__triviaEmoteGenerator: TriviaEmoteGenerator = triviaEmoteGenerator
         self.__jokeTriviaQuestionFile: str = jokeTriviaQuestionFile
 
     async def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
@@ -76,8 +70,6 @@ class JokeTriviaQuestionRepository(AbsTriviaQuestionRepository):
         triviaId = utils.getStrFromDict(triviaJson, 'id')
         triviaType = TriviaType.fromStr(utils.getStrFromDict(triviaJson, 'type'))
 
-        emote = await self.__triviaEmoteGenerator.getNextEmoteFor(twitchChannel)
-
         if triviaType is TriviaType.MULTIPLE_CHOICE:
             correctAnswers: List[str] = triviaJson['correctAnswers']
             multipleChoiceResponses: List[str] = triviaJson['responses']
@@ -88,7 +80,6 @@ class JokeTriviaQuestionRepository(AbsTriviaQuestionRepository):
                 multipleChoiceResponses = multipleChoiceResponses,
                 category = category,
                 categoryId = None,
-                emote = emote,
                 triviaId = triviaId,
                 question = question,
                 triviaDifficulty = triviaDifficulty,
@@ -101,7 +92,6 @@ class JokeTriviaQuestionRepository(AbsTriviaQuestionRepository):
                 correctAnswers = correctAnswers,
                 category = category,
                 categoryId = None,
-                emote = emote,
                 triviaId = triviaId,
                 question = question,
                 triviaDifficulty = triviaDifficulty,
