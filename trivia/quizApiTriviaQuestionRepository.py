@@ -12,7 +12,6 @@ try:
     from CynanBotCommon.trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
-    from CynanBotCommon.trivia.triviaEmoteGenerator import TriviaEmoteGenerator
     from CynanBotCommon.trivia.triviaExceptions import (
         GenericTriviaNetworkException, MalformedTriviaJsonException,
         NoTriviaCorrectAnswersException, UnsupportedTriviaTypeException)
@@ -33,7 +32,6 @@ except:
     from trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
     from trivia.triviaDifficulty import TriviaDifficulty
-    from trivia.triviaEmoteGenerator import TriviaEmoteGenerator
     from trivia.triviaExceptions import (GenericTriviaNetworkException,
                                          MalformedTriviaJsonException,
                                          NoTriviaCorrectAnswersException,
@@ -52,7 +50,6 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
         networkClientProvider: NetworkClientProvider,
         quizApiKey: str,
         timber: Timber,
-        triviaEmoteGenerator: TriviaEmoteGenerator,
         triviaIdGenerator: TriviaIdGenerator,
         triviaSettingsRepository: TriviaSettingsRepository
     ):
@@ -64,15 +61,12 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
             raise ValueError(f'quizApiKey argument is malformed: \"{quizApiKey}\"')
         elif not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif not isinstance(triviaEmoteGenerator, TriviaEmoteGenerator):
-            raise ValueError(f'triviaEmoteGenerator argument is malformed: \"{triviaEmoteGenerator}\"')
         elif not isinstance(triviaIdGenerator, TriviaIdGenerator):
             raise ValueError(f'triviaIdGenerator argument is malformed: \"{triviaIdGenerator}\"')
 
         self.__networkClientProvider: NetworkClientProvider = networkClientProvider
         self.__quizApiKey: str = quizApiKey
         self.__timber: Timber = timber
-        self.__triviaEmoteGenerator: TriviaEmoteGenerator = triviaEmoteGenerator
         self.__triviaIdGenerator: TriviaIdGenerator = triviaIdGenerator
 
     async def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
@@ -158,8 +152,6 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
             multipleChoiceResponses = filteredAnswers
         )
 
-        emote = await self.__triviaEmoteGenerator.getNextEmoteFor(twitchChannel)
-
         if triviaType is TriviaType.MULTIPLE_CHOICE:
             if await self._verifyIsActuallyMultipleChoiceQuestion(correctAnswers, multipleChoiceResponses):
                 return MultipleChoiceTriviaQuestion(
@@ -167,7 +159,6 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
                     multipleChoiceResponses = multipleChoiceResponses,
                     category = category,
                     categoryId = None,
-                    emote = emote,
                     question = question,
                     triviaId = triviaId,
                     triviaDifficulty = triviaDifficulty,
@@ -182,7 +173,6 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
                 correctAnswers = utils.strsToBools(correctAnswers),
                 category = category,
                 categoryId = None,
-                emote = emote,
                 question = question,
                 triviaId = triviaId,
                 triviaDifficulty = triviaDifficulty,
