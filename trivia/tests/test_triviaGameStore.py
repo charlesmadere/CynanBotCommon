@@ -88,6 +88,7 @@ class TriviaGameStoreTests():
         pointsForWinning = 5,
         secondsToLive = 60,
         actionId = 'abc123',
+        emote = '🍔',
         twitchChannel = 'smCharles',
         userId = '111111',
         userName = 'Eddie'
@@ -99,6 +100,7 @@ class TriviaGameStoreTests():
         pointsForWinning = 5,
         secondsToLive = 60,
         actionId = 'abc123',
+        emote = '🍔',
         twitchChannel = 'smCharles',
         userId = '222222',
         userName = 'stashiocat'
@@ -110,6 +112,7 @@ class TriviaGameStoreTests():
         pointsForWinning = 5,
         secondsToLive = 60,
         actionId = 'abc123',
+        emote = '🍔',
         twitchChannel = 'Imyt',
         userId = '222222',
         userName = 'stashiocat'
@@ -122,6 +125,7 @@ class TriviaGameStoreTests():
         pointsForWinning = 25,
         secondsToLive = 60,
         actionId = 'abc123',
+        emote = '🍔',
         twitchChannel = 'smCharles'
     )
 
@@ -132,6 +136,7 @@ class TriviaGameStoreTests():
         pointsForWinning = 25,
         secondsToLive = 60,
         actionId = 'abc123',
+        emote = '🍔',
         twitchChannel = 'Imyt'
     )
 
