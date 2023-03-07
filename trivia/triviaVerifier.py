@@ -1,8 +1,7 @@
 from typing import Optional
 
 try:
-    import utils
-
+    import CynanBotCommon.utils as utils
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.bannedTriviaIdsRepository import \
@@ -14,6 +13,7 @@ try:
         TriviaHistoryRepository
     from CynanBotCommon.trivia.triviaType import TriviaType
 except:
+    import utils
     from timber.timber import Timber
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.bannedTriviaIdsRepository import BannedTriviaIdsRepository
@@ -22,8 +22,6 @@ except:
     from trivia.triviaFetchOptions import TriviaFetchOptions
     from trivia.triviaHistoryRepository import TriviaHistoryRepository
     from trivia.triviaType import TriviaType
-
-    import CynanBotCommon.utils as utils
 
 
 class TriviaVerifier():
