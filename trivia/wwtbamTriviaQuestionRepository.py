@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Set
+from typing import Any, Dict, List, Optional, Set
 
 import aiosqlite
 
@@ -74,7 +74,7 @@ class WwtbamTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         correctAnswerIndex = utils.getStrFromDict(triviaDict, 'correctAnswer', clean = True)
 
-        correctAnswer: str = None
+        correctAnswer: Optional[str] = None
         if correctAnswerIndex.lower() == 'a':
             correctAnswer = responses[0]
         elif correctAnswerIndex.lower() == 'b':

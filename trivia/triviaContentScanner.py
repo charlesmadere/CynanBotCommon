@@ -1,4 +1,4 @@
-from typing import List, Optional, Set
+from typing import Optional, Set
 
 try:
     import CynanBotCommon.utils as utils
