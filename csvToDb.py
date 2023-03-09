@@ -6,6 +6,7 @@ from typing import List, Optional, Set
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.backgroundTaskHelper import BackgroundTaskHelper
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.bannedWordsRepository import \
         BannedWordsRepository
@@ -16,6 +17,7 @@ try:
     from CynanBotCommon.trivia.triviaType import TriviaType
 except:
     import utils
+    from backgroundTaskHelper import BackgroundTaskHelper
     from timber.timber import Timber
     from trivia.bannedWordsRepository import BannedWordsRepository
     from trivia.triviaContentScanner import TriviaContentScanner
@@ -24,8 +26,8 @@ except:
     from trivia.triviaType import TriviaType
 
 
-timber = Timber(eventLoop = asyncio.get_event_loop())
-
+backgroundTaskHelper = BackgroundTaskHelper(eventLoop = asyncio.get_event_loop())
+timber = Timber(backgroundTaskHelper = backgroundTaskHelper)
 bannedWordsRepository = BannedWordsRepository(timber = timber)
 triviaContentScanner = TriviaContentScanner(
     bannedWordsRepository = bannedWordsRepository,
