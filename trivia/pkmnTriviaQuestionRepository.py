@@ -107,6 +107,21 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
             'triviaType': TriviaType.MULTIPLE_CHOICE
         }
 
+    async def __createMoveDamageClassQuestion(self, move: PokepediaMove) -> Dict[str, Any]:
+        if not isinstance(move, PokepediaMove):
+            raise ValueError(f'move argument is malformed: \"{move}\"')
+
+        damageClassStrs: List[str] = list()
+        for damageClass in PokepediaDamageClass:
+            damageClassStrs.append(damageClass.toStr())
+
+        return {
+            'correctAnswer': move.getDamageClass().toStr(),
+            'incorrectAnswers': damageClassStrs,
+            'question': f'In Pokémon, the move {move.getName()} has which damage class?',
+            'triviaType': TriviaType.MULTIPLE_CHOICE
+        }
+
     async def __createMoveIsAvailableAsMachineQuestion(self, move: PokepediaMove) -> Dict[str, Any]:
         if not isinstance(move, PokepediaMove):
             raise ValueError(f'move argument is malformed: \"{move}\"')
@@ -165,13 +180,15 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
         triviaDict: Optional[Dict[str, Any]] = None
 
         while triviaDict is None:
-            randomTriviaType = random.randint(0, 2)
+            randomTriviaType = random.randint(0, 3)
 
             if randomTriviaType == 0:
                 triviaDict = await self.__createMoveContestTypeQuestion(move)
             elif randomTriviaType == 1:
-                triviaDict = await self.__createMoveIsAvailableAsMachineQuestion(move)
+                triviaDict = await self.__createMoveDamageClassQuestion(move)
             elif randomTriviaType == 2:
+                triviaDict = await self.__createMoveIsAvailableAsMachineQuestion(move)
+            elif randomTriviaType == 3:
                 triviaDict = await self.__createMoveIsAvailableAsWhichMachineQuestion(move)
             else:
                 raise RuntimeError(f'PkmnTriviaQuestionRepository\'s randomTriviaType value is out of bounds: \"{randomTriviaType}\"!')
