@@ -238,7 +238,7 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
         return {
             'correctAnswer': correctAnswer,
             'incorrectAnswers': flavorsStrs,
-            'question': f'Pokémon with the nature {nature.toStr()} {likeOrDislikeStr} ONE of the following flavors.',
+            'question': f'Pokémon with the {nature.toStr()} nature {likeOrDislikeStr} ONE of the following flavors.',
             'triviaType': TriviaType.MULTIPLE_CHOICE
         }
 
