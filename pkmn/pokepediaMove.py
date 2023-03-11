@@ -3,13 +3,16 @@ from typing import Dict, List, Optional
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.pkmn.pokepediaContestType import PokepediaContestType
+    from CynanBotCommon.pkmn.pokepediaDamageClass import PokepediaDamageClass
     from CynanBotCommon.pkmn.pokepediaGeneration import PokepediaGeneration
     from CynanBotCommon.pkmn.pokepediaMachine import PokepediaMachine
     from CynanBotCommon.pkmn.pokepediaMoveGeneration import \
         PokepediaMoveGeneration
 except:
     import utils
+
     from pkmn.pokepediaContestType import PokepediaContestType
+    from pkmn.pokepediaDamageClass import PokepediaDamageClass
     from pkmn.pokepediaGeneration import PokepediaGeneration
     from pkmn.pokepediaMachine import PokepediaMachine
     from pkmn.pokepediaMoveGeneration import PokepediaMoveGeneration
@@ -20,6 +23,7 @@ class PokepediaMove():
     def __init__(
         self,
         contestType: Optional[PokepediaContestType],
+        damageClass: PokepediaDamageClass,
         generationMachines: Optional[Dict[PokepediaGeneration, List[PokepediaMachine]]],
         generationMoves: Dict[PokepediaGeneration, PokepediaMoveGeneration],
         critRate: int,
@@ -33,6 +37,8 @@ class PokepediaMove():
     ):
         if contestType is not None and not isinstance(contestType, PokepediaContestType):
             raise ValueError(f'contestType argument is malformed: \"{contestType}\"')
+        elif not isinstance(damageClass, PokepediaDamageClass):
+            raise ValueError(f'damageClass argument is malformed: \"{damageClass}\"')
         elif not utils.hasItems(generationMoves):
             raise ValueError(f'generationMoves argument is malformed: \"{generationMoves}\"')
         elif not utils.isValidInt(critRate):
@@ -53,6 +59,7 @@ class PokepediaMove():
             raise ValueError(f'rawName argument is malformed: \"{rawName}\"')
 
         self.__contestType: Optional[PokepediaContestType] = contestType
+        self.__damageClass: PokepediaDamageClass = damageClass
         self.__generationMachines: Optional[Dict[PokepediaGeneration, List[PokepediaMachine]]] = generationMachines
         self.__generationMoves: Dict[PokepediaGeneration, PokepediaMoveGeneration] = generationMoves
         self.__critRate: int = critRate
@@ -69,6 +76,9 @@ class PokepediaMove():
 
     def getCritRate(self) -> int:
         return self.__critRate
+
+    def getDamageClass(self) -> PokepediaDamageClass:
+        return self.__damageClass
 
     def getDescription(self) -> str:
         return self.__description

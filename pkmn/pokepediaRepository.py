@@ -85,6 +85,8 @@ class PokepediaRepository():
         if utils.hasItems(jsonResponse.get('contest_type')):
             contestType = PokepediaContestType.fromStr(utils.getStrFromDict(jsonResponse['contest_type'], 'name', fallback = ''))
 
+        damageClass = PokepediaDamageClass.fromStr(jsonResponse['damage_class']['name'])
+
         generationMachines: Optional[Dict[PokepediaGeneration, List[PokepediaMachine]]] = None
         if utils.hasItems(jsonResponse.get('machines')):
             generationMachines = await self.__fetchMoveMachines(jsonResponse['machines'])
@@ -103,6 +105,7 @@ class PokepediaRepository():
 
         return PokepediaMove(
             contestType = contestType,
+            damageClass = damageClass,
             generationMachines = generationMachines,
             generationMoves = generationMoves,
             critRate = critRate,
