@@ -578,6 +578,6 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
         indexOfMin = allGenerations.index(initialGeneration)
 
         if indexOfMax < indexOfMin:
-            raise RuntimeError(f'indexOfMax ({indexOfMax}) or indexOfMin ({indexOfMin}) is incompatible with an initial generation of {initialGeneration}! (maxGeneration={self.__maxGeneration}))')
+            raise RuntimeError(f'indexOfMax ({indexOfMax}) or indexOfMin ({indexOfMin}) is incompatible with an initial generation of {initialGeneration}! (maxGeneration={self.__maxGeneration})')
 
         return allGenerations[random.randint(indexOfMin, indexOfMax)]
