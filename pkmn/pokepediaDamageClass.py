@@ -38,16 +38,16 @@ class PokepediaDamageClass(Enum):
         if not isinstance(elementType, PokepediaElementType):
             raise ValueError(f'elementType argument is malformed: \"{elementType}\"')
 
-        physicalElementTypes: Set[PokepediaElementType] = { PokepediaElementType.BUG,
-            PokepediaElementType.FIGHTING, PokepediaElementType.FLYING, PokepediaElementType.GHOST,
-            PokepediaElementType.GROUND, PokepediaElementType.NORMAL, PokepediaElementType.POISON,
-            PokepediaElementType.ROCK, PokepediaElementType.STEEL
+        physicalElementTypes: Set[PokepediaElementType] = {
+            PokepediaElementType.BUG, PokepediaElementType.FIGHTING, PokepediaElementType.FLYING,
+            PokepediaElementType.GHOST, PokepediaElementType.GROUND, PokepediaElementType.NORMAL,
+            PokepediaElementType.POISON, PokepediaElementType.ROCK, PokepediaElementType.STEEL
         }
 
-        specialElementTypes: Set[PokepediaElementType] = { PokepediaElementType.DARK,
-            PokepediaElementType.DRAGON, PokepediaElementType.ELECTRIC, PokepediaElementType.FIRE,
-            PokepediaElementType.GRASS, PokepediaElementType.ICE, PokepediaElementType.PSYCHIC,
-            PokepediaElementType.WATER
+        specialElementTypes: Set[PokepediaElementType] = {
+            PokepediaElementType.DARK, PokepediaElementType.DRAGON, PokepediaElementType.ELECTRIC,
+            PokepediaElementType.FIRE, PokepediaElementType.GRASS, PokepediaElementType.ICE,
+            PokepediaElementType.PSYCHIC, PokepediaElementType.WATER
         }
 
         if elementType in physicalElementTypes:
