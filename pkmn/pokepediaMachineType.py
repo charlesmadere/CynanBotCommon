@@ -28,6 +28,16 @@ class PokepediaMachineType(Enum):
         else:
             raise ValueError(f'unknown PokepediaMachineType: \"{text}\"')
 
+    def getMaxMachineNumber(self) -> int:
+        if self is PokepediaMachineType.HM:
+            return 12
+        elif self is PokepediaMachineType.TM:
+            return 112
+        elif self is PokepediaMachineType.TR:
+            return 90
+        else:
+            raise RuntimeError(f'unknown PokepediaMachineType: \"{self}\"')
+
     def toStr(self) -> str:
         if self is PokepediaMachineType.HM:
             return 'HM'

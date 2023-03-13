@@ -541,22 +541,12 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
         elif not isinstance(actualMachineType, PokepediaMachineType):
             raise ValueError(f'actualMachineType argument is malformed: \"{actualMachineType}\"')
 
-        falseMachineNumbers: Set[int] = set()
-
         minResponses = await self._triviaSettingsRepository.getMinMultipleChoiceResponses()
         maxResponses = await self._triviaSettingsRepository.getMaxMultipleChoiceResponses()
         responses = random.randint(minResponses, maxResponses)
+        maxMachineNumber = actualMachineType.getMaxMachineNumber()
 
-        maxMachineNumber: Optional[int] = None
-        if actualMachineType is PokepediaMachineType.HM:
-            maxMachineNumber = 12
-        elif actualMachineType is PokepediaMachineType.TM:
-            maxMachineNumber = 112
-        elif actualMachineType is PokepediaMachineType.TR:
-            maxMachineNumber = 90
-
-        if not utils.isValidInt(maxMachineNumber):
-            raise RuntimeError(f'Can\'t determine value for maxMachineNumber due to unknown PokepediaMachineType: \"{actualMachineType}\"!')
+        falseMachineNumbers: Set[int] = set()
 
         while len(falseMachineNumbers) < responses:
             randomInt = random.randint(1, maxMachineNumber)
