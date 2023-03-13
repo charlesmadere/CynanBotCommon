@@ -170,9 +170,7 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
     async def __createMoveQuestion(self) -> Dict[str, Any]:
         try:
-            move = await self.__pokepediaRepository.fetchRandomMove(
-                maxGeneration = self.__maxGeneration
-            )
+            move = await self.__pokepediaRepository.fetchRandomMove(maxGeneration = self.__maxGeneration)
         except GenericNetworkException as e:
             self.__timber.log('PkmnTriviaQuestionRepository', f'Encountered network error when fetching trivia question: {e}', e)
             raise GenericTriviaNetworkException(self.getTriviaSource(), e)
@@ -259,7 +257,7 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
             'triviaType': TriviaType.MULTIPLE_CHOICE
         }
 
-    async def __createPhysicalOrSpecialQuestion(self) -> Dict[str, Any]:
+    async def __createPhysicalOrSpecialDamageClassQuestion(self) -> Dict[str, Any]:
         applicableDamageClasses: List[PokepediaDamageClass] = [
             PokepediaDamageClass.PHYSICAL, PokepediaDamageClass.SPECIAL
         ]
@@ -275,8 +273,7 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
             PokepediaElementType.STEEL, PokepediaElementType.WATER
         ]
 
-        actualElementType = random.choice(applicableElementTypes)
-
+        actualElementType: Optional[PokepediaElementType] = None
         while actualElementType is None or PokepediaDamageClass.getTypeBasedDamageClass(actualElementType) is not actualDamageClass:
             actualElementType = random.choice(applicableElementTypes)
 
@@ -296,18 +293,21 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
         for falseElementType in falseElementTypes:
             falseElementTypesStrs.append(falseElementType.toStr())
 
+        # It reads sort of strangely that the below question specifically mentions only Pokemon
+        # generations 1 through 3, however, this is intentional. This is because those generations
+        # of Pokemon games had their damage classes hard-coded to particular types, which is the
+        # purpose of this trivia question.
+
         return {
             'correctAnswer': actualElementType.toStr(),
             'incorrectAnswers': falseElementTypesStrs,
-            'question': f'In Pokémon generations 1 through 3, which one of the following types has a {actualDamageClass.toStr().lower()} damage class?',
+            'question': f'In Pokémon generations 1 through 3, which of the following types has a {actualDamageClass.toStr().lower()} damage class?',
             'triviaType': TriviaType.MULTIPLE_CHOICE
         }
 
     async def __createPokemonQuestion(self) -> Dict[str, Any]:
         try:
-            pokemon = await self.__pokepediaRepository.fetchRandomPokemon(
-                maxGeneration = self.__maxGeneration
-            )
+            pokemon = await self.__pokepediaRepository.fetchRandomPokemon(maxGeneration = self.__maxGeneration)
         except GenericNetworkException as e:
             self.__timber.log('PkmnTriviaQuestionRepository', f'Encountered network error when fetching trivia question: {e}', e)
             raise GenericTriviaNetworkException(self.getTriviaSource(), e)
@@ -325,7 +325,7 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
         return {
             'correctAnswer': correctType.toStr(),
             'incorrectAnswers': falseTypesStrs,
-            'question': f'In Pokémon {randomGeneration.toLongStr()}, {pokemon.getName()} is ONE of the following types?',
+            'question': f'In Pokémon {randomGeneration.toLongStr()}, {pokemon.getName()} is which of the following types?',
             'triviaType': TriviaType.MULTIPLE_CHOICE
         }
 
@@ -395,14 +395,14 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
         randomTriviaType = random.randint(0, 6)
         triviaDict: Optional[Dict[str, Any]] = None
 
-        if randomTriviaType <= 3:
+        if randomTriviaType <= 2:
             triviaDict = await self.__createPokemonQuestion()
-        elif randomTriviaType == 4:
+        elif randomTriviaType <= 4:
             triviaDict = await self.__createMoveQuestion()
         elif randomTriviaType == 5:
             triviaDict = await self.__createStatOrNatureQuestion()
         elif randomTriviaType == 6:
-            triviaDict = await self.__createPhysicalOrSpecialQuestion()
+            triviaDict = await self.__createPhysicalOrSpecialDamageClassQuestion()
         else:
             raise RuntimeError(f'PkmnTriviaQuestionRepository\'s randomTriviaType value is out of bounds: \"{randomTriviaType}\"!')
 
