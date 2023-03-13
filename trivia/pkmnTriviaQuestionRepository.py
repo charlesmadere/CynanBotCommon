@@ -295,8 +295,8 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         # It reads sort of strangely that the below question specifically mentions only Pokemon
         # generations 1 through 3, however, this is intentional. This is because those generations
-        # of Pokemon games had their damage classes hard-coded to particular types, which is the
-        # purpose of this trivia question.
+        # of Pokemon games had their element types hard-coded to particular damage classes, which
+        # is the purpose of this trivia question.
 
         return {
             'correctAnswer': actualElementType.toStr(),
