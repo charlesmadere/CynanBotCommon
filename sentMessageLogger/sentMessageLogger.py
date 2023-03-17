@@ -50,7 +50,7 @@ class SentMessageLogger():
 
         if not message.wasSuccessfullySent():
             error = f'message failed to send after {message.getNumberOfRetries()} attempt(s) — '
-        elif message.getNumberOfRetries >= 1:
+        elif message.getNumberOfRetries() >= 1:
             error = f'message was sent, but it required {message.getNumberOfRetries()} attempt(s) — '
 
         suffix = f'{message.getMsg()}'
