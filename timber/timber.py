@@ -57,7 +57,7 @@ class Timber():
         elif not isinstance(timberEntry, TimberEntry):
             raise ValueError(f'timberEntry argument is malformed: \"{timberEntry}\"')
 
-        logStatement = f'{timberEntry.getSimpleDateTime().getDateAndTimeStr()} — {timberEntry.getTag()} — {timberEntry.getMsg()}'
+        logStatement = f'{timberEntry.getSimpleDateTime().getDateAndTimeStr(True)} — {timberEntry.getTag()} — {timberEntry.getMsg()}'
         logStatement = logStatement.strip()
 
         if ensureNewLine:
