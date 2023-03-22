@@ -38,8 +38,11 @@ class SimpleDateTime():
     def getDateTime(self) -> datetime:
         return self.__now
 
-    def getDateAndTimeStr(self) -> str:
-        return f'{self.getYearMonthDayStr()} {self.getTimeStr()}'
+    def getDateAndTimeStr(self, includeMillis: bool = False) -> str:
+        if not utils.isValidBool(includeMillis):
+            raise ValueError(f'includeMillis argument is malformed: \"{includeMillis}\"')
+
+        return f'{self.getYearMonthDayStr()} {self.getTimeStr(includeMillis)}'
 
     def getDayStr(self) -> str:
         return self.__now.strftime('%d')
@@ -49,6 +52,9 @@ class SimpleDateTime():
 
     def getIsoFormatStr(self) -> str:
         return self.__now.isoformat()
+
+    def getMillisStr(self) -> str:
+        return self.__now.strftime('%f')[:-3]
 
     def getMinuteStr(self) -> str:
         return self.__now.strftime('%M')
@@ -62,8 +68,16 @@ class SimpleDateTime():
     def getSecondStr(self) -> str:
         return self.__now.strftime('%S')
 
-    def getTimeStr(self) -> str:
-        return f'{self.getHourStr()}:{self.getMinuteStr()}:{self.getSecondStr()}'
+    def getTimeStr(self, includeMillis: bool = False) -> str:
+        if not utils.isValidBool(includeMillis):
+            raise ValueError(f'includeMillis argument is malformed: \"{includeMillis}\"')
+
+        timeStr = f'{self.getHourStr()}:{self.getMinuteStr()}:{self.getSecondStr()}'
+
+        if includeMillis:
+            timeStr = f'{timeStr}.{self.getMillisStr()}'
+
+        return timeStr
 
     def getYearInt(self) -> int:
         return self.__now.year
