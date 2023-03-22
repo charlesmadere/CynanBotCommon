@@ -1,19 +1,26 @@
 from datetime import datetime, timedelta, timezone
-from typing import Any
+from typing import Any, Optional
+
+try:
+    import CynanBotCommon.utils as utils
+except:
+    import utils
 
 
 class SimpleDateTime():
 
     def __init__(
         self,
-        now: datetime = None,
+        now: Optional[datetime] = None,
         timeZone: timezone = timezone.utc
     ):
+        if now is not None and not isinstance(now, datetime):
+            raise ValueError(f'now argument is malformed: \"{now}\"')
+        elif not isinstance(timeZone, timezone):
+            raise ValueError(f'timeZone argument is malformed: \"{timeZone}\"')
+
         if now is None:
-            if timeZone is None:
-                raise ValueError('Both `now` and `timeZone` can\'t be `None`!')
-            else:
-                self.__now: datetime = datetime.now(timeZone)
+            self.__now: datetime = datetime.now(timeZone)
         else:
             self.__now: datetime = now
 
