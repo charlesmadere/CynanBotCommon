@@ -45,7 +45,7 @@ class SentMessageLogger():
         if not isinstance(message, SentMessage):
             raise ValueError(f'message argument is malformed: \"{message}\"')
 
-        prefix = f'{message.getSimpleDateTime().getDateAndTimeStr()} — '
+        prefix = f'{message.getSimpleDateTime().getDateAndTimeStr(True)} — '
         error = ''
 
         if not message.wasSuccessfullySent():
@@ -58,7 +58,7 @@ class SentMessageLogger():
         logStatement = f'{prefix}{error}{suffix}'.strip()
         return f'{logStatement}\n'
 
-    def logMessage(
+    def log(
         self,
         successfullySent: bool,
         numberOfRetries: int,

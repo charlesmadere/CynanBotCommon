@@ -23,14 +23,11 @@ class Timber():
     def __init__(
         self,
         backgroundTaskHelper: BackgroundTaskHelper,
-        alsoPrintToStandardOut: bool = True,
         sleepTimeSeconds: float = 10,
         timberRootDirectory: str = 'CynanBotCommon/timber'
     ):
         if not isinstance(backgroundTaskHelper, BackgroundTaskHelper):
             raise ValueError(f'backgroundTaskHelper argument is malformed: \"{backgroundTaskHelper}\"')
-        elif not utils.isValidBool(alsoPrintToStandardOut):
-            raise ValueError(f'alsoPrintToStandardOut argument is malformed: \"{alsoPrintToStandardOut}\"')
         elif not utils.isValidNum(sleepTimeSeconds):
             raise ValueError(f'sleepTimeSeconds argument is malformed: \"{sleepTimeSeconds}\"')
         elif sleepTimeSeconds < 1 or sleepTimeSeconds > 60:
@@ -38,7 +35,6 @@ class Timber():
         elif not utils.isValidStr(timberRootDirectory):
             raise ValueError(f'timberRootDirectory argument is malformed: \"{timberRootDirectory}\"')
 
-        self.__alsoPrintToStandardOut: bool = alsoPrintToStandardOut
         self.__sleepTimeSeconds: float = sleepTimeSeconds
         self.__timberRootDirectory: str = timberRootDirectory
 
@@ -79,10 +75,8 @@ class Timber():
             exception = exception
         )
 
-        if self.__alsoPrintToStandardOut:
-            print(self.__getLogStatement(False, timberEntry))
-
         self.__entryQueue.put(timberEntry)
+        print(self.__getLogStatement(False, timberEntry))
 
     async def __startEventLoop(self):
         while True:

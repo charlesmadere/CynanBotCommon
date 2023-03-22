@@ -51,7 +51,7 @@ class ChatLogger():
         if not isinstance(message, AbsChatMessage):
             raise ValueError(f'message argument is malformed: \"{message}\"')
 
-        logStatement: str = f'{message.getSimpleDateTime().getDateAndTimeStr()} —'
+        logStatement: str = f'{message.getSimpleDateTime().getDateAndTimeStr(True)} —'
 
         if message.getChatEventType() is ChatEventType.MESSAGE:
             chatMessage: ChatMessage = message
