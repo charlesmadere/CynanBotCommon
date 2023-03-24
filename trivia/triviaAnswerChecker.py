@@ -366,10 +366,6 @@ class TriviaAnswerChecker():
             yield 'highway'
         if word in ('is', 'isl'):
             yield 'island'
-        if word == 'kr':
-            yield 'korea'
-        if word in ('jp', 'jpn'):
-            yield 'japan'
         if word in ('ldg', 'ldge'):
             yield 'lodge'
         if word == 'lk':
@@ -411,6 +407,14 @@ class TriviaAnswerChecker():
             yield 'view'
         if word in ('crssng', 'xing'):
             yield 'crossing'
+
+        # countries
+        if word == 'kr':
+            yield 'korea'
+        if word in ('jp', 'jpn'):
+            yield 'japan'
+        if word == 'uk':
+            yield 'united kingdom'
 
         # directions
         if word in ('n', 'north', 'northern'):
