@@ -421,7 +421,7 @@ class TriviaAnswerChecker():
             yield 'east'
         if word in ('w', 'west', 'western'):
             yield 'west'
-        if word == ('nw', 'northwest', 'northwestern'):
+        if word in ('nw', 'northwest', 'northwestern'):
             yield 'northwest'
         if word in ('ne', 'northeast', 'northeastern'):
             yield 'northeast'
