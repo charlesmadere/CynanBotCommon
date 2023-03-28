@@ -116,7 +116,7 @@ class TriviaRepository():
         triviaVerifier: TriviaVerifier,
         willFryTriviaQuestionRepository: WillFryTriviaQuestionRepository,
         wwtbamTriviaQuestionRepository: WwtbamTriviaQuestionRepository,
-        sleepTimeSeconds: float = 0.5
+        sleepTimeSeconds: float = 0.25
     ):
         if not isinstance(bongoTriviaQuestionRepository, BongoTriviaQuestionRepository):
             raise ValueError(f'bongoTriviaQuestionRepository argument is malformed: \"{bongoTriviaQuestionRepository}\"')
