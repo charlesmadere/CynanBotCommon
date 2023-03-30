@@ -3,6 +3,7 @@ from typing import List, Optional, Pattern, Set
 
 import roman
 from num2words import num2words
+from roman import RomanError
 
 try:
     import CynanBotCommon.utils as utils
@@ -201,7 +202,15 @@ class TriviaAnswerCompiler():
             ]
 
     async def __getRomanNumeralSubstitutes(self, romanNumerals: str) -> List[str]:
-        n = roman.fromRoman(romanNumerals.upper())
+        n: Optional[int] = None
+
+        try:
+            n = roman.fromRoman(romanNumerals.upper())
+        except RomanError:
+            pass
+
+        if n is None:
+            return list()
 
         return [
             romanNumerals.lower(),
