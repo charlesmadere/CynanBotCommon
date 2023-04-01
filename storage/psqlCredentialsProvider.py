@@ -47,7 +47,7 @@ class PsqlCredentialsProvider():
 
     async def requireMaxConnectionsSize(self) -> int:
         jsonContents = await self.__readJsonAsync()
-        return utils.getIntFromDict(jsonContents, 'maxConnectionsSize')
+        return utils.getIntFromDict(jsonContents, 'maxConnectionsSize', fallback = 100)
 
     async def requireUser(self) -> str:
         jsonContents = await self.__readJsonAsync()
