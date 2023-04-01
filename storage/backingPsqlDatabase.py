@@ -37,14 +37,15 @@ class BackingPsqlDatabase(BackingDatabase):
         self.__connectionPool: Optional[asyncpg.Pool] = None
 
     async def getConnection(self) -> DatabaseConnection:
-        databaseName = await self.__psqlCredentialsProvider.requireDatabaseName()
-        user = await self.__psqlCredentialsProvider.requireUser()
-
         if self.__connectionPool is None:
+            databaseName = await self.__psqlCredentialsProvider.requireDatabaseName()
+            maxConnectionsSize = await self.__psqlCredentialsProvider.requireMaxConnectionsSize()
+            user = await self.__psqlCredentialsProvider.requireUser()
+
             self.__connectionPool = await asyncpg.create_pool(
                 database = databaseName,
                 loop = self.__eventLoop,
-                max_size = 100,
+                max_size = maxConnectionsSize,
                 user = user
             )
 
