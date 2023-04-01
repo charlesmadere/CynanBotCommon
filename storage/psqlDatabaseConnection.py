@@ -17,17 +17,23 @@ except:
 
 class PsqlDatabaseConnection(DatabaseConnection):
 
-    def __init__(self, connection: asyncpg.Connection):
+    def __init__(self, connection: asyncpg.Connection, pool: asyncpg.Pool):
         if not isinstance(connection, asyncpg.Connection):
             raise ValueError(f'connection argument is malformed: \"{connection}\"')
+        elif not isinstance(pool, asyncpg.Pool):
+            raise ValueError(f'pool argument is malformed: \"{pool}\"')
 
         self.__connection: asyncpg.Connection = connection
+        self.__pool: asyncpg.Pool = pool
+
+        self.__isClosed: bool = False
 
     async def close(self):
-        if self.__connection.is_closed():
+        if self.isClosed():
             return
 
-        await self.__connection.close()
+        self.__isClosed = True
+        await self.__pool.release(self.__connection)
 
     async def createTableIfNotExists(self, query: str, *args: Optional[Any]):
         if not utils.isValidStr(query):
@@ -79,7 +85,7 @@ class PsqlDatabaseConnection(DatabaseConnection):
         return DatabaseType.POSTGRESQL
 
     def isClosed(self) -> bool:
-        return self.__connection.is_closed()
+        return self.__isClosed
 
     def __requireNotClosed(self):
         if self.isClosed():

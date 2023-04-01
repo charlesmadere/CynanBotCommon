@@ -1,4 +1,5 @@
 from asyncio import AbstractEventLoop
+from typing import Optional
 
 import asyncpg
 
@@ -33,15 +34,26 @@ class BackingPsqlDatabase(BackingDatabase):
         self.__eventLoop: AbstractEventLoop = eventLoop
         self.__psqlCredentialsProvider: PsqlCredentialsProvider = psqlCredentialsProvider
 
+        self.__connectionPool: Optional[asyncpg.Pool] = None
+
     async def getConnection(self) -> DatabaseConnection:
         databaseName = await self.__psqlCredentialsProvider.requireDatabaseName()
         user = await self.__psqlCredentialsProvider.requireUser()
 
-        return PsqlDatabaseConnection(await asyncpg.connect(
-            database = databaseName,
-            loop = self.__eventLoop,
-            user = user
-        ))
+        if self.__connectionPool is None:
+            self.__connectionPool = await asyncpg.create_pool(
+                database = databaseName,
+                loop = self.__eventLoop,
+                max_size = 100,
+                user = user
+            )
+
+        connection = await self.__connectionPool.acquire()
+
+        return PsqlDatabaseConnection(
+            connection = connection,
+            pool = self.__connectionPool
+        )
 
     def getDatabaseType(self) -> DatabaseType:
         return DatabaseType.POSTGRESQL
