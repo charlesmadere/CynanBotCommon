@@ -25,9 +25,13 @@ class TriviaSettingsRepository():
 
         self.__settingsCache: Optional[Dict[str, Any]] = None
 
+    async def areAdditionalAnswersEnabled(self) -> bool:
+        jsonContents = await self.__readJson()
+        return utils.getBoolFromDict(jsonContents, 'additional_answers_enabled', True)
+
     async def areShiniesEnabled(self) -> bool:
         jsonContents = await self.__readJson()
-        return utils.getBoolFromDict(jsonContents, 'are_shinies_enabled', True)
+        return utils.getBoolFromDict(jsonContents, 'shinies_enabled', True)
 
     async def clearCaches(self):
         self.__settingsCache = None
