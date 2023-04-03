@@ -19,7 +19,7 @@ class TriviaAnswerCompiler():
         self.__ampersandRegEx: Pattern = re.compile(r'(^&\s+)|(\s+&\s+)|(\s+&$)', re.IGNORECASE)
         self.__decadeRegEx: Pattern = re.compile(r'^(\d{4})\'?s$', re.IGNORECASE)
         self.__firstMiddleLastNameRegEx: Pattern = re.compile(r'^\w+\s+(\w\.?)\s+\w+(\s+(i{0,3}|iv|vi{0,3}|i?x|jr\.?|junior|senior|sr\.?)\.?)?$', re.IGNORECASE)
-        self.__honoraryPrefixRegEx: Pattern = re.compile(r'^(bishop|brother|captain|chancellor|chief|doctor|dr\.?|earl|father|general|king|lady|lord|madame|mother|mr\.?|mrs\.?|ms\.?|priest|president|professor|queen|saint|senior|sister|sir|sire)\s+', re.IGNORECASE)
+        self.__honoraryPrefixRegEx: Pattern = re.compile(r'^(bishop|brother|captain|chancellor|chief|dean|director|doctor|dr\.?|duke|earl|esq|esquire|executive|father|general|king|lady|lieutenant|lord|madam|madame|master|miss|missus|mister|mistress|mother|mr\.?|mrs\.?|ms\.?|mx\.?|priest|president|principal|professor|queen|rabbi|saint|secretary|senator|senior|sister|sir|sire|reverend|warden)\s+', re.IGNORECASE)
         self.__japaneseHonorarySuffixRegEx: Pattern = re.compile(r'(\s|-)(chan|kun|sama|san|senpai|sensei|tan)$', re.IGNORECASE)
         self.__multipleChoiceAnswerRegEx: Pattern = re.compile(r'[a-z]', re.IGNORECASE)
         self.__newLineRegEx: Pattern = re.compile(r'(\n)+', re.IGNORECASE)
