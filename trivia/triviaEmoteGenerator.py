@@ -68,6 +68,7 @@ class TriviaEmoteGenerator():
         emotesDict['🧬'] = None
         emotesDict['🐬'] = None
         emotesDict['🐉'] = { '🐲' }
+        emotesDict['🐘'] = None
         emotesDict['🧐'] = None
         emotesDict['🚒'] = None
         emotesDict['👻'] = None
