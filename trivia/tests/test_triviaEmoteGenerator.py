@@ -242,6 +242,12 @@ class TestTriviaEmoteGenerator():
         assert result == '🦐'
 
     @pytest.mark.asyncio
+    async def test_getValidatedAndNormalizedEmote_withGhost(self):
+        result = await self.triviaEmoteGenerator.getValidatedAndNormalizedEmote('👻')
+        assert result is not None
+        assert result == '👻'
+
+    @pytest.mark.asyncio
     async def test_getValidatedAndNormalizedEmote_withGrapes(self):
         result = await self.triviaEmoteGenerator.getValidatedAndNormalizedEmote('🍇')
         assert result is not None
@@ -276,6 +282,12 @@ class TestTriviaEmoteGenerator():
         result = await self.triviaEmoteGenerator.getValidatedAndNormalizedEmote('💡')
         assert result is not None
         assert result == '💡'
+
+    @pytest.mark.asyncio
+    async def test_getValidatedAndNormalizedEmote_withLion(self):
+        result = await self.triviaEmoteGenerator.getValidatedAndNormalizedEmote('🦁')
+        assert result is not None
+        assert result == '🦁'
 
     @pytest.mark.asyncio
     async def test_getValidatedAndNormalizedEmote_withMelon(self):
@@ -390,6 +402,12 @@ class TestTriviaEmoteGenerator():
         assert result == '🍠'
 
     @pytest.mark.asyncio
+    async def test_getValidatedAndNormalizedEmote_withRobot(self):
+        result = await self.triviaEmoteGenerator.getValidatedAndNormalizedEmote('🤖')
+        assert result is not None
+        assert result == '🤖'
+
+    @pytest.mark.asyncio
     async def test_getValidatedAndNormalizedEmote_withRocket(self):
         result = await self.triviaEmoteGenerator.getValidatedAndNormalizedEmote('🚀')
         assert result is not None
@@ -454,6 +472,18 @@ class TestTriviaEmoteGenerator():
         result = await self.triviaEmoteGenerator.getValidatedAndNormalizedEmote('💭')
         assert result is not None
         assert result == '💭'
+
+    @pytest.mark.asyncio
+    async def test_getValidatedAndNormalizedEmote_withTiger(self):
+        result = await self.triviaEmoteGenerator.getValidatedAndNormalizedEmote('🐅')
+        assert result is not None
+        assert result == '🐅'
+
+    @pytest.mark.asyncio
+    async def test_getValidatedAndNormalizedEmote_withTigerFace(self):
+        result = await self.triviaEmoteGenerator.getValidatedAndNormalizedEmote('🐯')
+        assert result is not None
+        assert result == '🐅'
 
     @pytest.mark.asyncio
     async def test_getValidatedAndNormalizedEmote_withTriangularRuler(self):
