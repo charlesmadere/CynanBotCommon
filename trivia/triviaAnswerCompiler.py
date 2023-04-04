@@ -19,15 +19,16 @@ class TriviaAnswerCompiler():
         self.__ampersandRegEx: Pattern = re.compile(r'(^&\s+)|(\s+&\s+)|(\s+&$)', re.IGNORECASE)
         self.__decadeRegEx: Pattern = re.compile(r'^(\d{4})\'?s$', re.IGNORECASE)
         self.__firstMiddleLastNameRegEx: Pattern = re.compile(r'^\w+\s+(\w\.?)\s+\w+(\s+(i{0,3}|iv|vi{0,3}|i?x|jr\.?|junior|senior|sr\.?)\.?)?$', re.IGNORECASE)
-        self.__honoraryPrefixRegEx: Pattern = re.compile(r'^(bishop|brother|captain|chancellor|chief|dean|director|doctor|dr\.?|duke|earl|esq|esquire|executive|father|general|judge|king|lady|lieutenant|lord|madam|madame|master|miss|missus|mister|mistress|mother|mr\.?|mrs\.?|ms\.?|mx\.?|officer|priest|president|principal|professor|queen|rabbi|representative|reverend|saint|secretary|senator|senior|sister|sir|sire|teacher|warden)\s+', re.IGNORECASE)
+        self.__honoraryPrefixRegEx: Pattern = re.compile(r'^(bishop|brother|captain|chancellor|chief|colonel|corporal|dean|director|doctor|dr\.?|duke|earl|esq|esquire|executive|father|general|judge|king|lady|lieutenant|lord|madam|madame|master|miss|missus|mister|mistress|mother|mr\.?|mrs\.?|ms\.?|mx\.?|officer|priest|president|principal|private|professor|queen|rabbi|representative|reverend|saint|secretary|senator|senior|sister|sir|sire|teacher|warden)\s+', re.IGNORECASE)
         self.__japaneseHonorarySuffixRegEx: Pattern = re.compile(r'(\s|-)(chan|kohai|kouhai|kun|sama|san|senpai|sensei|tan)$', re.IGNORECASE)
         self.__multipleChoiceAnswerRegEx: Pattern = re.compile(r'[a-z]', re.IGNORECASE)
         self.__newLineRegEx: Pattern = re.compile(r'(\n)+', re.IGNORECASE)
         self.__parenGroupRegEx: Pattern = re.compile(r'(\(.*?\))', re.IGNORECASE)
         self.__phraseAnswerRegEx: Pattern = re.compile(r'[^A-Za-z0-9 ]|(?<=\s)\s+', re.IGNORECASE)
-        self.__possessivePronounPrefixRegEx: Pattern = re.compile(r'^(her|his|their|your)\s+', re.IGNORECASE)
-        self.__prefixRegEx: Pattern = re.compile(r'^(a|an|and|of|the|this|to)\s+', re.IGNORECASE)
+        self.__possessivePronounPrefixRegEx: Pattern = re.compile(r'^(her|his|my|our|their|your)\s+', re.IGNORECASE)
+        self.__prefixRegEx: Pattern = re.compile(r'^(a|an|and|of|the|these|this|those|to)\s+', re.IGNORECASE)
         self.__tagRemovalRegEx: Pattern = re.compile(r'[<\[]\/?\w+[>\]]', re.IGNORECASE)
+        self.__thingsThatArePhraseRegEx: Pattern = re.compile(r'^(things\s+that\s+are)\s+(\w+(\s+)?(\w+)?)$', re.IGNORECASE)
         self.__whiteSpaceRegEx: Pattern = re.compile(r'\s\s*', re.IGNORECASE)
 
         # RegEx pattern for arabic and roman numerals, returning only one capturing group
@@ -226,6 +227,7 @@ class TriviaAnswerCompiler():
         answer = await self.__patchAnswerHonoraryPrefixes(answer)
         answer = await self.__patchAnswerJapaneseHonorarySuffixes(answer)
         answer = await self.__patchAnswerPossessivePronounPrefixes(answer)
+        answer = await self.__patchAnswerThingsThatArePhrase(answer)
 
         # Split the uncleaned answer with this regex to find all parentheticals
         splitPossibilities: List[str] = self.__parenGroupRegEx.split(answer)
@@ -300,6 +302,18 @@ class TriviaAnswerCompiler():
         oldPossessivePronounString = possessivePronounMatch.group()
         newPossessivePronounString = f'({oldPossessivePronounString.strip()}) '
         return answer.replace(oldPossessivePronounString, newPossessivePronounString)
+
+    # This method checks to see if an answer starts with the exact phrase "things that are", and
+    # if so, wraps that portion of the question in parenthesis. For example, this method will
+    # transform the string "things that are pinched" into "(things that are) pinched".
+    async def __patchAnswerThingsThatArePhrase(self, answer: str) -> str:
+        match = self.__thingsThatArePhraseRegEx.fullmatch(answer)
+
+        if match is None or not utils.isValidStr(match.group()) or not utils.isValidStr(match.group(1)) or not utils.isValidStr(match.group(2)):
+            # return the unmodified answer
+            return answer
+
+        return f'({match.group(1)}) {match.group(2)}'
 
     # Recursively resolves the possibilities for each word in the answer.
     async def __getSubPossibilities(self, splitAnswer: str) -> List[str]:
