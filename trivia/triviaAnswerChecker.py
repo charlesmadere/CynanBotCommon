@@ -320,6 +320,10 @@ class TriviaAnswerChecker():
             yield 'bayou'
         if word in ('canyn', 'cnyn'):
             yield 'canyon'
+        if word == 'cswy':
+            yield 'causeway'
+        if word in ('cen', 'cntr', 'ctr'):
+            yield 'center'
         if word in ('cir', 'cir', 'circl', 'crcl'):
             yield 'circle'
         if word == 'clb':
@@ -330,16 +334,10 @@ class TriviaAnswerChecker():
             yield 'court'
         if word in ('cts', 'crts'):
             yield 'courts'
-        if word == 'crk':
-            yield 'creek'
-        if word == 'cswy':
-            yield 'causeway'
-        if word in ('cen', 'cntr', 'ctr'):
-            yield 'center'
-        if word in ('cir', 'circ', 'crcl'):
-            yield 'circle'
         if word == 'cv':
             yield 'cove'
+        if word == 'crk':
+            yield 'creek'
         if word == 'dr':
             yield 'drive'
         if word == 'est':
