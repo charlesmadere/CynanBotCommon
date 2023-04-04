@@ -2,8 +2,28 @@ from typing import Optional
 
 try:
     from CynanBotCommon.trivia.triviaSource import TriviaSource
+    from CynanBotCommon.trivia.triviaType import TriviaType
 except:
     from trivia.triviaSource import TriviaSource
+    from trivia.triviaType import TriviaType
+
+
+class AdditionalTriviaAnswerAlreadyExistsException(Exception):
+
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
+class AdditionalTriviaAnswerIsMalformedException(Exception):
+
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
+class AdditionalTriviaAnswerIsUnsupportedTriviaTypeException(Exception):
+
+    def __init__(self, message: str, triviaType: TriviaType, triviaSource: TriviaSource):
+        super().__init__(message, triviaType, triviaSource)
 
 
 class BadTriviaAnswerException(Exception):

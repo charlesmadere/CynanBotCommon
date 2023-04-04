@@ -1,9 +1,11 @@
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.trivia.triviaSource import TriviaSource
+    from CynanBotCommon.trivia.triviaType import TriviaType
 except:
     import utils
     from trivia.triviaSource import TriviaSource
+    from trivia.triviaType import TriviaType
 
 
 class TriviaQuestionReference():
@@ -13,7 +15,8 @@ class TriviaQuestionReference():
         emote: str,
         triviaId: str,
         twitchChannel: str,
-        triviaSource: TriviaSource
+        triviaSource: TriviaSource,
+        triviaType: TriviaType
     ):
         if not utils.isValidStr(emote):
             raise ValueError(f'emote argument is malformed: \"{emote}\"')
@@ -23,11 +26,14 @@ class TriviaQuestionReference():
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
         elif not isinstance(triviaSource, TriviaSource):
             raise ValueError(f'triviaSource argument is malformed: \"{triviaSource}\"')
+        elif not isinstance(triviaType, TriviaType):
+            raise ValueError(f'triviaType argument is malformed: \"{triviaType}\"')
 
         self.__emote: str = emote
         self.__triviaId: str = triviaId
         self.__twitchChannel: str = twitchChannel
         self.__triviaSource: TriviaSource = triviaSource
+        self.__triviaType: TriviaType = triviaType
 
     def getEmote(self) -> str:
         return self.__emote
@@ -37,6 +43,9 @@ class TriviaQuestionReference():
 
     def getTriviaSource(self) -> TriviaSource:
         return self.__triviaSource
+
+    def getTriviaType(self) -> TriviaType:
+        return self.__triviaType
 
     def getTwitchChannel(self) -> str:
         return self.__twitchChannel

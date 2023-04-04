@@ -25,9 +25,9 @@ class TriviaSettingsRepository():
 
         self.__settingsCache: Optional[Dict[str, Any]] = None
 
-    async def areAdditionalAnswersEnabled(self) -> bool:
+    async def areAdditionalTriviaAnswersEnabled(self) -> bool:
         jsonContents = await self.__readJson()
-        return utils.getBoolFromDict(jsonContents, 'additional_answers_enabled', True)
+        return utils.getBoolFromDict(jsonContents, 'additional_trivia_answers_enabled', True)
 
     async def areShiniesEnabled(self) -> bool:
         jsonContents = await self.__readJson()
@@ -66,6 +66,10 @@ class TriviaSettingsRepository():
     async def getLevenshteinThresholdGrowthRate(self) -> int:
         jsonContents = await self.__readJson()
         return utils.getIntFromDict(jsonContents, 'levenshtein_threshold_growth_rate', 7)
+
+    async def getMaxAdditionalTriviaAnswerLength(self) -> int:
+        jsonContents = await self.__readJson()
+        return utils.getIntFromDict(jsonContents, 'max_additional_trivia_answer_length', 48)
 
     async def getMaxAnswerLength(self) -> int:
         jsonContents = await self.__readJson()

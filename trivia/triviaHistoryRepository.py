@@ -14,6 +14,7 @@ try:
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
     from CynanBotCommon.trivia.triviaSource import TriviaSource
+    from CynanBotCommon.trivia.triviaType import TriviaType
 except:
     import utils
     from storage.backingDatabase import BackingDatabase
@@ -25,6 +26,7 @@ except:
     from trivia.triviaQuestionReference import TriviaQuestionReference
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
+    from trivia.triviaType import TriviaType
 
 
 class TriviaHistoryRepository():
@@ -69,7 +71,7 @@ class TriviaHistoryRepository():
         connection = await self.__getDatabaseConnection()
         record = await connection.fetchRow(
             '''
-                SELECT emote, triviaid, triviasource FROM triviahistory
+                SELECT emote, triviaid, triviasource, triviatype FROM triviahistory
                 WHERE emote IS NOT NULL AND emote = $1 AND twitchchannel = $2
                 ORDER BY datetime DESC
                 LIMIT 1
@@ -84,7 +86,8 @@ class TriviaHistoryRepository():
                 emote = record[0],
                 triviaId = record[1],
                 twitchChannel = twitchChannel,
-                triviaSource = TriviaSource.fromStr(record[2])
+                triviaSource = TriviaSource.fromStr(record[2]),
+                triviaType = TriviaType.fromStr(record[3])
             )
 
         await connection.close()
@@ -105,9 +108,9 @@ class TriviaHistoryRepository():
                         emote text NOT NULL,
                         triviaid public.citext NOT NULL,
                         triviasource public.citext NOT NULL,
+                        triviatype public.citext NOT NULL,
                         twitchchannel public.citext NOT NULL,
-                        triviaid public.citext NOT NULL,
-                        PRIMARY KEY (triviaid, triviasource, twitchchannel)
+                        PRIMARY KEY (triviaid, triviasource, triviatype, twitchchannel)
                     )
                 '''
             )
@@ -119,8 +122,9 @@ class TriviaHistoryRepository():
                         emote TEXT NOT NULL,
                         triviaid TEXT NOT NULL COLLATE NOCASE,
                         triviasource TEXT NOT NULL COLLATE NOCASE,
+                        triviatype TEXT NOT NULL COLLATE NOCASE,
                         twitchchannel TEXT NOT NULL COLLATE NOCASE,
-                        PRIMARY KEY (triviaid, triviasource, twitchchannel)
+                        PRIMARY KEY (triviaid, triviasource, triviatype, twitchchannel)
                     )
                 '''
             )
@@ -144,15 +148,16 @@ class TriviaHistoryRepository():
 
         triviaId = question.getTriviaId()
         triviaSource = question.getTriviaSource().toStr()
+        triviaType = question.getTriviaType().toStr()
 
         connection = await self.__getDatabaseConnection()
         record = await connection.fetchRow(
             '''
                 SELECT datetime FROM triviahistory
-                WHERE triviaid = $1 AND triviasource = $2 AND twitchchannel = $3
+                WHERE triviaid = $1 AND triviasource = $2 AND triviatype = $3 AND twitchchannel = $4
                 LIMIT 1
             ''',
-            triviaId, triviaSource, twitchChannel
+            triviaId, triviaSource, triviaType, twitchChannel
         )
 
         nowDateTime = datetime.now(self.__timeZone)
@@ -161,10 +166,10 @@ class TriviaHistoryRepository():
         if not utils.hasItems(record):
             await connection.execute(
                 '''
-                    INSERT INTO triviahistory (datetime, emote, triviaid, triviasource, twitchchannel)
-                    VALUES ($1, $2, $3, $4, $5)
+                    INSERT INTO triviahistory (datetime, emote, triviaid, triviasource, triviatype, twitchchannel)
+                    VALUES ($1, $2, $3, $4, $5, $6)
                 ''',
-                nowDateTimeStr, emote, triviaId, triviaSource, twitchChannel
+                nowDateTimeStr, emote, triviaId, triviaSource, triviaType, twitchChannel
             )
 
             await connection.close()
@@ -173,26 +178,23 @@ class TriviaHistoryRepository():
         questionDateTimeStr: str = record[0]
         questionDateTime = datetime.fromisoformat(questionDateTimeStr)
         minimumTimeDelta = timedelta(days = await self.__triviaSettingsRepository.getMinDaysBeforeRepeatQuestion())
-        isDebugLoggingEnabled = await self.__triviaSettingsRepository.isDebugLoggingEnabled()
 
         if questionDateTime + minimumTimeDelta >= nowDateTime:
-            if isDebugLoggingEnabled:
-                self.__timber.log('TriviaHistoryRepository', f'Encountered duplicate triviaHistory entry that is within the window of being a repeat (now=\"{nowDateTimeStr}\" db=\"{questionDateTimeStr}\" triviaId=\"{triviaId}\" triviaSource=\"{triviaSource}\" twitchChannel=\"{twitchChannel}\"')
-
             await connection.close()
+            self.__timber.log('TriviaHistoryRepository', f'Encountered duplicate triviaHistory entry that is within the window of being a repeat (now=\"{nowDateTimeStr}\" db=\"{questionDateTimeStr}\" triviaId=\"{triviaId}\" triviaSource=\"{triviaSource}\" twitchChannel=\"{twitchChannel}\"')
+
             return TriviaContentCode.REPEAT
 
         await connection.execute(
             '''
                 UPDATE triviahistory
                 SET datetime = $1, emote = $2
-                WHERE triviaid = $3 AND triviasource = $4 AND twitchchannel = $5
+                WHERE triviaid = $3 AND triviasource = $4 AND triviatype = $5 AND twitchchannel = $6
             ''',
-            nowDateTimeStr, emote, triviaId, triviaSource, twitchChannel
+            nowDateTimeStr, emote, triviaId, triviaSource, triviaType, twitchChannel
         )
 
-        if isDebugLoggingEnabled:
-            self.__timber.log('TriviaHistoryRepository', f'Updated triviaHistory entry to {nowDateTimeStr} from {questionDateTimeStr} (triviaId=\"{triviaId}\" triviaSource=\"{triviaSource}\" twitchChannel=\"{twitchChannel}\")')
-
         await connection.close()
+        self.__timber.log('TriviaHistoryRepository', f'Updated triviaHistory entry to {nowDateTimeStr} from {questionDateTimeStr} (triviaId=\"{triviaId}\" triviaSource=\"{triviaSource}\" triviaType=\"{triviaType}\" twitchChannel=\"{twitchChannel}\")')
+
         return TriviaContentCode.OK

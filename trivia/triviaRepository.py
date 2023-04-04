@@ -8,8 +8,6 @@ try:
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.absTriviaQuestionRepository import \
         AbsTriviaQuestionRepository
-    from CynanBotCommon.trivia.additionalTriviaAnswersRepository import \
-        AdditionalTriviaAnswersRepository
     from CynanBotCommon.trivia.bongoTriviaQuestionRepository import \
         BongoTriviaQuestionRepository
     from CynanBotCommon.trivia.funtoonTriviaQuestionRepository import \
@@ -57,8 +55,6 @@ except:
     from timber.timber import Timber
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.absTriviaQuestionRepository import AbsTriviaQuestionRepository
-    from trivia.additionalTriviaAnswersRepository import \
-        AdditionalTriviaAnswersRepository
     from trivia.funtoonTriviaQuestionRepository import \
         FuntoonTriviaQuestionRepository
     from trivia.jokeTriviaQuestionRepository import \
@@ -102,7 +98,6 @@ class TriviaRepository():
 
     def __init__(
         self,
-        additionalTriviaAnswersRepository: AdditionalTriviaAnswersRepository,
         bongoTriviaQuestionRepository: BongoTriviaQuestionRepository,
         funtoonTriviaQuestionRepository: FuntoonTriviaQuestionRepository,
         jokeTriviaQuestionRepository: Optional[JokeTriviaQuestionRepository],
@@ -123,9 +118,7 @@ class TriviaRepository():
         wwtbamTriviaQuestionRepository: WwtbamTriviaQuestionRepository,
         sleepTimeSeconds: float = 0.25
     ):
-        if not isinstance(additionalTriviaAnswersRepository, AdditionalTriviaAnswersRepository):
-            raise ValueError(f'additionalTriviaAnswersRepository argument is malformed: \"{additionalTriviaAnswersRepository}\"')
-        elif not isinstance(bongoTriviaQuestionRepository, BongoTriviaQuestionRepository):
+        if not isinstance(bongoTriviaQuestionRepository, BongoTriviaQuestionRepository):
             raise ValueError(f'bongoTriviaQuestionRepository argument is malformed: \"{bongoTriviaQuestionRepository}\"')
         elif not isinstance(funtoonTriviaQuestionRepository, FuntoonTriviaQuestionRepository):
             raise ValueError(f'funtoonTriviaQuestionRepository argument is malformed: \"{funtoonTriviaQuestionRepository}\"')
@@ -166,7 +159,6 @@ class TriviaRepository():
         elif sleepTimeSeconds < 0.25 or sleepTimeSeconds > 3:
             raise ValueError(f'sleepTimeSeconds argument is out of bounds: {sleepTimeSeconds}')
 
-        self.__additionalTriviaAnswersRepository: AdditionalTriviaAnswersRepository = additionalTriviaAnswersRepository
         self.__bongoTriviaQuestionRepository: AbsTriviaQuestionRepository = bongoTriviaQuestionRepository
         self.__funtoonTriviaQuestionRepository: AbsTriviaQuestionRepository = funtoonTriviaQuestionRepository
         self.__jokeTriviaQuestionRepository: Optional[AbsTriviaQuestionRepository] = jokeTriviaQuestionRepository

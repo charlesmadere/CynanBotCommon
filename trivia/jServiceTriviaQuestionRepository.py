@@ -9,6 +9,8 @@ try:
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.absTriviaQuestionRepository import \
         AbsTriviaQuestionRepository
+    from CynanBotCommon.trivia.additionalTriviaAnswersRepository import \
+        AdditionalTriviaAnswersRepository
     from CynanBotCommon.trivia.questionAnswerTriviaQuestion import \
         QuestionAnswerTriviaQuestion
     from CynanBotCommon.trivia.triviaAnswerCompiler import TriviaAnswerCompiler
@@ -29,6 +31,8 @@ except:
     from timber.timber import Timber
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.absTriviaQuestionRepository import AbsTriviaQuestionRepository
+    from trivia.additionalTriviaAnswersRepository import \
+        AdditionalTriviaAnswersRepository
     from trivia.questionAnswerTriviaQuestion import \
         QuestionAnswerTriviaQuestion
     from trivia.triviaAnswerCompiler import TriviaAnswerCompiler
@@ -46,6 +50,7 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
     def __init__(
         self,
+        additionalTriviaAnswersRepository: AdditionalTriviaAnswersRepository,
         networkClientProvider: NetworkClientProvider,
         timber: Timber,
         triviaAnswerCompiler: TriviaAnswerCompiler,
@@ -55,7 +60,9 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
     ):
         super().__init__(triviaSettingsRepository)
 
-        if not isinstance(networkClientProvider, NetworkClientProvider):
+        if not isinstance(additionalTriviaAnswersRepository, AdditionalTriviaAnswersRepository):
+            raise ValueError(f'additionalTriviaAnswersRepository argument is malformed: \"{additionalTriviaAnswersRepository}\"')
+        elif not isinstance(networkClientProvider, NetworkClientProvider):
             raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
         elif not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
@@ -66,11 +73,28 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
         elif not isinstance(triviaQuestionCompiler, TriviaQuestionCompiler):
             raise ValueError(f'triviaQuestionCompiler argument is malformed: \"{triviaQuestionCompiler}\"')
 
+        self.__additionalTriviaAnswersRepository: AdditionalTriviaAnswersRepository = additionalTriviaAnswersRepository
         self.__networkClientProvider: NetworkClientProvider = networkClientProvider
         self.__timber: Timber = timber
         self.__triviaAnswerCompiler: TriviaAnswerCompiler = triviaAnswerCompiler
         self.__triviaIdGenerator: TriviaIdGenerator = triviaIdGenerator
         self.__triviaQuestionCompiler: TriviaQuestionCompiler = triviaQuestionCompiler
+
+    async def __addAdditionalAnswers(self, correctAnswers: List[str], triviaId: str):
+        if not utils.isValidStr(triviaId):
+            raise ValueError(f'triviaId argument is malformed: \"{triviaId}\"')
+
+        reference = await self.__additionalTriviaAnswersRepository.getAdditionalTriviaAnswers(
+            triviaId = triviaId,
+            triviaSource = TriviaSource.J_SERVICE,
+            triviaType = TriviaType.QUESTION_ANSWER
+        )
+
+        if reference is None:
+            return
+
+        self.__timber.log('JServiceTriviaQuestionRepository', f'Adding additional answers to question (triviaId=\"{triviaId}\"): {reference.getAdditionalAnswers()}')
+        correctAnswers.extend(reference.getAdditionalAnswers())
 
     async def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
         if not utils.isValidStr(twitchChannel):
@@ -137,6 +161,12 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
             correctAnswers: List[str] = list()
             correctAnswers.append(utils.getStrFromDict(triviaJson, 'answer'))
+
+            await self.__addAdditionalAnswers(
+                correctAnswers = correctAnswers,
+                triviaId = triviaId
+            )
+
             correctAnswers = await self.__triviaQuestionCompiler.compileResponses(correctAnswers)
 
             cleanedCorrectAnswers: List[str] = list()
