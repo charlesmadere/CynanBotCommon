@@ -107,7 +107,7 @@ class AdditionalTriviaAnswersRepository():
             await connection.execute(
                 '''
                     INSERT INTO additionaltriviaanswers (additionalanswers, triviaid, triviasource, triviatype)
-                    VALUES ($1, $2, $3)
+                    VALUES ($1, $2, $3, $4)
                 ''',
                 additionalAnswersJson, triviaId, triviaSource.toStr(), triviaType.toStr()
             )
