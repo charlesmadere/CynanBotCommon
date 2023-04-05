@@ -253,16 +253,6 @@ class TestTriviaAnswerCompiler():
         assert result == 'sir peter'
 
     @pytest.mark.asyncio
-    async def test_compileTextAnswer_withThingsThatAreHello123(self):
-        result: str = await self.triviaAnswerCompiler.compileTextAnswer('things that are hello 123')
-        assert result == '(things that are) hello 123'
-
-    @pytest.mark.asyncio
-    async def test_compileTextAnswer_withThingsThatArePinched(self):
-        result: str = await self.triviaAnswerCompiler.compileTextAnswer('things that are pinched')
-        assert result == '(things that are) pinched'
-
-    @pytest.mark.asyncio
     async def test_compileTextAnswer_withToRun(self):
         result: str = await self.triviaAnswerCompiler.compileTextAnswer('to run')
         assert result == 'run'

@@ -795,6 +795,68 @@ class TestTriviaAnswerChecker():
         result = await self.triviaAnswerChecker.checkAnswer('head', question)
         assert result is TriviaAnswerCheckResult.INCORRECT
 
+    @pytest.mark.asyncio
+    async def test_checkAnswer_withQuestionAnswerQuestion_withThingsThatArePinched(self):
+        answer = 'things that are pinched'
+
+        correctAnswers = await self.triviaQuestionCompiler.compileResponses([ answer ])
+        cleanedCorrectAnswers = await self.triviaAnswerCompiler.compileTextAnswersList([ answer ])
+
+        expandedCleanedCorrectAnswers: Set[str] = set()
+        for cleanedCorrectAnswer in cleanedCorrectAnswers:
+            expandedCleanedCorrectAnswers.update(await self.triviaAnswerCompiler.expandNumerals(cleanedCorrectAnswer))
+
+        question: AbsTriviaQuestion = QuestionAnswerTriviaQuestion(
+            correctAnswers=correctAnswers,
+            cleanedCorrectAnswers=list(expandedCleanedCorrectAnswers),
+            category='Test Category',
+            categoryId=None,
+            question='Something about toys',
+            triviaId='abc123',
+            triviaDifficulty=TriviaDifficulty.UNKNOWN,
+            triviaSource=TriviaSource.J_SERVICE
+        )
+
+        result = await self.triviaAnswerChecker.checkAnswer('things that are pinched', question)
+        assert result is TriviaAnswerCheckResult.CORRECT
+
+        result = await self.triviaAnswerChecker.checkAnswer('pinched', question)
+        assert result is TriviaAnswerCheckResult.CORRECT
+
+        result = await self.triviaAnswerChecker.checkAnswer('idk', question)
+        assert result is TriviaAnswerCheckResult.INCORRECT
+
+    @pytest.mark.asyncio
+    async def test_checkAnswer_withQuestionAnswerQuestion_withThingsThatAreHello123(self):
+        answer = 'things that are hello 123'
+
+        correctAnswers = await self.triviaQuestionCompiler.compileResponses([ answer ])
+        cleanedCorrectAnswers = await self.triviaAnswerCompiler.compileTextAnswersList([ answer ])
+
+        expandedCleanedCorrectAnswers: Set[str] = set()
+        for cleanedCorrectAnswer in cleanedCorrectAnswers:
+            expandedCleanedCorrectAnswers.update(await self.triviaAnswerCompiler.expandNumerals(cleanedCorrectAnswer))
+
+        question: AbsTriviaQuestion = QuestionAnswerTriviaQuestion(
+            correctAnswers=correctAnswers,
+            cleanedCorrectAnswers=list(expandedCleanedCorrectAnswers),
+            category='Test Category',
+            categoryId=None,
+            question='Something about toys',
+            triviaId='abc123',
+            triviaDifficulty=TriviaDifficulty.UNKNOWN,
+            triviaSource=TriviaSource.J_SERVICE
+        )
+
+        result = await self.triviaAnswerChecker.checkAnswer('things that are hello 123', question)
+        assert result is TriviaAnswerCheckResult.CORRECT
+
+        result = await self.triviaAnswerChecker.checkAnswer('hello 123', question)
+        assert result is TriviaAnswerCheckResult.CORRECT
+
+        result = await self.triviaAnswerChecker.checkAnswer('idk', question)
+        assert result is TriviaAnswerCheckResult.INCORRECT
+
     def test_sanity(self):
         assert self.triviaAnswerChecker is not None
         assert isinstance(self.triviaAnswerChecker, TriviaAnswerChecker)
