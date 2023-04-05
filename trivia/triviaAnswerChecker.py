@@ -1,5 +1,6 @@
 import math
 import re
+from re import Match
 from typing import Any, Dict, Generator, List, Optional, Pattern
 
 import polyleven
@@ -58,6 +59,7 @@ class TriviaAnswerChecker():
         self.__triviaAnswerCompiler: TriviaAnswerCompiler = triviaAnswerCompiler
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
 
+        self.__usDollarRegEx: Pattern = re.compile(r'^\$?((?!,$)[\d,.]+)(\s+\(?USD?\)?)?$', re.IGNORECASE)
         self.__whitespacePattern: Pattern = re.compile(r'\s\s+')
 
         self.__irregular_nouns: Dict[str, str] = {
@@ -166,7 +168,16 @@ class TriviaAnswerChecker():
         self.__timber.log('TriviaAnswerChecker', f'In depth question/answer debug information — (answer=\"{answer}\") (cleanedAnswers=\"{cleanedAnswers}\") (correctAnswers=\"{triviaQuestion.getCorrectAnswers()}\") (cleanedCorrectAnswers=\"{cleanedCorrectAnswers}\") (extras=\"{extras}\")')
 
         for cleanedCorrectAnswer in cleanedCorrectAnswers:
+            # special case: check to see if this cleaned correct answer is based on USD
+            usDollarMatch = self.__usDollarRegEx.fullmatch(cleanedCorrectAnswer)
+
             for cleanedAnswer in cleanedAnswers:
+                if usDollarMatch is not None and await self.__checkAnswerQuestionAnswerAsUsDollar(
+                    usDollarMatch = usDollarMatch,
+                    cleanedAnswer = cleanedAnswer
+                ):
+                    return TriviaAnswerCheckResult.CORRECT
+
                 expandedGuesses = await self.__triviaAnswerCompiler.expandNumerals(cleanedAnswer)
 
                 for guess in expandedGuesses:
@@ -190,6 +201,34 @@ class TriviaAnswerChecker():
                                 return TriviaAnswerCheckResult.CORRECT
 
         return TriviaAnswerCheckResult.INCORRECT
+
+    # This method should be used for better answer validation in cases where a trivia question's
+    # correct answer is a US dollar amount. This will compare just the raw dollar amount number
+    # versus an input answer that is also just a number.
+    async def __checkAnswerQuestionAnswerAsUsDollar(
+        self,
+        usDollarMatch: Match[str],
+        cleanedAnswer: str
+    ) -> bool:
+        usDollarAmount = usDollarMatch.group(1)
+        if not utils.isValidStr(usDollarAmount):
+            return False
+
+        usDollarAmount = usDollarAmount.replace(',', '')
+        usDollarFloat: Optional[float] = None
+        cleanedAnswerFloat: Optional[float] = None
+
+        try:
+            usDollarFloat = float(usDollarAmount)
+            cleanedAnswerFloat = float(cleanedAnswer)
+        except Exception as e:
+            self.__timber.log('TriviaAnswerChecker', f'Unable to convert either usDollarAmount (\"{usDollarAmount}\") or cleanedAnswer (\"{cleanedAnswer}\") into floats (raw match group: \"{usDollarMatch.group()}\")', e)
+            return False
+
+        if not utils.isValidNum(usDollarFloat) or not utils.isValidNum(cleanedAnswerFloat):
+            return False
+
+        return usDollarFloat == cleanedAnswerFloat
 
     async def __checkAnswerTrueFalse(
         self,
