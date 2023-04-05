@@ -207,11 +207,11 @@ class TriviaAnswerChecker():
     # versus an input answer that is also just a number.
     async def __checkAnswerQuestionAnswerAsUsDollar(
         self,
-        usDollarMatch: Match[str],
+        usDollarMatch: Match,
         cleanedAnswer: str
     ) -> bool:
-        usDollarAmount = usDollarMatch.group(1)
-        if not utils.isValidStr(usDollarAmount):
+        usDollarAmount: Optional[str] = usDollarMatch.group(1)
+        if not isinstance(usDollarAmount, str):
             return False
 
         usDollarAmount = usDollarAmount.replace(',', '')
