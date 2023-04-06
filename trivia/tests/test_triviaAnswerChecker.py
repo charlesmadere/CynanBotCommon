@@ -43,7 +43,7 @@ class TestTriviaAnswerChecker():
     eventLoop: AbstractEventLoop = asyncio.get_event_loop()
     backgroundTaskHelper = BackgroundTaskHelper(eventLoop = eventLoop)
     timber = Timber(backgroundTaskHelper = backgroundTaskHelper)
-    triviaAnswerCompiler: TriviaAnswerCompiler = TriviaAnswerCompiler()
+    triviaAnswerCompiler: TriviaAnswerCompiler = TriviaAnswerCompiler(timber = timber)
     triviaQuestionCompiler: TriviaQuestionCompiler = TriviaQuestionCompiler()
     triviaSettingsRepository: TriviaSettingsRepository = TriviaSettingsRepository()
     triviaAnswerChecker: TriviaAnswerChecker = TriviaAnswerChecker(
