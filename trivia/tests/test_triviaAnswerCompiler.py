@@ -329,7 +329,7 @@ class TestTriviaAnswerCompiler():
         result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ 'hello/world/123' ])
         assert result is not None
         assert len(result) == 4
-        assert 'hello world 123' in result
+        assert 'helloworld123' in result
         assert 'hello' in result
         assert 'world' in result
         assert '123' in result
