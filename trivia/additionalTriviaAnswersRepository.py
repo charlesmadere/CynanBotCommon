@@ -12,7 +12,8 @@ try:
     from CynanBotCommon.trivia.triviaExceptions import (
         AdditionalTriviaAnswerAlreadyExistsException,
         AdditionalTriviaAnswerIsMalformedException,
-        AdditionalTriviaAnswerIsUnsupportedTriviaTypeException)
+        AdditionalTriviaAnswerIsUnsupportedTriviaTypeException,
+        TooManyAdditionalTriviaAnswersException)
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
     from CynanBotCommon.trivia.triviaSource import TriviaSource
@@ -27,7 +28,8 @@ except:
     from trivia.triviaExceptions import (
         AdditionalTriviaAnswerAlreadyExistsException,
         AdditionalTriviaAnswerIsMalformedException,
-        AdditionalTriviaAnswerIsUnsupportedTriviaTypeException)
+        AdditionalTriviaAnswerIsUnsupportedTriviaTypeException,
+        TooManyAdditionalTriviaAnswersException)
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
     from trivia.triviaType import TriviaType
@@ -101,8 +103,14 @@ class AdditionalTriviaAnswersRepository():
 
         additionalAnswersList: List[str] = list(additionalAnswersSet)
         additionalAnswersList.sort(key = lambda answer: answer.lower())
-        additionalAnswersJson: str = json.dumps(additionalAnswersList)
 
+        if len(additionalAnswersList) > await self.__triviaSettingsRepository.getMaxAdditionalTriviaAnswers():
+            raise TooManyAdditionalTriviaAnswersException(
+                answers = additionalAnswersList,
+                answerCount = len(additionalAnswersList)
+            )
+
+        additionalAnswersJson: str = json.dumps(additionalAnswersList)
         connection = await self.__getDatabaseConnection()
 
         if reference is None:

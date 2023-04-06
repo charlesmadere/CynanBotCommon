@@ -71,6 +71,10 @@ class TriviaSettingsRepository():
         jsonContents = await self.__readJson()
         return utils.getIntFromDict(jsonContents, 'max_additional_trivia_answer_length', 48)
 
+    async def getMaxAdditionalTriviaAnswers(self) -> int:
+        jsonContents = await self.__readJson()
+        return utils.getIntFromDict(jsonContents, 'max_additional_trivia_answers', 5)
+
     async def getMaxAnswerLength(self) -> int:
         jsonContents = await self.__readJson()
         return utils.getIntFromDict(jsonContents, 'max_answer_length', 80)

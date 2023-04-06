@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 try:
     from CynanBotCommon.trivia.triviaSource import TriviaSource
@@ -94,6 +94,12 @@ class NoTriviaQuestionException(Exception):
 
     def __init__(self, message: str):
         super().__init__(message)
+
+
+class TooManyAdditionalTriviaAnswersException(Exception):
+
+    def __init__(self, answers: List[str], answerCount: int):
+        super().__init__(answers, answerCount)
 
 
 class TooManyTriviaFetchAttemptsException(Exception):
