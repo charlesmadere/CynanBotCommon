@@ -923,7 +923,7 @@ class TestTriviaAnswerChecker():
         assert result is TriviaAnswerCheckResult.INCORRECT
 
     @pytest.mark.asyncio
-    async def test_checkAnswer_withQuestionAnswerQuestion_withUsDollarAmount1(self):
+    async def test_checkAnswer_withQuestionAnswerQuestion_withUsDollarAmount2(self):
         answer = '$123,456.78'
 
         correctAnswers = await self.triviaQuestionCompiler.compileResponses([ answer ])
