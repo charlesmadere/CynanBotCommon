@@ -100,7 +100,9 @@ class AdditionalTriviaAnswersRepository():
             additionalAnswersSet.update(reference.getAdditionalAnswers())
 
         additionalAnswersList: List[str] = list(additionalAnswersSet)
+        additionalAnswersList.sort(key = lambda answer: answer.lower())
         additionalAnswersJson: str = json.dumps(additionalAnswersList)
+
         connection = await self.__getDatabaseConnection()
 
         if reference is None:
@@ -202,7 +204,8 @@ class AdditionalTriviaAnswersRepository():
         if not utils.isValidStr(additionalAnswersJson):
             return None
 
-        additionalAnswersList = json.loads(additionalAnswersJson)
+        additionalAnswersList: List[str] = json.loads(additionalAnswersJson)
+        additionalAnswersList.sort(key = lambda answer: answer.lower())
 
         return AdditionalTriviaAnswers(
             additionalAnswers = additionalAnswersList,
