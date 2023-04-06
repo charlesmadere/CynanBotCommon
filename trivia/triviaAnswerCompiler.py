@@ -7,18 +7,27 @@ from roman import RomanError
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.triviaExceptions import BadTriviaAnswerException
 except:
     import utils
+    from timber.timber import Timber
     from trivia.triviaExceptions import BadTriviaAnswerException
 
 
 class TriviaAnswerCompiler():
 
-    def __init__(self):
+    def __init__(self, timber: Timber):
+        if not isinstance(timber, Timber):
+            raise ValueError(f'timber argument is malformed: \"{timber}\"')
+
+        self.__timber: Timber = timber
+
         self.__ampersandRegEx: Pattern = re.compile(r'(^&\s+)|(\s+&\s+)|(\s+&$)', re.IGNORECASE)
         self.__decadeRegEx: Pattern = re.compile(r'^(\d{4})\'?s$', re.IGNORECASE)
+        self.__equationRegEx: Pattern = re.compile(r'([a-z])\s*=\s*(-?(?:\d*\.)?\d+)', re.IGNORECASE)
         self.__firstMiddleLastNameRegEx: Pattern = re.compile(r'^\w+\s+(\w\.?)\s+\w+(\s+(i{0,3}|iv|vi{0,3}|i?x|jr\.?|junior|senior|sr\.?)\.?)?$', re.IGNORECASE)
+        self.__hashRegEx: Pattern = re.compile(r'(#)')
         self.__honoraryPrefixRegEx: Pattern = re.compile(r'^(bishop|brother|captain|chancellor|chief|colonel|corporal|dean|director|doctor|dr\.?|duke|earl|esq|esquire|executive|father|general|judge|king|lady|lieutenant|lord|madam|madame|master|miss|missus|mister|mistress|mother|mr\.?|mrs\.?|ms\.?|mx\.?|officer|priest|president|principal|private|professor|queen|rabbi|representative|reverend|saint|secretary|senator|senior|sister|sir|sire|teacher|warden)\s+', re.IGNORECASE)
         self.__japaneseHonorarySuffixRegEx: Pattern = re.compile(r'(\s|-)(chan|kohai|kouhai|kun|sama|san|senpai|sensei|tan)$', re.IGNORECASE)
         self.__multipleChoiceAnswerRegEx: Pattern = re.compile(r'[a-z]', re.IGNORECASE)
@@ -29,16 +38,15 @@ class TriviaAnswerCompiler():
         self.__prefixRegEx: Pattern = re.compile(r'^(a|an|and|of|the|these|this|those|to)\s+', re.IGNORECASE)
         self.__tagRemovalRegEx: Pattern = re.compile(r'[<\[]\/?\w+[>\]]', re.IGNORECASE)
         self.__thingsThatArePhraseRegEx: Pattern = re.compile(r'^(things\s+that\s+are)\s+(\w+(\s+)?(\w+)?)$', re.IGNORECASE)
+        self.__usDollarRegEx: Pattern = re.compile(r'^\$?((?!,$)[\d,.]+)(\s+\(?USD?\)?)?$', re.IGNORECASE)
         self.__whiteSpaceRegEx: Pattern = re.compile(r'\s\s*', re.IGNORECASE)
+        self.__wordSlashWordRegEx: Pattern = re.compile(r'^(\w+)\/(\w+)(\/(\w+))?$', re.IGNORECASE)
 
         # RegEx pattern for arabic and roman numerals, returning only one capturing group
         self.__numeralRegEx: Pattern = re.compile(r'\b(\d+(?:st|nd|rd|th)?|[IVXLCDM]+(?:st|nd|rd|th)?)\b', re.IGNORECASE)
 
         # RegEx patterns for arabic and roman numerals, returning separate capturing groups for digits and ordinals
         self.__groupedNumeralRegEx: Pattern = re.compile(r'\b(?:(\d+)|([IVXLCDM]+))(st|nd|rd|th)?\b', re.IGNORECASE)
-
-        self.__hashRegEx: Pattern = re.compile(r'(#)')
-        self.__equationRegEx: Pattern = re.compile(r'([a-z])\s*=\s*(-?(?:\d*\.)?\d+)', re.IGNORECASE)
 
         self.__specialCharsRegEx: Pattern = re.compile(
             r"""
@@ -131,7 +139,7 @@ class TriviaAnswerCompiler():
             if not utils.isValidStr(answer):
                 continue
 
-            cases = await self.expandSpecialCases(answer)
+            cases = await self.__expandSpecialCases(answer)
 
             for case in cases:
                 if expandParentheses:
@@ -145,24 +153,84 @@ class TriviaAnswerCompiler():
 
         return list(answer for answer in cleanedAnswers if utils.isValidStr(answer))
 
-    async def expandSpecialCases(self, answer: str) -> List[str]:
-        # expand 'X=5' to ['5', 'X = 5', 'X is 5', 'X equals 5']
-        match = self.__equationRegEx.search(answer)
+    async def __expandSpecialCases(self, answer: str) -> List[str]:
+        specialCasesUsDollar = await self.__expandSpecialCasesUsDollar(answer)
+        if utils.hasItems(specialCasesUsDollar):
+            return specialCasesUsDollar
 
-        if match:
-            return [
-                match.group(2),
-                f'{match.group(1)} = {match.group(2)}',
-                f'{match.group(1)} is {match.group(2)}',
-                f'{match.group(1)} equals {match.group(2)}',
-            ]
+        specialCasesWordSlashWord = await self.__expandSpecialCasesWordSlashWord(answer)
+        if utils.hasItems(specialCasesWordSlashWord):
+            return specialCasesWordSlashWord
+
+        specialCasesEquations = await self.__expandSpecialCasesEquation(answer)
+        if utils.hasItems(specialCasesEquations):
+            return specialCasesEquations
 
         # expand 'mambo #5' to ['mambo #5', 'mambo number 5']
         split = self.__hashRegEx.split(answer)
         for i in range(1, len(split), 2):
             split[i] = [ 'number ', '#' ]
 
-        return [''.join(item) for item in utils.permuteSubArrays(split)]
+        return [ ''.join(item) for item in utils.permuteSubArrays(split) ]
+
+    # Expands 'X=5' to ['5', 'X = 5', 'X is 5', 'X equals 5']
+    async def __expandSpecialCasesEquation(self, answer: str) -> Optional[List[str]]:
+        match = self.__equationRegEx.search(answer)
+        if match is None:
+            return None
+
+        return [
+            match.group(2),
+            f'{match.group(1)} = {match.group(2)}',
+            f'{match.group(1)} is {match.group(2)}',
+            f'{match.group(1)} equals {match.group(2)}'
+        ]
+
+    # Expands '$50,000.00 USD' to ['$50,000,000 (USD)', '50000']
+    async def __expandSpecialCasesUsDollar(self, answer: str) -> Optional[List[str]]:
+        match = self.__usDollarRegEx.fullmatch(answer)
+        if match is None:
+            return None
+
+        usDollarAmount = match.group(1)
+        if not utils.isValidStr(usDollarAmount):
+            return None
+
+        usDollarAmount = usDollarAmount.replace(',', '')
+        usDollarFloat: Optional[float] = None
+
+        try:
+            usDollarFloat = float(usDollarAmount)
+        except Exception as e:
+            self.__timber.log('TriviaAnswerChecker', f'Unable to convert either usDollarAmount (\"{usDollarAmount}\") into float (raw match group: \"{match.group()}\")', e)
+            return None
+
+        return [
+            answer,
+            match.group(1),
+            str(usDollarFloat)
+        ]
+
+    # Expands 'groan/grown' into ['groan/grown', 'groan', 'grown'], or 'hello/world/123' into
+    # ['hello/world/123', 'hello', 'world', '123']
+    async def __expandSpecialCasesWordSlashWord(self, answer: str) -> Optional[List[str]]:
+        match = self.__wordSlashWordRegEx.fullmatch(answer)
+        if match is None:
+            return None
+
+        if not utils.isValidStr(match.group(1)) or not utils.isValidStr(match.group(2)):
+            return None
+
+        specialCases: List[str] = [
+            answer,
+            match.group(1),
+            match.group(2)
+        ]
+
+        if utils.isValidStr(match.group(3)):
+            specialCases.append(match.group(3))
+
+        return specialCases
 
     # returns text answers with all arabic and roman numerals expanded into possible full-word forms
     async def expandNumerals(self, answer: str) -> List[str]:

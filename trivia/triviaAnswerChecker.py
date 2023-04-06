@@ -1,6 +1,5 @@
 import math
 import re
-from re import Match
 from typing import Any, Dict, Generator, List, Optional, Pattern
 
 import polyleven
@@ -59,7 +58,6 @@ class TriviaAnswerChecker():
         self.__triviaAnswerCompiler: TriviaAnswerCompiler = triviaAnswerCompiler
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
 
-        self.__usDollarRegEx: Pattern = re.compile(r'^\$?((?!,$)[\d,.]+)(\s+\(?USD?\)?)?$', re.IGNORECASE)
         self.__whitespacePattern: Pattern = re.compile(r'\s\s+')
 
         self.__irregular_nouns: Dict[str, str] = {
@@ -168,16 +166,7 @@ class TriviaAnswerChecker():
         self.__timber.log('TriviaAnswerChecker', f'In depth question/answer debug information — (answer=\"{answer}\") (cleanedAnswers=\"{cleanedAnswers}\") (correctAnswers=\"{triviaQuestion.getCorrectAnswers()}\") (cleanedCorrectAnswers=\"{cleanedCorrectAnswers}\") (extras=\"{extras}\")')
 
         for cleanedCorrectAnswer in cleanedCorrectAnswers:
-            # special case: check to see if this cleaned correct answer is based on USD
-            usDollarMatch = self.__usDollarRegEx.fullmatch(cleanedCorrectAnswer)
-
             for cleanedAnswer in cleanedAnswers:
-                if usDollarMatch is not None and await self.__checkAnswerQuestionAnswerAsUsDollar(
-                    usDollarMatch = usDollarMatch,
-                    cleanedAnswer = cleanedAnswer
-                ):
-                    return TriviaAnswerCheckResult.CORRECT
-
                 expandedGuesses = await self.__triviaAnswerCompiler.expandNumerals(cleanedAnswer)
 
                 for guess in expandedGuesses:
@@ -201,34 +190,6 @@ class TriviaAnswerChecker():
                                 return TriviaAnswerCheckResult.CORRECT
 
         return TriviaAnswerCheckResult.INCORRECT
-
-    # This method should be used for better answer validation in cases where a trivia question's
-    # correct answer is a US dollar amount. This will compare just the raw dollar amount number
-    # versus an input answer that is also just a number.
-    async def __checkAnswerQuestionAnswerAsUsDollar(
-        self,
-        usDollarMatch: Match,
-        cleanedAnswer: str
-    ) -> bool:
-        usDollarAmount: Optional[str] = usDollarMatch.group(1)
-        if not isinstance(usDollarAmount, str):
-            return False
-
-        usDollarAmount = usDollarAmount.replace(',', '')
-        usDollarFloat: Optional[float] = None
-        cleanedAnswerFloat: Optional[float] = None
-
-        try:
-            usDollarFloat = float(usDollarAmount)
-            cleanedAnswerFloat = float(cleanedAnswer)
-        except Exception as e:
-            self.__timber.log('TriviaAnswerChecker', f'Unable to convert either usDollarAmount (\"{usDollarAmount}\") or cleanedAnswer (\"{cleanedAnswer}\") into floats (raw match group: \"{usDollarMatch.group()}\")', e)
-            return False
-
-        if not utils.isValidNum(usDollarFloat) or not utils.isValidNum(cleanedAnswerFloat):
-            return False
-
-        return usDollarFloat == cleanedAnswerFloat
 
     async def __checkAnswerTrueFalse(
         self,
@@ -445,13 +406,19 @@ class TriviaAnswerChecker():
         if word in ('crssng', 'xing'):
             yield 'crossing'
 
-        # countries
+        # countries and specific places
+        if word == 'gb':
+            yield 'great britain'
         if word == 'kr':
             yield 'korea'
         if word in ('jp', 'jpn'):
             yield 'japan'
+        if word == 'nyc':
+            yield 'new york city'
         if word == 'uk':
             yield 'united kingdom'
+        if word == 'usa':
+            yield 'united states of america'
 
         # directions
         if word in ('n', 'north', 'northern'):
@@ -481,6 +448,9 @@ class TriviaAnswerChecker():
         if word == 'ie':
             yield 'id est'
             yield 'in other words'
+        if word == 'ps':
+            yield 'postscript'
+            yield 'postscriptum'
         if word == 'sic':
             yield 'sic erat scriptum'
 
@@ -540,6 +510,8 @@ class TriviaAnswerChecker():
             yield 'world wide web'
 
         # measurements (imperial and metric)
+        if word == 'atm':
+            yield 'atmosphere'
         if word == 'c':
             yield 'celsius'
         if word == 'cg':
@@ -556,6 +528,8 @@ class TriviaAnswerChecker():
             yield 'exabyte'
         if word == 'f':
             yield 'fahrenheit'
+        if word == 'fps':
+            yield 'feet per second'
         if word == 'ft':
             yield 'feet'
             yield 'foot'
@@ -621,6 +595,8 @@ class TriviaAnswerChecker():
 
         # other
         if word == 'ac':
+            yield 'air conditioner'
+            yield 'air conditioning'
             yield 'alternating current'
         if word == 'bday':
             yield 'birthday'

@@ -656,6 +656,40 @@ class TestTriviaAnswerChecker():
         assert result is TriviaAnswerCheckResult.INCORRECT
 
     @pytest.mark.asyncio
+    async def test_checkAnswer_withQuestionAnswerQuestion_withGroanGrown(self):
+        answer = 'groan/grown'
+
+        correctAnswers = await self.triviaQuestionCompiler.compileResponses([ answer ])
+        cleanedCorrectAnswers = await self.triviaAnswerCompiler.compileTextAnswersList([ answer ])
+
+        expandedCleanedCorrectAnswers: Set[str] = set()
+        for cleanedCorrectAnswer in cleanedCorrectAnswers:
+            expandedCleanedCorrectAnswers.update(await self.triviaAnswerCompiler.expandNumerals(cleanedCorrectAnswer))
+
+        question: AbsTriviaQuestion = QuestionAnswerTriviaQuestion(
+            correctAnswers=correctAnswers,
+            cleanedCorrectAnswers=list(expandedCleanedCorrectAnswers),
+            category='Test Category',
+            categoryId=None,
+            question='Something about homophones',
+            triviaId='abc123',
+            triviaDifficulty=TriviaDifficulty.UNKNOWN,
+            triviaSource=TriviaSource.J_SERVICE
+        )
+
+        result = await self.triviaAnswerChecker.checkAnswer('groan/grown', question)
+        assert result is TriviaAnswerCheckResult.CORRECT
+
+        result = await self.triviaAnswerChecker.checkAnswer('groan', question)
+        assert result is TriviaAnswerCheckResult.CORRECT
+
+        result = await self.triviaAnswerChecker.checkAnswer('grown', question)
+        assert result is TriviaAnswerCheckResult.CORRECT
+
+        result = await self.triviaAnswerChecker.checkAnswer('idk', question)
+        assert result is TriviaAnswerCheckResult.INCORRECT
+
+    @pytest.mark.asyncio
     async def test_checkAnswer_withQuestionAnswerQuestion_withTheNewMath(self):
         answer = 'The New Math'
 
