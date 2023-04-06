@@ -205,10 +205,16 @@ class TriviaAnswerCompiler():
             self.__timber.log('TriviaAnswerChecker', f'Unable to convert either usDollarAmount (\"{usDollarAmount}\") into float (raw match group: \"{match.group()}\")', e)
             return None
 
+        cleanedUsDollarAmount: str = None
+        if usDollarFloat.is_integer():
+            cleanedUsDollarAmount = str(int(usDollarFloat))
+        else:
+            cleanedUsDollarAmount = ':.2f'.format(usDollarFloat)
+
         return [
             answer,
             match.group(1),
-            str(usDollarFloat)
+            cleanedUsDollarAmount
         ]
 
     # Expands 'groan/grown' into ['groan/grown', 'groan', 'grown'], or 'hello/world/123' into
