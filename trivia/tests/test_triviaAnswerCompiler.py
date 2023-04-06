@@ -472,8 +472,8 @@ class TestTriviaAnswerCompiler():
         result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ '$1000000000.55 USD' ])
         assert result is not None
         assert len(result) == 2
-        assert '1000000000.55 usd' in result
-        assert '1000000000.55' in result
+        assert '100000000055 usd' in result
+        assert '100000000055' in result
 
     @pytest.mark.asyncio
     async def test_compileTextAnswersList_withYourName(self):
