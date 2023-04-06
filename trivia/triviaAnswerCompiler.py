@@ -209,7 +209,7 @@ class TriviaAnswerCompiler():
         if usDollarFloat.is_integer():
             cleanedUsDollarAmount = str(int(usDollarFloat))
         else:
-            cleanedUsDollarAmount = ':.2f'.format(usDollarFloat)
+            cleanedUsDollarAmount = '{:.2f}'.format(usDollarFloat)
 
         return [
             answer,
