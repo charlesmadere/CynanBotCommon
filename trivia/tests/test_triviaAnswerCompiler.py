@@ -3,16 +3,22 @@ from typing import List
 import pytest
 
 try:
+    from ...timber.timber import Timber
     from ...trivia.triviaAnswerCompiler import TriviaAnswerCompiler
     from ...trivia.triviaExceptions import BadTriviaAnswerException
 except:
+    from timber.timber import Timber
     from trivia.triviaAnswerCompiler import TriviaAnswerCompiler
     from trivia.triviaExceptions import BadTriviaAnswerException
 
 
 class TestTriviaAnswerCompiler():
 
-    triviaAnswerCompiler: TriviaAnswerCompiler = TriviaAnswerCompiler()
+    timber = Timber()
+
+    triviaAnswerCompiler = TriviaAnswerCompiler(
+        timber = timber
+    )
 
     @pytest.mark.asyncio
     async def test_compileBoolAnswer_withEmptyString(self):
