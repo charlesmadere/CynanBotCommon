@@ -212,8 +212,7 @@ class TriviaAnswerCompiler():
             cleanedUsDollarAmount = '{:.2f}'.format(usDollarFloat)
 
         return [
-            answer,
-            match.group(1),
+            f'{match.group(1)} usd',
             cleanedUsDollarAmount
         ]
 

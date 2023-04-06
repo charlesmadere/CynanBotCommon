@@ -447,7 +447,8 @@ class TestTriviaAnswerCompiler():
     async def test_compileTextAnswersList_withUsDollar1(self):
         result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ '$12,456.70' ])
         assert result is not None
-        assert len(result) == 1
+        assert len(result) == 2
+        assert '1245670 usd' in result
         assert '1245670' in result
 
     @pytest.mark.asyncio
@@ -455,16 +456,24 @@ class TestTriviaAnswerCompiler():
         result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ '$123 USD' ])
         assert result is not None
         assert len(result) == 2
-        assert '100 usd' in result
-        assert '100' in result
+        assert '123 usd' in result
+        assert '123' in result
 
     @pytest.mark.asyncio
     async def test_compileTextAnswersList_withUsDollar3(self):
         result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ '$1 US' ])
         assert result is not None
         assert len(result) == 2
-        assert '1 us' in result
+        assert '1 usd' in result
         assert '1' in result
+
+    @pytest.mark.asyncio
+    async def test_compileTextAnswersList_withUsDollar4(self):
+        result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ '$1000000000.55 USD' ])
+        assert result is not None
+        assert len(result) == 2
+        assert '1000000000.55 usd' in result
+        assert '1000000000.55' in result
 
     @pytest.mark.asyncio
     async def test_compileTextAnswersList_withYourName(self):
