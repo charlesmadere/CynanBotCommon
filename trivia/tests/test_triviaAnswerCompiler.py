@@ -325,6 +325,22 @@ class TestTriviaAnswerCompiler():
         assert 'mambo 5' in result
 
     @pytest.mark.asyncio
+    async def test_compileTextAnswersList_withHeIsAVampire(self):
+        result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ 'he is a vampire' ])
+        assert result is not None
+        assert len(result) == 2
+        assert 'he is a vampire' in result
+        assert 'vampire' in result
+
+    @pytest.mark.asyncio
+    async def test_compileTextAnswersList_withHesAVampire(self):
+        result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ 'he\'s a vampire' ])
+        assert result is not None
+        assert len(result) == 2
+        assert 'hes a vampire' in result
+        assert 'vampire' in result
+
+    @pytest.mark.asyncio
     async def test_compileTextAnswersList_withHelloWorld123(self):
         result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ 'hello/world/123' ])
         assert result is not None
@@ -442,6 +458,22 @@ class TestTriviaAnswerCompiler():
         assert len(result) == 2
         assert 'their house' in result
         assert 'house' in result
+
+    @pytest.mark.asyncio
+    async def test_compileTextAnswersList_withTheyAreFriends(self):
+        result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ 'they are friends' ])
+        assert result is not None
+        assert len(result) == 2
+        assert 'they are friends' in result
+        assert 'friends' in result
+
+    @pytest.mark.asyncio
+    async def test_compileTextAnswersList_withTheyreFriends(self):
+        result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ 'they\'re friends' ])
+        assert result is not None
+        assert len(result) == 2
+        assert 'theyre friends' in result
+        assert 'friends' in result
 
     @pytest.mark.asyncio
     async def test_compileTextAnswersList_withUsDollar1(self):

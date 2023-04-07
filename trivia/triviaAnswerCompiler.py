@@ -35,8 +35,9 @@ class TriviaAnswerCompiler():
         self.__parenGroupRegEx: Pattern = re.compile(r'(\(.*?\))', re.IGNORECASE)
         self.__phraseAnswerRegEx: Pattern = re.compile(r'[^A-Za-z0-9 ]|(?<=\s)\s+', re.IGNORECASE)
         self.__possessivePronounPrefixRegEx: Pattern = re.compile(r'^(her|his|my|our|their|your)\s+', re.IGNORECASE)
-        self.__prefixRegEx: Pattern = re.compile(r'^(a|an|and|of|the|these|this|those|to)\s+', re.IGNORECASE)
+        self.__prefixRegEx: Pattern = re.compile(r'^(a|an|and|of|that|the|these|this|those|to((\s+that)|(\s+the)|(\s+these)|(\s+this)|(\s+those))?)\s+', re.IGNORECASE)
         self.__tagRemovalRegEx: Pattern = re.compile(r'[<\[]\/?\w+[>\]]', re.IGNORECASE)
+        self.__thingIsPhraseRegEx: Pattern = re.compile(r'^(he\'?s?|it\'?s?|she\'?s?|they\'?(re)?|we)\s+(are|is|was|were)\s+((a|an|are)\s+)?(\w+\s*\w*)$', re.IGNORECASE)
         self.__thingsThatArePhraseRegEx: Pattern = re.compile(r'^(things\s+that\s+are)\s+(\w+(\s+)?(\w+)?)$', re.IGNORECASE)
         self.__usDollarRegEx: Pattern = re.compile(r'^\$?((?!,$)[\d,.]+)(\s+\(?USD?\)?)?$', re.IGNORECASE)
         self.__whiteSpaceRegEx: Pattern = re.compile(r'\s\s*', re.IGNORECASE)
@@ -154,6 +155,10 @@ class TriviaAnswerCompiler():
         return list(answer for answer in cleanedAnswers if utils.isValidStr(answer))
 
     async def __expandSpecialCases(self, answer: str) -> List[str]:
+        specialCasesThingIsPhrase = await self.__expandSpecialCasesThingIsPhrase(answer)
+        if utils.hasItems(specialCasesThingIsPhrase):
+            return specialCasesThingIsPhrase
+
         specialCasesUsDollar = await self.__expandSpecialCasesUsDollar(answer)
         if utils.hasItems(specialCasesUsDollar):
             return specialCasesUsDollar
@@ -185,6 +190,22 @@ class TriviaAnswerCompiler():
             f'{match.group(1)} is {match.group(2)}',
             f'{match.group(1)} equals {match.group(2)}'
         ]
+
+    # Expands 'he is a vampire' to ['he is a vampire', 'vampire']
+    async def __expandSpecialCasesThingIsPhrase(self, answer: str) -> Optional[List[str]]:
+        match = self.__thingIsPhraseRegEx.fullmatch(answer)
+        if match is None:
+            return None
+
+        thingIsPhrase = match.group(1)
+        if not utils.isValidStr(thingIsPhrase):
+            return None
+
+        phraseAnswer = match.group(6)
+        if not utils.isValidStr(phraseAnswer):
+            return None
+
+        return [ thingIsPhrase, phraseAnswer ]
 
     # Expands '$50,000.00 USD' to ['$50,000,000 (USD)', '50000']
     async def __expandSpecialCasesUsDollar(self, answer: str) -> Optional[List[str]]:
