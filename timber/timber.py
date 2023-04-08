@@ -23,7 +23,7 @@ class Timber():
     def __init__(
         self,
         backgroundTaskHelper: BackgroundTaskHelper,
-        sleepTimeSeconds: float = 10,
+        sleepTimeSeconds: float = 15,
         timberRootDirectory: str = 'CynanBotCommon/timber'
     ):
         if not isinstance(backgroundTaskHelper, BackgroundTaskHelper):
