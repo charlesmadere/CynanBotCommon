@@ -48,8 +48,7 @@ class CutenessRepository():
         userIdsRepository: UserIdsRepository,
         historyLeaderboardSize: int = 3,
         historySize: int = 5,
-        leaderboardSize: int = 10,
-        localLeaderboardSize: int = 5
+        leaderboardSize: int = 10
     ):
         if not isinstance(backingDatabase, BackingDatabase):
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
@@ -67,30 +66,22 @@ class CutenessRepository():
             raise ValueError(f'leaderboardSize argument is malformed: \"{leaderboardSize}\"')
         elif leaderboardSize < 3 or leaderboardSize > 10:
             raise ValueError(f'leaderboardSize argument is out of bounds: {leaderboardSize}')
-        elif not utils.isValidInt(localLeaderboardSize):
-            raise ValueError(f'localLeaderboardSize argument is malformed: \"{localLeaderboardSize}\"')
-        elif localLeaderboardSize < 1 or localLeaderboardSize > 5:
-            raise ValueError(f'localLeaderboardSize argument is out of bounds: {localLeaderboardSize}')
 
         self.__backingDatabase: BackingDatabase = backingDatabase
         self.__userIdsRepository: UserIdsRepository = userIdsRepository
         self.__historyLeaderboardSize: int = historyLeaderboardSize
         self.__historySize: int = historySize
         self.__leaderboardSize: int = leaderboardSize
-        self.__localLeaderboardSize: int = localLeaderboardSize
 
         self.__isDatabaseReady: bool = False
 
     async def fetchCuteness(
         self,
-        fetchLocalLeaderboard: bool,
         twitchChannel: str,
         userId: str,
         userName: str,
     ) -> CutenessResult:
-        if not utils.isValidBool(fetchLocalLeaderboard):
-            raise ValueError(f'fetchLocalLeaderboard argument is malformed: \"{fetchLocalLeaderboard}\"')
-        elif not utils.isValidStr(twitchChannel):
+        if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
         elif not utils.isValidStr(userId):
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
@@ -119,64 +110,16 @@ class CutenessRepository():
             return CutenessResult(
                 cutenessDate = cutenessDate,
                 cuteness = 0,
-                localLeaderboard = None,
                 userId = userId,
                 userName = userName
             )
 
         cuteness: int = record[0]
-
-        if not fetchLocalLeaderboard:
-            await connection.close()
-            return CutenessResult(
-                cutenessDate = cutenessDate,
-                cuteness = cuteness,
-                localLeaderboard = None,
-                userId = userId,
-                userName = userName
-            )
-
-        twitchChannelUserId = await self.__userIdsRepository.fetchUserId(userName = twitchChannel)
-
-        records = await connection.fetchRows(
-            '''
-                SELECT cuteness.cuteness, cuteness.userid, userids.username FROM cuteness
-                INNER JOIN userids ON cuteness.userid = userids.userid
-                WHERE cuteness.twitchchannel = $1 AND cuteness.utcyearandmonth = $2 AND cuteness.cuteness IS NOT NULL AND cuteness.cuteness >= 1 AND cuteness.userid != $3 AND cuteness.userid != $4
-                ORDER BY ABS($5 - ABS(cuteness.cuteness)) ASC
-                LIMIT $6
-            ''',
-            twitchChannel, cutenessDate.getStr(), userId, twitchChannelUserId, cuteness, self.__localLeaderboardSize
-        )
-
-        if not utils.hasItems(records):
-            await connection.close()
-            return CutenessResult(
-                cutenessDate = cutenessDate,
-                cuteness = cuteness,
-                localLeaderboard = None,
-                userId = userId,
-                userName = userName
-            )
-
-        localLeaderboard: List[CutenessEntry] = list()
-
-        for record in records:
-            localLeaderboard.append(CutenessEntry(
-                cuteness = record[0],
-                userId = record[1],
-                userName = record[2]
-            ))
-
         await connection.close()
-
-        # sorts cuteness into highest to lowest order
-        localLeaderboard.sort(key = lambda entry: entry.getCuteness(), reverse = True)
 
         return CutenessResult(
             cutenessDate = cutenessDate,
             cuteness = cuteness,
-            localLeaderboard = localLeaderboard,
             userId = userId,
             userName = userName
         )
@@ -378,7 +321,6 @@ class CutenessRepository():
         return CutenessResult(
             cutenessDate = cutenessDate,
             cuteness = newCuteness,
-            localLeaderboard = None,
             userId = userId,
             userName = userName
         )
@@ -455,7 +397,6 @@ class CutenessRepository():
 
             if utils.isValidStr(specificLookupUserId) and utils.isValidStr(specificLookupUserName):
                 specificLookupCutenessResult = await self.fetchCuteness(
-                    fetchLocalLeaderboard = False,
                     twitchChannel = twitchChannel,
                     userId = specificLookupUserId,
                     userName = specificLookupUserName

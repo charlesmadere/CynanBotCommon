@@ -1,14 +1,12 @@
 import locale
-from typing import List, Optional
+from typing import Optional
 
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.cuteness.cutenessDate import CutenessDate
-    from CynanBotCommon.cuteness.cutenessEntry import CutenessEntry
 except:
     import utils
     from cuteness.cutenessDate import CutenessDate
-    from cuteness.cutenessEntry import CutenessEntry
 
 
 class CutenessResult():
@@ -17,7 +15,6 @@ class CutenessResult():
         self,
         cutenessDate: CutenessDate,
         cuteness: Optional[int],
-        localLeaderboard: Optional[List[CutenessEntry]],
         userId: str,
         userName: str
     ):
@@ -32,7 +29,6 @@ class CutenessResult():
 
         self.__cutenessDate: CutenessDate = cutenessDate
         self.__cuteness: Optional[int] = cuteness
-        self.__localLeaderboard: Optional[List[CutenessEntry]] = localLeaderboard
         self.__userId: str = userId
         self.__userName: str = userName
 
@@ -45,9 +41,6 @@ class CutenessResult():
     def getCutenessStr(self) -> str:
         return locale.format_string("%d", self.__cuteness, grouping = True)
 
-    def getLocalLeaderboard(self) -> Optional[List[CutenessEntry]]:
-        return self.__localLeaderboard
-
     def getUserId(self) -> str:
         return self.__userId
 
@@ -56,6 +49,3 @@ class CutenessResult():
 
     def hasCuteness(self) -> bool:
         return utils.isValidInt(self.__cuteness)
-
-    def hasLocalLeaderboard(self) -> bool:
-        return utils.hasItems(self.__localLeaderboard)

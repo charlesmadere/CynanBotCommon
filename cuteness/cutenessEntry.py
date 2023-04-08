@@ -14,7 +14,7 @@ class CutenessEntry():
         userId: str,
         userName: str
     ):
-        if not utils.isValidNum(cuteness):
+        if not utils.isValidInt(cuteness):
             raise ValueError(f'cuteness argument is malformed: \"{cuteness}\"')
         elif not utils.isValidStr(userId):
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
