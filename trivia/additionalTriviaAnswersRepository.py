@@ -40,8 +40,8 @@ class AdditionalTriviaAnswersRepository():
     def __init__(
         self,
         backingDatabase: BackingDatabase,
-        triviaSettingsRepository: TriviaSettingsRepository,
-        timber: Timber
+        timber: Timber,
+        triviaSettingsRepository: TriviaSettingsRepository
     ):
         if not isinstance(backingDatabase, BackingDatabase):
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
@@ -51,8 +51,8 @@ class AdditionalTriviaAnswersRepository():
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
 
         self.__backingDatabase: BackingDatabase = backingDatabase
-        self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
         self.__timber: Timber = timber
+        self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
 
         self.__isDatabaseReady: bool = False
 
