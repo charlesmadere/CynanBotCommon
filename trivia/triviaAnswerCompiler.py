@@ -24,7 +24,7 @@ class TriviaAnswerCompiler():
         self.__timber: Timber = timber
 
         self.__ampersandRegEx: Pattern = re.compile(r'(^&\s+)|(\s+&\s+)|(\s+&$)', re.IGNORECASE)
-        self.__decadeRegEx: Pattern = re.compile(r'^(\d{4})\'?s$', re.IGNORECASE)
+        self.__decadeRegEx: Pattern = re.compile(r'^(the\s+)?(\d{4})\'?s$', re.IGNORECASE)
         self.__equationRegEx: Pattern = re.compile(r'([a-z])\s*=\s*(-?(?:\d*\.)?\d+)', re.IGNORECASE)
         self.__firstMiddleLastNameRegEx: Pattern = re.compile(r'^\w+\s+(\w\.?)\s+\w+(\s+(i{0,3}|iv|vi{0,3}|i?x|jr\.?|junior|senior|sr\.?)\.?)?$', re.IGNORECASE)
         self.__hashRegEx: Pattern = re.compile(r'(#)')
@@ -119,7 +119,7 @@ class TriviaAnswerCompiler():
         # If this is the case, remove the ending "s" character.
         decadeMatch = self.__decadeRegEx.fullmatch(answer)
         if decadeMatch is not None:
-            answer = decadeMatch.group(1)
+            answer = decadeMatch.group(2)
 
         return answer
 
@@ -265,7 +265,7 @@ class TriviaAnswerCompiler():
         for i in range(1, len(split), 2):
             match = self.__groupedNumeralRegEx.fullmatch(split[i])
             if not match:
-                raise BadTriviaAnswerException(f'numbers cannot be expanded properly in trivia answer (answer: {answer})')
+                raise BadTriviaAnswerException(f'numbers cannot be expanded properly in trivia answer: \"{answer}\"')
             if not match.group(1):
                 # roman numerals
                 split[i] = await self.__getRomanNumeralSubstitutes(match.group(2))
