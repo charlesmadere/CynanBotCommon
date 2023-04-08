@@ -142,16 +142,16 @@ class FuntoonTriviaQuestionRepository(AbsTriviaQuestionRepository):
         cleanedCorrectAnswers.append(utils.getStrFromDict(jsonResponse, 'answer'))
         cleanedCorrectAnswers = await self.__triviaAnswerCompiler.compileTextAnswersList(cleanedCorrectAnswers)
 
-        expandedCorrectAnswers: Set[str] = set()
+        expandedCleanedCorrectAnswers: Set[str] = set()
         for answer in cleanedCorrectAnswers:
-            expandedCorrectAnswers.update(await self.__triviaAnswerCompiler.expandNumerals(answer))
+            expandedCleanedCorrectAnswers.update(await self.__triviaAnswerCompiler.expandNumerals(answer))
 
         # TODO In the future, we will also check some additional fields (`formatted_answer` and
         # `format_type`). These will assist in providing computer-readable answer logic.
 
         return QuestionAnswerTriviaQuestion(
             correctAnswers = correctAnswers,
-            cleanedCorrectAnswers = list(expandedCorrectAnswers),
+            cleanedCorrectAnswers = list(expandedCleanedCorrectAnswers),
             category = category,
             categoryId = categoryId,
             question = question,

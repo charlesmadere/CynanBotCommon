@@ -173,13 +173,13 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
             cleanedCorrectAnswers.append(utils.getStrFromDict(triviaJson, 'answer'))
             cleanedCorrectAnswers = await self.__triviaAnswerCompiler.compileTextAnswersList(cleanedCorrectAnswers)
 
-            expandedCorrectAnswers: Set[str] = set()
+            expandedCleanedCorrectAnswers: Set[str] = set()
             for answer in cleanedCorrectAnswers:
-                expandedCorrectAnswers.update(await self.__triviaAnswerCompiler.expandNumerals(answer))
+                expandedCleanedCorrectAnswers.update(await self.__triviaAnswerCompiler.expandNumerals(answer))
 
             questions.append(QuestionAnswerTriviaQuestion(
                 correctAnswers = correctAnswers,
-                cleanedCorrectAnswers = list(expandedCorrectAnswers),
+                cleanedCorrectAnswers = list(expandedCleanedCorrectAnswers),
                 category = category,
                 categoryId = None,
                 question = question,
