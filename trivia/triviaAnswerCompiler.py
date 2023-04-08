@@ -213,7 +213,7 @@ class TriviaAnswerCompiler():
         if match is None:
             return None
 
-        usDollarAmount = match.group()
+        usDollarAmount = match.group(1)
         if not utils.isValidStr(usDollarAmount):
             return None
 
@@ -227,6 +227,7 @@ class TriviaAnswerCompiler():
             return None
 
         cleanedUsDollarAmount: str = None
+
         if usDollarFloat.is_integer():
             cleanedUsDollarAmount = str(int(usDollarFloat))
         else:
