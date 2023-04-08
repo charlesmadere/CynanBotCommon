@@ -301,10 +301,10 @@ class TriviaAnswerCompiler():
 
         try:
             n = roman.fromRoman(romanNumerals.upper())
-        except RomanError:
-            pass
+        except RomanError as e:
+            self.__timber.log('TriviaAnswerCompiler', f'Failed to convert roman numerals \"{romanNumerals}\" into an integer: {e}', e)
 
-        if n is None:
+        if not utils.isValidInt(n):
             return list()
 
         return [
