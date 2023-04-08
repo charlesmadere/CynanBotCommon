@@ -37,7 +37,7 @@ class TriviaAnswerCompiler():
         self.__possessivePronounPrefixRegEx: Pattern = re.compile(r'^(her|his|my|our|their|your)\s+', re.IGNORECASE)
         self.__prefixRegEx: Pattern = re.compile(r'^(a|an|and|of|that|the|these|they|they\'?re|this|those|to((\s+that)|(\s+the)|(\s+these)|(\s+this)|(\s+those))?)\s+', re.IGNORECASE)
         self.__tagRemovalRegEx: Pattern = re.compile(r'[<\[]\/?\w+[>\]]', re.IGNORECASE)
-        self.__thingIsPhraseRegEx: Pattern = re.compile(r'^(he\'?s?|it\'?s?|she\'?s?|they\'?(re)?|we)\s+(are|is|was|were)\s+((a|an|are)\s+)?(\w+\s*\w*)$', re.IGNORECASE)
+        self.__thingIsPhraseRegEx: Pattern = re.compile(r'^(he\'?s?|it\'?s?|she\'?s?|they\'?(re)?|we\'?(re)?)\s+((are|is|was|were)\s+)?((a|an|are)\s+)?(\w+\s*\w*)$', re.IGNORECASE)
         self.__thingsThatArePhraseRegEx: Pattern = re.compile(r'^(things\s+that\s+are)\s+(\w+(\s+)?(\w+)?)$', re.IGNORECASE)
         self.__usDollarRegEx: Pattern = re.compile(r'^\$?((?!,$)[\d,.]+)(\s+\(?USD?\)?)?$', re.IGNORECASE)
         self.__whiteSpaceRegEx: Pattern = re.compile(r'\s\s*', re.IGNORECASE)
@@ -197,11 +197,11 @@ class TriviaAnswerCompiler():
         if match is None:
             return None
 
-        thingIsPhrase = match.group(1)
+        thingIsPhrase = match.group()
         if not utils.isValidStr(thingIsPhrase):
             return None
 
-        phraseAnswer = match.group(6)
+        phraseAnswer = match.group(8)
         if not utils.isValidStr(phraseAnswer):
             return None
 
@@ -213,7 +213,7 @@ class TriviaAnswerCompiler():
         if match is None:
             return None
 
-        usDollarAmount = match.group(1)
+        usDollarAmount = match.group()
         if not utils.isValidStr(usDollarAmount):
             return None
 
@@ -244,17 +244,23 @@ class TriviaAnswerCompiler():
         if match is None:
             return None
 
-        if not utils.isValidStr(match.group(1)) or not utils.isValidStr(match.group(2)):
+        allWords = match.group()
+        firstWord = match.group(1)
+        secondWord = match.group(2)
+
+        if not utils.isValidStr(allWords) or not utils.isValidStr(firstWord) or not utils.isValidStr(secondWord):
             return None
 
+        thirdWord: Optional[str] = match.group(3)
+
         specialCases: List[str] = [
-            answer,
+            match.group(),
             match.group(1),
             match.group(2)
         ]
 
-        if utils.isValidStr(match.group(3)):
-            specialCases.append(match.group(3))
+        if utils.isValidStr(thirdWord):
+            specialCases.append(thirdWord)
 
         return specialCases
 
