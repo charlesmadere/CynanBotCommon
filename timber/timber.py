@@ -53,26 +53,37 @@ class Timber():
         elif not isinstance(timberEntry, TimberEntry):
             raise ValueError(f'timberEntry argument is malformed: \"{timberEntry}\"')
 
-        logStatement = f'{timberEntry.getSimpleDateTime().getDateAndTimeStr(True)} — {timberEntry.getTag()} — {timberEntry.getMsg()}'
-        logStatement = logStatement.strip()
+        logStatement = f'{timberEntry.getSimpleDateTime().getDateAndTimeStr(True)} — {timberEntry.getTag()} — {timberEntry.getMsg()}'.strip()
+
+        if timberEntry.hasTraceback():
+            logStatement = f'{logStatement}\n{timberEntry.getTraceback()}'.strip()
 
         if ensureNewLine:
             logStatement = f'{logStatement}\n'
 
         return logStatement
 
-    def log(self, tag: str, msg: str, exception: Optional[Exception] = None):
+    def log(
+        self,
+        tag: str,
+        msg: str,
+        exception: Optional[Exception] = None,
+        traceback: Optional[str] = None
+    ):
         if not utils.isValidStr(tag):
             raise ValueError(f'tag argument is malformed: \"{tag}\"')
         elif not utils.isValidStr(msg):
             raise ValueError(f'msg argument is malformed: \"{msg}\"')
         elif exception is not None and not isinstance(exception, Exception):
             raise ValueError(f'exception argument is malformed: \"{exception}\"')
+        elif traceback is not None and not isinstance(traceback, str):
+            raise ValueError(f'traceback argument is malformed: \"{traceback}\"')
 
         timberEntry = TimberEntry(
             tag = tag,
             msg = msg,
-            exception = exception
+            exception = exception,
+            traceback = traceback
         )
 
         self.__entryQueue.put(timberEntry)

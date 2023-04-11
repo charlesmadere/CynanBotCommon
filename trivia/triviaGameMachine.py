@@ -1,5 +1,6 @@
 import asyncio
 import queue
+import traceback
 from datetime import datetime, timezone
 from queue import SimpleQueue
 from typing import Any, Dict, List, Optional, Set
@@ -777,14 +778,14 @@ class TriviaGameMachine():
                     elif triviaActionType is TriviaActionType.START_NEW_SUPER_GAME:
                         await self.__handleActionStartNewSuperTriviaGame(action)
                     else:
-                        raise UnknownTriviaActionTypeException(f'Unknown TriviaActionType: \"{action.getTriviaActionType()}\"')
+                        raise UnknownTriviaActionTypeException(f'Unknown TriviaActionType: \"{triviaActionType}\"')
             except Exception as e:
-                self.__timber.log('TriviaGameMachine', f'Encountered unknown Exception when looping through actions (queue size: {self.__actionQueue.qsize()}) (actions size: {len(actions)}): {e}', e)
+                self.__timber.log('TriviaGameMachine', f'Encountered unknown Exception when looping through actions (queue size: {self.__actionQueue.qsize()}) (actions size: {len(actions)}): {e}', e, traceback.format_exc())
 
             try:
                 await self.__refreshStatusOfTriviaGames()
             except Exception as e:
-                self.__timber.log('TriviaGameMachine', f'Encountered unknown Exception when refreshing status of trivia games: {e}', e)
+                self.__timber.log('TriviaGameMachine', f'Encountered unknown Exception when refreshing status of trivia games: {e}', e, traceback.format_exc())
 
             await asyncio.sleep(self.__sleepTimeSeconds)
 
@@ -805,7 +806,7 @@ class TriviaGameMachine():
                     try:
                         await eventListener.onNewTriviaEvent(event)
                     except Exception as e:
-                        self.__timber.log('TriviaGameMachine', f'Encountered unknown Exception when looping through events (queue size: {self.__eventQueue.qsize()}) (event: {event}): {e}', e)
+                        self.__timber.log('TriviaGameMachine', f'Encountered unknown Exception when looping through events (queue size: {self.__eventQueue.qsize()}) (event: {event}): {e}', e, traceback.format_exc())
 
             await asyncio.sleep(self.__sleepTimeSeconds)
 

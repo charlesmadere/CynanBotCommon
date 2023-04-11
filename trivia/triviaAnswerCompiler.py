@@ -1,4 +1,5 @@
 import re
+import traceback
 from typing import List, Optional, Pattern, Set
 
 import roman
@@ -235,7 +236,7 @@ class TriviaAnswerCompiler():
         try:
             usDollarFloat = float(usDollarAmount)
         except Exception as e:
-            self.__timber.log('TriviaAnswerChecker', f'Unable to convert either usDollarAmount (\"{usDollarAmount}\") into float (raw match group: \"{match.group()}\")', e)
+            self.__timber.log('TriviaAnswerChecker', f'Unable to convert either usDollarAmount (\"{usDollarAmount}\") into float (raw match group: \"{match.group()}\")', e, traceback.format_exc())
             return None
 
         cleanedUsDollarAmount: str = None

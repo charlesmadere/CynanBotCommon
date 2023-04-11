@@ -1,5 +1,6 @@
 import asyncio
 import random
+import traceback
 from typing import Dict, List, Optional, Set
 
 try:
@@ -268,7 +269,7 @@ class TriviaRepository():
                 self.__timber.log('TriviaRepository', f'Encountered malformed JSON Exception when fetching trivia question (trivia source was \"{triviaSource}\") (new error count is {errorCount}): {e}', e)
             except Exception as e:
                 errorCount = self.__triviaSourceInstabilityHelper.incrementErrorCount(triviaSource)
-                self.__timber.log('TriviaRepository', f'Encountered unknown Exception when fetching trivia question (trivia source was \"{triviaSource}\") (new error count is {errorCount}): {e}', e)
+                self.__timber.log('TriviaRepository', f'Encountered unknown Exception when fetching trivia question (trivia source was \"{triviaSource}\") (new error count is {errorCount}): {e}', e, traceback.format_exc())
 
             if await self.__verifyGoodTriviaQuestion(
                 question = question,
