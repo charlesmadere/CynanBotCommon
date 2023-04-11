@@ -207,7 +207,7 @@ class TriviaAnswerCompiler():
 
         return [ thingIsPhrase, phraseAnswer ]
 
-    # Expands '$50,000.00 USD' to ['$50,000,000 (USD)', '50000']
+    # Expands '$50,000.00 USD' to ['$50,000,000 (USD)', '50000000']
     async def __expandSpecialCasesUsDollar(self, answer: str) -> Optional[List[str]]:
         match = self.__usDollarRegEx.fullmatch(answer)
         if match is None:
