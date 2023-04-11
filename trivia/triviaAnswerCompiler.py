@@ -24,7 +24,7 @@ class TriviaAnswerCompiler():
         self.__timber: Timber = timber
 
         self.__ampersandRegEx: Pattern = re.compile(r'(^&\s+)|(\s+&\s+)|(\s+&$)', re.IGNORECASE)
-        self.__decadeRegEx: Pattern = re.compile(r'^(the\s+)?(\d{4})\'?s$', re.IGNORECASE)
+        self.__decadeRegEx: Pattern = re.compile(r'^((in\s+)?the\s+)?(\d{4})\'?s$', re.IGNORECASE)
         self.__equationRegEx: Pattern = re.compile(r'([a-z])\s*=\s*(-?(?:\d*\.)?\d+)', re.IGNORECASE)
         self.__firstMiddleLastNameRegEx: Pattern = re.compile(r'^\w+\s+(\w\.?)\s+\w+(\s+(i{0,3}|iv|vi{0,3}|i?x|jr\.?|junior|senior|sr\.?)\.?)?$', re.IGNORECASE)
         self.__hashRegEx: Pattern = re.compile(r'(#)')
@@ -115,12 +115,6 @@ class TriviaAnswerCompiler():
         # removes common phrase prefixes
         answer = self.__prefixRegEx.sub('', answer).strip()
 
-        # Special case: check for an answer that is all digits except for an ending "s" character.
-        # If this is the case, remove the ending "s" character.
-        decadeMatch = self.__decadeRegEx.fullmatch(answer)
-        if decadeMatch is not None:
-            answer = decadeMatch.group(2)
-
         return answer
 
     async def compileTextAnswersList(
@@ -155,21 +149,25 @@ class TriviaAnswerCompiler():
         return list(answer for answer in cleanedAnswers if utils.isValidStr(answer))
 
     async def __expandSpecialCases(self, answer: str) -> List[str]:
-        specialCasesThingIsPhrase = await self.__expandSpecialCasesThingIsPhrase(answer)
-        if utils.hasItems(specialCasesThingIsPhrase):
-            return specialCasesThingIsPhrase
+        specialCases = await self.__expandSpecialCasesDecade(answer)
+        if utils.hasItems(specialCases):
+            return specialCases
 
-        specialCasesUsDollar = await self.__expandSpecialCasesUsDollar(answer)
-        if utils.hasItems(specialCasesUsDollar):
-            return specialCasesUsDollar
+        specialCases = await self.__expandSpecialCasesThingIsPhrase(answer)
+        if utils.hasItems(specialCases):
+            return specialCases
 
-        specialCasesWordSlashWord = await self.__expandSpecialCasesWordSlashWord(answer)
-        if utils.hasItems(specialCasesWordSlashWord):
-            return specialCasesWordSlashWord
+        specialCases = await self.__expandSpecialCasesUsDollar(answer)
+        if utils.hasItems(specialCases):
+            return specialCases
 
-        specialCasesEquations = await self.__expandSpecialCasesEquation(answer)
-        if utils.hasItems(specialCasesEquations):
-            return specialCasesEquations
+        specialCases = await self.__expandSpecialCasesWordSlashWord(answer)
+        if utils.hasItems(specialCases):
+            return specialCases
+
+        specialCases = await self.__expandSpecialCasesEquation(answer)
+        if utils.hasItems(specialCases):
+            return specialCases
 
         # expand 'mambo #5' to ['mambo #5', 'mambo number 5']
         split = self.__hashRegEx.split(answer)
@@ -177,6 +175,18 @@ class TriviaAnswerCompiler():
             split[i] = [ 'number ', '#' ]
 
         return [ ''.join(item) for item in utils.permuteSubArrays(split) ]
+
+    # Transforms "in the 1990's", "the 1990's", or just "1990's" to ['1990']
+    async def __expandSpecialCasesDecade(self, answer: str) -> Optional[List[str]]:
+        match = self.__decadeRegEx.fullmatch(answer)
+        if match is None:
+            return None
+
+        yearString = match.group(3)
+        if not utils.isValidStr(yearString):
+            return None
+
+        return [ yearString ]
 
     # Expands 'X=5' to ['5', 'X = 5', 'X is 5', 'X equals 5']
     async def __expandSpecialCasesEquation(self, answer: str) -> Optional[List[str]]:
