@@ -107,7 +107,7 @@ class TriviaAnswerCompiler():
         answer = self.__ampersandRegEx.sub(' and ', answer).strip()
 
         # convert special characters to latin where possible
-        answer = self.__fancyToLatin(answer).strip()
+        answer = await self.__fancyToLatin(answer)
 
         # removes all special characters
         answer = self.__phraseAnswerRegEx.sub('', answer).strip()
@@ -441,7 +441,7 @@ class TriviaAnswerCompiler():
             # return all future possibilities with this current word mapped onto it as well.
             return [ [ splitAnswer[0], *possible ] for possible in futurePossible ]
 
-    def __fancyToLatin(self, text: str) -> str:
+    async def __fancyToLatin(self, text: str) -> str:
         text = ''.join(
             self.__specialCharsRegEx.sub(
                 lambda m: {k: v for k, v in m.groupdict().items() if v}.popitem()[0],
@@ -449,4 +449,4 @@ class TriviaAnswerCompiler():
             ) for char in text
         )
 
-        return self.__combiningDiacriticsRegEx.sub('', text)
+        return self.__combiningDiacriticsRegEx.sub('', text).strip()
