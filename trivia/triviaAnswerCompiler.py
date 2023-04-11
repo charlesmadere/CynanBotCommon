@@ -227,7 +227,9 @@ class TriviaAnswerCompiler():
         if not utils.isValidStr(usDollarAmount):
             return None
 
+        # strip any comma characters from the dollar amount
         usDollarAmount = usDollarAmount.replace(',', '')
+
         usDollarFloat: Optional[float] = None
 
         try:
