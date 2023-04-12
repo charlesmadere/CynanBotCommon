@@ -50,6 +50,8 @@ class TriviaAnswerCompiler():
         # RegEx patterns for arabic and roman numerals, returning separate capturing groups for digits and ordinals
         self.__groupedNumeralRegEx: Pattern = re.compile(r'\b(?:(\d+)|([IVXLCDM]+))(st|nd|rd|th)?\b', re.IGNORECASE)
 
+        self.__combiningDiacriticsRegEx: Pattern = re.compile(r'[\u0300-\u036f\u1ab0-\u1aff\u1dc0-\u1dff\u20d0-\u20ff\ufe20-\ufe2f]')
+
         self.__specialCharsRegEx: Pattern = re.compile(
             r"""
                 (?P<a>[ÅåǺǻḀḁẚĂăẶặẮắẰằẲẳẴẵȂȃâẬậẤấẦầẪẫẨẩẢảǍǎȺⱥȦȧǠǡẠạÄäǞǟÀàȀȁÁáĀāÃãĄąᶏɑᶐⱯɐɒᴀᴬᵃᵄᶛₐªÅ∀@₳ΑαАаⲀⲁⒶⓐ⒜🅰𝔄𝔞𝕬𝖆𝓐𝓪𝒜𝒶𝔸𝕒Ａａ🄰ค𝐀𝐚𝗔𝗮𝘈𝘢𝘼𝙖𝙰𝚊Λ卂ﾑȺᗩΔልДдꚈꚉꚀꚁꙢꙣꭿꋫλ🅐🅰️ꙢꙣꙘѦԬꙙѧԭӒӓҨҩ])|
@@ -81,8 +83,6 @@ class TriviaAnswerCompiler():
             """,
             re.VERBOSE | re.IGNORECASE
         )
-
-        self.__combiningDiacriticsRegEx = re.compile(r'[\u0300-\u036f\u1ab0-\u1aff\u1dc0-\u1dff\u20d0-\u20ff\ufe20-\ufe2f]')
 
     async def compileBoolAnswer(self, answer: Optional[str]) -> bool:
         cleanedAnswer = await self.compileTextAnswer(answer)
@@ -170,12 +170,11 @@ class TriviaAnswerCompiler():
         if utils.hasItems(specialCases):
             return specialCases
 
-        # expand 'mambo #5' to ['mambo #5', 'mambo number 5']
-        split = self.__hashRegEx.split(answer)
-        for i in range(1, len(split), 2):
-            split[i] = [ 'number ', '#' ]
+        specialCases = await self.__expandSpecialCasesWordThenNumber(answer)
+        if utils.hasItems(specialCases):
+            return specialCases
 
-        return [ ''.join(item) for item in utils.permuteSubArrays(split) ]
+        return list()
 
     # Transforms "in the 1990's", "the 1990's", or just "1990's" to ['1990']
     async def __expandSpecialCasesDecade(self, answer: str) -> Optional[List[str]]:
@@ -277,6 +276,14 @@ class TriviaAnswerCompiler():
             specialCases.append(thirdWord)
 
         return specialCases
+
+    # Expands 'mambo #5' to ['mambo #5', 'mambo number 5']
+    async def __expandSpecialCasesWordThenNumber(self, answer: str) -> Optional[List[str]]:
+        split = self.__hashRegEx.split(answer)
+        for i in range(1, len(split), 2):
+            split[i] = [ 'number ', '#' ]
+
+        return [ ''.join(item) for item in utils.permuteSubArrays(split) ]
 
     # returns text answers with all arabic and roman numerals expanded into possible full-word forms
     async def expandNumerals(self, answer: str) -> List[str]:
