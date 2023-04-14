@@ -142,26 +142,22 @@ class CutenessRepository():
             twitchChannel, twitchChannelUserId, self.__leaderboardSize
         )
 
+        await connection.close()
+
         if not utils.hasItems(records):
-            await connection.close()
             return CutenessChampionsResult(twitchChannel = twitchChannel)
 
         champions: List[CutenessLeaderboardEntry] = list()
-        rank: int = 1
 
-        for record in records:
+        for index, record in enumerate(records):
             champions.append(CutenessLeaderboardEntry(
                 cuteness = record[2],
-                rank = rank,
+                rank = index + 1,
                 userId = record[0],
                 userName = record[1]
             ))
-            rank = rank + 1
 
-        await connection.close()
-
-        # sort cuteness into highest to lowest order
-        champions.sort(key = lambda champion: champion.getCuteness(), reverse = True)
+        champions.sort(key = lambda champion: champion.getRank())
 
         return CutenessChampionsResult(
             twitchChannel = twitchChannel,
