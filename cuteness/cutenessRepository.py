@@ -376,7 +376,7 @@ class CutenessRepository():
                     specificLookupAlreadyInResults = True
                     break
 
-        specificLookupCutenessResult: CutenessResult = None
+        specificLookupCutenessResult: Optional[CutenessResult] = None
         if not specificLookupAlreadyInResults and (utils.isValidStr(specificLookupUserId) or utils.isValidStr(specificLookupUserName)):
             if not utils.isValidStr(specificLookupUserId):
                 try:
