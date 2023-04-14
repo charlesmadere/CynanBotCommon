@@ -23,7 +23,7 @@ class CutenessLeaderboardEntry(CutenessEntry):
             userName = userName
         )
 
-        if not utils.isValidNum(rank):
+        if not utils.isValidInt(rank):
             raise ValueError(f'rank argument is malformed: \"{rank}\"')
 
         self.__rank: int = rank
