@@ -136,7 +136,7 @@ class CutenessRepository():
                 SELECT cuteness.userid, userids.username, SUM(cuteness.cuteness) AS totalcuteness FROM cuteness
                 INNER JOIN userids ON cuteness.userid = userids.userid where cuteness.twitchchannel = $1 AND cuteness.userid != $2
                 GROUP BY cuteness.userid, userids.username
-                ORDER BY SUM(cuteness.cuteness) DESC
+                ORDER BY totalcuteness DESC
                 LIMIT $3
             ''',
             twitchChannel, twitchChannelUserId, self.__leaderboardSize
@@ -156,8 +156,6 @@ class CutenessRepository():
                 userId = record[0],
                 userName = record[1]
             ))
-
-        champions.sort(key = lambda champion: champion.getRank())
 
         return CutenessChampionsResult(
             twitchChannel = twitchChannel,
@@ -249,6 +247,7 @@ class CutenessRepository():
             )
 
         await connection.close()
+
         return CutenessHistoryResult(
             userId = userId,
             userName = userName,
@@ -345,26 +344,20 @@ class CutenessRepository():
             twitchChannel, cutenessDate.getStr(), twitchChannelUserId, self.__leaderboardSize
         )
 
+        await connection.close()
+
         if not utils.hasItems(records):
-            await connection.close()
             return CutenessLeaderboardResult(cutenessDate = cutenessDate)
 
         entries: List[CutenessLeaderboardEntry] = list()
-        rank: int = 1
 
-        for record in records:
+        for index, record in enumerate(records):
             entries.append(CutenessLeaderboardEntry(
                 cuteness = record[0],
-                rank = rank,
+                rank = index + 1,
                 userId = record[1],
                 userName = record[2]
             ))
-            rank = rank + 1
-
-        await connection.close()
-
-        # sort cuteness into highest to lowest order
-        entries.sort(key = lambda entry: entry.getCuteness(), reverse = True)
 
         specificLookupAlreadyInResults: bool = False
         if utils.isValidStr(specificLookupUserId) or utils.isValidStr(specificLookupUserName):
