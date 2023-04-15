@@ -60,10 +60,6 @@ try:
     from CynanBotCommon.trivia.superTriviaCooldownHelper import \
         SuperTriviaCooldownHelper
     from CynanBotCommon.trivia.superTriviaGameState import SuperTriviaGameState
-    from CynanBotCommon.trivia.tooLateToAnswerCheckAnswerTriviaEvent import \
-        TooLateToAnswerCheckAnswerTriviaEvent
-    from CynanBotCommon.trivia.tooLateToAnswerCheckSuperAnswerTriviaEvent import \
-        TooLateToAnswerCheckSuperAnswerTriviaEvent
     from CynanBotCommon.trivia.triviaActionType import TriviaActionType
     from CynanBotCommon.trivia.triviaAnswerChecker import TriviaAnswerChecker
     from CynanBotCommon.trivia.triviaAnswerCheckResult import \
@@ -128,10 +124,6 @@ except:
         SuperGameNotReadyCheckAnswerTriviaEvent
     from trivia.superTriviaCooldownHelper import SuperTriviaCooldownHelper
     from trivia.superTriviaGameState import SuperTriviaGameState
-    from trivia.tooLateToAnswerCheckAnswerTriviaEvent import \
-        TooLateToAnswerCheckAnswerTriviaEvent
-    from trivia.tooLateToAnswerCheckSuperAnswerTriviaEvent import \
-        TooLateToAnswerCheckSuperAnswerTriviaEvent
     from trivia.triviaActionType import TriviaActionType
     from trivia.triviaAnswerChecker import TriviaAnswerChecker
     from trivia.triviaAnswerCheckResult import TriviaAnswerCheckResult
@@ -258,8 +250,6 @@ class TriviaGameMachine():
             userId = action.getUserId()
         )
 
-        now = datetime.now(self.__timeZone)
-
         if state is None:
             await self.__submitEvent(GameNotReadyCheckAnswerTriviaEvent(
                 actionId = action.getActionId(),
@@ -283,34 +273,15 @@ class TriviaGameMachine():
             ))
             return
 
-        if state.getEndTime() < now:
-            await self.__removeNormalTriviaGame(
-                twitchChannel = action.getTwitchChannel(),
-                userId = action.getUserId()
-            )
-
-            triviaScoreResult = await self.__triviaScoreRepository.incrementTriviaLosses(
-                twitchChannel = action.getTwitchChannel(),
-                userId = action.getUserId()
-            )
-
-            await self.__submitEvent(TooLateToAnswerCheckAnswerTriviaEvent(
-                triviaQuestion = state.getTriviaQuestion(),
-                isShiny = state.isShiny(),
-                actionId = action.getActionId(),
-                answer = action.getAnswer(),
-                emote = state.getEmote(),
-                gameId = state.getGameId(),
-                twitchChannel = action.getTwitchChannel(),
-                userId = action.getUserId(),
-                userName = action.getUserName(),
-                triviaScoreResult = triviaScoreResult
-            ))
-            return
-
         checkResult = await self.__checkAnswer(
             answer = action.getAnswer(),
-            triviaQuestion = state.getTriviaQuestion()
+            triviaQuestion = state.getTriviaQuestion(),
+            extras = {
+                'actionId': action.getActionId(),
+                'twitchChannel': action.getTwitchChannel(),
+                'userId': action.getUserId(),
+                'userName': action.getUserName()
+            }
         )
 
         if checkResult is TriviaAnswerCheckResult.INVALID_INPUT:
@@ -392,20 +363,6 @@ class TriviaGameMachine():
             await self.__submitEvent(SuperGameNotReadyCheckAnswerTriviaEvent(
                 actionId = action.getActionId(),
                 answer = action.getAnswer(),
-                twitchChannel = action.getTwitchChannel(),
-                userId = action.getUserId(),
-                userName = action.getUserName()
-            ))
-            return
-
-        if state.getEndTime() < now:
-            await self.__submitEvent(TooLateToAnswerCheckSuperAnswerTriviaEvent(
-                triviaQuestion = state.getTriviaQuestion(),
-                isShiny = state.isShiny(),
-                actionId = action.getActionId(),
-                answer = action.getAnswer(),
-                emote = state.getEmote(),
-                gameId = state.getGameId(),
                 twitchChannel = action.getTwitchChannel(),
                 userId = action.getUserId(),
                 userName = action.getUserName()
