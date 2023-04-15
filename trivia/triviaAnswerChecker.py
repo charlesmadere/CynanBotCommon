@@ -417,7 +417,8 @@ class TriviaAnswerChecker():
             yield 'new york city'
         if word == 'uk':
             yield 'united kingdom'
-        if word == 'usa':
+        if word in ('us', 'usa'):
+            yield 'united states'
             yield 'united states of america'
 
         # directions
@@ -459,6 +460,9 @@ class TriviaAnswerChecker():
             yield 'cyan magenta yellow black'
         if word == 'cpu':
             yield 'central processing unit'
+            yield 'processor'
+        if word == 'ddr':
+            yield 'data delivery rate'
         if word == 'dns':
             yield 'domain name system'
         if word in ('dp', 'dip'):
@@ -475,7 +479,8 @@ class TriviaAnswerChecker():
             yield 'google'
         if word == 'gpu':
             yield 'graphics processing unit'
-        if word == 'hdd':
+        if word in ('hd', 'hdd'):
+            yield 'hard drive'
             yield 'hard disk drive'
         if word == 'http':
             yield 'hypertext transfer protocol'
@@ -512,6 +517,8 @@ class TriviaAnswerChecker():
         # measurements (imperial and metric)
         if word == 'atm':
             yield 'atmosphere'
+        if word == 'bps':
+            yield 'bits per second'
         if word == 'c':
             yield 'celsius'
         if word == 'cg':
