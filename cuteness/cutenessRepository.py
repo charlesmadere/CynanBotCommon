@@ -150,9 +150,12 @@ class CutenessRepository():
         champions: List[CutenessLeaderboardEntry] = list()
 
         for index, record in enumerate(records):
-            print(f'TEMP STUPID THING: #{index} {record[0]} ({type(record[0])}); {record[1]} ({type(record[1])}); {record[2]} ({type(record[2])})')
+            # Cuteness can potentially arrive from the database as a decimal.Decimal type,
+            # so let's make sure to convert that into an int.
+            cuteness = int(round(record[2]))
+
             champions.append(CutenessLeaderboardEntry(
-                cuteness = record[2],
+                cuteness = cuteness,
                 rank = index + 1,
                 userId = record[0],
                 userName = record[1]
