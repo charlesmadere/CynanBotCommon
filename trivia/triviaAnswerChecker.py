@@ -509,6 +509,8 @@ class TriviaAnswerChecker():
             yield 'scale independent pixels'
         if word == 'ssd':
             yield 'solid state drive'
+        if word == 'uri':
+            yield 'uniform resource identifier'
         if word == 'url':
             yield 'uniform resource locator'
         if word == 'www':
