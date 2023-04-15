@@ -613,6 +613,8 @@ class TriviaAnswerChecker():
             yield 'department'
         if word == 'no':
             yield 'number'
+        if word == 'ocd':
+            yield 'obsessive compulsive disorder'
         if word == 'vs':
             yield 'versus'
         if word == 'wr':
