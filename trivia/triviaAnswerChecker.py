@@ -407,12 +407,14 @@ class TriviaAnswerChecker():
             yield 'crossing'
 
         # countries and specific places
+        if word == 'eu':
+            yield 'european union'
         if word == 'gb':
             yield 'great britain'
-        if word == 'kr':
-            yield 'korea'
         if word in ('jp', 'jpn'):
             yield 'japan'
+        if word == 'kr':
+            yield 'korea'
         if word == 'nyc':
             yield 'new york city'
         if word == 'uk':
@@ -420,6 +422,19 @@ class TriviaAnswerChecker():
         if word in ('us', 'usa'):
             yield 'united states'
             yield 'united states of america'
+
+        # currencies
+        if word == 'eur':
+            yield 'euro'
+        if word == 'jpy':
+            yield 'japanese yen'
+            yield 'yen'
+        if word == 'sek':
+            yield 'krona'
+            yield 'swedish krona'
+        if word == 'usd':
+            yield 'dollar'
+            yield 'united states dollar'
 
         # directions
         if word in ('n', 'north', 'northern'):
