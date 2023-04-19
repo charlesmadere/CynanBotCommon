@@ -43,6 +43,7 @@ class TriviaAnswerCompiler():
         self.__usDollarRegEx: Pattern = re.compile(r'^\$?((?!,$)[\d,.]+)(\s+\(?USD?\)?)?$', re.IGNORECASE)
         self.__whiteSpaceRegEx: Pattern = re.compile(r'\s\s*', re.IGNORECASE)
         self.__wordSlashWordRegEx: Pattern = re.compile(r'^(\w+)\/(\w+)(\/(\w+))?$', re.IGNORECASE)
+        self.__yearsRegEx: Pattern = re.compile(r'^(\d+)\s+years?(\s+old)?$', re.IGNORECASE)
 
         # RegEx pattern for arabic and roman numerals, returning only one capturing group
         self.__numeralRegEx: Pattern = re.compile(r'\b(\d+(?:st|nd|rd|th)?|[IVXLCDM]+(?:st|nd|rd|th)?)\b', re.IGNORECASE)
@@ -174,6 +175,10 @@ class TriviaAnswerCompiler():
         if utils.hasItems(specialCases):
             return specialCases
 
+        specialCases = await self.__expandSpecialCasesYears(answer)
+        if utils.hasItems(specialCases):
+            return specialCases
+
         return list()
 
     # Transforms "in the 1990's", "the 1990's", or just "1990's" to ['1990']
@@ -284,6 +289,20 @@ class TriviaAnswerCompiler():
             split[i] = [ 'number ', '#' ]
 
         return [ ''.join(item) for item in utils.permuteSubArrays(split) ]
+
+    # Expands '50 years old' into ['50 (years old)']
+    async def __expandSpecialCasesYears(self, answer: str) -> Optional[List[str]]:
+        match = self.__yearsRegEx.fullmatch(answer)
+        if match is None:
+            return None
+
+        allWords = match.group()
+        year = match.group(1)
+
+        if not utils.isValidStr(allWords) or not utils.isValidStr(year):
+            return None
+
+        return [ allWords.replace(year, f'({year})') ]
 
     # returns text answers with all arabic and roman numerals expanded into possible full-word forms
     async def expandNumerals(self, answer: str) -> List[str]:
