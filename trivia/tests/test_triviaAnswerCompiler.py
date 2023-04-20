@@ -516,10 +516,10 @@ class TestTriviaAnswerCompiler():
         assert 'name' in result
 
     @pytest.mark.asyncio
-    async def test_compileTextAnswersList_withYear2(self):
+    async def test_compileTextAnswersList_withYear(self):
         result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ '1 year' ])
         assert result is not None
-        assert len(result) == 1
+        assert len(result) == 2
         assert '1 year' in result
         assert '1' in result
 
@@ -527,7 +527,7 @@ class TestTriviaAnswerCompiler():
     async def test_compileTextAnswersList_withYears(self):
         result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ '5 years' ])
         assert result is not None
-        assert len(result) == 1
+        assert len(result) == 2
         assert '5 years' in result
         assert '5' in result
 
