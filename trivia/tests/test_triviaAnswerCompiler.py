@@ -516,6 +516,34 @@ class TestTriviaAnswerCompiler():
         assert 'name' in result
 
     @pytest.mark.asyncio
+    async def test_compileTextAnswersList_withYear2(self):
+        result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ '1 year' ])
+        assert result is not None
+        assert len(result) == 1
+        assert '1 (year)' in result
+
+    @pytest.mark.asyncio
+    async def test_compileTextAnswersList_withYears(self):
+        result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ '5 years' ])
+        assert result is not None
+        assert len(result) == 1
+        assert '5 (years)' in result
+
+    @pytest.mark.asyncio
+    async def test_compileTextAnswersList_withYearOld(self):
+        result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ '1 year old' ])
+        assert result is not None
+        assert len(result) == 1
+        assert '1 (year old)' in result
+
+    @pytest.mark.asyncio
+    async def test_compileTextAnswersList_withYearsOld(self):
+        result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ '50 years old' ])
+        assert result is not None
+        assert len(result) == 1
+        assert '50 (years old)' in result
+
+    @pytest.mark.asyncio
     async def test_expandNumerals_withYear1(self):
         result: List[str] = await self.triviaAnswerCompiler.expandNumerals('1234')
         assert result is not None
@@ -525,34 +553,6 @@ class TestTriviaAnswerCompiler():
         assert 'the one thousand two hundred and thirty fourth' in result  # ordinal preceded by 'the'
         assert 'twelve thirty four' in result  # year
         assert 'one two three four' in result  # individual digits
-
-    @pytest.mark.asyncio
-    async def test_expandNumerals_withYear2(self):
-        result: List[str] = await self.triviaAnswerCompiler.expandNumerals('1 year')
-        assert result is not None
-        assert len(result) == 1
-        assert '1 (year)' in result
-
-    @pytest.mark.asyncio
-    async def test_expandNumerals_withYears(self):
-        result: List[str] = await self.triviaAnswerCompiler.expandNumerals('5 years')
-        assert result is not None
-        assert len(result) == 1
-        assert '5 (years)' in result
-
-    @pytest.mark.asyncio
-    async def test_expandNumerals_withYearOld(self):
-        result: List[str] = await self.triviaAnswerCompiler.expandNumerals('1 year old')
-        assert result is not None
-        assert len(result) == 1
-        assert '1 (year old)' in result
-
-    @pytest.mark.asyncio
-    async def test_expandNumerals_withYearsOld(self):
-        result: List[str] = await self.triviaAnswerCompiler.expandNumerals('50 years old')
-        assert result is not None
-        assert len(result) == 1
-        assert '50 (years old)' in result
 
     @pytest.mark.asyncio
     async def test_expandNumerals_withRomanNumerals(self):
