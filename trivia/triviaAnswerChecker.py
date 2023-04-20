@@ -419,9 +419,21 @@ class TriviaAnswerChecker():
             yield 'new york city'
         if word == 'uk':
             yield 'united kingdom'
+        if word == 'un':
+            yield 'united nations'
         if word in ('us', 'usa'):
             yield 'united states'
             yield 'united states of america'
+
+        # government organizations
+        if word == 'fbi':
+            yield 'federal bureau of investigation'
+        if word == 'irs':
+            yield 'internal revenue service'
+        if word == 'mi6':
+            yield 'secret intelligence service'
+        if word == 'nsa':
+            yield 'natural security agency'
 
         # currencies
         if word == 'eur':
