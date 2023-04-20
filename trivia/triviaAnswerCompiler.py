@@ -167,15 +167,15 @@ class TriviaAnswerCompiler():
         if utils.hasItems(specialCases):
             return specialCases
 
+        specialCases = await self.__expandSpecialCasesYears(answer)
+        if utils.hasItems(specialCases):
+            return specialCases
+
         specialCases = await self.__expandSpecialCasesEquation(answer)
         if utils.hasItems(specialCases):
             return specialCases
 
         specialCases = await self.__expandSpecialCasesWordThenNumber(answer)
-        if utils.hasItems(specialCases):
-            return specialCases
-
-        specialCases = await self.__expandSpecialCasesYears(answer)
         if utils.hasItems(specialCases):
             return specialCases
 
@@ -302,7 +302,7 @@ class TriviaAnswerCompiler():
         if not utils.isValidStr(allWords) or not utils.isValidStr(year):
             return None
 
-        return [ allWords.replace(year, f'({year})') ]
+        return [ allWords, year ]
 
     # returns text answers with all arabic and roman numerals expanded into possible full-word forms
     async def expandNumerals(self, answer: str) -> List[str]:

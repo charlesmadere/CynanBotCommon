@@ -520,28 +520,32 @@ class TestTriviaAnswerCompiler():
         result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ '1 year' ])
         assert result is not None
         assert len(result) == 1
-        assert '1 (year)' in result
+        assert '1 year' in result
+        assert '1' in result
 
     @pytest.mark.asyncio
     async def test_compileTextAnswersList_withYears(self):
         result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ '5 years' ])
         assert result is not None
         assert len(result) == 1
-        assert '5 (years)' in result
+        assert '5 years' in result
+        assert '5' in result
 
     @pytest.mark.asyncio
     async def test_compileTextAnswersList_withYearOld(self):
         result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ '1 year old' ])
         assert result is not None
-        assert len(result) == 1
-        assert '1 (year old)' in result
+        assert len(result) == 2
+        assert '1 year old' in result
+        assert '1' in result
 
     @pytest.mark.asyncio
     async def test_compileTextAnswersList_withYearsOld(self):
         result: List[str] = await self.triviaAnswerCompiler.compileTextAnswersList([ '50 years old' ])
         assert result is not None
-        assert len(result) == 1
-        assert '50 (years old)' in result
+        assert len(result) == 2
+        assert '50 years old' in result
+        assert '50' in result
 
     @pytest.mark.asyncio
     async def test_expandNumerals_withYear1(self):
