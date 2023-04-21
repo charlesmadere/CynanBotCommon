@@ -113,7 +113,7 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Fetching trivia question... (twitchChannel={twitchChannel})')
 
-        sessionToken: Optional[str] = await self.__getOrFetchNewSessionToken(twitchChannel)
+        sessionToken = await self.__getOrFetchNewSessionToken(twitchChannel)
         clientSession = await self.__networkClientProvider.get()
 
         try:
