@@ -2,14 +2,17 @@ import random
 import string
 from abc import ABC
 from datetime import datetime, timedelta, timezone
+from typing import Optional
 
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
+    from CynanBotCommon.trivia.specialTriviaStatus import SpecialTriviaStatus
     from CynanBotCommon.trivia.triviaGameType import TriviaGameType
 except:
     import utils
     from trivia.absTriviaQuestion import AbsTriviaQuestion
+    from trivia.specialTriviaStatus import SpecialTriviaStatus
     from trivia.triviaGameType import TriviaGameType
 
 
@@ -18,9 +21,9 @@ class AbsTriviaGameState(ABC):
     def __init__(
         self,
         triviaQuestion: AbsTriviaQuestion,
-        isShiny: bool,
         pointsForWinning: int,
         secondsToLive: int,
+        specialTriviaStatus: Optional[SpecialTriviaStatus],
         actionId: str,
         emote: str,
         twitchChannel: str,
@@ -28,8 +31,6 @@ class AbsTriviaGameState(ABC):
     ):
         if not isinstance(triviaQuestion, AbsTriviaQuestion):
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
-        elif not utils.isValidBool(isShiny):
-            raise ValueError(f'isShiny argument is malformed: \"{isShiny}\"')
         elif not utils.isValidInt(pointsForWinning):
             raise ValueError(f'pointsForWinning argument is malformed: \"{pointsForWinning}\"')
         elif pointsForWinning < 1 or pointsForWinning > utils.getIntMaxSafeSize():
@@ -38,6 +39,8 @@ class AbsTriviaGameState(ABC):
             raise ValueError(f'secondsToLive argument is malformed: \"{secondsToLive}\"')
         elif secondsToLive < 1 or secondsToLive > utils.getIntMaxSafeSize():
             raise ValueError(f'secondsToLive argument is out of bounds: {secondsToLive}')
+        elif specialTriviaStatus is not None and not isinstance(specialTriviaStatus, SpecialTriviaStatus):
+            raise ValueError(f'specialTriviaStatus argument is malformed: \"{specialTriviaStatus}\"')
         elif not utils.isValidStr(actionId):
             raise ValueError(f'actionId argument is malformed: \"{actionId}\"')
         elif not utils.isValidStr(emote):
@@ -48,9 +51,9 @@ class AbsTriviaGameState(ABC):
             raise ValueError(f'triviaGameType argument is malformed: \"{triviaGameType}\"')
 
         self.__triviaQuestion: AbsTriviaQuestion = triviaQuestion
-        self.__isShiny: bool = isShiny
         self.__pointsForWinning: int = pointsForWinning
         self.__secondsToLive: int = secondsToLive
+        self.__specialTriviaStatus: Optional[SpecialTriviaStatus] = specialTriviaStatus
         self.__actionId: str = actionId
         self.__emote: str = emote
         self.__twitchChannel: str = twitchChannel
@@ -87,4 +90,7 @@ class AbsTriviaGameState(ABC):
         return self.__twitchChannel
 
     def isShiny(self) -> bool:
-        return self.__isShiny
+        return self.__specialTriviaStatus is SpecialTriviaStatus.SHINY
+
+    def isToxic(self) -> bool:
+        return self.__specialTriviaStatus is SpecialTriviaStatus.TOXIC

@@ -84,9 +84,9 @@ class TriviaGameStoreTests():
 
     game1 = TriviaGameState(
         triviaQuestion = normalQuestion1,
-        isShiny = False,
         pointsForWinning = 5,
         secondsToLive = 60,
+        specialTriviaStatus = None,
         actionId = 'abc123',
         emote = '🍔',
         twitchChannel = 'smCharles',
@@ -96,9 +96,9 @@ class TriviaGameStoreTests():
 
     game2 = TriviaGameState(
         triviaQuestion = normalQuestion2,
-        isShiny = False,
         pointsForWinning = 5,
         secondsToLive = 60,
+        specialTriviaStatus = None,
         actionId = 'abc123',
         emote = '🍔',
         twitchChannel = 'smCharles',
@@ -108,9 +108,9 @@ class TriviaGameStoreTests():
 
     game3 = TriviaGameState(
         triviaQuestion = normalQuestion3,
-        isShiny = False,
         pointsForWinning = 5,
         secondsToLive = 60,
+        specialTriviaStatus = None,
         actionId = 'abc123',
         emote = '🍔',
         twitchChannel = 'Imyt',
@@ -120,10 +120,10 @@ class TriviaGameStoreTests():
 
     game4 = SuperTriviaGameState(
         triviaQuestion = superQuestion1,
-        isShiny = False,
         perUserAttempts = 2,
         pointsForWinning = 25,
         secondsToLive = 60,
+        specialTriviaStatus = None,
         actionId = 'abc123',
         emote = '🍔',
         twitchChannel = 'smCharles'
@@ -131,10 +131,10 @@ class TriviaGameStoreTests():
 
     game5 = SuperTriviaGameState(
         triviaQuestion = superQuestion2,
-        isShiny = False,
         perUserAttempts = 2,
         pointsForWinning = 25,
         secondsToLive = 60,
+        specialTriviaStatus = None,
         actionId = 'abc123',
         emote = '🍔',
         twitchChannel = 'Imyt'

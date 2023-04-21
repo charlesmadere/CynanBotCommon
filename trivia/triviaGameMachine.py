@@ -51,6 +51,7 @@ try:
     from CynanBotCommon.trivia.queuedTriviaGameStore import \
         QueuedTriviaGameStore
     from CynanBotCommon.trivia.shinyTriviaHelper import ShinyTriviaHelper
+    from CynanBotCommon.trivia.specialTriviaStatus import SpecialTriviaStatus
     from CynanBotCommon.trivia.startNewSuperTriviaGameAction import \
         StartNewSuperTriviaGameAction
     from CynanBotCommon.trivia.startNewTriviaGameAction import \
@@ -117,6 +118,7 @@ except:
     from trivia.outOfTimeTriviaEvent import OutOfTimeTriviaEvent
     from trivia.queuedTriviaGameStore import QueuedTriviaGameStore
     from trivia.shinyTriviaHelper import ShinyTriviaHelper
+    from trivia.specialTriviaStatus import SpecialTriviaStatus
     from trivia.startNewSuperTriviaGameAction import \
         StartNewSuperTriviaGameAction
     from trivia.startNewTriviaGameAction import StartNewTriviaGameAction
@@ -502,23 +504,22 @@ class TriviaGameMachine():
             ))
             return
 
-        isShiny = False
-        if action.isShinyTriviaEnabled():
-            isShiny = await self.__shinyTriviaHelper.isShinyTriviaQuestion(
-                twitchChannel = action.getTwitchChannel(),
-                userId = action.getUserId(),
-                userName = action.getUserName()
-            )
-
+        specialTriviaStatus: Optional[SpecialTriviaStatus] = None
         pointsForWinning = action.getPointsForWinning()
-        if isShiny:
+
+        if action.isShinyTriviaEnabled() and await self.__shinyTriviaHelper.isShinyTriviaQuestion(
+            twitchChannel = action.getTwitchChannel(),
+            userId = action.getUserId(),
+            userName = action.getUserName()
+        ):
+            specialTriviaStatus = SpecialTriviaStatus.SHINY
             pointsForWinning = pointsForWinning * action.getShinyMultiplier()
 
         state = TriviaGameState(
             triviaQuestion = triviaQuestion,
-            isShiny = isShiny,
             pointsForWinning = pointsForWinning,
             secondsToLive = action.getSecondsToLive(),
+            specialTriviaStatus = specialTriviaStatus,
             actionId = action.getActionId(),
             emote = emote,
             twitchChannel = action.getTwitchChannel(),
@@ -530,9 +531,9 @@ class TriviaGameMachine():
 
         await self.__submitEvent(NewTriviaGameEvent(
             triviaQuestion = triviaQuestion,
-            isShiny = isShiny,
             pointsForWinning = pointsForWinning,
             secondsToLive = action.getSecondsToLive(),
+            specialTriviaStatus = specialTriviaStatus,
             actionId = action.getActionId(),
             emote = emote,
             gameId = state.getGameId(),
@@ -592,22 +593,21 @@ class TriviaGameMachine():
             ))
             return
 
-        isShiny = False
-        if action.isShinyTriviaEnabled():
-            isShiny = await self.__shinyTriviaHelper.isShinySuperTriviaQuestion(
-                twitchChannel = action.getTwitchChannel()
-            )
-
+        specialTriviaStatus = Optional[SpecialTriviaStatus] = None
         pointsForWinning = action.getPointsForWinning()
-        if isShiny:
+
+        if action.isShinyTriviaEnabled() and await self.__shinyTriviaHelper.isShinySuperTriviaQuestion(
+            twitchChannel = action.getTwitchChannel()
+        ):
+            specialTriviaStatus = SpecialTriviaStatus.SHINY
             pointsForWinning = pointsForWinning * action.getShinyMultiplier()
 
         state = SuperTriviaGameState(
             triviaQuestion = triviaQuestion,
-            isShiny = isShiny,
             perUserAttempts = action.getPerUserAttempts(),
             pointsForWinning = pointsForWinning,
             secondsToLive = action.getSecondsToLive(),
+            specialTriviaStatus = specialTriviaStatus,
             actionId = action.getActionId(),
             emote = emote,
             twitchChannel = action.getTwitchChannel()
@@ -617,9 +617,9 @@ class TriviaGameMachine():
 
         await self.__submitEvent(NewSuperTriviaGameEvent(
             triviaQuestion = triviaQuestion,
-            isShiny = isShiny,
             pointsForWinning = pointsForWinning,
             secondsToLive = action.getSecondsToLive(),
+            specialTriviaStatus = specialTriviaStatus,
             actionId = action.getActionId(),
             emote = emote,
             gameId = state.getGameId(),

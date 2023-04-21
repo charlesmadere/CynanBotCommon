@@ -1,15 +1,17 @@
 from collections import defaultdict
-from typing import Dict
+from typing import Dict, Optional
 
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.trivia.absTriviaGameState import AbsTriviaGameState
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
+    from CynanBotCommon.trivia.specialTriviaStatus import SpecialTriviaStatus
     from CynanBotCommon.trivia.triviaGameType import TriviaGameType
 except:
     import utils
     from trivia.absTriviaGameState import AbsTriviaGameState
     from trivia.absTriviaQuestion import AbsTriviaQuestion
+    from trivia.specialTriviaStatus import SpecialTriviaStatus
     from trivia.triviaGameType import TriviaGameType
 
 
@@ -18,19 +20,19 @@ class SuperTriviaGameState(AbsTriviaGameState):
     def __init__(
         self,
         triviaQuestion: AbsTriviaQuestion,
-        isShiny: bool,
         perUserAttempts: int,
         pointsForWinning: int,
         secondsToLive: int,
+        specialTriviaStatus: Optional[SpecialTriviaStatus],
         actionId: str,
         emote: str,
         twitchChannel: str
     ):
         super().__init__(
             triviaQuestion = triviaQuestion,
-            isShiny = isShiny,
             pointsForWinning = pointsForWinning,
             secondsToLive = secondsToLive,
+            specialTriviaStatus = specialTriviaStatus,
             actionId = actionId,
             emote = emote,
             twitchChannel = twitchChannel,

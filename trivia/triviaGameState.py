@@ -1,12 +1,16 @@
+from typing import Optional
+
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.trivia.absTriviaGameState import AbsTriviaGameState
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
+    from CynanBotCommon.trivia.specialTriviaStatus import SpecialTriviaStatus
     from CynanBotCommon.trivia.triviaGameType import TriviaGameType
 except:
     import utils
     from trivia.absTriviaGameState import AbsTriviaGameState
     from trivia.absTriviaQuestion import AbsTriviaQuestion
+    from trivia.specialTriviaStatus import SpecialTriviaStatus
     from trivia.triviaGameType import TriviaGameType
 
 
@@ -15,9 +19,9 @@ class TriviaGameState(AbsTriviaGameState):
     def __init__(
         self,
         triviaQuestion: AbsTriviaQuestion,
-        isShiny: bool,
         pointsForWinning: int,
         secondsToLive: int,
+        specialTriviaStatus: Optional[SpecialTriviaStatus],
         actionId: str,
         emote: str,
         twitchChannel: str,
@@ -26,9 +30,9 @@ class TriviaGameState(AbsTriviaGameState):
     ):
         super().__init__(
             triviaQuestion = triviaQuestion,
-            isShiny = isShiny,
             pointsForWinning = pointsForWinning,
             secondsToLive = secondsToLive,
+            specialTriviaStatus = specialTriviaStatus,
             actionId = actionId,
             emote = emote,
             twitchChannel = twitchChannel,
