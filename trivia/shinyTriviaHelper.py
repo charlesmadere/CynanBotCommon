@@ -138,7 +138,7 @@ class ShinyTriviaHelper():
             userId = userId
         )
 
-        self.__timber.log('ShinyTriviaHelper', f'In {twitchChannel}, {userName}:{result.getUserId()} has encountered a shiny!')
+        self.__timber.log('ShinyTriviaHelper', f'In {twitchChannel}, {userName}:{result.getUserId()} has encountered a shiny trivia question!')
 
         return True
 
@@ -154,7 +154,7 @@ class ShinyTriviaHelper():
         if random.uniform(0, 1) > probability:
             return False
 
-        self.__timber.log('ShinyTriviaHelper', f'{twitchChannel} has encountered a shiny!')
+        self.__timber.log('ShinyTriviaHelper', f'{twitchChannel} has encountered a shiny trivia question!')
 
         return True
 
@@ -176,4 +176,4 @@ class ShinyTriviaHelper():
             userId = userId
         )
 
-        self.__timber.log('ShinyTriviaHelper', f'{userName}:{result.getUserId()} in {twitchChannel} won a shiny trivia!')
+        self.__timber.log('ShinyTriviaHelper', f'{userName}:{result.getUserId()} in {twitchChannel} won a shiny trivia question!')
