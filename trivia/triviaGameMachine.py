@@ -325,6 +325,13 @@ class TriviaGameMachine():
             ))
             return
 
+        if state.isShiny():
+            await self.__shinyTriviaHelper.shinyTriviaWin(
+                twitchChannel = state.getTwitchChannel(),
+                userId = action.getUserId(),
+                userName = action.getUserName()
+            )
+
         cutenessResult = await self.__cutenessRepository.fetchCutenessIncrementedBy(
             incrementAmount = state.getPointsForWinning(),
             twitchChannel = state.getTwitchChannel(),
