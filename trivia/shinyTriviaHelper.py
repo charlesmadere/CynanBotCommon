@@ -105,7 +105,7 @@ class ShinyTriviaHelper():
         elif not utils.isValidStr(userName):
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
 
-        if not await self.__triviaSettingsRepository.areShiniesEnabled():
+        if not await self.__triviaSettingsRepository.areShinyTriviasEnabled():
             return False
 
         userPlacementOnLeaderboard = await self.__getUserPlacementOnLeaderboard(
@@ -138,7 +138,7 @@ class ShinyTriviaHelper():
             userId = userId
         )
 
-        self.__timber.log('ShinyTriviaHelper', f'{userName}:{result.getUserId()} in {twitchChannel} has encountered a shiny!')
+        self.__timber.log('ShinyTriviaHelper', f'In {twitchChannel}, {userName}:{result.getUserId()} has encountered a shiny!')
 
         return True
 
@@ -146,7 +146,7 @@ class ShinyTriviaHelper():
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
-        if not await self.__triviaSettingsRepository.areShiniesEnabled():
+        if not await self.__triviaSettingsRepository.areShinyTriviasEnabled():
             return False        
 
         probability = await self.__triviaSettingsRepository.getShinyProbability()
@@ -158,7 +158,7 @@ class ShinyTriviaHelper():
 
         return True
 
-    async def shinySuperTriviaWin(
+    async def shinyTriviaWin(
         self,
         twitchChannel: str,
         userId: str,
@@ -176,4 +176,4 @@ class ShinyTriviaHelper():
             userId = userId
         )
 
-        self.__timber.log('ShinyTriviaHelper', f'{userName}:{result.getUserId()} in {twitchChannel} won a shiny super trivia!')
+        self.__timber.log('ShinyTriviaHelper', f'{userName}:{result.getUserId()} in {twitchChannel} won a shiny trivia!')

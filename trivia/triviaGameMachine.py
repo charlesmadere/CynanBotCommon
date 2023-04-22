@@ -331,6 +331,9 @@ class TriviaGameMachine():
                 userId = action.getUserId(),
                 userName = action.getUserName()
             )
+        elif state.isToxic():
+            # TODO
+            pass
 
         cutenessResult = await self.__cutenessRepository.fetchCutenessIncrementedBy(
             incrementAmount = state.getPointsForWinning(),
@@ -413,11 +416,14 @@ class TriviaGameMachine():
         await self.__removeSuperTriviaGame(action.getTwitchChannel())
 
         if state.isShiny():
-            await self.__shinyTriviaHelper.shinySuperTriviaWin(
+            await self.__shinyTriviaHelper.shinyTriviaWin(
                 twitchChannel = state.getTwitchChannel(),
                 userId = action.getUserId(),
                 userName = action.getUserName()
             )
+        elif state.isToxic():
+            # TODO
+            pass
 
         cutenessResult = await self.__cutenessRepository.fetchCutenessIncrementedBy(
             incrementAmount = state.getPointsForWinning(),
