@@ -176,4 +176,4 @@ class ShinyTriviaHelper():
             userId = userId
         )
 
-        self.__timber.log('ShinyTriviaHelper', f'{userName}:{result.getUserId()} in {twitchChannel} won a shiny trivia question!')
+        self.__timber.log('ShinyTriviaHelper', f'In {twitchChannel}, {userName}:{result.getUserId()} won a shiny trivia question!')

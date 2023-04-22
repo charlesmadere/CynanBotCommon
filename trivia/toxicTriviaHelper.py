@@ -1,0 +1,71 @@
+import random
+
+try:
+    import CynanBotCommon.utils as utils
+    from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.trivia.toxicTriviaOccurencesRepository import \
+        ToxicTriviaOccurencesRepository
+    from CynanBotCommon.trivia.triviaSettingsRepository import \
+        TriviaSettingsRepository
+except:
+    import utils
+    from timber.timber import Timber
+    from trivia.toxicTriviaOccurencesRepository import \
+        ToxicTriviaOccurencesRepository
+    from trivia.triviaSettingsRepository import TriviaSettingsRepository
+
+
+class ToxicTriviaHelper():
+
+    def __init__(
+        self,
+        toxicTriviaOccurencesRepository: ToxicTriviaOccurencesRepository,
+        timber: Timber,
+        triviaSettingsRepository: TriviaSettingsRepository
+    ):
+        if not isinstance(toxicTriviaOccurencesRepository, ToxicTriviaOccurencesRepository):
+            raise ValueError(f'toxicTriviaOccurencesRepository argument is malformed: \"{toxicTriviaOccurencesRepository}\"')
+        elif not isinstance(timber, Timber):
+            raise ValueError(f'timber argument is malformed: \"{timber}\"')
+        elif not isinstance(triviaSettingsRepository, TriviaSettingsRepository):
+            raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
+
+        self.__toxicTriviaOccurencesRepository: ToxicTriviaOccurencesRepository = toxicTriviaOccurencesRepository
+        self.__timber: Timber = timber
+        self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
+
+    async def isToxicSuperTriviaQuestion(self, twitchChannel: str) -> bool:
+        if not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+
+        if not await self.__triviaSettingsRepository.areToxicTriviasEnabled():
+            return False        
+
+        probability = await self.__triviaSettingsRepository.getToxicProbability()
+
+        if random.uniform(0, 1) > probability:
+            return False
+
+        self.__timber.log('ToxicTriviaHelper', f'{twitchChannel} has encountered a toxic trivia question!')
+
+        return True
+
+    async def toxicTriviaWin(
+        self,
+        twitchChannel: str,
+        userId: str,
+        userName: str
+    ):
+        if not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+        elif not utils.isValidStr(userId):
+            raise ValueError(f'userId argument is malformed: \"{userId}\"')
+        elif not utils.isValidStr(userName):
+            raise ValueError(f'userName argument is malformed: \"{userName}\"')
+
+        result = await self.__toxicTriviaOccurencesRepository.incrementToxicCount(
+            twitchChannel = twitchChannel,
+            userId = userId
+        )
+
+        self.__timber.log('ToxicTriviaHelper', f'In {twitchChannel}, {userName}:{result.getUserId()} won a toxic trivia question!')

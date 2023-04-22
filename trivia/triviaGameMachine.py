@@ -61,6 +61,7 @@ try:
     from CynanBotCommon.trivia.superTriviaCooldownHelper import \
         SuperTriviaCooldownHelper
     from CynanBotCommon.trivia.superTriviaGameState import SuperTriviaGameState
+    from CynanBotCommon.trivia.toxicTriviaHelper import ToxicTriviaHelper
     from CynanBotCommon.trivia.triviaActionType import TriviaActionType
     from CynanBotCommon.trivia.triviaAnswerChecker import TriviaAnswerChecker
     from CynanBotCommon.trivia.triviaAnswerCheckResult import \
@@ -126,6 +127,7 @@ except:
         SuperGameNotReadyCheckAnswerTriviaEvent
     from trivia.superTriviaCooldownHelper import SuperTriviaCooldownHelper
     from trivia.superTriviaGameState import SuperTriviaGameState
+    from trivia.toxicTriviaHelper import ToxicTriviaHelper
     from trivia.triviaActionType import TriviaActionType
     from trivia.triviaAnswerChecker import TriviaAnswerChecker
     from trivia.triviaAnswerCheckResult import TriviaAnswerCheckResult
@@ -153,6 +155,7 @@ class TriviaGameMachine():
         shinyTriviaHelper: ShinyTriviaHelper,
         superTriviaCooldownHelper: SuperTriviaCooldownHelper,
         timber: Timber,
+        toxicTriviaHelper: ToxicTriviaHelper,
         triviaAnswerChecker: TriviaAnswerChecker,
         triviaEmoteGenerator: TriviaEmoteGenerator,
         triviaGameStore: TriviaGameStore,
@@ -174,6 +177,8 @@ class TriviaGameMachine():
             raise ValueError(f'superTriviaCooldownHelper argument is malformed: \"{superTriviaCooldownHelper}\"')
         elif not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
+        elif not isinstance(toxicTriviaHelper, ToxicTriviaHelper):
+            raise ValueError(f'toxicTriviaHelper argument is malformed: \"{toxicTriviaHelper}\"')
         elif not isinstance(triviaAnswerChecker, TriviaAnswerChecker):
             raise ValueError(f'triviaAnswerChecker argument is malformed: \"{triviaAnswerChecker}\"')
         elif not isinstance(triviaEmoteGenerator, TriviaEmoteGenerator):
@@ -200,6 +205,7 @@ class TriviaGameMachine():
         self.__shinyTriviaHelper: ShinyTriviaHelper = shinyTriviaHelper
         self.__superTriviaCooldownHelper: SuperTriviaCooldownHelper = superTriviaCooldownHelper
         self.__timber: Timber = timber
+        self.__toxicTriviaHelper: ToxicTriviaHelper = toxicTriviaHelper
         self.__triviaAnswerChecker: TriviaAnswerChecker = triviaAnswerChecker
         self.__triviaEmoteGenerator: TriviaEmoteGenerator = triviaEmoteGenerator
         self.__triviaGameStore: TriviaGameStore = triviaGameStore
@@ -332,8 +338,11 @@ class TriviaGameMachine():
                 userName = action.getUserName()
             )
         elif state.isToxic():
-            # TODO
-            pass
+            await self.__toxicTriviaHelper.toxicTriviaWin(
+                twitchChannel = state.getTwitchChannel(),
+                userId = action.getUserId(),
+                userName = action.getUserName()
+            )
 
         cutenessResult = await self.__cutenessRepository.fetchCutenessIncrementedBy(
             incrementAmount = state.getPointsForWinning(),
@@ -422,8 +431,11 @@ class TriviaGameMachine():
                 userName = action.getUserName()
             )
         elif state.isToxic():
-            # TODO
-            pass
+            await self.__toxicTriviaHelper.toxicTriviaWin(
+                twitchChannel = state.getTwitchChannel(),
+                userId = action.getUserId(),
+                userName = action.getUserName()
+            )
 
         cutenessResult = await self.__cutenessRepository.fetchCutenessIncrementedBy(
             incrementAmount = state.getPointsForWinning(),
