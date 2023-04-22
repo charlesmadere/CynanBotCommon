@@ -4,11 +4,13 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.trivia.absTriviaEvent import AbsTriviaEvent
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
+    from CynanBotCommon.trivia.specialTriviaStatus import SpecialTriviaStatus
     from CynanBotCommon.trivia.triviaEventType import TriviaEventType
 except:
     import utils
     from trivia.absTriviaEvent import AbsTriviaEvent
     from trivia.absTriviaQuestion import AbsTriviaQuestion
+    from trivia.specialTriviaStatus import SpecialTriviaStatus
     from trivia.triviaEventType import TriviaEventType
 
 
@@ -17,7 +19,7 @@ class InvalidAnswerInputTriviaEvent(AbsTriviaEvent):
     def __init__(
         self,
         triviaQuestion: AbsTriviaQuestion,
-        isShiny: bool,
+        specialTriviaStatus: Optional[SpecialTriviaStatus],
         actionId: str,
         answer: Optional[str],
         emote: str,
@@ -33,8 +35,8 @@ class InvalidAnswerInputTriviaEvent(AbsTriviaEvent):
 
         if not isinstance(triviaQuestion, AbsTriviaQuestion):
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
-        elif not utils.isValidBool(isShiny):
-            raise ValueError(f'isShiny argument is malformed: \"{isShiny}\"')
+        elif specialTriviaStatus is not None and not isinstance(specialTriviaStatus, SpecialTriviaStatus):
+            raise ValueError(f'specialTriviaStatus argument is malformed: \"{specialTriviaStatus}\"')
         elif not utils.isValidStr(emote):
             raise ValueError(f'emote argument is malformed: \"{emote}\"')
         elif not utils.isValidStr(gameId):
@@ -47,7 +49,7 @@ class InvalidAnswerInputTriviaEvent(AbsTriviaEvent):
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
 
         self.__triviaQuestion: AbsTriviaQuestion = triviaQuestion
-        self.__isShiny: bool = isShiny
+        self.__specialTriviaStatus: Optional[SpecialTriviaStatus] = specialTriviaStatus
         self.__answer: Optional[str] = answer
         self.__emote: str = emote
         self.__gameId: str = gameId
@@ -64,6 +66,9 @@ class InvalidAnswerInputTriviaEvent(AbsTriviaEvent):
     def getGameId(self) -> str:
         return self.__gameId
 
+    def getSpecialTriviaStatus(self) -> Optional[SpecialTriviaStatus]:
+        return self.__specialTriviaStatus
+
     def getTriviaQuestion(self) -> AbsTriviaQuestion:
         return self.__triviaQuestion
 
@@ -77,4 +82,7 @@ class InvalidAnswerInputTriviaEvent(AbsTriviaEvent):
         return self.__userName
 
     def isShiny(self) -> bool:
-        return self.__isShiny
+        return self.__specialTriviaStatus is SpecialTriviaStatus.SHINY
+
+    def isToxic(self) -> bool:
+        return self.__specialTriviaStatus is SpecialTriviaStatus.TOXIC

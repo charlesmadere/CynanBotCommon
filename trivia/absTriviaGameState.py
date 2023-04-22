@@ -80,6 +80,9 @@ class AbsTriviaGameState(ABC):
     def getSecondsToLive(self) -> int:
         return self.__secondsToLive
 
+    def getSpecialTriviaStatus(self) -> Optional[SpecialTriviaStatus]:
+        return self.__specialTriviaStatus
+
     def getTriviaGameType(self) -> TriviaGameType:
         return self.__triviaGameType
 

@@ -289,7 +289,7 @@ class TriviaGameMachine():
         if checkResult is TriviaAnswerCheckResult.INVALID_INPUT:
             await self.__submitEvent(InvalidAnswerInputTriviaEvent(
                 triviaQuestion = state.getTriviaQuestion(),
-                isShiny = state.isShiny(),
+                specialTriviaStatus = state.getSpecialTriviaStatus(),
                 actionId = action.getActionId(),
                 answer = action.getAnswer(),
                 emote = state.getEmote(),
@@ -313,7 +313,7 @@ class TriviaGameMachine():
 
             await self.__submitEvent(IncorrectAnswerTriviaEvent(
                 triviaQuestion = state.getTriviaQuestion(),
-                isShiny = state.isShiny(),
+                specialTriviaStatus = state.getSpecialTriviaStatus(),
                 actionId = action.getActionId(),
                 answer = action.getAnswer(),
                 emote = state.getEmote(),
@@ -339,9 +339,9 @@ class TriviaGameMachine():
 
         await self.__submitEvent(CorrectAnswerTriviaEvent(
             triviaQuestion = state.getTriviaQuestion(),
-            isShiny = state.isShiny(),
             cutenessResult = cutenessResult,
             pointsForWinning = state.getPointsForWinning(),
+            specialTriviaStatus = state.getSpecialTriviaStatus(),
             actionId = action.getActionId(),
             answer = action.getAnswer(),
             emote = state.getEmote(),
@@ -392,7 +392,7 @@ class TriviaGameMachine():
         if checkResult is not TriviaAnswerCheckResult.CORRECT:
             await self.__submitEvent(IncorrectSuperAnswerTriviaEvent(
                 triviaQuestion = state.getTriviaQuestion(),
-                isShiny = state.isShiny(),
+                specialTriviaStatus = state.getSpecialTriviaStatus(),
                 actionId = action.getActionId(),
                 answer = action.getAnswer(),
                 emote = state.getEmote(),
@@ -430,10 +430,10 @@ class TriviaGameMachine():
 
         await self.__submitEvent(CorrectSuperAnswerTriviaEvent(
             triviaQuestion = state.getTriviaQuestion(),
-            isShiny = state.isShiny(),
             cutenessResult = cutenessResult,
             pointsForWinning = state.getPointsForWinning(),
             remainingQueueSize = remainingQueueSize,
+            specialTriviaStatus = state.getSpecialTriviaStatus(),
             actionId = action.getActionId(),
             answer = action.getAnswer(),
             emote = state.getEmote(),
@@ -655,8 +655,8 @@ class TriviaGameMachine():
 
                 await self.__submitEvent(OutOfTimeTriviaEvent(
                     triviaQuestion = normalGameState.getTriviaQuestion(),
-                    isShiny = normalGameState.isShiny(),
                     pointsForWinning = normalGameState.getPointsForWinning(),
+                    specialTriviaStatus = normalGameState.getSpecialTriviaStatus(),
                     actionId = normalGameState.getActionId(),
                     emote = normalGameState.getEmote(),
                     gameId = normalGameState.getGameId(),
@@ -675,9 +675,9 @@ class TriviaGameMachine():
 
                 await self.__submitEvent(OutOfTimeSuperTriviaEvent(
                     triviaQuestion = superGameState.getTriviaQuestion(),
-                    isShiny = superGameState.isShiny(),
                     pointsForWinning = superGameState.getPointsForWinning(),
                     remainingQueueSize = remainingQueueSize,
+                    specialTriviaStatus = superGameState.getSpecialTriviaStatus(),
                     actionId = superGameState.getActionId(),
                     emote = superGameState.getEmote(),
                     gameId = superGameState.getGameId(),

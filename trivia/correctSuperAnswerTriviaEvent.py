@@ -1,10 +1,12 @@
 import locale
+from typing import Optional
 
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.cuteness.cutenessResult import CutenessResult
     from CynanBotCommon.trivia.absTriviaEvent import AbsTriviaEvent
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
+    from CynanBotCommon.trivia.specialTriviaStatus import SpecialTriviaStatus
     from CynanBotCommon.trivia.triviaEventType import TriviaEventType
     from CynanBotCommon.trivia.triviaScoreResult import TriviaScoreResult
 except:
@@ -12,6 +14,7 @@ except:
     from cuteness.cutenessResult import CutenessResult
     from trivia.absTriviaEvent import AbsTriviaEvent
     from trivia.absTriviaQuestion import AbsTriviaQuestion
+    from trivia.specialTriviaStatus import SpecialTriviaStatus
     from trivia.triviaEventType import TriviaEventType
     from trivia.triviaScoreResult import TriviaScoreResult
 
@@ -21,10 +24,10 @@ class CorrectSuperAnswerTriviaEvent(AbsTriviaEvent):
     def __init__(
         self,
         triviaQuestion: AbsTriviaQuestion,
-        isShiny: bool,
         cutenessResult: CutenessResult,
         pointsForWinning: int,
         remainingQueueSize: int,
+        specialTriviaStatus: Optional[SpecialTriviaStatus],
         actionId: str,
         answer: str,
         emote: str,
@@ -41,8 +44,6 @@ class CorrectSuperAnswerTriviaEvent(AbsTriviaEvent):
 
         if not isinstance(triviaQuestion, AbsTriviaQuestion):
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
-        elif not utils.isValidBool(isShiny):
-            raise ValueError(f'isShiny argument is malformed: \"{isShiny}\"')
         elif not isinstance(cutenessResult, CutenessResult):
             raise ValueError(f'cutenessResult argument is malformed: \"{cutenessResult}\"')
         elif not utils.isValidInt(pointsForWinning):
@@ -53,6 +54,8 @@ class CorrectSuperAnswerTriviaEvent(AbsTriviaEvent):
             raise ValueError(f'remainingQueueSize argument is malformed: \"{remainingQueueSize}\"')
         elif remainingQueueSize < 0 or remainingQueueSize > utils.getIntMaxSafeSize():
             raise ValueError(f'remainingQueueSize argument is out of bounds: {remainingQueueSize}')
+        elif specialTriviaStatus is not None and not isinstance(specialTriviaStatus, SpecialTriviaStatus):
+            raise ValueError(f'specialTriviaStatus argument is malformed: \"{specialTriviaStatus}\"')
         elif not utils.isValidStr(answer):
             raise ValueError(f'answer argument is malformed: \"{answer}\"')
         elif not utils.isValidStr(emote):
@@ -69,10 +72,10 @@ class CorrectSuperAnswerTriviaEvent(AbsTriviaEvent):
             raise ValueError(f'triviaScoreResult argument is malformed: \"{triviaScoreResult}\"')
 
         self.__triviaQuestion: AbsTriviaQuestion = triviaQuestion
-        self.__isShiny: bool = isShiny
         self.__cutenessResult: CutenessResult = cutenessResult
         self.__pointsForWinning: int = pointsForWinning
         self.__remainingQueueSize: int = remainingQueueSize
+        self.__specialTriviaStatus: Optional[SpecialTriviaStatus] = specialTriviaStatus
         self.__answer: str = answer
         self.__emote: str = emote
         self.__gameId: str = gameId
@@ -105,6 +108,9 @@ class CorrectSuperAnswerTriviaEvent(AbsTriviaEvent):
     def getRemainingQueueSizeStr(self) -> str:
         return locale.format_string("%d", self.__remainingQueueSize, grouping = True)
 
+    def getSpecialTriviaStatus(self) -> Optional[SpecialTriviaStatus]:
+        return self.__specialTriviaStatus
+
     def getTriviaQuestion(self) -> AbsTriviaQuestion:
         return self.__triviaQuestion
 
@@ -121,4 +127,7 @@ class CorrectSuperAnswerTriviaEvent(AbsTriviaEvent):
         return self.__userName
 
     def isShiny(self) -> bool:
-        return self.__isShiny
+        return self.__specialTriviaStatus is SpecialTriviaStatus.SHINY
+
+    def isToxic(self) -> bool:
+        return self.__specialTriviaStatus is SpecialTriviaStatus.TOXIC
