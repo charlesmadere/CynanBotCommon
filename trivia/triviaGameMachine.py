@@ -378,7 +378,6 @@ class TriviaGameMachine():
             raise RuntimeError(f'TriviaActionType is not {TriviaActionType.CHECK_SUPER_ANSWER}: \"{action.getTriviaActionType()}\"')
 
         state = await self.__triviaGameStore.getSuperGame(action.getTwitchChannel())
-        now = datetime.now(self.__timeZone)
 
         if state is None:
             await self.__submitEvent(SuperGameNotReadyCheckAnswerTriviaEvent(
@@ -406,8 +405,7 @@ class TriviaGameMachine():
             }
         )
 
-        # Below, we're intentionally ignoring TriviaAnswerCheckResult values that are not CORRECT.
-
+        # we're intentionally ONLY checking for TriviaAnswerCheckResult.CORRECT
         if checkResult is not TriviaAnswerCheckResult.CORRECT:
             await self.__submitEvent(IncorrectSuperAnswerTriviaEvent(
                 triviaQuestion = state.getTriviaQuestion(),
