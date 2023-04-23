@@ -224,27 +224,20 @@ class TriviaGameMachine():
         backgroundTaskHelper.createTask(self.__startActionLoop())
         backgroundTaskHelper.createTask(self.__startEventLoop())
 
-    async def __applyToxicTriviaPunishment(
+    async def __applyToxicSuperTriviaPunishment(
         self,
-        correctAnswerUserId: Optional[str],
-        correctAnswerUserName: Optional[str],
+        action: Optional[CheckSuperAnswerTriviaAction],
         state: SuperTriviaGameState
     ) -> ToxicTriviaPunishment:
-        if not isinstance(state, SuperTriviaGameState):
+        if action is not None and not isinstance(action, CheckSuperAnswerTriviaAction):
+            raise ValueError(f'action argument is malformed: \"{action}\"')
+        elif not isinstance(state, SuperTriviaGameState):
             raise ValueError(f'state argument is malformed: \"{state}\"')
-        elif correctAnswerUserId is not None and not utils.isValidStr(correctAnswerUserId):
-            raise ValueError(f'correctAnswerUserId argument is malformed: \"{correctAnswerUserId}\"')
-        elif correctAnswerUserName is not None and not utils.isValidStr(correctAnswerUserName):
-            raise ValueError(f'correctAnswerUserName argument is malformed: \"{correctAnswerUserName}\"')
-        elif correctAnswerUserId is not None and correctAnswerUserName is None:
-            raise RuntimeError(f'correctAnswerUserId is specified (\"{correctAnswerUserId}\") but correctAnswerUserName is not (\"{correctAnswerUserName}\")')
-        elif correctAnswerUserId is None and correctAnswerUserName is not None:
-            raise RuntimeError(f'correctAnswerUserId is not specified (\"{correctAnswerUserId}\") but correctAnswerUserName is (\"{correctAnswerUserName}\")')
 
         answeredUserIds = state.getAnsweredUserIds()
 
-        if correctAnswerUserId is not None and correctAnswerUserId in answeredUserIds:
-            del answeredUserIds[correctAnswerUserId]
+        if action is not None:
+            del answeredUserIds[action.getUserId()]
 
         # TODO
         return ToxicTriviaPunishment()
@@ -458,9 +451,8 @@ class TriviaGameMachine():
                 userName = action.getUserName()
             )
         elif state.isToxic():
-            toxicTriviaPunishment = await self.__applyToxicTriviaPunishment(
-                correctAnswerUserId = action.getUserId(),
-                correctAnswerUserName = action.getUserName(),
+            toxicTriviaPunishment = await self.__applyToxicSuperTriviaPunishment(
+                action = action,
                 state = state
             )
             await self.__toxicTriviaHelper.toxicTriviaWin(
