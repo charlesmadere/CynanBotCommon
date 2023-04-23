@@ -7,6 +7,8 @@ try:
     from CynanBotCommon.trivia.absTriviaEvent import AbsTriviaEvent
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.specialTriviaStatus import SpecialTriviaStatus
+    from CynanBotCommon.trivia.toxicTriviaPunishment import \
+        ToxicTriviaPunishment
     from CynanBotCommon.trivia.triviaEventType import TriviaEventType
     from CynanBotCommon.trivia.triviaScoreResult import TriviaScoreResult
 except:
@@ -15,6 +17,7 @@ except:
     from trivia.absTriviaEvent import AbsTriviaEvent
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.specialTriviaStatus import SpecialTriviaStatus
+    from trivia.toxicTriviaPunishment import ToxicTriviaPunishment
     from trivia.triviaEventType import TriviaEventType
     from trivia.triviaScoreResult import TriviaScoreResult
 
@@ -35,6 +38,7 @@ class CorrectSuperAnswerTriviaEvent(AbsTriviaEvent):
         twitchChannel: str,
         userId: str,
         userName: str,
+        toxicTriviaPunishment: Optional[ToxicTriviaPunishment],
         triviaScoreResult: TriviaScoreResult
     ):
         super().__init__(
@@ -68,6 +72,8 @@ class CorrectSuperAnswerTriviaEvent(AbsTriviaEvent):
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
         elif not utils.isValidStr(userName):
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
+        elif toxicTriviaPunishment is not None and not isinstance(toxicTriviaPunishment, ToxicTriviaPunishment):
+            raise ValueError(f'toxicTriviaPunishment argument is malformed: \"{toxicTriviaPunishment}\"')
         elif not isinstance(triviaScoreResult, TriviaScoreResult):
             raise ValueError(f'triviaScoreResult argument is malformed: \"{triviaScoreResult}\"')
 
@@ -82,6 +88,7 @@ class CorrectSuperAnswerTriviaEvent(AbsTriviaEvent):
         self.__twitchChannel: str = twitchChannel
         self.__userId: str = userId
         self.__userName: str = userName
+        self.__toxicTriviaPunishment: Optional[ToxicTriviaPunishment] = toxicTriviaPunishment
         self.__triviaScoreResult: TriviaScoreResult = triviaScoreResult
 
     def getAnswer(self) -> str:
@@ -110,6 +117,9 @@ class CorrectSuperAnswerTriviaEvent(AbsTriviaEvent):
 
     def getSpecialTriviaStatus(self) -> Optional[SpecialTriviaStatus]:
         return self.__specialTriviaStatus
+
+    def getToxicTriviaPunishment(self) -> Optional[ToxicTriviaPunishment]:
+        return self.__toxicTriviaPunishment
 
     def getTriviaQuestion(self) -> AbsTriviaQuestion:
         return self.__triviaQuestion

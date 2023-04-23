@@ -41,12 +41,15 @@ class SuperTriviaGameState(AbsTriviaGameState):
 
         if not utils.isValidInt(perUserAttempts):
             raise ValueError(f'perUserAttempts argument is malformed: \"{perUserAttempts}\"')
-        elif perUserAttempts < 1 or perUserAttempts > 5:
+        elif perUserAttempts < 1 or perUserAttempts > 8:
             raise ValueError(f'perUserAttempts argument is out of bounds: {perUserAttempts}')
 
         self.__perUserAttempts: int = perUserAttempts
 
         self.__answeredUserIds: Dict[str, int] = defaultdict(lambda: 0)
+
+    def getAnsweredUserIds(self) -> Dict[str, int]:
+        return dict(self.__answeredUserIds)
 
     def getPerUserAttempts(self) -> int:
         return self.__perUserAttempts

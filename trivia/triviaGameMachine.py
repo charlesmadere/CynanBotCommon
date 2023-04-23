@@ -62,6 +62,8 @@ try:
         SuperTriviaCooldownHelper
     from CynanBotCommon.trivia.superTriviaGameState import SuperTriviaGameState
     from CynanBotCommon.trivia.toxicTriviaHelper import ToxicTriviaHelper
+    from CynanBotCommon.trivia.toxicTriviaPunishment import \
+        ToxicTriviaPunishment
     from CynanBotCommon.trivia.triviaActionType import TriviaActionType
     from CynanBotCommon.trivia.triviaAnswerChecker import TriviaAnswerChecker
     from CynanBotCommon.trivia.triviaAnswerCheckResult import \
@@ -128,6 +130,7 @@ except:
     from trivia.superTriviaCooldownHelper import SuperTriviaCooldownHelper
     from trivia.superTriviaGameState import SuperTriviaGameState
     from trivia.toxicTriviaHelper import ToxicTriviaHelper
+    from trivia.toxicTriviaPunishment import ToxicTriviaPunishment
     from trivia.triviaActionType import TriviaActionType
     from trivia.triviaAnswerChecker import TriviaAnswerChecker
     from trivia.triviaAnswerCheckResult import TriviaAnswerCheckResult
@@ -220,6 +223,31 @@ class TriviaGameMachine():
         self.__eventQueue: SimpleQueue[AbsTriviaEvent] = SimpleQueue()
         backgroundTaskHelper.createTask(self.__startActionLoop())
         backgroundTaskHelper.createTask(self.__startEventLoop())
+
+    async def __applyToxicTriviaPunishment(
+        self,
+        correctAnswerUserId: Optional[str],
+        correctAnswerUserName: Optional[str],
+        state: SuperTriviaGameState
+    ) -> ToxicTriviaPunishment:
+        if not isinstance(state, SuperTriviaGameState):
+            raise ValueError(f'state argument is malformed: \"{state}\"')
+        elif correctAnswerUserId is not None and not utils.isValidStr(correctAnswerUserId):
+            raise ValueError(f'correctAnswerUserId argument is malformed: \"{correctAnswerUserId}\"')
+        elif correctAnswerUserName is not None and not utils.isValidStr(correctAnswerUserName):
+            raise ValueError(f'correctAnswerUserName argument is malformed: \"{correctAnswerUserName}\"')
+        elif correctAnswerUserId is not None and correctAnswerUserName is None:
+            raise RuntimeError(f'correctAnswerUserId is specified (\"{correctAnswerUserId}\") but correctAnswerUserName is not (\"{correctAnswerUserName}\")')
+        elif correctAnswerUserId is None and correctAnswerUserName is not None:
+            raise RuntimeError(f'correctAnswerUserId is not specified (\"{correctAnswerUserId}\") but correctAnswerUserName is (\"{correctAnswerUserName}\")')
+
+        answeredUserIds = state.getAnsweredUserIds()
+
+        if correctAnswerUserId is not None and correctAnswerUserId in answeredUserIds:
+            del answeredUserIds[correctAnswerUserId]
+
+        # TODO
+        return ToxicTriviaPunishment()
 
     async def __beginQueuedTriviaGames(self):
         activeChannelsSet: Set[str] = set()
@@ -421,6 +449,7 @@ class TriviaGameMachine():
             return
 
         await self.__removeSuperTriviaGame(action.getTwitchChannel())
+        toxicTriviaPunishment: Optional[ToxicTriviaPunishment] = None
 
         if state.isShiny():
             await self.__shinyTriviaHelper.shinyTriviaWin(
@@ -429,6 +458,11 @@ class TriviaGameMachine():
                 userName = action.getUserName()
             )
         elif state.isToxic():
+            toxicTriviaPunishment = await self.__applyToxicTriviaPunishment(
+                correctAnswerUserId = action.getUserId(),
+                correctAnswerUserName = action.getUserName(),
+                state = state
+            )
             await self.__toxicTriviaHelper.toxicTriviaWin(
                 twitchChannel = state.getTwitchChannel(),
                 userId = action.getUserId(),
@@ -464,6 +498,7 @@ class TriviaGameMachine():
             twitchChannel = action.getTwitchChannel(),
             userId = action.getUserId(),
             userName = action.getUserName(),
+            toxicTriviaPunishment = toxicTriviaPunishment,
             triviaScoreResult = triviaScoreResult
         ))
 
