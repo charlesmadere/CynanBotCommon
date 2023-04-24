@@ -455,6 +455,7 @@ class TriviaGameMachine():
                 action = action,
                 state = state
             )
+
             await self.__toxicTriviaHelper.toxicTriviaWin(
                 twitchChannel = state.getTwitchChannel(),
                 userId = action.getUserId(),
