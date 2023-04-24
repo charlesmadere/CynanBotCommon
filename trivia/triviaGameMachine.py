@@ -240,6 +240,10 @@ class TriviaGameMachine():
             del answeredUserIds[action.getUserId()]
 
         toxicTriviaPunishments: List[ToxicTriviaPunishment] = list()
+        toxicTriviaPunishmentAmount = state.getToxicTriviaPunishmentAmount()
+
+        if toxicTriviaPunishmentAmount <= 0:
+            return toxicTriviaPunishments
 
         for userId, answerCount in answeredUserIds.items():
             pass
@@ -663,6 +667,7 @@ class TriviaGameMachine():
             perUserAttempts = action.getPerUserAttempts(),
             pointsForWinning = pointsForWinning,
             secondsToLive = action.getSecondsToLive(),
+            toxicTriviaPunishmentAmount = 0,
             specialTriviaStatus = specialTriviaStatus,
             actionId = action.getActionId(),
             emote = emote,

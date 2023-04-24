@@ -23,6 +23,7 @@ class SuperTriviaGameState(AbsTriviaGameState):
         perUserAttempts: int,
         pointsForWinning: int,
         secondsToLive: int,
+        toxicTriviaPunishmentAmount: int,
         specialTriviaStatus: Optional[SpecialTriviaStatus],
         actionId: str,
         emote: str,
@@ -43,8 +44,13 @@ class SuperTriviaGameState(AbsTriviaGameState):
             raise ValueError(f'perUserAttempts argument is malformed: \"{perUserAttempts}\"')
         elif perUserAttempts < 1 or perUserAttempts > 8:
             raise ValueError(f'perUserAttempts argument is out of bounds: {perUserAttempts}')
+        elif not utils.isValidInt(toxicTriviaPunishmentAmount):
+            raise ValueError(f'toxicTriviaPunishmentAmount argument is malformed: \"{toxicTriviaPunishmentAmount}\"')
+        elif toxicTriviaPunishmentAmount < 0 or toxicTriviaPunishmentAmount > utils.getIntMaxSafeSize():
+            raise ValueError(f'toxicTriviaPunishmentAmount argument is out of bounds: {toxicTriviaPunishmentAmount}')
 
         self.__perUserAttempts: int = perUserAttempts
+        self.__toxicTriviaPunishmentAmount: int = toxicTriviaPunishmentAmount
 
         self.__answeredUserIds: Dict[str, int] = defaultdict(lambda: 0)
 
@@ -53,6 +59,9 @@ class SuperTriviaGameState(AbsTriviaGameState):
 
     def getPerUserAttempts(self) -> int:
         return self.__perUserAttempts
+
+    def getToxicTriviaPunishmentAmount(self) -> int:
+        return self.__toxicTriviaPunishmentAmount
 
     def incrementAnswerCount(self, userId: str):
         if not utils.isValidStr(userId):
