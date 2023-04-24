@@ -147,16 +147,10 @@ class ShinyTriviaHelper():
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
         if not await self.__triviaSettingsRepository.areShinyTriviasEnabled():
-            return False        
-
-        probability = await self.__triviaSettingsRepository.getShinyProbability()
-
-        if random.uniform(0, 1) > probability:
             return False
 
-        self.__timber.log('ShinyTriviaHelper', f'{twitchChannel} has encountered a shiny trivia question!')
-
-        return True
+        probability = await self.__triviaSettingsRepository.getShinyProbability()
+        return random.uniform(0, 1) <= probability
 
     async def shinyTriviaWin(
         self,
@@ -176,4 +170,4 @@ class ShinyTriviaHelper():
             userId = userId
         )
 
-        self.__timber.log('ShinyTriviaHelper', f'In {twitchChannel}, {userName}:{result.getUserId()} won a shiny trivia question!')
+        self.__timber.log('ShinyTriviaHelper', f'In {twitchChannel}, {userName}:{result.getUserId()} won a shiny trivia! (they have won {result.getNewShinyCountStr()} total)')

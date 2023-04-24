@@ -42,13 +42,7 @@ class ToxicTriviaHelper():
             return False        
 
         probability = await self.__triviaSettingsRepository.getToxicProbability()
-
-        if random.uniform(0, 1) > probability:
-            return False
-
-        self.__timber.log('ToxicTriviaHelper', f'{twitchChannel} has encountered a toxic trivia question!')
-
-        return True
+        return random.uniform(0, 1) <= probability
 
     async def toxicTriviaWin(
         self,
