@@ -228,7 +228,7 @@ class TriviaGameMachine():
         self,
         action: Optional[CheckSuperAnswerTriviaAction],
         state: SuperTriviaGameState
-    ) -> ToxicTriviaPunishment:
+    ) -> List[ToxicTriviaPunishment]:
         if action is not None and not isinstance(action, CheckSuperAnswerTriviaAction):
             raise ValueError(f'action argument is malformed: \"{action}\"')
         elif not isinstance(state, SuperTriviaGameState):
@@ -239,8 +239,13 @@ class TriviaGameMachine():
         if action is not None:
             del answeredUserIds[action.getUserId()]
 
+        toxicTriviaPunishments: List[ToxicTriviaPunishment] = list()
+
+        for userId, answerCount in answeredUserIds.items():
+            pass
+
         # TODO
-        return ToxicTriviaPunishment()
+        return toxicTriviaPunishments
 
     async def __beginQueuedTriviaGames(self):
         activeChannelsSet: Set[str] = set()
