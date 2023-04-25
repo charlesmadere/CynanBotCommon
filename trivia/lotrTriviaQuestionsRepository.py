@@ -8,6 +8,8 @@ try:
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.absTriviaQuestionRepository import \
         AbsTriviaQuestionRepository
+    from CynanBotCommon.trivia.additionalTriviaAnswersRepository import \
+        AdditionalTriviaAnswersRepository
     from CynanBotCommon.trivia.questionAnswerTriviaQuestion import \
         QuestionAnswerTriviaQuestion
     from CynanBotCommon.trivia.triviaAnswerCompiler import TriviaAnswerCompiler
@@ -23,6 +25,8 @@ except:
     from timber.timber import Timber
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.absTriviaQuestionRepository import AbsTriviaQuestionRepository
+    from trivia.additionalTriviaAnswersRepository import \
+        AdditionalTriviaAnswersRepository
     from trivia.questionAnswerTriviaQuestion import \
         QuestionAnswerTriviaQuestion
     from trivia.triviaAnswerCompiler import TriviaAnswerCompiler
@@ -37,6 +41,7 @@ class LotrTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
     def __init__(
         self,
+        additionalTriviaAnswersRepository: AdditionalTriviaAnswersRepository,
         timber: Timber,
         triviaAnswerCompiler: TriviaAnswerCompiler,
         triviaQuestionCompiler: TriviaQuestionCompiler,
@@ -45,7 +50,9 @@ class LotrTriviaQuestionRepository(AbsTriviaQuestionRepository):
     ):
         super().__init__(triviaSettingsRepository)
 
-        if not isinstance(timber, Timber):
+        if not isinstance(additionalTriviaAnswersRepository, AdditionalTriviaAnswersRepository):
+            raise ValueError(f'additionalTriviaAnswersRepository argument is malformed: \"{additionalTriviaAnswersRepository}\"')
+        elif not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(triviaAnswerCompiler, TriviaAnswerCompiler):
             raise ValueError(f'triviaAnswerCompiler argument is malformed: \"{triviaAnswerCompiler}\"')
@@ -54,10 +61,27 @@ class LotrTriviaQuestionRepository(AbsTriviaQuestionRepository):
         elif not utils.isValidStr(triviaDatabaseFile):
             raise ValueError(f'triviaDatabaseFile argument is malformed: \"{triviaDatabaseFile}\"')
 
+        self.__additionalTriviaAnswersRepository: AdditionalTriviaAnswersRepository = additionalTriviaAnswersRepository
         self.__timber: Timber = timber
         self.__triviaAnswerCompiler: TriviaAnswerCompiler = triviaAnswerCompiler
         self.__triviaQuestionCompiler: TriviaQuestionCompiler = triviaQuestionCompiler
         self.__triviaDatabaseFile: str = triviaDatabaseFile
+
+    async def __addAdditionalAnswers(self, correctAnswers: List[str], triviaId: str):
+        if not utils.isValidStr(triviaId):
+            raise ValueError(f'triviaId argument is malformed: \"{triviaId}\"')
+
+        reference = await self.__additionalTriviaAnswersRepository.getAdditionalTriviaAnswers(
+            triviaId = triviaId,
+            triviaSource = TriviaSource.LORD_OF_THE_RINGS,
+            triviaType = TriviaType.QUESTION_ANSWER
+        )
+
+        if reference is None:
+            return
+
+        self.__timber.log('LotrTriviaQuestionRepository', f'Adding additional answers to question (triviaId=\"{triviaId}\"): {reference.getAdditionalAnswers()}')
+        correctAnswers.extend(reference.getAdditionalAnswers())
 
     async def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
         if not utils.isValidStr(twitchChannel):
@@ -75,8 +99,15 @@ class LotrTriviaQuestionRepository(AbsTriviaQuestionRepository):
         question = utils.getStrFromDict(triviaDict, 'question')
         question = await self.__triviaQuestionCompiler.compileQuestion(question)
 
-        correctAnswers = await self.__triviaQuestionCompiler.compileResponses(triviaDict['correctAnswers'])
-        cleanedCorrectAnswers = await self.__triviaAnswerCompiler.compileTextAnswersList(triviaDict['correctAnswers'])
+        originalCorrectAnswers: List[str] = triviaDict['correctAnswers']
+
+        await self.__addAdditionalAnswers(
+            correctAnswers = originalCorrectAnswers,
+            triviaId = triviaId
+        )
+
+        correctAnswers = await self.__triviaQuestionCompiler.compileResponses(originalCorrectAnswers)
+        cleanedCorrectAnswers = await self.__triviaAnswerCompiler.compileTextAnswersList(originalCorrectAnswers)
 
         expandedCorrectAnswers: Set[str] = set()
         for answer in cleanedCorrectAnswers:
