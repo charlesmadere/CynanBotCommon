@@ -35,7 +35,7 @@ class TriviaSettingsRepository():
 
     async def areToxicTriviasEnabled(self) -> bool:
         jsonContents = await self.__readJson()
-        return utils.getBoolFromDict(jsonContents, 'toxic_trivias_enabled', False)
+        return utils.getBoolFromDict(jsonContents, 'toxic_trivias_enabled', True)
 
     async def clearCaches(self):
         self.__settingsCache = None
@@ -156,10 +156,6 @@ class TriviaSettingsRepository():
     async def getTriviaSourceInstabilityThreshold(self) -> int:
         jsonContents = await self.__readJson()
         return utils.getIntFromDict(jsonContents, 'trivia_source_instability_threshold', 3)
-
-    async def isAdditionalPluralCheckingEnabled(self) -> bool:
-        jsonContents = await self.__readJson()
-        return utils.getBoolFromDict(jsonContents, 'additional_plural_checking_enabled', False)
 
     async def isBanListEnabled(self) -> bool:
         jsonContents = await self.__readJson()
