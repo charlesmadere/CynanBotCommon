@@ -107,4 +107,7 @@ class BannedWordsRepository():
         if quoteRegExMatch is not None:
             line = quoteRegExMatch.group(1).strip()
 
+        if not utils.isValidStr(line):
+            return None
+
         return line
