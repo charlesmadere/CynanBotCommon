@@ -18,11 +18,13 @@ class StartNewSuperTriviaGameAction(AbsTriviaAction):
         self,
         isQueueActionConsumed: bool,
         isShinyTriviaEnabled: bool,
+        isToxicTriviaEnabled: bool,
         numberOfGames: int,
         perUserAttempts: int,
         pointsForWinning: int,
         secondsToLive: int,
         shinyMultiplier: int,
+        toxicMultiplier: int,
         toxicTriviaPunishmentAmount: int,
         twitchChannel: str,
         triviaFetchOptions: TriviaFetchOptions
@@ -33,6 +35,8 @@ class StartNewSuperTriviaGameAction(AbsTriviaAction):
             raise ValueError(f'isQueueActionConsumed argument is malformed: \"{isQueueActionConsumed}\"')
         elif not utils.isValidBool(isShinyTriviaEnabled):
             raise ValueError(f'isShinyTriviaEnabled argument is malformed: \"{isShinyTriviaEnabled}\"')
+        elif not utils.isValidBool(isToxicTriviaEnabled):
+            raise ValueError(f'isToxicTriviaEnabled argument is malformed: \"{isToxicTriviaEnabled}\"')
         elif not utils.isValidInt(numberOfGames):
             raise ValueError(f'numberOfGames argument is malformed: \"{numberOfGames}\"')
         elif numberOfGames < 1 or numberOfGames > utils.getIntMaxSafeSize():
@@ -53,6 +57,10 @@ class StartNewSuperTriviaGameAction(AbsTriviaAction):
             raise ValueError(f'shinyMultiplier argument is malformed: \"{shinyMultiplier}\"')
         elif shinyMultiplier < 1 or shinyMultiplier > utils.getIntMaxSafeSize():
             raise ValueError(f'shinyMultiplier argument is out of bounds: {shinyMultiplier}')
+        elif not utils.isValidInt(toxicMultiplier):
+            raise ValueError(f'toxicMultiplier argument is malformed: \"{toxicMultiplier}\"')
+        elif toxicMultiplier < 1 or toxicMultiplier > utils.getIntMaxSafeSize():
+            raise ValueError(f'toxicMultiplier argument is out of bounds: {toxicMultiplier}')
         elif not utils.isValidInt(toxicTriviaPunishmentAmount):
             raise ValueError(f'toxicTriviaPunishmentAmount argument is malformed: \"{toxicTriviaPunishmentAmount}\"')
         elif toxicTriviaPunishmentAmount < 0 or toxicTriviaPunishmentAmount > utils.getIntMaxSafeSize():
@@ -64,11 +72,13 @@ class StartNewSuperTriviaGameAction(AbsTriviaAction):
 
         self.__isQueueActionConsumed: bool = isQueueActionConsumed
         self.__isShinyTriviaEnabled: bool = isShinyTriviaEnabled
+        self.__isToxicTriviaEnabled: bool = isToxicTriviaEnabled
         self.__numberOfGames: int = numberOfGames
         self.__perUserAttempts: int = perUserAttempts
         self.__pointsForWinning: int = pointsForWinning
         self.__secondsToLive: int = secondsToLive
         self.__shinyMultiplier: int = shinyMultiplier
+        self.__toxicMultiplier: int = toxicMultiplier
         self.__toxicTriviaPunishmentAmount: int = toxicTriviaPunishmentAmount
         self.__twitchChannel: str = twitchChannel
         self.__triviaFetchOptions: TriviaFetchOptions = triviaFetchOptions
@@ -103,6 +113,12 @@ class StartNewSuperTriviaGameAction(AbsTriviaAction):
     def getShinyMultiplierStr(self) -> str:
         return locale.format_string("%d", self.__shinyMultiplier, grouping = True)
 
+    def getToxicMultiplier(self) -> int:
+        return self.__toxicMultiplier
+
+    def getToxicMultiplierStr(self) -> str:
+        return locale.format_string("%d", self.__toxicMultiplier, grouping = True)
+
     def getToxicTriviaPunishmentAmount(self) -> int:
         return self.__toxicTriviaPunishmentAmount
 
@@ -120,3 +136,6 @@ class StartNewSuperTriviaGameAction(AbsTriviaAction):
 
     def isShinyTriviaEnabled(self) -> bool:
         return self.__isShinyTriviaEnabled
+
+    def isToxicTriviaEnabled(self) -> bool:
+        return self.__isToxicTriviaEnabled

@@ -684,6 +684,11 @@ class TriviaGameMachine():
         ):
             specialTriviaStatus = SpecialTriviaStatus.SHINY
             pointsForWinning = pointsForWinning * action.getShinyMultiplier()
+        elif action.isToxicTriviaEnabled() and await self.__toxicTriviaHelper.isToxicSuperTriviaQuestion(
+            twitchChannel = action.getTwitchChannel()
+        ):
+            specialTriviaStatus = SpecialTriviaStatus.TOXIC
+            pointsForWinning = pointsForWinning * action.getToxicMultiplier()
 
         state = SuperTriviaGameState(
             triviaQuestion = triviaQuestion,
@@ -753,10 +758,12 @@ class TriviaGameMachine():
                 superGameState: SuperTriviaGameState = state
                 await self.__removeSuperTriviaGame(superGameState.getTwitchChannel())
 
-                toxicTriviaPunishments = await self.__applyToxicSuperTriviaPunishment(
-                    action = None,
-                    state = superGameState
-                )
+                toxicTriviaPunishments: Optional[List[ToxicTriviaPunishment]] = None
+                if superGameState.getSpecialTriviaStatus() is SpecialTriviaStatus.TOXIC:
+                    toxicTriviaPunishments = await self.__applyToxicSuperTriviaPunishment(
+                        action = None,
+                        state = superGameState
+                    )
 
                 remainingQueueSize = await self.__queuedTriviaGameStore.getQueuedSuperGamesSize(
                     twitchChannel = superGameState.getTwitchChannel()
