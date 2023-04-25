@@ -246,9 +246,22 @@ class TriviaGameMachine():
             return toxicTriviaPunishments
 
         for userId, answerCount in answeredUserIds.items():
-            pass
+            punishedByPoints = -1 * toxicTriviaPunishmentAmount * answerCount
 
-        # TODO
+            cutenessResult = await self.__cutenessRepository.fetchCutenessIncrementedBy(
+                incrementAmount = punishedByPoints,
+                twitchChannel = state.getTwitchChannel(),
+                userId = userId
+            )
+
+            toxicTriviaPunishments.append(ToxicTriviaPunishment(
+                cutenessResult = cutenessResult,
+                numberOfPunishments = answerCount,
+                punishedByPoints = punishedByPoints,
+                userId = userId,
+                userName = cutenessResult.getUserName()
+            ))
+
         return toxicTriviaPunishments
 
     async def __beginQueuedTriviaGames(self):
