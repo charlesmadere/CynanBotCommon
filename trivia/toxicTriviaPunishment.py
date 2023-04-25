@@ -26,8 +26,8 @@ class ToxicTriviaPunishment():
             raise ValueError(f'numberOfPunishments argument is malformed: {numberOfPunishments}')
         elif not utils.isValidInt(punishedByPoints):
             raise ValueError(f'punishedByPoints argument is malformed: \"{punishedByPoints}\"')
-        elif punishedByPoints < 0 or punishedByPoints > utils.getIntMaxSafeSize():
-            raise ValueError(f'punishedByPoints argument is malformed: {punishedByPoints}')
+        elif punishedByPoints > 0 or punishedByPoints < utils.getIntMinSafeSize():
+            raise ValueError(f'punishedByPoints argument is out of bounds: {punishedByPoints}')
         elif not utils.isValidStr(userId):
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
         elif not utils.isValidStr(userName):
