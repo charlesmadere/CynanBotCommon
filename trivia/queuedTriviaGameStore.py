@@ -100,6 +100,7 @@ class QueuedTriviaGameStore():
                     pointsForWinning = action.getPointsForWinning(),
                     secondsToLive = action.getSecondsToLive(),
                     shinyMultiplier = action.getShinyMultiplier(),
+                    toxicTriviaPunishmentAmount = action.getToxicTriviaPunishmentAmount(),
                     twitchChannel = action.getTwitchChannel(),
                     triviaFetchOptions = action.getTriviaFetchOptions()
                 ))
