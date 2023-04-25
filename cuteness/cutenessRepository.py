@@ -265,7 +265,7 @@ class CutenessRepository():
         incrementAmount: int,
         twitchChannel: str,
         userId: str,
-        userName: Optional[str] = None
+        userName: str
     ) -> CutenessResult:
         if not utils.isValidInt(incrementAmount):
             raise ValueError(f'incrementAmount argument is malformed: \"{incrementAmount}\"')
@@ -277,11 +277,10 @@ class CutenessRepository():
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
         elif userId == '0':
             raise ValueError(f'userId argument is an illegal value: \"{userId}\"')
+        elif not utils.isValidStr(userName):
+            raise ValueError(f'userName argument is malformed: \"{userName}\"')
 
-        if utils.isValidStr(userName):
-            await self.__userIdsRepository.setUser(userId = userId, userName = userName)
-        else:
-            userName = await self.__userIdsRepository.fetchUserName(userId = userId)
+        await self.__userIdsRepository.setUser(userId = userId, userName = userName)
 
         cutenessDate = CutenessDate()
 

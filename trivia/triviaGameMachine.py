@@ -81,6 +81,7 @@ try:
         TriviaScoreRepository
     from CynanBotCommon.trivia.wrongUserCheckAnswerTriviaEvent import \
         WrongUserCheckAnswerTriviaEvent
+    from CynanBotCommon.users.userIdsRepository import UserIdsRepository
 except:
     import utils
     from backgroundTaskHelper import BackgroundTaskHelper
@@ -147,6 +148,8 @@ except:
     from trivia.wrongUserCheckAnswerTriviaEvent import \
         WrongUserCheckAnswerTriviaEvent
 
+    from users.userIdsRepository import UserIdsRepository
+
 
 class TriviaGameMachine():
 
@@ -164,6 +167,7 @@ class TriviaGameMachine():
         triviaGameStore: TriviaGameStore,
         triviaRepository: TriviaRepository,
         triviaScoreRepository: TriviaScoreRepository,
+        userIdsRepository: UserIdsRepository,
         sleepTimeSeconds: float = 0.5,
         queueTimeoutSeconds: int = 3,
         timeZone: timezone = timezone.utc
@@ -192,6 +196,8 @@ class TriviaGameMachine():
             raise ValueError(f'triviaRepository argument is malformed: \"{triviaRepository}\"')
         elif not isinstance(triviaScoreRepository, TriviaScoreRepository):
             raise ValueError(f'triviaScoreRepository argument is malformed: \"{triviaScoreRepository}\"')
+        elif not isinstance(userIdsRepository, UserIdsRepository):
+            raise ValueError(f'userIdsRepository argument is malformed: \"{userIdsRepository}\"')
         elif not utils.isValidNum(sleepTimeSeconds):
             raise ValueError(f'sleepTimeSeconds argument is malformed: \"{sleepTimeSeconds}\"')
         elif sleepTimeSeconds < 0.25 or sleepTimeSeconds > 3:
@@ -214,6 +220,7 @@ class TriviaGameMachine():
         self.__triviaGameStore: TriviaGameStore = triviaGameStore
         self.__triviaRepository: TriviaRepository = triviaRepository
         self.__triviaScoreRepository: TriviaScoreRepository = triviaScoreRepository
+        self.__userIdsRepository: UserIdsRepository = userIdsRepository
         self.__sleepTimeSeconds: float = sleepTimeSeconds
         self.__queueTimeoutSeconds: int = queueTimeoutSeconds
         self.__timeZone: timezone = timeZone
@@ -246,12 +253,14 @@ class TriviaGameMachine():
             return toxicTriviaPunishments
 
         for userId, answerCount in answeredUserIds.items():
-            punishedByPoints = -1 * toxicTriviaPunishmentAmount * answerCount
+            punishedByPoints: int = -1 * toxicTriviaPunishmentAmount * answerCount
+            userName = await self.__userIdsRepository.fetchUserName(userId = userId)
 
             cutenessResult = await self.__cutenessRepository.fetchCutenessIncrementedBy(
                 incrementAmount = punishedByPoints,
                 twitchChannel = state.getTwitchChannel(),
-                userId = userId
+                userId = userId,
+                userName = userName
             )
 
             toxicTriviaPunishments.append(ToxicTriviaPunishment(
@@ -259,7 +268,7 @@ class TriviaGameMachine():
                 numberOfPunishments = answerCount,
                 punishedByPoints = punishedByPoints,
                 userId = userId,
-                userName = cutenessResult.getUserName()
+                userName = userName
             ))
 
         return toxicTriviaPunishments
