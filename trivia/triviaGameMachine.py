@@ -759,7 +759,7 @@ class TriviaGameMachine():
                 await self.__removeSuperTriviaGame(superGameState.getTwitchChannel())
 
                 toxicTriviaPunishments: Optional[List[ToxicTriviaPunishment]] = None
-                if superGameState.getSpecialTriviaStatus() is SpecialTriviaStatus.TOXIC:
+                if superGameState.isToxic():
                     toxicTriviaPunishments = await self.__applyToxicSuperTriviaPunishment(
                         action = None,
                         state = superGameState
