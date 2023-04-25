@@ -45,6 +45,7 @@ class TestQueuedTriviaGameStore1():
         pointsForWinning = 5,
         secondsToLive = 50,
         shinyMultiplier = 8,
+        toxicTriviaPunishmentAmount = 0,
         twitchChannel = 'smCharles',
         triviaFetchOptions = TriviaFetchOptions(
             isJokeTriviaRepositoryEnabled = False,
@@ -61,6 +62,7 @@ class TestQueuedTriviaGameStore1():
         pointsForWinning = 5,
         secondsToLive = 50,
         shinyMultiplier = 8,
+        toxicTriviaPunishmentAmount = 0,
         twitchChannel = 'smCharles',
         triviaFetchOptions = TriviaFetchOptions(
             isJokeTriviaRepositoryEnabled = False,
@@ -77,6 +79,7 @@ class TestQueuedTriviaGameStore1():
         pointsForWinning = 5,
         secondsToLive = 50,
         shinyMultiplier = 8,
+        toxicTriviaPunishmentAmount = 0,
         twitchChannel = 'smCharles',
         triviaFetchOptions = TriviaFetchOptions(
             isJokeTriviaRepositoryEnabled = False,
@@ -93,6 +96,7 @@ class TestQueuedTriviaGameStore1():
         pointsForWinning = 5,
         secondsToLive = 50,
         shinyMultiplier = 8,
+        toxicTriviaPunishmentAmount = 0,
         twitchChannel = 'stashiocat',
         triviaFetchOptions = TriviaFetchOptions(
             isJokeTriviaRepositoryEnabled = False,
@@ -220,6 +224,7 @@ class TestQueuedTriviaGameStore4():
         pointsForWinning = 5,
         secondsToLive = 50,
         shinyMultiplier = 8,
+        toxicTriviaPunishmentAmount = 0,
         twitchChannel = 'smCharles',
         triviaFetchOptions = TriviaFetchOptions(
             isJokeTriviaRepositoryEnabled = False,
@@ -267,6 +272,7 @@ class TestQueuedTriviaGameStore5():
         pointsForWinning = 5,
         secondsToLive = 50,
         shinyMultiplier = 8,
+        toxicTriviaPunishmentAmount = 0,
         twitchChannel = 'stashiocat',
         triviaFetchOptions = TriviaFetchOptions(
             isJokeTriviaRepositoryEnabled = False,
@@ -314,6 +320,7 @@ class TestQueuedTriviaGameStore6():
         pointsForWinning = 5,
         secondsToLive = 50,
         shinyMultiplier = 8,
+        toxicTriviaPunishmentAmount = 0,
         twitchChannel = 'smCharles',
         triviaFetchOptions = TriviaFetchOptions(
             isJokeTriviaRepositoryEnabled = False,
@@ -382,6 +389,7 @@ class TestQueuedTriviaGameStore7():
         pointsForWinning = 5,
         secondsToLive = 50,
         shinyMultiplier = 8,
+        toxicTriviaPunishmentAmount = 0,
         twitchChannel = 'smCharles',
         triviaFetchOptions = TriviaFetchOptions(
             isJokeTriviaRepositoryEnabled = False,
