@@ -23,6 +23,7 @@ class StartNewSuperTriviaGameAction(AbsTriviaAction):
         pointsForWinning: int,
         secondsToLive: int,
         shinyMultiplier: int,
+        toxicTriviaPunishmentAmount: int,
         twitchChannel: str,
         triviaFetchOptions: TriviaFetchOptions
     ):
@@ -52,6 +53,10 @@ class StartNewSuperTriviaGameAction(AbsTriviaAction):
             raise ValueError(f'shinyMultiplier argument is malformed: \"{shinyMultiplier}\"')
         elif shinyMultiplier < 1 or shinyMultiplier > utils.getIntMaxSafeSize():
             raise ValueError(f'shinyMultiplier argument is out of bounds: {shinyMultiplier}')
+        elif not utils.isValidInt(toxicTriviaPunishmentAmount):
+            raise ValueError(f'toxicTriviaPunishmentAmount argument is malformed: \"{toxicTriviaPunishmentAmount}\"')
+        elif toxicTriviaPunishmentAmount < 0 or toxicTriviaPunishmentAmount > utils.getIntMaxSafeSize():
+            raise ValueError(f'toxicTriviaPunishmentAmount argument is out of bounds: {toxicTriviaPunishmentAmount}')
         elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
         elif not isinstance(triviaFetchOptions, TriviaFetchOptions):
@@ -64,6 +69,7 @@ class StartNewSuperTriviaGameAction(AbsTriviaAction):
         self.__pointsForWinning: int = pointsForWinning
         self.__secondsToLive: int = secondsToLive
         self.__shinyMultiplier: int = shinyMultiplier
+        self.__toxicTriviaPunishmentAmount: int = toxicTriviaPunishmentAmount
         self.__twitchChannel: str = twitchChannel
         self.__triviaFetchOptions: TriviaFetchOptions = triviaFetchOptions
 
@@ -96,6 +102,12 @@ class StartNewSuperTriviaGameAction(AbsTriviaAction):
 
     def getShinyMultiplierStr(self) -> str:
         return locale.format_string("%d", self.__shinyMultiplier, grouping = True)
+
+    def getToxicTriviaPunishmentAmount(self) -> int:
+        return self.__toxicTriviaPunishmentAmount
+
+    def getToxicTriviaPunishmentAmountStr(self) -> int:
+        return locale.format_string("%d", self.__toxicTriviaPunishmentAmount, grouping = True)
 
     def getTriviaFetchOptions(self) -> TriviaFetchOptions:
         return self.__triviaFetchOptions

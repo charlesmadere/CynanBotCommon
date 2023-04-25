@@ -667,7 +667,7 @@ class TriviaGameMachine():
             perUserAttempts = action.getPerUserAttempts(),
             pointsForWinning = pointsForWinning,
             secondsToLive = action.getSecondsToLive(),
-            toxicTriviaPunishmentAmount = 0,
+            toxicTriviaPunishmentAmount = action.getToxicTriviaPunishmentAmount(),
             specialTriviaStatus = specialTriviaStatus,
             actionId = action.getActionId(),
             emote = emote,
