@@ -134,6 +134,9 @@ class CorrectSuperAnswerTriviaEvent(AbsTriviaEvent):
     def getUserName(self) -> str:
         return self.__userName
 
+    def hasToxicTriviaPunishments(self) -> bool:
+        return utils.hasItems(self.__toxicTriviaPunishments)
+
     def isShiny(self) -> bool:
         return self.__specialTriviaStatus is SpecialTriviaStatus.SHINY
 
