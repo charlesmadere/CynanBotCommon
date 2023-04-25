@@ -676,7 +676,7 @@ class TriviaGameMachine():
             ))
             return
 
-        specialTriviaStatus = Optional[SpecialTriviaStatus] = None
+        specialTriviaStatus: Optional[SpecialTriviaStatus] = None
         pointsForWinning = action.getPointsForWinning()
 
         if action.isShinyTriviaEnabled() and await self.__shinyTriviaHelper.isShinySuperTriviaQuestion(
