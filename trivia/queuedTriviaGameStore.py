@@ -95,11 +95,13 @@ class QueuedTriviaGameStore():
                 queuedSuperGames.put(StartNewSuperTriviaGameAction(
                     isQueueActionConsumed = True,
                     isShinyTriviaEnabled = action.isShinyTriviaEnabled(),
+                    isToxicTriviaEnabled = action.isToxicTriviaEnabled(),
                     numberOfGames = 1,
                     perUserAttempts = action.getPerUserAttempts(),
                     pointsForWinning = action.getPointsForWinning(),
                     secondsToLive = action.getSecondsToLive(),
                     shinyMultiplier = action.getShinyMultiplier(),
+                    toxicMultiplier = action.getToxicMultiplier(),
                     toxicTriviaPunishmentAmount = action.getToxicTriviaPunishmentAmount(),
                     twitchChannel = action.getTwitchChannel(),
                     triviaFetchOptions = action.getTriviaFetchOptions()
