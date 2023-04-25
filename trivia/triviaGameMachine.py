@@ -451,7 +451,7 @@ class TriviaGameMachine():
             return
 
         await self.__removeSuperTriviaGame(action.getTwitchChannel())
-        toxicTriviaPunishment: Optional[ToxicTriviaPunishment] = None
+        toxicTriviaPunishments: Optional[List[ToxicTriviaPunishment]] = None
 
         if state.isShiny():
             await self.__shinyTriviaHelper.shinyTriviaWin(
@@ -460,7 +460,7 @@ class TriviaGameMachine():
                 userName = action.getUserName()
             )
         elif state.isToxic():
-            toxicTriviaPunishment = await self.__applyToxicSuperTriviaPunishment(
+            toxicTriviaPunishments = await self.__applyToxicSuperTriviaPunishment(
                 action = action,
                 state = state
             )
@@ -492,6 +492,7 @@ class TriviaGameMachine():
             cutenessResult = cutenessResult,
             pointsForWinning = state.getPointsForWinning(),
             remainingQueueSize = remainingQueueSize,
+            toxicTriviaPunishments = toxicTriviaPunishments,
             specialTriviaStatus = state.getSpecialTriviaStatus(),
             actionId = action.getActionId(),
             answer = action.getAnswer(),
@@ -500,7 +501,6 @@ class TriviaGameMachine():
             twitchChannel = action.getTwitchChannel(),
             userId = action.getUserId(),
             userName = action.getUserName(),
-            toxicTriviaPunishment = toxicTriviaPunishment,
             triviaScoreResult = triviaScoreResult
         ))
 
@@ -730,6 +730,11 @@ class TriviaGameMachine():
                 superGameState: SuperTriviaGameState = state
                 await self.__removeSuperTriviaGame(superGameState.getTwitchChannel())
 
+                toxicTriviaPunishments = await self.__applyToxicSuperTriviaPunishment(
+                    action = None,
+                    state = superGameState
+                )
+
                 remainingQueueSize = await self.__queuedTriviaGameStore.getQueuedSuperGamesSize(
                     twitchChannel = superGameState.getTwitchChannel()
                 )
@@ -738,6 +743,7 @@ class TriviaGameMachine():
                     triviaQuestion = superGameState.getTriviaQuestion(),
                     pointsForWinning = superGameState.getPointsForWinning(),
                     remainingQueueSize = remainingQueueSize,
+                    toxicTriviaPunishments = toxicTriviaPunishments,
                     specialTriviaStatus = superGameState.getSpecialTriviaStatus(),
                     actionId = superGameState.getActionId(),
                     emote = superGameState.getEmote(),

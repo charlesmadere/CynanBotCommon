@@ -1,17 +1,20 @@
 import locale
-from typing import Optional
+from typing import List, Optional
 
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.trivia.absTriviaEvent import AbsTriviaEvent
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.specialTriviaStatus import SpecialTriviaStatus
+    from CynanBotCommon.trivia.toxicTriviaPunishment import \
+        ToxicTriviaPunishment
     from CynanBotCommon.trivia.triviaEventType import TriviaEventType
 except:
     import utils
     from trivia.absTriviaEvent import AbsTriviaEvent
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.specialTriviaStatus import SpecialTriviaStatus
+    from trivia.toxicTriviaPunishment import ToxicTriviaPunishment
     from trivia.triviaEventType import TriviaEventType
 
 
@@ -22,6 +25,7 @@ class OutOfTimeSuperTriviaEvent(AbsTriviaEvent):
         triviaQuestion: AbsTriviaQuestion,
         pointsForWinning: int,
         remainingQueueSize: int,
+        toxicTriviaPunishments: Optional[List[ToxicTriviaPunishment]],
         specialTriviaStatus: Optional[SpecialTriviaStatus],
         actionId: str,
         emote: str,
@@ -55,6 +59,7 @@ class OutOfTimeSuperTriviaEvent(AbsTriviaEvent):
         self.__triviaQuestion: AbsTriviaQuestion = triviaQuestion
         self.__pointsForWinning: int = pointsForWinning
         self.__remainingQueueSize: int = remainingQueueSize
+        self.__toxicTriviaPunishments: Optional[List[ToxicTriviaPunishment]] = toxicTriviaPunishments
         self.__specialTriviaStatus: Optional[SpecialTriviaStatus] = specialTriviaStatus
         self.__emote: str = emote
         self.__gameId: str = gameId
@@ -80,6 +85,9 @@ class OutOfTimeSuperTriviaEvent(AbsTriviaEvent):
 
     def getSpecialTriviaStatus(self) -> Optional[SpecialTriviaStatus]:
         return self.__specialTriviaStatus
+
+    def getToxicTriviaPunishments(self) -> Optional[List[ToxicTriviaPunishment]]:
+        return self.__toxicTriviaPunishments
 
     def getTriviaQuestion(self) -> AbsTriviaQuestion:
         return self.__triviaQuestion

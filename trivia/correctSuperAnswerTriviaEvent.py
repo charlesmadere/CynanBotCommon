@@ -1,5 +1,5 @@
 import locale
-from typing import Optional
+from typing import List, Optional
 
 try:
     import CynanBotCommon.utils as utils
@@ -30,6 +30,7 @@ class CorrectSuperAnswerTriviaEvent(AbsTriviaEvent):
         cutenessResult: CutenessResult,
         pointsForWinning: int,
         remainingQueueSize: int,
+        toxicTriviaPunishments: Optional[List[ToxicTriviaPunishment]],
         specialTriviaStatus: Optional[SpecialTriviaStatus],
         actionId: str,
         answer: str,
@@ -38,7 +39,6 @@ class CorrectSuperAnswerTriviaEvent(AbsTriviaEvent):
         twitchChannel: str,
         userId: str,
         userName: str,
-        toxicTriviaPunishment: Optional[ToxicTriviaPunishment],
         triviaScoreResult: TriviaScoreResult
     ):
         super().__init__(
@@ -72,8 +72,6 @@ class CorrectSuperAnswerTriviaEvent(AbsTriviaEvent):
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
         elif not utils.isValidStr(userName):
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
-        elif toxicTriviaPunishment is not None and not isinstance(toxicTriviaPunishment, ToxicTriviaPunishment):
-            raise ValueError(f'toxicTriviaPunishment argument is malformed: \"{toxicTriviaPunishment}\"')
         elif not isinstance(triviaScoreResult, TriviaScoreResult):
             raise ValueError(f'triviaScoreResult argument is malformed: \"{triviaScoreResult}\"')
 
@@ -81,6 +79,7 @@ class CorrectSuperAnswerTriviaEvent(AbsTriviaEvent):
         self.__cutenessResult: CutenessResult = cutenessResult
         self.__pointsForWinning: int = pointsForWinning
         self.__remainingQueueSize: int = remainingQueueSize
+        self.__toxicTriviaPunishments: Optional[List[ToxicTriviaPunishment]] = toxicTriviaPunishments
         self.__specialTriviaStatus: Optional[SpecialTriviaStatus] = specialTriviaStatus
         self.__answer: str = answer
         self.__emote: str = emote
@@ -88,7 +87,6 @@ class CorrectSuperAnswerTriviaEvent(AbsTriviaEvent):
         self.__twitchChannel: str = twitchChannel
         self.__userId: str = userId
         self.__userName: str = userName
-        self.__toxicTriviaPunishment: Optional[ToxicTriviaPunishment] = toxicTriviaPunishment
         self.__triviaScoreResult: TriviaScoreResult = triviaScoreResult
 
     def getAnswer(self) -> str:
@@ -118,8 +116,8 @@ class CorrectSuperAnswerTriviaEvent(AbsTriviaEvent):
     def getSpecialTriviaStatus(self) -> Optional[SpecialTriviaStatus]:
         return self.__specialTriviaStatus
 
-    def getToxicTriviaPunishment(self) -> Optional[ToxicTriviaPunishment]:
-        return self.__toxicTriviaPunishment
+    def getToxicTriviaPunishments(self) -> Optional[List[ToxicTriviaPunishment]]:
+        return self.__toxicTriviaPunishments
 
     def getTriviaQuestion(self) -> AbsTriviaQuestion:
         return self.__triviaQuestion
