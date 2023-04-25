@@ -271,6 +271,7 @@ class TriviaGameMachine():
                 userName = userName
             ))
 
+        toxicTriviaPunishments.sort(key = lambda punishment: punishment.getPunishedByPoints(), reverse = True)
         return toxicTriviaPunishments
 
     async def __beginQueuedTriviaGames(self):
