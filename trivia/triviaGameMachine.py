@@ -235,11 +235,14 @@ class TriviaGameMachine():
         self,
         action: Optional[CheckSuperAnswerTriviaAction],
         state: SuperTriviaGameState
-    ) -> List[ToxicTriviaPunishment]:
+    ) -> Optional[List[ToxicTriviaPunishment]]:
         if action is not None and not isinstance(action, CheckSuperAnswerTriviaAction):
             raise ValueError(f'action argument is malformed: \"{action}\"')
         elif not isinstance(state, SuperTriviaGameState):
             raise ValueError(f'state argument is malformed: \"{state}\"')
+
+        if not state.isToxic():
+            return None
 
         answeredUserIds = state.getAnsweredUserIds()
 
@@ -271,7 +274,9 @@ class TriviaGameMachine():
                 userName = userName
             ))
 
-        toxicTriviaPunishments.sort(key = lambda punishment: punishment.getPunishedByPoints())
+        self.__timber.log('TriviaGameMachine', f'Applied toxic trivia punishments to {len(toxicTriviaPunishments)} user(s) in \"{state.getTwitchChannel()}\"')
+
+        toxicTriviaPunishments.sort(key = lambda punishment: (punishment.getPunishedByPoints(), punishment.getUserName().lower()))
         return toxicTriviaPunishments
 
     async def __beginQueuedTriviaGames(self):
@@ -730,58 +735,67 @@ class TriviaGameMachine():
 
         for state in gameStatesToRemove:
             if state.getTriviaGameType() is TriviaGameType.NORMAL:
-                normalGameState: TriviaGameState = state
-
-                await self.__removeNormalTriviaGame(
-                    twitchChannel = normalGameState.getTwitchChannel(),
-                    userId = normalGameState.getUserId()
-                )
-
-                triviaScoreResult = await self.__triviaScoreRepository.incrementTriviaLosses(
-                    twitchChannel = normalGameState.getTwitchChannel(),
-                    userId = normalGameState.getUserId()
-                )
-
-                await self.__submitEvent(OutOfTimeTriviaEvent(
-                    triviaQuestion = normalGameState.getTriviaQuestion(),
-                    pointsForWinning = normalGameState.getPointsForWinning(),
-                    specialTriviaStatus = normalGameState.getSpecialTriviaStatus(),
-                    actionId = normalGameState.getActionId(),
-                    emote = normalGameState.getEmote(),
-                    gameId = normalGameState.getGameId(),
-                    twitchChannel = normalGameState.getTwitchChannel(),
-                    userId = normalGameState.getUserId(),
-                    userName = normalGameState.getUserName(),
-                    triviaScoreResult = triviaScoreResult
-                ))
+                await self.__removeDeadNormalTriviaGame(state)
             elif state.getTriviaGameType() is TriviaGameType.SUPER:
-                superGameState: SuperTriviaGameState = state
-                await self.__removeSuperTriviaGame(superGameState.getTwitchChannel())
-
-                toxicTriviaPunishments: Optional[List[ToxicTriviaPunishment]] = None
-                if superGameState.isToxic():
-                    toxicTriviaPunishments = await self.__applyToxicSuperTriviaPunishment(
-                        action = None,
-                        state = superGameState
-                    )
-
-                remainingQueueSize = await self.__queuedTriviaGameStore.getQueuedSuperGamesSize(
-                    twitchChannel = superGameState.getTwitchChannel()
-                )
-
-                await self.__submitEvent(OutOfTimeSuperTriviaEvent(
-                    triviaQuestion = superGameState.getTriviaQuestion(),
-                    pointsForWinning = superGameState.getPointsForWinning(),
-                    remainingQueueSize = remainingQueueSize,
-                    toxicTriviaPunishments = toxicTriviaPunishments,
-                    specialTriviaStatus = superGameState.getSpecialTriviaStatus(),
-                    actionId = superGameState.getActionId(),
-                    emote = superGameState.getEmote(),
-                    gameId = superGameState.getGameId(),
-                    twitchChannel = superGameState.getTwitchChannel()
-                ))
+                await self.__removeDeadSuperTriviaGame(state)
             else:
                 raise UnknownTriviaGameTypeException(f'Unknown TriviaGameType (gameId=\"{state.getGameId()}\") (twitchChannel=\"{state.getTwitchChannel()}\") (actionId=\"{state.getActionId()}\"): \"{state.getTriviaGameType()}\"')
+
+    async def __removeDeadNormalTriviaGame(self, state: TriviaGameState):
+        if not isinstance(state, TriviaGameState):
+            raise ValueError(f'state argument is malformed: \"{state}\"')
+
+        await self.__removeNormalTriviaGame(
+            twitchChannel = state.getTwitchChannel(),
+            userId = state.getUserId()
+        )
+
+        triviaScoreResult = await self.__triviaScoreRepository.incrementTriviaLosses(
+            twitchChannel = state.getTwitchChannel(),
+            userId = state.getUserId()
+        )
+
+        await self.__submitEvent(OutOfTimeTriviaEvent(
+            triviaQuestion = state.getTriviaQuestion(),
+            pointsForWinning = state.getPointsForWinning(),
+            specialTriviaStatus = state.getSpecialTriviaStatus(),
+            actionId = state.getActionId(),
+            emote = state.getEmote(),
+            gameId = state.getGameId(),
+            twitchChannel = state.getTwitchChannel(),
+            userId = state.getUserId(),
+            userName = state.getUserName(),
+            triviaScoreResult = triviaScoreResult
+        ))
+
+    async def __removeDeadSuperTriviaGame(self, state: SuperTriviaGameState):
+        if not isinstance(state, SuperTriviaGameState):
+            raise ValueError(f'state argument is malformed: \"{state}\"')
+
+        await self.__removeSuperTriviaGame(state.getTwitchChannel())
+        toxicTriviaPunishments: Optional[List[ToxicTriviaPunishment]] = None
+
+        if state.isToxic():
+            toxicTriviaPunishments = await self.__applyToxicSuperTriviaPunishment(
+                action = None,
+                state = state
+            )
+
+        remainingQueueSize = await self.__queuedTriviaGameStore.getQueuedSuperGamesSize(
+            twitchChannel = state.getTwitchChannel()
+        )
+
+        await self.__submitEvent(OutOfTimeSuperTriviaEvent(
+            triviaQuestion = state.getTriviaQuestion(),
+            pointsForWinning = state.getPointsForWinning(),
+            remainingQueueSize = remainingQueueSize,
+            toxicTriviaPunishments = toxicTriviaPunishments,
+            specialTriviaStatus = state.getSpecialTriviaStatus(),
+            actionId = state.getActionId(),
+            emote = state.getEmote(),
+            gameId = state.getGameId(),
+            twitchChannel = state.getTwitchChannel()
+        ))
 
     async def __removeNormalTriviaGame(self, twitchChannel: str, userId: str):
         if not utils.isValidStr(twitchChannel):
