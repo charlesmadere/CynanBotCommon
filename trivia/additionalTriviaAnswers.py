@@ -36,6 +36,9 @@ class AdditionalTriviaAnswers():
     def getAdditionalAnswers(self) -> List[str]:
         return self.__additionalAnswers
 
+    def getAdditionalAnswersLen(self) -> int:
+        return len(self.__additionalAnswers)
+
     def getTriviaId(self) -> str:
         return self.__triviaId
 
