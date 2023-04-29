@@ -107,6 +107,14 @@ class TriviaSettingsRepository():
         jsonContents = await self.__readJson()
         return utils.getIntFromDict(jsonContents, 'max_phrase_guess_length', 48)
 
+    async def getMaxSuperTriviaQuestionSpoolSize(self) -> int:
+        jsonContents = await self.__readJson()
+        return utils.getIntFromDict(jsonContents, 'max_super_trivia_question_spool_size', 3)
+
+    async def getMaxTriviaQuestionSpoolSize(self) -> int:
+        jsonContents = await self.__readJson()
+        return utils.getIntFromDict(jsonContents, 'max_trivia_question_spool_size', 3)
+
     async def getMaxRetryCount(self) -> int:
         jsonContents = await self.__readJson()
         maxRetryCount = utils.getIntFromDict(jsonContents, 'max_retry_count', 5)
