@@ -1,10 +1,13 @@
 import asyncio
+import queue
 import random
 import traceback
+from queue import SimpleQueue
 from typing import Dict, List, Optional, Set
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.backgroundTaskHelper import BackgroundTaskHelper
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.absTriviaQuestionRepository import \
@@ -27,6 +30,10 @@ try:
         OpenTriviaQaTriviaQuestionRepository
     from CynanBotCommon.trivia.pkmnTriviaQuestionRepository import \
         PkmnTriviaQuestionRepository
+    from CynanBotCommon.trivia.questionAnswerTriviaConditions import \
+        QuestionAnswerTriviaConditions
+    from CynanBotCommon.trivia.questionAnswerTriviaQuestion import \
+        QuestionAnswerTriviaQuestion
     from CynanBotCommon.trivia.quizApiTriviaQuestionRepository import \
         QuizApiTriviaQuestionRepository
     from CynanBotCommon.trivia.triviaContentCode import TriviaContentCode
@@ -51,8 +58,11 @@ try:
         WillFryTriviaQuestionRepository
     from CynanBotCommon.trivia.wwtbamTriviaQuestionRepository import \
         WwtbamTriviaQuestionRepository
+    from CynanBotCommon.twitch.twitchHandleProviderInterface import \
+        TwitchHandleProviderInterface
 except:
     import utils
+    from backgroundTaskHelper import BackgroundTaskHelper
     from timber.timber import Timber
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.absTriviaQuestionRepository import AbsTriviaQuestionRepository
@@ -72,6 +82,10 @@ except:
         OpenTriviaQaTriviaQuestionRepository
     from trivia.pkmnTriviaQuestionRepository import \
         PkmnTriviaQuestionRepository
+    from trivia.questionAnswerTriviaConditions import \
+        QuestionAnswerTriviaConditions
+    from trivia.questionAnswerTriviaQuestion import \
+        QuestionAnswerTriviaQuestion
     from trivia.quizApiTriviaQuestionRepository import \
         QuizApiTriviaQuestionRepository
     from trivia.triviaContentCode import TriviaContentCode
@@ -94,11 +108,15 @@ except:
     from trivia.wwtbamTriviaQuestionRepository import \
         WwtbamTriviaQuestionRepository
 
+    from twitch.twitchHandleProviderInterface import \
+        TwitchHandleProviderInterface
+
 
 class TriviaRepository():
 
     def __init__(
         self,
+        backgroundTaskHelper: BackgroundTaskHelper,
         bongoTriviaQuestionRepository: BongoTriviaQuestionRepository,
         funtoonTriviaQuestionRepository: FuntoonTriviaQuestionRepository,
         jokeTriviaQuestionRepository: Optional[JokeTriviaQuestionRepository],
@@ -115,11 +133,15 @@ class TriviaRepository():
         triviaSettingsRepository: TriviaSettingsRepository,
         triviaSourceInstabilityHelper: TriviaSourceInstabilityHelper,
         triviaVerifier: TriviaVerifier,
+        twitchHandleProviderInterface: TwitchHandleProviderInterface,
         willFryTriviaQuestionRepository: WillFryTriviaQuestionRepository,
         wwtbamTriviaQuestionRepository: WwtbamTriviaQuestionRepository,
-        sleepTimeSeconds: float = 0.25
+        spoolerLoopSleepTimeSeconds: float = 120,
+        triviaRetrySleepTimeSeconds: float = 0.25
     ):
-        if not isinstance(bongoTriviaQuestionRepository, BongoTriviaQuestionRepository):
+        if not isinstance(backgroundTaskHelper, BackgroundTaskHelper):
+            raise ValueError(f'backgroundTaskHelper argument is malformed: \"{backgroundTaskHelper}\"')
+        elif not isinstance(bongoTriviaQuestionRepository, BongoTriviaQuestionRepository):
             raise ValueError(f'bongoTriviaQuestionRepository argument is malformed: \"{bongoTriviaQuestionRepository}\"')
         elif not isinstance(funtoonTriviaQuestionRepository, FuntoonTriviaQuestionRepository):
             raise ValueError(f'funtoonTriviaQuestionRepository argument is malformed: \"{funtoonTriviaQuestionRepository}\"')
@@ -151,14 +173,20 @@ class TriviaRepository():
             raise ValueError(f'triviaSourceInstabilityHelper argument is malformed: \"{triviaSourceInstabilityHelper}\"')
         elif not isinstance(triviaVerifier, TriviaVerifier):
             raise ValueError(f'triviaVerifier argument is malformed: \"{triviaVerifier}\"')
+        elif not isinstance(twitchHandleProviderInterface, TwitchHandleProviderInterface):
+            raise ValueError(f'twitchHandleProviderInterface argument is malformed: \"{twitchHandleProviderInterface}\"')
         elif not isinstance(willFryTriviaQuestionRepository, WillFryTriviaQuestionRepository):
             raise ValueError(f'willFryTriviaQuestionRepository argument is malformed: \"{willFryTriviaQuestionRepository}\"')
         elif not isinstance(wwtbamTriviaQuestionRepository, WwtbamTriviaQuestionRepository):
             raise ValueError(f'wwtbamTriviaQuestionRepository argument is malformed: \"{wwtbamTriviaQuestionRepository}\"')
-        elif not utils.isValidNum(sleepTimeSeconds):
-            raise ValueError(f'sleepTimeSeconds argument is malformed: \"{sleepTimeSeconds}\"')
-        elif sleepTimeSeconds < 0.25 or sleepTimeSeconds > 3:
-            raise ValueError(f'sleepTimeSeconds argument is out of bounds: {sleepTimeSeconds}')
+        elif not utils.isValidNum(spoolerLoopSleepTimeSeconds):
+            raise ValueError(f'spoolerLoopSleepTimeSeconds argument is malformed: \"{spoolerLoopSleepTimeSeconds}\"')
+        elif spoolerLoopSleepTimeSeconds < 15 or spoolerLoopSleepTimeSeconds > 300:
+            raise ValueError(f'spoolerLoopSleepTimeSeconds argument is out of bounds: {spoolerLoopSleepTimeSeconds}')
+        elif not utils.isValidNum(triviaRetrySleepTimeSeconds):
+            raise ValueError(f'triviaRetrySleepTimeSeconds argument is malformed: \"{triviaRetrySleepTimeSeconds}\"')
+        elif triviaRetrySleepTimeSeconds < 0.25 or triviaRetrySleepTimeSeconds > 3:
+            raise ValueError(f'triviaRetrySleepTimeSeconds argument is out of bounds: {triviaRetrySleepTimeSeconds}')
 
         self.__bongoTriviaQuestionRepository: AbsTriviaQuestionRepository = bongoTriviaQuestionRepository
         self.__funtoonTriviaQuestionRepository: AbsTriviaQuestionRepository = funtoonTriviaQuestionRepository
@@ -176,11 +204,16 @@ class TriviaRepository():
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
         self.__triviaSourceInstabilityHelper: TriviaSourceInstabilityHelper = triviaSourceInstabilityHelper
         self.__triviaVerifier: TriviaVerifier = triviaVerifier
+        self.__twitchHandleProviderInterfae: TwitchHandleProviderInterface = twitchHandleProviderInterface
         self.__willFryTriviaQuestionRepository: AbsTriviaQuestionRepository = willFryTriviaQuestionRepository
         self.__wwtbamTriviaQuestionRepository: AbsTriviaQuestionRepository = wwtbamTriviaQuestionRepository
-        self.__sleepTimeSeconds: float = sleepTimeSeconds
+        self.__spoolerLoopSleepTimeSeconds: float = spoolerLoopSleepTimeSeconds
+        self.__triviaRetrySleepTimeSeconds: float = triviaRetrySleepTimeSeconds
 
         self.__triviaSourceToRepositoryMap: Dict[TriviaSource, Optional[AbsTriviaQuestionRepository]] = self.__createTriviaSourceToRepositoryMap()
+        self.__superTriviaQuestionSpool: SimpleQueue[QuestionAnswerTriviaQuestion] = SimpleQueue()
+        self.__triviaQuestionSpool: SimpleQueue[AbsTriviaQuestion] = SimpleQueue()
+        backgroundTaskHelper.createTask(self.__startSpooler())
 
     async def __chooseRandomTriviaSource(self, triviaFetchOptions: TriviaFetchOptions) -> AbsTriviaQuestionRepository:
         if not isinstance(triviaFetchOptions, TriviaFetchOptions):
@@ -253,23 +286,26 @@ class TriviaRepository():
         attemptedTriviaSources: List[TriviaSource] = list()
 
         while retryCount < maxRetryCount:
-            triviaQuestionRepository = await self.__chooseRandomTriviaSource(triviaFetchOptions)
-            triviaSource = triviaQuestionRepository.getTriviaSource()
-            attemptedTriviaSources.append(triviaSource)
+            question = await self.__retrieveSpooledTriviaQuestion(triviaFetchOptions)
 
-            try:
-                question = await triviaQuestionRepository.fetchTriviaQuestion(triviaFetchOptions.getTwitchChannel())
-            except (NoTriviaCorrectAnswersException, NoTriviaMultipleChoiceResponsesException, NoTriviaQuestionException) as e:
-                self.__timber.log('TriviaRepository', f'Failed to fetch trivia question due to malformed data (trivia source was \"{triviaSource}\"): {e}', e)
-            except GenericTriviaNetworkException as e:
-                errorCount = self.__triviaSourceInstabilityHelper.incrementErrorCount(triviaSource)
-                self.__timber.log('TriviaRepository', f'Encountered network Exception when fetching trivia question (trivia source was \"{triviaSource}\") (new error count is {errorCount}): {e}', e)
-            except MalformedTriviaJsonException as e:
-                errorCount = self.__triviaSourceInstabilityHelper.incrementErrorCount(triviaSource)
-                self.__timber.log('TriviaRepository', f'Encountered malformed JSON Exception when fetching trivia question (trivia source was \"{triviaSource}\") (new error count is {errorCount}): {e}', e)
-            except Exception as e:
-                errorCount = self.__triviaSourceInstabilityHelper.incrementErrorCount(triviaSource)
-                self.__timber.log('TriviaRepository', f'Encountered unknown Exception when fetching trivia question (trivia source was \"{triviaSource}\") (new error count is {errorCount}): {e}', e, traceback.format_exc())
+            if question is None:
+                triviaQuestionRepository = await self.__chooseRandomTriviaSource(triviaFetchOptions)
+                triviaSource = triviaQuestionRepository.getTriviaSource()
+                attemptedTriviaSources.append(triviaSource)
+
+                try:
+                    question = await triviaQuestionRepository.fetchTriviaQuestion(triviaFetchOptions.getTwitchChannel())
+                except (NoTriviaCorrectAnswersException, NoTriviaMultipleChoiceResponsesException, NoTriviaQuestionException) as e:
+                    self.__timber.log('TriviaRepository', f'Failed to fetch trivia question due to malformed data (trivia source was \"{triviaSource}\"): {e}', e)
+                except GenericTriviaNetworkException as e:
+                    errorCount = self.__triviaSourceInstabilityHelper.incrementErrorCount(triviaSource)
+                    self.__timber.log('TriviaRepository', f'Encountered network Exception when fetching trivia question (trivia source was \"{triviaSource}\") (new error count is {errorCount}): {e}', e)
+                except MalformedTriviaJsonException as e:
+                    errorCount = self.__triviaSourceInstabilityHelper.incrementErrorCount(triviaSource)
+                    self.__timber.log('TriviaRepository', f'Encountered malformed JSON Exception when fetching trivia question (trivia source was \"{triviaSource}\") (new error count is {errorCount}): {e}', e)
+                except Exception as e:
+                    errorCount = self.__triviaSourceInstabilityHelper.incrementErrorCount(triviaSource)
+                    self.__timber.log('TriviaRepository', f'Encountered unknown Exception when fetching trivia question (trivia source was \"{triviaSource}\") (new error count is {errorCount}): {e}', e, traceback.format_exc())
 
             if await self.__verifyGoodTriviaQuestion(
                 question = question,
@@ -278,8 +314,9 @@ class TriviaRepository():
             ):
                 return question
 
+            question = None
             retryCount = retryCount + 1
-            await asyncio.sleep(self.__sleepTimeSeconds * float(retryCount))
+            await asyncio.sleep(self.__triviaRetrySleepTimeSeconds * float(retryCount))
 
         raise TooManyTriviaFetchAttemptsException(f'Unable to fetch trivia from {attemptedTriviaSources} after {retryCount} attempts (max attempts is {maxRetryCount})')
 
@@ -345,6 +382,72 @@ class TriviaRepository():
 
     async def __isQuizApiTriviaQuestionRepositoryAvailable(self) -> bool:
         return self.__quizApiTriviaQuestionRepository is not None
+
+    async def __retrieveSpooledTriviaQuestion(
+        self,
+        triviaFetchOptions: TriviaFetchOptions
+    ) -> Optional[AbsTriviaQuestion]:
+        if not isinstance(triviaFetchOptions, TriviaFetchOptions):
+            raise ValueError(f'triviaFetchOptions argument is malformed: \"{triviaFetchOptions}\"')
+
+        if triviaFetchOptions.requireQuestionAnswerTriviaQuestion():
+            if not self.__superTriviaQuestionSpool.empty():
+                try:
+                    self.__timber.log('TriviaRepository', f'Retrieving spooled super trivia question (current qsize: {self.__superTriviaQuestionSpool.qsize()})')
+                    return self.__superTriviaQuestionSpool.get_nowait()
+                except queue.Empty as e:
+                    self.__timber.log('TriviaRepository', f'Encountered queue.Empty when trying to retrieve a spooled super trivia question', e, traceback.format_exc())
+        else:
+            if not self.__triviaQuestionSpool.empty():
+                try:
+                    self.__timber.log('TriviaRepository', f'Retrieving spooled trivia question (current qsize: {self.__triviaQuestionSpool.qsize()})')
+                    return self.__triviaQuestionSpool.get_nowait()
+                except queue.Empty as e:
+                    self.__timber.log('TriviaRepository', f'Encountered queue.Empty when trying to retrieve a spooled trivia question', e, traceback.format_exc())
+
+        return None
+
+    async def __startSpooler(self):
+        while True:
+            try:
+                if self.__triviaQuestionSpool.qsize() < self.__triviaSettingsRepository.getMaxTriviaQuestionSpoolSize():
+                    triviaFetchOptions = TriviaFetchOptions(
+                        twitchChannel = await self.__twitchHandleProviderInterfae.getTwitchHandle(),
+                        isJokeTriviaRepositoryEnabled = False,
+                        questionAnswerTriviaConditions = QuestionAnswerTriviaConditions.NOT_ALLOWED
+                    )
+
+                    self.__timber.log('TriviaRepository', f'Spooling up a trivia question (current qsize: {self.__triviaQuestionSpool.qsize()})')
+                    triviaQuestionRepository = await self.__chooseRandomTriviaSource(triviaFetchOptions)
+                    question = await triviaQuestionRepository.fetchTriviaQuestion(triviaFetchOptions.getTwitchChannel())
+
+                    if question.getTriviaType() is TriviaType.QUESTION_ANSWER or isinstance(question, QuestionAnswerTriviaQuestion):
+                        self.__timber.log('TriviaRepository', f'Encountered unexpected trivia question type: \"{question}\"')
+                    else:
+                        self.__triviaQuestionSpool.put(question)
+            except Exception as e:
+                self.__timber.log('TriviaRepository', f'Encountered unknown Exception when refreshing trivia question spool', e, traceback.format_exc())
+
+            try:
+                if self.__superTriviaQuestionSpool.qsize() < self.__triviaSettingsRepository.getMaxSuperTriviaQuestionSpoolSize():
+                    triviaFetchOptions = TriviaFetchOptions(
+                        twitchChannel = await self.__twitchHandleProviderInterfae.getTwitchHandle(),
+                        isJokeTriviaRepositoryEnabled = False,
+                        questionAnswerTriviaConditions = QuestionAnswerTriviaConditions.REQUIRED
+                    )
+
+                    self.__timber.log('TriviaRepository', f'Spooling up a super trivia question (current qsize: {self.__superTriviaQuestionSpool.qsize()})')
+                    triviaQuestionRepository = await self.__chooseRandomTriviaSource(triviaFetchOptions)
+                    question = await triviaQuestionRepository.fetchTriviaQuestion(triviaFetchOptions.getTwitchChannel())
+
+                    if question.getTriviaType() is TriviaType.QUESTION_ANSWER and isinstance(question, QuestionAnswerTriviaQuestion):
+                        self.__superTriviaQuestionSpool.put(question)
+                    else:
+                        self.__timber.log('TriviaRepository', f'Encountered unexpected super trivia question type: \"{question}\"')
+            except Exception as e:
+                self.__timber.log('TriviaRepository', f'Encountered unknown Exception when refreshing super trivia question spool', e, traceback.format_exc())
+
+            await asyncio.sleep(self.__spoolerLoopSleepTimeSeconds)
 
     async def __verifyGoodTriviaQuestion(
         self,
