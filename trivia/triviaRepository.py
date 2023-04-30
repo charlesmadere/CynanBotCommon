@@ -410,7 +410,7 @@ class TriviaRepository():
     async def __startSpooler(self):
         while True:
             try:
-                if self.__triviaQuestionSpool.qsize() < self.__triviaSettingsRepository.getMaxTriviaQuestionSpoolSize():
+                if self.__triviaQuestionSpool.qsize() < await self.__triviaSettingsRepository.getMaxTriviaQuestionSpoolSize():
                     triviaFetchOptions = TriviaFetchOptions(
                         twitchChannel = await self.__twitchHandleProviderInterfae.getTwitchHandle(),
                         isJokeTriviaRepositoryEnabled = False,
@@ -429,7 +429,7 @@ class TriviaRepository():
                 self.__timber.log('TriviaRepository', f'Encountered unknown Exception when refreshing trivia question spool', e, traceback.format_exc())
 
             try:
-                if self.__superTriviaQuestionSpool.qsize() < self.__triviaSettingsRepository.getMaxSuperTriviaQuestionSpoolSize():
+                if self.__superTriviaQuestionSpool.qsize() < await self.__triviaSettingsRepository.getMaxSuperTriviaQuestionSpoolSize():
                     triviaFetchOptions = TriviaFetchOptions(
                         twitchChannel = await self.__twitchHandleProviderInterfae.getTwitchHandle(),
                         isJokeTriviaRepositoryEnabled = False,
