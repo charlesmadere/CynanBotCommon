@@ -213,7 +213,7 @@ class TriviaRepository():
         self.__triviaSourceToRepositoryMap: Dict[TriviaSource, Optional[AbsTriviaQuestionRepository]] = self.__createTriviaSourceToRepositoryMap()
         self.__superTriviaQuestionSpool: SimpleQueue[QuestionAnswerTriviaQuestion] = SimpleQueue()
         self.__triviaQuestionSpool: SimpleQueue[AbsTriviaQuestion] = SimpleQueue()
-        backgroundTaskHelper.createTask(self.__startSpooler())
+        backgroundTaskHelper.createTask(self.__startTriviaQuestionSpooler())
 
     async def __chooseRandomTriviaSource(self, triviaFetchOptions: TriviaFetchOptions) -> AbsTriviaQuestionRepository:
         if not isinstance(triviaFetchOptions, TriviaFetchOptions):
@@ -407,43 +407,53 @@ class TriviaRepository():
 
         return None
 
-    async def __startSpooler(self):
+    async def __spoolNewSuperTriviaQuestion(self):
+        if self.__superTriviaQuestionSpool.qsize() >= await self.__triviaSettingsRepository.getMaxSuperTriviaQuestionSpoolSize():
+            return
+
+        triviaFetchOptions = TriviaFetchOptions(
+            twitchChannel = await self.__twitchHandleProviderInterfae.getTwitchHandle(),
+            isJokeTriviaRepositoryEnabled = False,
+            questionAnswerTriviaConditions = QuestionAnswerTriviaConditions.REQUIRED
+        )
+
+        self.__timber.log('TriviaRepository', f'Spooling up a super trivia question (current qsize: {self.__superTriviaQuestionSpool.qsize()})')
+        triviaQuestionRepository = await self.__chooseRandomTriviaSource(triviaFetchOptions)
+        question = await triviaQuestionRepository.fetchTriviaQuestion(triviaFetchOptions.getTwitchChannel())
+
+        if question.getTriviaType() is TriviaType.QUESTION_ANSWER and isinstance(question, QuestionAnswerTriviaQuestion):
+            self.__superTriviaQuestionSpool.put(question)
+        else:
+            self.__timber.log('TriviaRepository', f'Encountered unexpected super trivia question type: \"{question}\"')
+
+    async def __spoolNewTriviaQuestion(self):
+        if self.__triviaQuestionSpool.qsize() >= await self.__triviaSettingsRepository.getMaxTriviaQuestionSpoolSize():
+            return
+
+        triviaFetchOptions = TriviaFetchOptions(
+            twitchChannel = await self.__twitchHandleProviderInterfae.getTwitchHandle(),
+            isJokeTriviaRepositoryEnabled = False,
+            questionAnswerTriviaConditions = QuestionAnswerTriviaConditions.NOT_ALLOWED
+        )
+
+        self.__timber.log('TriviaRepository', f'Spooling up a trivia question (current qsize: {self.__triviaQuestionSpool.qsize()})')
+        triviaQuestionRepository = await self.__chooseRandomTriviaSource(triviaFetchOptions)
+        question = await triviaQuestionRepository.fetchTriviaQuestion(triviaFetchOptions.getTwitchChannel())
+
+        if question.getTriviaType() is TriviaType.QUESTION_ANSWER or isinstance(question, QuestionAnswerTriviaQuestion):
+            self.__timber.log('TriviaRepository', f'Encountered unexpected trivia question type: \"{question}\"')
+        else:
+            self.__triviaQuestionSpool.put(question)
+
+    async def __startTriviaQuestionSpooler(self):
         while True:
             try:
-                if self.__triviaQuestionSpool.qsize() < await self.__triviaSettingsRepository.getMaxTriviaQuestionSpoolSize():
-                    triviaFetchOptions = TriviaFetchOptions(
-                        twitchChannel = await self.__twitchHandleProviderInterfae.getTwitchHandle(),
-                        isJokeTriviaRepositoryEnabled = False,
-                        questionAnswerTriviaConditions = QuestionAnswerTriviaConditions.NOT_ALLOWED
-                    )
-
-                    self.__timber.log('TriviaRepository', f'Spooling up a trivia question (current qsize: {self.__triviaQuestionSpool.qsize()})')
-                    triviaQuestionRepository = await self.__chooseRandomTriviaSource(triviaFetchOptions)
-                    question = await triviaQuestionRepository.fetchTriviaQuestion(triviaFetchOptions.getTwitchChannel())
-
-                    if question.getTriviaType() is TriviaType.QUESTION_ANSWER or isinstance(question, QuestionAnswerTriviaQuestion):
-                        self.__timber.log('TriviaRepository', f'Encountered unexpected trivia question type: \"{question}\"')
-                    else:
-                        self.__triviaQuestionSpool.put(question)
+                await self.__spoolNewTriviaQuestion()
             except Exception as e:
                 self.__timber.log('TriviaRepository', f'Encountered unknown Exception when refreshing trivia question spool', e, traceback.format_exc())
 
             try:
-                if self.__superTriviaQuestionSpool.qsize() < await self.__triviaSettingsRepository.getMaxSuperTriviaQuestionSpoolSize():
-                    triviaFetchOptions = TriviaFetchOptions(
-                        twitchChannel = await self.__twitchHandleProviderInterfae.getTwitchHandle(),
-                        isJokeTriviaRepositoryEnabled = False,
-                        questionAnswerTriviaConditions = QuestionAnswerTriviaConditions.REQUIRED
-                    )
-
-                    self.__timber.log('TriviaRepository', f'Spooling up a super trivia question (current qsize: {self.__superTriviaQuestionSpool.qsize()})')
-                    triviaQuestionRepository = await self.__chooseRandomTriviaSource(triviaFetchOptions)
-                    question = await triviaQuestionRepository.fetchTriviaQuestion(triviaFetchOptions.getTwitchChannel())
-
-                    if question.getTriviaType() is TriviaType.QUESTION_ANSWER and isinstance(question, QuestionAnswerTriviaQuestion):
-                        self.__superTriviaQuestionSpool.put(question)
-                    else:
-                        self.__timber.log('TriviaRepository', f'Encountered unexpected super trivia question type: \"{question}\"')
+                await self.__spoolNewSuperTriviaQuestion()
             except Exception as e:
                 self.__timber.log('TriviaRepository', f'Encountered unknown Exception when refreshing super trivia question spool', e, traceback.format_exc())
 
