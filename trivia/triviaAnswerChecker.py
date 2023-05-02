@@ -362,7 +362,7 @@ class TriviaAnswerChecker():
             yield 'height'
         if word in ('hiwy', 'hiway', 'hway', 'hwy'):
             yield 'highway'
-        if word in ('is', 'isl'):
+        if word in ('is', 'isl', 'isle'):
             yield 'island'
         if word in ('ldg', 'ldge'):
             yield 'lodge'
@@ -449,13 +449,13 @@ class TriviaAnswerChecker():
             yield 'united states dollar'
 
         # directions
-        if word in ('n', 'north', 'northern'):
+        if word in ('n', 'north', 'northerly', 'northern'):
             yield 'north'
-        if word in ('s', 'south', 'southern'):
+        if word in ('s', 'south', 'southerly', 'southern'):
             yield 'south'
-        if word in ('e', 'east', 'eastern'):
+        if word in ('e', 'east', 'easterly', 'eastern'):
             yield 'east'
-        if word in ('w', 'west', 'western'):
+        if word in ('w', 'west', 'westerly', 'western'):
             yield 'west'
         if word in ('nw', 'northwest', 'northwestern'):
             yield 'northwest'
