@@ -11,15 +11,19 @@ try:
     from CynanBotCommon.network.exceptions import GenericNetworkException
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.twitch.twitchApiService import TwitchApiService
+    from CynanBotCommon.twitch.twitchTokensRepositoryInterface import \
+        TwitchTokensRepositoryInterface
 except:
     import utils
     from network.exceptions import GenericNetworkException
     from timber.timber import Timber
 
     from twitch.twitchApiService import TwitchApiService
+    from twitch.twitchTokensRepositoryInterface import \
+        TwitchTokensRepositoryInterface
 
 
-class TwitchTokensRepository():
+class TwitchTokensRepository(TwitchTokensRepositoryInterface):
 
     def __init__(
         self,
@@ -122,7 +126,7 @@ class TwitchTokensRepository():
 
         return list(expiringTwitchHandles)
 
-    async def getRefreshToken(self, twitchHandle: str) -> str:
+    async def getRefreshToken(self, twitchHandle: str) -> Optional[str]:
         if not utils.isValidStr(twitchHandle):
             raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
 
@@ -187,24 +191,6 @@ class TwitchTokensRepository():
         # is a good bit easier to handle than throwing an exception, or something else like that.
         return dict()
 
-    async def removeUser(self, twitchHandle: str):
-        if not utils.isValidStr(twitchHandle):
-            raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
-
-        twitchHandle = twitchHandle.lower()
-        self.__timber.log('TwitchTokensRepository', f'Adding user \"{twitchHandle}\"...')
-
-        if not await self.hasAccessToken(twitchHandle):
-            self.__timber.log(f'Attempted to remove user \"{twitchHandle}\", but they do not have Twitch tokens')
-            return
-
-        jsonContents = await self.__readAllJson()
-
-        if twitchHandle in jsonContents['twitchHandles']:
-            del jsonContents['twitchHandles'][twitchHandle]
-
-        await self.__flush(jsonContents)
-
     async def __refreshTokens(self, twitchHandle: str):
         if not utils.isValidStr(twitchHandle):
             raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
@@ -235,6 +221,24 @@ class TwitchTokensRepository():
             twitchHandle = twitchHandle,
             expiresInSeconds = tokens.getExpiresInSeconds()
         )
+
+    async def removeUser(self, twitchHandle: str):
+        if not utils.isValidStr(twitchHandle):
+            raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
+
+        twitchHandle = twitchHandle.lower()
+        self.__timber.log('TwitchTokensRepository', f'Adding user \"{twitchHandle}\"...')
+
+        if not await self.hasAccessToken(twitchHandle):
+            self.__timber.log(f'Attempted to remove user \"{twitchHandle}\", but they do not have Twitch tokens')
+            return
+
+        jsonContents = await self.__readAllJson()
+
+        if twitchHandle in jsonContents['twitchHandles']:
+            del jsonContents['twitchHandles'][twitchHandle]
+
+        await self.__flush(jsonContents)
 
     async def requireAccessToken(self, twitchHandle: str) -> str:
         if not utils.isValidStr(twitchHandle):

@@ -1,4 +1,7 @@
 class AdministratorProviderInterface():
 
-    async def getAdministrator(self) -> str:
+    async def getAdministratorUserId(self) -> str:
+        pass
+
+    async def getAdministratorUserName(self) -> str:
         pass

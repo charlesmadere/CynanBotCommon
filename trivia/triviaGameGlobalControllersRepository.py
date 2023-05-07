@@ -14,8 +14,6 @@ try:
         RemoveTriviaGameControllerResult
     from CynanBotCommon.trivia.triviaGameGlobalController import \
         TriviaGameGlobalController
-    from CynanBotCommon.twitch.twitchTokensRepository import \
-        TwitchTokensRepository
     from CynanBotCommon.users.userIdsRepository import UserIdsRepository
 except:
     import utils
@@ -30,7 +28,8 @@ except:
         RemoveTriviaGameControllerResult
     from trivia.triviaGameGlobalController import TriviaGameGlobalController
 
-    from twitch.twitchTokensRepository import TwitchTokensRepository
+    from twitch.twitchTokensRepositoryInterface import \
+        TwitchTokensRepositoryInterface
     from users.userIdsRepository import UserIdsRepository
 
 
@@ -41,7 +40,7 @@ class TriviaGameGlobalControllersRepository():
         administratorProviderInterface: AdministratorProviderInterface,
         backingDatabase: BackingDatabase,
         timber: Timber,
-        twitchTokensRepository: TwitchTokensRepository,
+        twitchTokensRepositoryInterface: TwitchTokensRepositoryInterface,
         userIdsRepository: UserIdsRepository
     ):
         if not isinstance(administratorProviderInterface, AdministratorProviderInterface):
@@ -50,15 +49,15 @@ class TriviaGameGlobalControllersRepository():
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
         elif not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif not isinstance(twitchTokensRepository, TwitchTokensRepository):
-            raise ValueError(f'twitchTokensRepository argument is malformed: \"{twitchTokensRepository}\"')
+        elif not isinstance(twitchTokensRepositoryInterface, TwitchTokensRepositoryInterface):
+            raise ValueError(f'twitchTokensRepositoryInterface argument is malformed: \"{twitchTokensRepositoryInterface}\"')
         elif not isinstance(userIdsRepository, UserIdsRepository):
             raise ValueError(f'userIdsRepository argument is malformed: \"{userIdsRepository}\"')
 
         self.__administratorProviderInterface: AdministratorProviderInterface = administratorProviderInterface
         self.__backingDatabase: BackingDatabase = backingDatabase
         self.__timber: Timber = timber
-        self.__twitchTokensRepository: TwitchTokensRepository = twitchTokensRepository
+        self.__twitchTokensRepositoryInterface: TwitchTokensRepositoryInterface = twitchTokensRepositoryInterface
         self.__userIdsRepository: UserIdsRepository = userIdsRepository
 
         self.__isDatabaseReady: bool = False
@@ -67,8 +66,8 @@ class TriviaGameGlobalControllersRepository():
         if not utils.isValidStr(userName):
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
 
-        administrator = await self.__administratorProviderInterface.getAdministrator()
-        twitchAccessToken = await self.__twitchTokensRepository.getAccessToken(administrator)
+        administrator = await self.__administratorProviderInterface.getAdministratorUserName()
+        twitchAccessToken = await self.__twitchTokensRepositoryInterface.getAccessToken(administrator)
         userId: Optional[str] = None
 
         try:
