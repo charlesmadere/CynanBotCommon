@@ -12,7 +12,7 @@ try:
         RemoveTriviaGameControllerResult
     from CynanBotCommon.trivia.triviaGameController import TriviaGameController
     from CynanBotCommon.twitch.twitchTokensRepository import \
-        TwitchTokensRepository
+        TwitchTokensRepositoryInterface
     from CynanBotCommon.users.userIdsRepository import UserIdsRepository
 except:
     import utils
@@ -26,7 +26,8 @@ except:
         RemoveTriviaGameControllerResult
     from trivia.triviaGameController import TriviaGameController
 
-    from twitch.twitchTokensRepository import TwitchTokensRepository
+    from twitch.twitchTokensRepositoryInterface import \
+        TwitchTokensRepositoryInterface
     from users.userIdsRepository import UserIdsRepository
 
 
@@ -36,21 +37,21 @@ class TriviaGameControllersRepository():
         self,
         backingDatabase: BackingDatabase,
         timber: Timber,
-        twitchTokensRepository: TwitchTokensRepository,
+        twitchTokensRepositoryInterface: TwitchTokensRepositoryInterface,
         userIdsRepository: UserIdsRepository
     ):
         if not isinstance(backingDatabase, BackingDatabase):
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
         elif not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif not isinstance(twitchTokensRepository, TwitchTokensRepository):
-            raise ValueError(f'twitchTokensRepository argument is malformed: \"{twitchTokensRepository}\"')
+        elif not isinstance(twitchTokensRepositoryInterface, TwitchTokensRepositoryInterface):
+            raise ValueError(f'twitchTokensRepository argument is malformed: \"{twitchTokensRepositoryInterface}\"')
         elif not isinstance(userIdsRepository, UserIdsRepository):
             raise ValueError(f'userIdsRepository argument is malformed: \"{userIdsRepository}\"')
 
         self.__backingDatabase: BackingDatabase = backingDatabase
         self.__timber: Timber = timber
-        self.__twitchTokensRepository: TwitchTokensRepository = twitchTokensRepository
+        self.__twitchTokensRepositoryInterface: TwitchTokensRepositoryInterface = twitchTokensRepositoryInterface
         self.__userIdsRepository: UserIdsRepository = userIdsRepository
 
         self.__isDatabaseReady: bool = False
@@ -65,7 +66,7 @@ class TriviaGameControllersRepository():
         elif not utils.isValidStr(userName):
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
 
-        twitchAccessToken = await self.__twitchTokensRepository.getAccessToken(twitchChannel)
+        twitchAccessToken = await self.__twitchTokensRepositoryInterface.getAccessToken(twitchChannel)
         userId: Optional[str] = None
 
         try:
