@@ -14,6 +14,8 @@ try:
         RemoveTriviaGameControllerResult
     from CynanBotCommon.trivia.triviaGameGlobalController import \
         TriviaGameGlobalController
+    from CynanBotCommon.twitch.twitchTokensRepositoryInterface import \
+        TwitchTokensRepositoryInterface
     from CynanBotCommon.users.userIdsRepository import UserIdsRepository
 except:
     import utils

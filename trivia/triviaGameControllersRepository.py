@@ -11,7 +11,7 @@ try:
     from CynanBotCommon.trivia.removeTriviaGameControllerResult import \
         RemoveTriviaGameControllerResult
     from CynanBotCommon.trivia.triviaGameController import TriviaGameController
-    from CynanBotCommon.twitch.twitchTokensRepository import \
+    from CynanBotCommon.twitch.twitchTokensRepositoryInterface import \
         TwitchTokensRepositoryInterface
     from CynanBotCommon.users.userIdsRepository import UserIdsRepository
 except:
