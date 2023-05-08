@@ -16,6 +16,7 @@ except:
     from storage.databaseConnection import DatabaseConnection
     from storage.databaseType import DatabaseType
     from timber.timber import Timber
+
     from twitch.twitchApiService import TwitchApiService
     from twitch.twitchUserDetails import TwitchUserDetails
 
@@ -48,6 +49,8 @@ class UserIdsRepository():
     ) -> str:
         if not utils.isValidStr(userName):
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
+        elif twitchAccessToken is not None and not utils.isValidStr(twitchAccessToken):
+            raise ValueError(f'twitchAccessToken argument is malformed: \"{twitchAccessToken}\"')
 
         connection = await self.__getDatabaseConnection()
         record = await connection.fetchRow(
@@ -70,8 +73,7 @@ class UserIdsRepository():
         elif not utils.isValidStr(twitchAccessToken):
             raise RuntimeError(f'UserIdsRepository can\'t lookup Twitch user ID for \"{userName}\" as no twitchAccessToken was specified')
 
-        self.__timber.log('UserIdsRepository', f'User ID for userName \"{userName}\" wasn\'t found locally, so performing a network call to fetch instead...')
-
+        self.__timber.log('UserIdsRepository', f'User ID for username \"{userName}\" wasn\'t found locally, so performing a network call to fetch instead...')
         userDetails: Optional[TwitchUserDetails] = None
 
         try:
@@ -103,11 +105,17 @@ class UserIdsRepository():
 
         return int(userId)
 
-    async def fetchUserName(self, userId: str) -> str:
+    async def fetchUserName(
+        self,
+        userId: str,
+        twitchAccessToken: Optional[str] = None
+    ) -> str:
         if not utils.isValidStr(userId):
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
         elif userId == '0':
             raise ValueError(f'userId argument is an illegal value: \"{userId}\"')
+        elif twitchAccessToken is not None and not utils.isValidStr(twitchAccessToken):
+            raise ValueError(f'twitchAccessToken argument is malformed: \"{twitchAccessToken}\"')
 
         connection = await self.__getDatabaseConnection()
         record = await connection.fetchRow(
@@ -119,14 +127,35 @@ class UserIdsRepository():
             userId
         )
 
-        if not utils.hasItems(record):
-            raise RuntimeError(f'No userName for userId \"{userId}\" found')
-
-        userName: Optional[str] = record[0]
-        if not utils.isValidStr(userName):
-            raise RuntimeError(f'userName for userId \"{userId}\" is malformed: \"{userName}\"')
+        userName: Optional[str] = None
+        if utils.hasItems(record):
+            userName = record[0]
 
         await connection.close()
+
+        if utils.isValidStr(userName):
+            return userName
+        elif not utils.isValidStr(twitchAccessToken):
+            raise RuntimeError(f'UserIdsRepository can\'t lookup Twitch username for \"{userId}\" as no twitchAccessToken was specified')
+
+        self.__timber.log('UserIdsRepository', f'Username for user ID \"{userId}\" wasn\'t found locally, so performing a network call to fetch instead...')
+        userDetails: Optional[TwitchUserDetails] = None
+
+        try:
+            userDetails = await self.__twitchApiService.fetchUserDetails(
+                twitchAccessToken = twitchAccessToken,
+                userName = userName
+            )
+        except GenericNetworkException as e:
+            self.__timber.log('UserIdsRepository', f'Received a network error of some kind when fetching username for user ID \"{userId}\": {e}', e)
+            raise GenericNetworkException(f'UserIdsRepository received a network error of some kind when fetching username for user ID \"{userId}\": {e}')
+
+        if userDetails is None:
+            raise RuntimeError(f'Unable to retrieve username for user ID \"{userId}\" from the Twitch API')
+
+        userName = userDetails.getLogin()
+        await self.setUser(userId = userId, userName = userName)
+
         return userName
 
     async def __getDatabaseConnection(self) -> DatabaseConnection:
