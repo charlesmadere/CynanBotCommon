@@ -64,6 +64,8 @@ try:
     from CynanBotCommon.trivia.toxicTriviaHelper import ToxicTriviaHelper
     from CynanBotCommon.trivia.toxicTriviaPunishment import \
         ToxicTriviaPunishment
+    from CynanBotCommon.trivia.toxicTriviaPunishmentResult import \
+        ToxicTriviaPunishmentResult
     from CynanBotCommon.trivia.triviaActionType import TriviaActionType
     from CynanBotCommon.trivia.triviaAnswerChecker import TriviaAnswerChecker
     from CynanBotCommon.trivia.triviaAnswerCheckResult import \
@@ -134,6 +136,7 @@ except:
     from trivia.superTriviaGameState import SuperTriviaGameState
     from trivia.toxicTriviaHelper import ToxicTriviaHelper
     from trivia.toxicTriviaPunishment import ToxicTriviaPunishment
+    from trivia.toxicTriviaPunishmentResult import ToxicTriviaPunishmentResult
     from trivia.triviaActionType import TriviaActionType
     from trivia.triviaAnswerChecker import TriviaAnswerChecker
     from trivia.triviaAnswerCheckResult import TriviaAnswerCheckResult
@@ -243,7 +246,7 @@ class TriviaGameMachine():
         self,
         action: Optional[CheckSuperAnswerTriviaAction],
         state: SuperTriviaGameState
-    ) -> Optional[List[ToxicTriviaPunishment]]:
+    ) -> Optional[ToxicTriviaPunishmentResult]:
         if action is not None and not isinstance(action, CheckSuperAnswerTriviaAction):
             raise ValueError(f'action argument is malformed: \"{action}\"')
         elif not isinstance(state, SuperTriviaGameState):
@@ -264,9 +267,12 @@ class TriviaGameMachine():
             return toxicTriviaPunishments
 
         twitchAccessToken = await self.__twitchTokensRepositoryInterface.getAccessToken(action.getTwitchChannel())
+        totalPointsStolen: int = 0
 
         for userId, answerCount in answeredUserIds.items():
             punishedByPoints: int = -1 * toxicTriviaPunishmentAmount * answerCount
+            totalPointsStolen = totalPointsStolen + punishedByPoints
+
             userName = await self.__userIdsRepository.fetchUserName(
                 userId = userId,
                 twitchAccessToken = twitchAccessToken
@@ -287,10 +293,13 @@ class TriviaGameMachine():
                 userName = userName
             ))
 
-        self.__timber.log('TriviaGameMachine', f'Applied toxic trivia punishments to {len(toxicTriviaPunishments)} user(s) in \"{state.getTwitchChannel()}\"')
-
+        self.__timber.log('TriviaGameMachine', f'Applied toxic trivia punishments to {len(toxicTriviaPunishments)} user(s) in \"{state.getTwitchChannel()}\" for a total punishment of {totalPointsStolen} point(s)')
         toxicTriviaPunishments.sort(key = lambda punishment: (punishment.getPunishedByPoints(), punishment.getUserName().lower()))
-        return toxicTriviaPunishments
+
+        return ToxicTriviaPunishmentResult(
+            totalPointsStolen = totalPointsStolen,
+            toxicTriviaPunishments = toxicTriviaPunishments,
+        )
 
     async def __beginQueuedTriviaGames(self):
         activeChannelsSet: Set[str] = set()
@@ -492,7 +501,8 @@ class TriviaGameMachine():
             return
 
         await self.__removeSuperTriviaGame(action.getTwitchChannel())
-        toxicTriviaPunishments: Optional[List[ToxicTriviaPunishment]] = None
+        toxicTriviaPunishmentResult: Optional[ToxicTriviaPunishmentResult] = None
+        pointsForWinning = state.getPointsForWinning()
 
         if state.isShiny():
             await self.__shinyTriviaHelper.shinyTriviaWin(
@@ -501,7 +511,7 @@ class TriviaGameMachine():
                 userName = action.getUserName()
             )
         elif state.isToxic():
-            toxicTriviaPunishments = await self.__applyToxicSuperTriviaPunishment(
+            toxicTriviaPunishmentResult = await self.__applyToxicSuperTriviaPunishment(
                 action = action,
                 state = state
             )
@@ -512,8 +522,10 @@ class TriviaGameMachine():
                 userName = action.getUserName()
             )
 
+            pointsForWinning = pointsForWinning + toxicTriviaPunishmentResult.getTotalPointsStolen()
+
         cutenessResult = await self.__cutenessRepository.fetchCutenessIncrementedBy(
-            incrementAmount = state.getPointsForWinning(),
+            incrementAmount = pointsForWinning,
             twitchChannel = state.getTwitchChannel(),
             userId = action.getUserId(),
             userName = action.getUserName()
@@ -531,9 +543,9 @@ class TriviaGameMachine():
         await self.__submitEvent(CorrectSuperAnswerTriviaEvent(
             triviaQuestion = state.getTriviaQuestion(),
             cutenessResult = cutenessResult,
-            pointsForWinning = state.getPointsForWinning(),
+            pointsForWinning = pointsForWinning,
             remainingQueueSize = remainingQueueSize,
-            toxicTriviaPunishments = toxicTriviaPunishments,
+            toxicTriviaPunishmentResult = toxicTriviaPunishmentResult,
             specialTriviaStatus = state.getSpecialTriviaStatus(),
             actionId = action.getActionId(),
             answer = action.getAnswer(),
@@ -786,10 +798,10 @@ class TriviaGameMachine():
             raise ValueError(f'state argument is malformed: \"{state}\"')
 
         await self.__removeSuperTriviaGame(state.getTwitchChannel())
-        toxicTriviaPunishments: Optional[List[ToxicTriviaPunishment]] = None
+        toxicTriviaPunishmentResult: Optional[ToxicTriviaPunishmentResult] = None
 
         if state.isToxic():
-            toxicTriviaPunishments = await self.__applyToxicSuperTriviaPunishment(
+            toxicTriviaPunishmentResult = await self.__applyToxicSuperTriviaPunishment(
                 action = None,
                 state = state
             )
@@ -802,7 +814,7 @@ class TriviaGameMachine():
             triviaQuestion = state.getTriviaQuestion(),
             pointsForWinning = state.getPointsForWinning(),
             remainingQueueSize = remainingQueueSize,
-            toxicTriviaPunishments = toxicTriviaPunishments,
+            toxicTriviaPunishmentResult = toxicTriviaPunishmentResult,
             specialTriviaStatus = state.getSpecialTriviaStatus(),
             actionId = state.getActionId(),
             emote = state.getEmote(),

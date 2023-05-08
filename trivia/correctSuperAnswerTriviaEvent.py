@@ -1,5 +1,5 @@
 import locale
-from typing import List, Optional
+from typing import Optional
 
 try:
     import CynanBotCommon.utils as utils
@@ -7,8 +7,8 @@ try:
     from CynanBotCommon.trivia.absTriviaEvent import AbsTriviaEvent
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.specialTriviaStatus import SpecialTriviaStatus
-    from CynanBotCommon.trivia.toxicTriviaPunishment import \
-        ToxicTriviaPunishment
+    from CynanBotCommon.trivia.toxicTriviaPunishmentResult import \
+        ToxicTriviaPunishmentResult
     from CynanBotCommon.trivia.triviaEventType import TriviaEventType
     from CynanBotCommon.trivia.triviaScoreResult import TriviaScoreResult
 except:
@@ -17,7 +17,7 @@ except:
     from trivia.absTriviaEvent import AbsTriviaEvent
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.specialTriviaStatus import SpecialTriviaStatus
-    from trivia.toxicTriviaPunishment import ToxicTriviaPunishment
+    from trivia.toxicTriviaPunishmentResult import ToxicTriviaPunishmentResult
     from trivia.triviaEventType import TriviaEventType
     from trivia.triviaScoreResult import TriviaScoreResult
 
@@ -30,7 +30,7 @@ class CorrectSuperAnswerTriviaEvent(AbsTriviaEvent):
         cutenessResult: CutenessResult,
         pointsForWinning: int,
         remainingQueueSize: int,
-        toxicTriviaPunishments: Optional[List[ToxicTriviaPunishment]],
+        toxicTriviaPunishmentResult: Optional[ToxicTriviaPunishmentResult],
         specialTriviaStatus: Optional[SpecialTriviaStatus],
         actionId: str,
         answer: str,
@@ -58,6 +58,8 @@ class CorrectSuperAnswerTriviaEvent(AbsTriviaEvent):
             raise ValueError(f'remainingQueueSize argument is malformed: \"{remainingQueueSize}\"')
         elif remainingQueueSize < 0 or remainingQueueSize > utils.getIntMaxSafeSize():
             raise ValueError(f'remainingQueueSize argument is out of bounds: {remainingQueueSize}')
+        elif toxicTriviaPunishmentResult is not None and not isinstance(toxicTriviaPunishmentResult, ToxicTriviaPunishmentResult):
+            raise ValueError(f'toxicTriviaPunishmentResult argument is out of bounds: {toxicTriviaPunishmentResult}')
         elif specialTriviaStatus is not None and not isinstance(specialTriviaStatus, SpecialTriviaStatus):
             raise ValueError(f'specialTriviaStatus argument is malformed: \"{specialTriviaStatus}\"')
         elif not utils.isValidStr(answer):
@@ -79,7 +81,7 @@ class CorrectSuperAnswerTriviaEvent(AbsTriviaEvent):
         self.__cutenessResult: CutenessResult = cutenessResult
         self.__pointsForWinning: int = pointsForWinning
         self.__remainingQueueSize: int = remainingQueueSize
-        self.__toxicTriviaPunishments: Optional[List[ToxicTriviaPunishment]] = toxicTriviaPunishments
+        self.__toxicTriviaPunishmentResult: Optional[ToxicTriviaPunishmentResult] = toxicTriviaPunishmentResult
         self.__specialTriviaStatus: Optional[SpecialTriviaStatus] = specialTriviaStatus
         self.__answer: str = answer
         self.__emote: str = emote
@@ -116,8 +118,8 @@ class CorrectSuperAnswerTriviaEvent(AbsTriviaEvent):
     def getSpecialTriviaStatus(self) -> Optional[SpecialTriviaStatus]:
         return self.__specialTriviaStatus
 
-    def getToxicTriviaPunishments(self) -> Optional[List[ToxicTriviaPunishment]]:
-        return self.__toxicTriviaPunishments
+    def getToxicTriviaPunishmentResult(self) -> Optional[ToxicTriviaPunishmentResult]:
+        return self.__toxicTriviaPunishmentResult
 
     def getTriviaQuestion(self) -> AbsTriviaQuestion:
         return self.__triviaQuestion
@@ -134,8 +136,8 @@ class CorrectSuperAnswerTriviaEvent(AbsTriviaEvent):
     def getUserName(self) -> str:
         return self.__userName
 
-    def hasToxicTriviaPunishments(self) -> bool:
-        return utils.hasItems(self.__toxicTriviaPunishments)
+    def hasToxicTriviaPunishmentResult(self) -> bool:
+        return self.__toxicTriviaPunishmentResult is not None
 
     def isShiny(self) -> bool:
         return self.__specialTriviaStatus is SpecialTriviaStatus.SHINY
