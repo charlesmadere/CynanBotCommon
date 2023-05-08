@@ -81,6 +81,8 @@ try:
         TriviaScoreRepository
     from CynanBotCommon.trivia.wrongUserCheckAnswerTriviaEvent import \
         WrongUserCheckAnswerTriviaEvent
+    from CynanBotCommon.twitch.twitchTokensRepositoryInterface import \
+        TwitchTokensRepositoryInterface
     from CynanBotCommon.users.userIdsRepository import UserIdsRepository
 except:
     import utils
@@ -148,6 +150,8 @@ except:
     from trivia.wrongUserCheckAnswerTriviaEvent import \
         WrongUserCheckAnswerTriviaEvent
 
+    from twitch.twitchTokensRepositoryInterface import \
+        TwitchTokensRepositoryInterface
     from users.userIdsRepository import UserIdsRepository
 
 
@@ -167,6 +171,7 @@ class TriviaGameMachine():
         triviaGameStore: TriviaGameStore,
         triviaRepository: TriviaRepository,
         triviaScoreRepository: TriviaScoreRepository,
+        twitchTokensRepositoryInterface: TwitchTokensRepositoryInterface,
         userIdsRepository: UserIdsRepository,
         sleepTimeSeconds: float = 0.5,
         queueTimeoutSeconds: int = 3,
@@ -196,6 +201,8 @@ class TriviaGameMachine():
             raise ValueError(f'triviaRepository argument is malformed: \"{triviaRepository}\"')
         elif not isinstance(triviaScoreRepository, TriviaScoreRepository):
             raise ValueError(f'triviaScoreRepository argument is malformed: \"{triviaScoreRepository}\"')
+        elif not isinstance(twitchTokensRepositoryInterface, TwitchTokensRepositoryInterface):
+            raise ValueError(f'twitchTokensRepositoryInterface argument is malformed: \"{twitchTokensRepositoryInterface}\"')
         elif not isinstance(userIdsRepository, UserIdsRepository):
             raise ValueError(f'userIdsRepository argument is malformed: \"{userIdsRepository}\"')
         elif not utils.isValidNum(sleepTimeSeconds):
@@ -220,6 +227,7 @@ class TriviaGameMachine():
         self.__triviaGameStore: TriviaGameStore = triviaGameStore
         self.__triviaRepository: TriviaRepository = triviaRepository
         self.__triviaScoreRepository: TriviaScoreRepository = triviaScoreRepository
+        self.__twitchTokensRepositoryInterface: TwitchTokensRepositoryInterface = twitchTokensRepositoryInterface
         self.__userIdsRepository: UserIdsRepository = userIdsRepository
         self.__sleepTimeSeconds: float = sleepTimeSeconds
         self.__queueTimeoutSeconds: int = queueTimeoutSeconds
@@ -255,9 +263,14 @@ class TriviaGameMachine():
         if toxicTriviaPunishmentAmount <= 0:
             return toxicTriviaPunishments
 
+        twitchAccessToken = await self.__twitchTokensRepositoryInterface.getAccessToken(action.getTwitchChannel())
+
         for userId, answerCount in answeredUserIds.items():
             punishedByPoints: int = -1 * toxicTriviaPunishmentAmount * answerCount
-            userName = await self.__userIdsRepository.fetchUserName(userId = userId)
+            userName = await self.__userIdsRepository.fetchUserName(
+                userId = userId,
+                twitchAccessToken = twitchAccessToken
+            )
 
             cutenessResult = await self.__cutenessRepository.fetchCutenessIncrementedBy(
                 incrementAmount = punishedByPoints,
