@@ -799,6 +799,7 @@ class TriviaGameMachine():
 
         await self.__removeSuperTriviaGame(state.getTwitchChannel())
         toxicTriviaPunishmentResult: Optional[ToxicTriviaPunishmentResult] = None
+        pointsForWinning = state.getPointsForWinning()
 
         if state.isToxic():
             toxicTriviaPunishmentResult = await self.__applyToxicSuperTriviaPunishment(
@@ -806,13 +807,15 @@ class TriviaGameMachine():
                 state = state
             )
 
+            pointsForWinning = pointsForWinning + toxicTriviaPunishmentResult.getTotalPointsStolen()
+
         remainingQueueSize = await self.__queuedTriviaGameStore.getQueuedSuperGamesSize(
             twitchChannel = state.getTwitchChannel()
         )
 
         await self.__submitEvent(OutOfTimeSuperTriviaEvent(
             triviaQuestion = state.getTriviaQuestion(),
-            pointsForWinning = state.getPointsForWinning(),
+            pointsForWinning = pointsForWinning,
             remainingQueueSize = remainingQueueSize,
             toxicTriviaPunishmentResult = toxicTriviaPunishmentResult,
             specialTriviaStatus = state.getSpecialTriviaStatus(),
