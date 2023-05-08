@@ -271,7 +271,7 @@ class TriviaGameMachine():
 
         for userId, answerCount in answeredUserIds.items():
             punishedByPoints: int = -1 * toxicTriviaPunishmentAmount * answerCount
-            totalPointsStolen = totalPointsStolen + punishedByPoints
+            totalPointsStolen = totalPointsStolen + abs(punishedByPoints)
 
             userName = await self.__userIdsRepository.fetchUserName(
                 userId = userId,
