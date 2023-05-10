@@ -27,6 +27,9 @@ class ToxicTriviaPunishmentResult():
         self.__totalPointsStolen: int = totalPointsStolen
         self.__toxicTriviaPunishments: List[ToxicTriviaPunishment] = toxicTriviaPunishments
 
+    def getNumberOfToxicTriviaPunishments(self) -> int:
+        return len(self.__toxicTriviaPunishments)
+
     def getTotalPointsStolen(self) -> int:
         return self.__totalPointsStolen
 
