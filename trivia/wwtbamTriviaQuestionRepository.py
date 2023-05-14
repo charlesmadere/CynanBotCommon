@@ -38,7 +38,7 @@ class WwtbamTriviaQuestionRepository(AbsTriviaQuestionRepository):
         timber: Timber,
         triviaQuestionCompiler: TriviaQuestionCompiler,
         triviaSettingsRepository: TriviaSettingsRepository,
-        triviaDatabaseFile: str = 'CynanBotCommon/trivia/wwtbamDatabase.sqlite'
+        triviaDatabaseFile: str = 'CynanBotCommon/trivia/questionSources/wwtbamTriviaQuestionDatabase.sqlite'
     ):
         super().__init__(triviaSettingsRepository)
 
