@@ -119,7 +119,7 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
         if await self.__isDynamicAdditionOfNewPubSubUsersEnabled():
             twitchHandlesJson = await self.__readAllTwitchHandleJson()
 
-            for key in twitchHandlesJson:
+            for key in twitchHandlesJson.keys():
                 if key.lower() not in self.__tokenExpirations:
                     expiringTwitchHandles.add(key.lower())
                     self.__timber.log('TwitchTokensRepository', f'Discovered new PubSub user: \"{key}\"!')
@@ -173,8 +173,8 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
 
         if twitchHandlesJson is None:
             return dict()
-
-        return twitchHandlesJson
+        else:
+            return twitchHandlesJson
 
     async def __readJsonForTwitchHandle(self, twitchHandle: str) -> Dict[str, Any]:
         if not utils.isValidStr(twitchHandle):
