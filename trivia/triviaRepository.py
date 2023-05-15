@@ -326,7 +326,7 @@ class TriviaRepository():
 
         availableTriviaSourcesMap: Dict[TriviaSource, AbsTriviaQuestionRepository] = dict()
         for triviaSource, triviaQuestionRepository in self.__triviaSourceToRepositoryMap.items():
-            if triviaQuestionRepository is not None:
+            if triviaQuestionRepository is not None and await triviaQuestionRepository.hasQuestionSetAvailable():
                 availableTriviaSourcesMap[triviaSource] = triviaQuestionRepository
 
         currentlyInvalidTriviaSources: Set[TriviaSource] = set()
