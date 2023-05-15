@@ -1,5 +1,7 @@
-from typing import Any, Dict, List, Set
+from typing import Any, Dict, List, Optional, Set
 
+import aiofiles
+import aiofiles.ospath
 import aiosqlite
 
 try:
@@ -54,6 +56,8 @@ class TriviaQuestionCompanyTriviaQuestionRepository(AbsTriviaQuestionRepository)
         self.__triviaQuestionCompiler: TriviaQuestionCompiler = triviaQuestionCompiler
         self.__triviaDatabaseFile: str = triviaDatabaseFile
 
+        self.__hasQuestionSetAvailable: Optional[bool] = None
+
     async def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
@@ -100,6 +104,9 @@ class TriviaQuestionCompanyTriviaQuestionRepository(AbsTriviaQuestionRepository)
         raise UnsupportedTriviaTypeException(f'triviaType \"{questionType}\" is not supported for {self.getTriviaSource()}: {triviaDict}')
 
     async def __fetchTriviaQuestionDict(self) -> Dict[str, Any]:
+        if not await aiofiles.ospath.exists(self.__triviaDatabaseFile):
+            raise FileNotFoundError(f'Trivia Question Company trivia database file not found: \"{self.__triviaDatabaseFile}\"')
+
         connection = await aiosqlite.connect(self.__triviaDatabaseFile)
         cursor = await connection.execute(
             '''
@@ -132,3 +139,12 @@ class TriviaQuestionCompanyTriviaQuestionRepository(AbsTriviaQuestionRepository)
 
     def getTriviaSource(self) -> TriviaSource:
         return TriviaSource.THE_QUESTION_CO
+
+    async def hasQuestionSetAvailable(self) -> bool:
+        if self.__hasQuestionSetAvailable is not None:
+            return self.__hasQuestionSetAvailable
+
+        hasQuestionSetAvailable = await aiofiles.ospath.exists(self.__triviaDatabaseFile)
+        self.__hasQuestionSetAvailable = hasQuestionSetAvailable
+
+        return hasQuestionSetAvailable

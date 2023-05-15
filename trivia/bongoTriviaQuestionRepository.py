@@ -180,3 +180,6 @@ class BongoTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
     def getTriviaSource(self) -> TriviaSource:
         return TriviaSource.BONGO
+
+    async def hasQuestionSetAvailable(self) -> bool:
+        return True

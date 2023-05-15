@@ -167,3 +167,6 @@ class WillFryTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
     def getTriviaSource(self) -> TriviaSource:
         return TriviaSource.WILL_FRY_TRIVIA
+
+    async def hasQuestionSetAvailable(self) -> bool:
+        return True

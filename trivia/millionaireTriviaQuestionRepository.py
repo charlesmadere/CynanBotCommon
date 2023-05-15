@@ -1,5 +1,7 @@
-from typing import Any, Dict, List, Set
+from typing import Any, Dict, List, Optional, Set
 
+import aiofiles
+import aiofiles.ospath
 import aiosqlite
 
 try:
@@ -53,6 +55,8 @@ class MillionaireTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self.__triviaQuestionCompiler: TriviaQuestionCompiler = triviaQuestionCompiler
         self.__triviaDatabaseFile: str = triviaDatabaseFile
 
+        self.__hasQuestionSetAvailable: Optional[bool] = None
+
     async def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
@@ -93,6 +97,9 @@ class MillionaireTriviaQuestionRepository(AbsTriviaQuestionRepository):
         )
 
     async def __fetchTriviaQuestionDict(self) -> Dict[str, Any]:
+        if not await aiofiles.ospath.exists(self.__triviaDatabaseFile):
+            raise FileNotFoundError(f'Millionaire trivia database file not found: \"{self.__triviaDatabaseFile}\"')
+
         connection = await aiosqlite.connect(self.__triviaDatabaseFile)
         cursor = await connection.execute(
             '''
@@ -122,3 +129,12 @@ class MillionaireTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
     def getTriviaSource(self) -> TriviaSource:
         return TriviaSource.MILLIONAIRE
+
+    async def hasQuestionSetAvailable(self) -> bool:
+        if self.__hasQuestionSetAvailable is not None:
+            return self.__hasQuestionSetAvailable
+
+        hasQuestionSetAvailable = await aiofiles.ospath.exists(self.__triviaDatabaseFile)
+        self.__hasQuestionSetAvailable = hasQuestionSetAvailable
+
+        return hasQuestionSetAvailable

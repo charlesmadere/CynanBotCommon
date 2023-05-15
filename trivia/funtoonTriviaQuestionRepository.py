@@ -165,3 +165,6 @@ class FuntoonTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
     def getTriviaSource(self) -> TriviaSource:
         return TriviaSource.FUNTOON
+
+    async def hasQuestionSetAvailable(self) -> bool:
+        return True

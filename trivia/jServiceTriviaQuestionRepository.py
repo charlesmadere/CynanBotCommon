@@ -202,3 +202,6 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
     def getTriviaSource(self) -> TriviaSource:
         return TriviaSource.J_SERVICE
+
+    async def hasQuestionSetAvailable(self) -> bool:
+        return True

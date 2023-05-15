@@ -41,7 +41,7 @@ class JokeTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self,
         timber: Timber,
         triviaSettingsRepository: TriviaSettingsRepository,
-        jokeTriviaQuestionFile: str = 'CynanBotCommon/trivia/jokeTriviaQuestionRepository.json'
+        jokeTriviaQuestionFile: str = 'CynanBotCommon/trivia/questionSources/jokeTriviaQuestionRepository.json'
     ):
         super().__init__(triviaSettingsRepository)
 
@@ -51,7 +51,9 @@ class JokeTriviaQuestionRepository(AbsTriviaQuestionRepository):
             raise ValueError(f'jokeTriviaQuestionFile argument is malformed: \"{jokeTriviaQuestionFile}\"')
 
         self.__timber: Timber = timber
-        self.__jokeTriviaQuestionFile: str = jokeTriviaQuestionFile
+        self.__triviaDatabaseFile: str = jokeTriviaQuestionFile
+
+        self.__hasQuestionSetAvailable: Optional[bool] = None
 
     async def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
         if not utils.isValidStr(twitchChannel):
@@ -135,15 +137,24 @@ class JokeTriviaQuestionRepository(AbsTriviaQuestionRepository):
     def getTriviaSource(self) -> TriviaSource:
         return TriviaSource.JOKE_TRIVIA_REPOSITORY
 
-    async def __readAllJson(self) -> Dict[str, Any]:
-        if not await aiofiles.ospath.exists(self.__jokeTriviaQuestionFile):
-            raise FileNotFoundError(f'Joke trivia question file not found: \"{self.__jokeTriviaQuestionFile}\"')
+    async def hasQuestionSetAvailable(self) -> bool:
+        if self.__hasQuestionSetAvailable is not None:
+            return self.__hasQuestionSetAvailable
 
-        async with aiofiles.open(self.__jokeTriviaQuestionFile, mode = 'r') as file:
+        hasQuestionSetAvailable = await aiofiles.ospath.exists(self.__triviaDatabaseFile)
+        self.__hasQuestionSetAvailable = hasQuestionSetAvailable
+
+        return hasQuestionSetAvailable
+
+    async def __readAllJson(self) -> Dict[str, Any]:
+        if not await aiofiles.ospath.exists(self.__triviaDatabaseFile):
+            raise FileNotFoundError(f'Joke trivia database file not found: \"{self.__triviaDatabaseFile}\"')
+
+        async with aiofiles.open(self.__triviaDatabaseFile, mode = 'r') as file:
             data = await file.read()
             jsonContents = json.loads(data)
 
         if jsonContents is None:
-            raise IOError(f'Error reading from joke trivia file: \"{self.__jokeTriviaQuestionFile}\"')
+            raise IOError(f'Error reading from joke trivia file: \"{self.__triviaDatabaseFile}\"')
 
         return jsonContents

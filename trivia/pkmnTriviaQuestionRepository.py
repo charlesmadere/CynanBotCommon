@@ -462,6 +462,9 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
     def getTriviaSource(self) -> TriviaSource:
         return TriviaSource.POKE_API
 
+    async def hasQuestionSetAvailable(self) -> bool:
+        return True
+
     async def __selectRandomFalseBerryFlavors(
         self,
         actualFlavor: Optional[PokepediaBerryFlavor]

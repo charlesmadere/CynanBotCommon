@@ -92,6 +92,10 @@ class AbsTriviaQuestionRepository(ABC):
     def getTriviaSource(self) -> TriviaSource:
         pass
 
+    @abstractmethod
+    async def hasQuestionSetAvailable(self) -> bool:
+        pass
+
     async def _verifyIsActuallyMultipleChoiceQuestion(
         self,
         correctAnswers: List[str],

@@ -244,6 +244,9 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
     def getTriviaSource(self) -> TriviaSource:
         return TriviaSource.OPEN_TRIVIA_DATABASE
 
+    async def hasQuestionSetAvailable(self) -> bool:
+        return True
+
     async def __removeSessionToken(self, twitchChannel: str):
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')

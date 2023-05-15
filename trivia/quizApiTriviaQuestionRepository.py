@@ -186,3 +186,6 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
     def getTriviaSource(self) -> TriviaSource:
         return TriviaSource.QUIZ_API
+
+    async def hasQuestionSetAvailable(self) -> bool:
+        return True

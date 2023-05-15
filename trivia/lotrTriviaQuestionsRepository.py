@@ -1,5 +1,7 @@
-from typing import Any, Dict, List, Set
+from typing import Any, Dict, List, Optional, Set
 
+import aiofiles
+import aiofiles.ospath
 import aiosqlite
 
 try:
@@ -67,6 +69,8 @@ class LotrTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self.__triviaQuestionCompiler: TriviaQuestionCompiler = triviaQuestionCompiler
         self.__triviaDatabaseFile: str = triviaDatabaseFile
 
+        self.__hasQuestionSetAvailable: Optional[bool] = None
+
     async def __addAdditionalAnswers(self, correctAnswers: List[str], triviaId: str):
         if not utils.isValidStr(triviaId):
             raise ValueError(f'triviaId argument is malformed: \"{triviaId}\"')
@@ -125,6 +129,9 @@ class LotrTriviaQuestionRepository(AbsTriviaQuestionRepository):
         )
 
     async def __fetchTriviaQuestionDict(self) -> Dict[str, Any]:
+        if not await aiofiles.ospath.exists(self.__triviaDatabaseFile):
+            raise FileNotFoundError(f'LOTR trivia database file not found: \"{self.__triviaDatabaseFile}\"')
+
         connection = await aiosqlite.connect(self.__triviaDatabaseFile)
         cursor = await connection.execute(
             '''
@@ -163,7 +170,16 @@ class LotrTriviaQuestionRepository(AbsTriviaQuestionRepository):
     def getTriviaSource(self) -> TriviaSource:
         return TriviaSource.LORD_OF_THE_RINGS
 
-    def __selectiveAppend(self, correctAnswers: List[str], correctAnswer: str):
+    async def hasQuestionSetAvailable(self) -> bool:
+        if self.__hasQuestionSetAvailable is not None:
+            return self.__hasQuestionSetAvailable
+
+        hasQuestionSetAvailable = await aiofiles.ospath.exists(self.__triviaDatabaseFile)
+        self.__hasQuestionSetAvailable = hasQuestionSetAvailable
+
+        return hasQuestionSetAvailable
+
+    def __selectiveAppend(self, correctAnswers: List[str], correctAnswer: Optional[str]):
         if correctAnswers is None:
             raise ValueError(f'correctAnswers argument is malformed: \"{correctAnswers}\"')
 

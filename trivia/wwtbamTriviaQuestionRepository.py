@@ -1,5 +1,7 @@
 from typing import Any, Dict, List, Optional, Set
 
+import aiofiles
+import aiofiles.ospath
 import aiosqlite
 
 try:
@@ -52,6 +54,8 @@ class WwtbamTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self.__timber: Timber = timber
         self.__triviaQuestionCompiler: TriviaQuestionCompiler = triviaQuestionCompiler
         self.__triviaDatabaseFile: str = triviaDatabaseFile
+
+        self.__hasQuestionSetAvailable: Optional[bool] = None
 
     async def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
         self.__timber.log('WwtbamTriviaQuestionRepository', f'Fetching trivia question... (twitchChannel={twitchChannel})')
@@ -110,6 +114,9 @@ class WwtbamTriviaQuestionRepository(AbsTriviaQuestionRepository):
         )
 
     async def __fetchTriviaQuestionDict(self) -> Dict[str, Any]:
+        if not await aiofiles.ospath.exists(self.__triviaDatabaseFile):
+            raise FileNotFoundError(f'WWTBAM trivia database file not found: \"{self.__triviaDatabaseFile}\"')
+
         connection = await aiosqlite.connect(self.__triviaDatabaseFile)
         cursor = await connection.execute(
             '''
@@ -142,3 +149,12 @@ class WwtbamTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
     def getTriviaSource(self) -> TriviaSource:
         return TriviaSource.WWTBAM
+
+    async def hasQuestionSetAvailable(self) -> bool:
+        if self.__hasQuestionSetAvailable is not None:
+            return self.__hasQuestionSetAvailable
+
+        hasQuestionSetAvailable = await aiofiles.ospath.exists(self.__triviaDatabaseFile)
+        self.__hasQuestionSetAvailable = hasQuestionSetAvailable
+
+        return hasQuestionSetAvailable
