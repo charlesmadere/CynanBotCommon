@@ -1,4 +1,5 @@
 import json
+import traceback
 from typing import Any, Dict, Optional
 
 import aiofiles
@@ -54,7 +55,7 @@ class FuntoonRepository():
         try:
             response = await clientSession.get(f'{self.__funtoonApiUrl}/trivia/review/{triviaId}')
         except GenericNetworkException as e:
-            self.__timber.log('FuntoonRepository', f'Encountered network error when banning a trivia question (triviaId={triviaId}): {e}', e)
+            self.__timber.log('FuntoonRepository', f'Encountered network error when banning a trivia question (triviaId={triviaId}): {e}', e, traceback.format_exc())
             return False
 
         responseStatus: Optional[int] = None
@@ -122,7 +123,7 @@ class FuntoonRepository():
                 json = jsonPayload
             )
         except GenericNetworkException as e:
-            self.__timber.log('FuntoonRepository', f'Encountered network error for \"{twitchChannel}\" for event \"{event}\": {e}', e)
+            self.__timber.log('FuntoonRepository', f'Encountered network error for \"{twitchChannel}\" for event \"{event}\": {e}', e, traceback.format_exc())
             return False
 
         responseStatus: Optional[int] = None

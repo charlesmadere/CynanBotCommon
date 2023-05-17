@@ -1,3 +1,4 @@
+import traceback
 from typing import Any, Dict, List, Optional, Set
 
 try:
@@ -82,7 +83,7 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
         try:
             response = await clientSession.get('https://opentdb.com/api_token.php?command=request')
         except GenericNetworkException as e:
-            self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Encountered network error when fetching Open Trivia Database\'s session token for twitchChannel: \"{twitchChannel}\": {e}', e)
+            self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Encountered network error when fetching Open Trivia Database\'s session token for twitchChannel: \"{twitchChannel}\": {e}', e, traceback.format_exc())
             raise BadTriviaSessionTokenException(f'Encountered network error when fetching Open Trivia Database\'s session token for twitchChannel: \"{twitchChannel}\": {e}')
 
         if response.getStatusCode() != 200:
@@ -122,7 +123,7 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
             else:
                 response = await clientSession.get('https://opentdb.com/api.php?amount=1')
         except GenericNetworkException as e:
-            self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Encountered network error when fetching trivia question: {e}', e)
+            self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Encountered network error when fetching trivia question: {e}', e, traceback.format_exc())
             raise GenericTriviaNetworkException(self.getTriviaSource(), e)
 
         if response.getStatusCode() != 200:

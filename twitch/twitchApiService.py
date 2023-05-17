@@ -1,3 +1,4 @@
+import traceback
 from typing import Any, Dict, List, Optional
 
 try:
@@ -93,7 +94,7 @@ class TwitchApiService():
                 }
             )
         except GenericNetworkException as e:
-            self.__timber.log('TwitchApiService', f'Encountered network error when fetching live user details (userNames=\"{userNames}\"): {e}', e)
+            self.__timber.log('TwitchApiService', f'Encountered network error when fetching live user details (userNames=\"{userNames}\"): {e}', e, traceback.format_exc())
             raise GenericNetworkException(f'TwitchApiService encountered network error when fetching when fetching user details (userNames=\"{userNames}\"): {e}')
 
         responseStatusCode = response.getStatusCode()
@@ -151,7 +152,7 @@ class TwitchApiService():
                 url = f'https://id.twitch.tv/oauth2/token?client_id={twitchClientId}&client_secret={twitchClientSecret}&code={code}&grant_type=authorization_code&redirect_uri=http://localhost'
             )
         except GenericNetworkException as e:
-            self.__timber.log('TwitchApiService', f'Encountered network error when fetching tokens (code=\"{code}\"): {e}', e)
+            self.__timber.log('TwitchApiService', f'Encountered network error when fetching tokens (code=\"{code}\"): {e}', e, traceback.format_exc())
             raise GenericNetworkException(f'TwitchApiService encountered network error when fetching tokens (code=\"{code}\"): {e}')
 
         if response.getStatusCode() != 200:
@@ -209,7 +210,7 @@ class TwitchApiService():
                 }
             )
         except GenericNetworkException as e:
-            self.__timber.log('TwitchApiService', f'Encountered network error when fetching user details (userName=\"{userName}\"): {e}', e)
+            self.__timber.log('TwitchApiService', f'Encountered network error when fetching user details (userName=\"{userName}\"): {e}', e, traceback.format_exc())
             raise GenericNetworkException(f'TwitchApiService encountered network error when fetching when fetching user details (userName=\"{userName}\"): {e}')
 
         if response.getStatusCode() != 200:
@@ -278,7 +279,7 @@ class TwitchApiService():
                 }
             )
         except GenericNetworkException as e:
-            self.__timber.log('TwitchApiService', f'Encountered network error when fetching user subscription details (broadcasterId=\"{broadcasterId}\") (userId=\"{userId}\"): {e}', e)
+            self.__timber.log('TwitchApiService', f'Encountered network error when fetching user subscription details (broadcasterId=\"{broadcasterId}\") (userId=\"{userId}\"): {e}', e, traceback.format_exc())
             raise GenericNetworkException(f'TwitchApiService encountered network error when fetching when fetching user subscription details (broadcasterId=\"{broadcasterId}\") (userId=\"{userId}\"): {e}')
 
         if response.getStatusCode() != 200:
@@ -340,7 +341,7 @@ class TwitchApiService():
                 }
             )
         except GenericNetworkException as e:
-            self.__timber.log('TwitchApiService', f'Encountered network error when refreshing tokens (twitchRefreshToken=\"{twitchRefreshToken}\"): {e}', e)
+            self.__timber.log('TwitchApiService', f'Encountered network error when refreshing tokens (twitchRefreshToken=\"{twitchRefreshToken}\"): {e}', e, traceback.format_exc())
             raise GenericNetworkException(f'TwitchApiService encountered network error when refreshing tokens (twitchRefreshToken=\"{twitchRefreshToken}\"): {e}')
 
         if response.getStatusCode() != 200:
@@ -389,7 +390,7 @@ class TwitchApiService():
                 }
             )
         except GenericNetworkException as e:
-            self.__timber.log('TwitchApiService', f'Encountered network error when refreshing tokens (twitchAccessToken=\"{twitchAccessToken}\"): {e}', e)
+            self.__timber.log('TwitchApiService', f'Encountered network error when refreshing tokens (twitchAccessToken=\"{twitchAccessToken}\"): {e}', e, traceback.format_exc())
             raise GenericNetworkException(f'TwitchApiService encountered network error when refreshing tokens (twitchAccessToken=\"{twitchAccessToken}\"): {e}')
 
         responseStatusCode = response.getStatusCode()

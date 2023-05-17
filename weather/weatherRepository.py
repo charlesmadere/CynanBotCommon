@@ -1,3 +1,4 @@
+import traceback
 from datetime import timedelta
 from typing import Any, Dict, List, Optional
 
@@ -130,7 +131,7 @@ class WeatherRepository():
         try:
             response = await clientSession.get(requestUrl)
         except GenericNetworkException as e:
-            self.__timber.log('WeatherRepository', f'Encountered network error when fetching air quality index for \"{location.getName()}\" ({location.getLocationId()}): {e}', e)
+            self.__timber.log('WeatherRepository', f'Encountered network error when fetching air quality index for \"{location.getName()}\" ({location.getLocationId()}): {e}', e, traceback.format_exc())
             return None
 
         if response.getStatusCode() != 200:
@@ -184,7 +185,7 @@ class WeatherRepository():
         try:
             response = await clientSession.get(requestUrl)
         except GenericNetworkException as e:
-            self.__timber.log('WeatherRepository', f'Encountered network error when fetching weather for \"{location.getName()}\" ({location.getLocationId()}): {e}', e)
+            self.__timber.log('WeatherRepository', f'Encountered network error when fetching weather for \"{location.getName()}\" ({location.getLocationId()}): {e}', e, traceback.format_exc())
             raise RuntimeError(f'Encountered network error when fetching weather for \"{location.getName()}\" ({location.getLocationId()})')
 
         if response.getStatusCode() != 200:

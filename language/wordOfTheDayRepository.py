@@ -1,3 +1,4 @@
+import traceback
 from datetime import timedelta
 from typing import Any, Dict
 
@@ -77,7 +78,7 @@ class WordOfTheDayRepository():
         try:
             response = await clientSession.get(f'https://wotd.transparent.com/rss/{languageEntry.getWotdApiCode()}-widget.xml?t=0')
         except GenericNetworkException as e:
-            self.__timber.log('WordOfTheDayRepository', f'Encountered network error when fetching Word Of The Day for \"{languageEntry.getName()}\": {e}', e)
+            self.__timber.log('WordOfTheDayRepository', f'Encountered network error when fetching Word Of The Day for \"{languageEntry.getName()}\": {e}', e, traceback.format_exc())
             raise RuntimeError(f'Encountered network error when fetching Word Of The Day for \"{languageEntry.getName()}\": {e}')
 
         if response.getStatusCode() != 200:

@@ -1,4 +1,5 @@
 import random
+import traceback
 from typing import Any, Dict, List, Optional, Set
 
 try:
@@ -172,7 +173,7 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
         try:
             move = await self.__pokepediaRepository.fetchRandomMove(maxGeneration = self.__maxGeneration)
         except GenericNetworkException as e:
-            self.__timber.log('PkmnTriviaQuestionRepository', f'Encountered network error when fetching trivia question: {e}', e)
+            self.__timber.log('PkmnTriviaQuestionRepository', f'Encountered network error when fetching trivia question: {e}', e, traceback.format_exc())
             raise GenericTriviaNetworkException(self.getTriviaSource(), e)
 
         triviaDict: Optional[Dict[str, Any]] = None
@@ -197,7 +198,7 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
         try:
             nature = await self.__pokepediaRepository.fetchRandomNature()
         except GenericNetworkException as e:
-            self.__timber.log('PkmnTriviaQuestionRepository', f'Encountered network error when fetching trivia question: {e}', e)
+            self.__timber.log('PkmnTriviaQuestionRepository', f'Encountered network error when fetching trivia question: {e}', e, traceback.format_exc())
             raise GenericTriviaNetworkException(self.getTriviaSource(), e)
 
         triviaDict: Optional[Dict[str, Any]] = None
@@ -309,7 +310,7 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
         try:
             pokemon = await self.__pokepediaRepository.fetchRandomPokemon(maxGeneration = self.__maxGeneration)
         except GenericNetworkException as e:
-            self.__timber.log('PkmnTriviaQuestionRepository', f'Encountered network error when fetching trivia question: {e}', e)
+            self.__timber.log('PkmnTriviaQuestionRepository', f'Encountered network error when fetching trivia question: {e}', e, traceback.format_exc())
             raise GenericTriviaNetworkException(self.getTriviaSource(), e)
 
         randomGeneration = await self.__selectRandomGeneration(pokemon.getInitialGeneration())
@@ -343,7 +344,7 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
         try:
             stat = await self.__pokepediaRepository.fetchRandomStat()
         except GenericNetworkException as e:
-            self.__timber.log('PkmnTriviaQuestionRepository', f'Encountered network error when fetching trivia question: {e}', e)
+            self.__timber.log('PkmnTriviaQuestionRepository', f'Encountered network error when fetching trivia question: {e}', e, traceback.format_exc())
             raise GenericTriviaNetworkException(self.getTriviaSource(), e)
 
         triviaDict: Optional[Dict[str, Any]] = None

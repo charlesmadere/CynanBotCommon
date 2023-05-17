@@ -1,5 +1,6 @@
 import json
 import locale
+import traceback
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Set
 
@@ -68,7 +69,7 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
         try:
             tokens = await self.__twitchApiService.fetchTokens(code = code)
         except GenericNetworkException as e:
-            self.__timber.log('TwitchTokensRepository', f'Encountered network error when trying to add user \"{twitchHandle}\": {e}', e)
+            self.__timber.log('TwitchTokensRepository', f'Encountered network error when trying to add user \"{twitchHandle}\": {e}', e, traceback.format_exc())
             raise GenericNetworkException(f'TwitchTokensRepository encountered network error when trying to add user \"{twitchHandle}\": {e}')
 
         jsonContents = await self.__readAllJson()
@@ -205,7 +206,7 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
                 twitchRefreshToken = twitchRefreshToken
             )
         except GenericNetworkException as e:
-            self.__timber.log('TwitchTokensRepository', f'Encountered network error when trying to refresh Twitch tokens for \"{twitchHandle}\": {e}', e)
+            self.__timber.log('TwitchTokensRepository', f'Encountered network error when trying to refresh Twitch tokens for \"{twitchHandle}\": {e}', e, traceback.format_exc())
             raise GenericNetworkException(f'TwitchTokensRepository encountered network error when trying to refresh Twitch tokens for \"{twitchHandle}\": {e}')
 
         jsonContents = await self.__readAllJson()
@@ -295,7 +296,7 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
                 twitchAccessToken = twitchAccessToken
             )
         except GenericNetworkException as e:
-            self.__timber.log('TwitchTokensRepository', f'Encountered network error when trying to validate Twitch tokens for \"{twitchHandle}\": {e}', e)
+            self.__timber.log('TwitchTokensRepository', f'Encountered network error when trying to validate Twitch tokens for \"{twitchHandle}\": {e}', e, traceback.format_exc())
             raise GenericNetworkException(f'TwitchTokensRepository encountered network error when trying to validate Twitch tokens for \"{twitchHandle}\": {e}')
 
         if utils.isValidInt(expiresInSeconds) and expiresInSeconds >= self.__tokensExpirationBuffer.total_seconds():

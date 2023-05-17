@@ -606,7 +606,7 @@ class TriviaGameMachine():
                 triviaFetchOptions = action.getTriviaFetchOptions()
             )
         except TooManyTriviaFetchAttemptsException as e:
-            self.__timber.log('TriviaGameMachine', f'Reached limit on trivia fetch attempts without being able to successfully retrieve a trivia question for \"{action.getTwitchChannel()}\": {e}', e)
+            self.__timber.log('TriviaGameMachine', f'Reached limit on trivia fetch attempts without being able to successfully retrieve a trivia question for \"{action.getTwitchChannel()}\": {e}', e, traceback.format_exc())
 
         if triviaQuestion is None:
             await self.__submitEvent(FailedToFetchQuestionTriviaEvent(
@@ -697,7 +697,7 @@ class TriviaGameMachine():
                 triviaFetchOptions = action.getTriviaFetchOptions()
             )
         except TooManyTriviaFetchAttemptsException as e:
-            self.__timber.log('TriviaGameMachine', f'Reached limit on trivia fetch attempts without being able to successfully retrieve a super trivia question for \"{action.getTwitchChannel()}\": {e}', e)
+            self.__timber.log('TriviaGameMachine', f'Reached limit on trivia fetch attempts without being able to successfully retrieve a super trivia question for \"{action.getTwitchChannel()}\": {e}', e, traceback.format_exc())
 
         if triviaQuestion is None:
             await self.__submitEvent(FailedToFetchQuestionSuperTriviaEvent(

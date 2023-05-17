@@ -1,3 +1,4 @@
+import traceback
 from typing import Any, Dict, List, Optional
 from urllib.parse import quote
 
@@ -57,7 +58,7 @@ class JishoHelper():
         try:
             response = await clientSession.get(f'https://jisho.org/api/v1/search/words?keyword={encodedQuery}')
         except GenericNetworkException as e:
-            self.__timber.log('JishoHelper', f'Encountered network error when searching Jisho for \"{query}\": {e}', e)
+            self.__timber.log('JishoHelper', f'Encountered network error when searching Jisho for \"{query}\": {e}', e, traceback.format_exc())
             raise RuntimeError(f'Encountered network error when searching Jisho for \"{query}\": {e}')
 
         if response.getStatusCode() != 200:

@@ -1,3 +1,4 @@
+import traceback
 from typing import List, Optional
 
 try:
@@ -78,7 +79,7 @@ class TriviaGameGlobalControllersRepository():
                 twitchAccessToken = twitchAccessToken
             )
         except (RuntimeError, ValueError) as e:
-            self.__timber.log('TriviaGameGlobalControllersRepository', f'Encountered exception when trying to add \"{userName}\" as a trivia game global controller: {e}', e)
+            self.__timber.log('TriviaGameGlobalControllersRepository', f'Encountered exception when trying to add \"{userName}\" as a trivia game global controller: {e}', e, traceback.format_exc())
             return AddTriviaGameControllerResult.ERROR
 
         if not utils.isValidStr(userId):
@@ -186,7 +187,7 @@ class TriviaGameGlobalControllersRepository():
         try:
             userId = await self.__userIdsRepository.fetchUserId(userName)
         except (RuntimeError, ValueError) as e:
-            self.__timber.log('TriviaGameGlobalControllersRepository', f'Encountered exception when trying to remove \"{userName}\" as a trivia game global controller: {e}', e)
+            self.__timber.log('TriviaGameGlobalControllersRepository', f'Encountered exception when trying to remove \"{userName}\" as a trivia game global controller: {e}', e, traceback.format_exc())
             return RemoveTriviaGameControllerResult.ERROR
 
         if not utils.isValidStr(userId):

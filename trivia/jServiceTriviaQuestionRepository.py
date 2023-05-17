@@ -1,3 +1,4 @@
+import traceback
 from typing import Any, Dict, List, Optional, Set
 
 try:
@@ -125,7 +126,7 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
         try:
             response = await clientSession.get(f'https://jservice.io/api/random?count={count}')
         except GenericNetworkException as e:
-            self.__timber.log('JServiceTriviaQuestionRepository', f'Encountered network error: {e}', e)
+            self.__timber.log('JServiceTriviaQuestionRepository', f'Encountered network error: {e}', e, traceback.format_exc())
             raise GenericTriviaNetworkException(self.getTriviaSource(), e)
 
         if response.getStatusCode() != 200:

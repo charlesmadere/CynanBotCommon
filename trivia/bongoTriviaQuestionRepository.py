@@ -1,3 +1,4 @@
+import traceback
 from typing import Any, Dict, List, Optional, Set
 
 try:
@@ -82,7 +83,7 @@ class BongoTriviaQuestionRepository(AbsTriviaQuestionRepository):
         try:
             response = await clientSession.get('https://beta-trivia.bongo.best/?limit=1')
         except GenericNetworkException as e:
-            self.__timber.log('BongoTriviaQuestionRepository', f'Encountered network error: {e}', e)
+            self.__timber.log('BongoTriviaQuestionRepository', f'Encountered network error: {e}', e, traceback.format_exc())
             raise GenericTriviaNetworkException(self.getTriviaSource(), e)
 
         if response.getStatusCode() != 200:

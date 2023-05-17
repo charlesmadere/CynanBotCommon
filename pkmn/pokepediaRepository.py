@@ -1,5 +1,6 @@
 import random
 import re
+import traceback
 from typing import Any, Dict, List, Optional, Pattern
 
 try:
@@ -148,7 +149,7 @@ class PokepediaRepository():
         try:
             response = await clientSession.get(f'https://pokeapi.co/api/v2/machine/{machineId}')
         except GenericNetworkException as e:
-            self.__timber.log('PokepediaRepository', f'Encountered network error from PokeAPI when fetching machine with ID \"{machineId}\": {e}', e)
+            self.__timber.log('PokepediaRepository', f'Encountered network error from PokeAPI when fetching machine with ID \"{machineId}\": {e}', e, traceback.format_exc())
             raise GenericNetworkException(f'PokepediaRepository encountered network error from PokeAPI when fetching machine with ID \"{machineId}\": {e}')
 
         if response.getStatusCode() != 200:
@@ -173,7 +174,7 @@ class PokepediaRepository():
         try:
             response = await clientSession.get(f'https://pokeapi.co/api/v2/move/{moveId}')
         except GenericNetworkException as e:
-            self.__timber.log('PokepediaRepository', f'Encountered network error from PokeAPI when fetching move with ID \"{moveId}\": {e}', e)
+            self.__timber.log('PokepediaRepository', f'Encountered network error from PokeAPI when fetching move with ID \"{moveId}\": {e}', e, traceback.format_exc())
             raise GenericNetworkException(f'PokepediaRepository encountered network error from PokeAPI when fetching move with ID \"{moveId}\": {e}')
 
         if response.getStatusCode() != 200:
@@ -216,7 +217,7 @@ class PokepediaRepository():
             try:
                 machineIdInt = int(machineIdStr)
             except ValueError as e:
-                self.__timber.log('PokepediaRepository', f'Encountered exception when attempting to convert a machine ID into an int: \"{machineIdStr}\": {e}', e)
+                self.__timber.log('PokepediaRepository', f'Encountered exception when attempting to convert a machine ID into an int: \"{machineIdStr}\": {e}', e, traceback.format_exc())
 
             if not utils.isValidInt(machineIdInt):
                 continue
@@ -261,7 +262,7 @@ class PokepediaRepository():
         try:
             response = await clientSession.get(f'https://pokeapi.co/api/v2/pokemon/{randomPokemonId}')
         except GenericNetworkException as e:
-            self.__timber.log('PokepediaRepository', f'Encountered network error from PokeAPI when fetching Pokemon with ID \"{randomPokemonId}\": {e}', e)
+            self.__timber.log('PokepediaRepository', f'Encountered network error from PokeAPI when fetching Pokemon with ID \"{randomPokemonId}\": {e}', e, traceback.format_exc())
             raise GenericNetworkException(f'PokepediaRepository encountered network error from PokeAPI when fetching Pokemon with ID \"{randomPokemonId}\": {e}')
 
         if response.getStatusCode() != 200:
@@ -515,7 +516,7 @@ class PokepediaRepository():
         try:
             response = await clientSession.get(f'https://pokeapi.co/api/v2/move/{name}/')
         except GenericNetworkException as e:
-            self.__timber.log('PokepediaRepository', f'Encountered network error from PokeAPI when searching for \"{name}\" move: {e}', e)
+            self.__timber.log('PokepediaRepository', f'Encountered network error from PokeAPI when searching for \"{name}\" move: {e}', e, traceback.format_exc())
             raise GenericNetworkException(f'PokepediaRepository encountered network error from PokeAPI when searching for \"{name}\" move: {e}')
 
         if response.getStatusCode() != 200:
@@ -543,7 +544,7 @@ class PokepediaRepository():
         try:
             response = await clientSession.get(f'https://pokeapi.co/api/v2/pokemon/{name}/')
         except GenericNetworkException as e:
-            self.__timber.log('PokepediaRepository', f'Encountered network error from PokeAPI when searching for \"{name}\" Pokemon: {e}', e)
+            self.__timber.log('PokepediaRepository', f'Encountered network error from PokeAPI when searching for \"{name}\" Pokemon: {e}', e, traceback.format_exc())
             raise GenericNetworkException(f'PokepediaRepository encountered network error from PokeAPI when searching for \"{name}\" Pokemon: {e}')
 
         if response.getStatusCode() != 200:

@@ -1,3 +1,4 @@
+import traceback
 from typing import Optional
 
 try:
@@ -82,7 +83,7 @@ class UserIdsRepository():
                 userName = userName
             )
         except GenericNetworkException as e:
-            self.__timber.log('UserIdsRepository', f'Received a network error of some kind when fetching userId for userName \"{userName}\": {e}', e)
+            self.__timber.log('UserIdsRepository', f'Received a network error of some kind when fetching userId for userName \"{userName}\": {e}', e, traceback.format_exc())
             raise GenericNetworkException(f'UserIdsRepository received a network error of some kind when fetching userId for userName \"{userName}\": {e}')
 
         if userDetails is None:
@@ -147,7 +148,7 @@ class UserIdsRepository():
                 userName = userName
             )
         except GenericNetworkException as e:
-            self.__timber.log('UserIdsRepository', f'Received a network error of some kind when fetching username for user ID \"{userId}\": {e}', e)
+            self.__timber.log('UserIdsRepository', f'Received a network error of some kind when fetching username for user ID \"{userId}\": {e}', e, traceback.format_exc())
             raise GenericNetworkException(f'UserIdsRepository received a network error of some kind when fetching username for user ID \"{userId}\": {e}')
 
         if userDetails is None:

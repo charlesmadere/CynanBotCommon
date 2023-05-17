@@ -1,3 +1,4 @@
+import traceback
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 try:
@@ -85,7 +86,7 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
                 }
             )
         except GenericNetworkException as e:
-            self.__timber.log('QuizApiTriviaQuestionRepository', f'Encountered network error when fetching trivia question: {e}', e)
+            self.__timber.log('QuizApiTriviaQuestionRepository', f'Encountered network error when fetching trivia question: {e}', e, traceback.format_exc())
             raise GenericTriviaNetworkException(self.getTriviaSource(), e)
 
         if response.getStatusCode() != 200:

@@ -1,5 +1,6 @@
 import json
 import random
+import traceback
 from json.decoder import JSONDecodeError
 from typing import Any, Dict, List, Optional
 
@@ -71,7 +72,7 @@ class TranslationHelper():
         try:
             response = await clientSession.get(requestUrl)
         except GenericNetworkException as e:
-            self.__timber.log('TranslationHelper', f'Encountered network error when translating \"{text}\": {e}', e)
+            self.__timber.log('TranslationHelper', f'Encountered network error when translating \"{text}\": {e}', e, traceback.format_exc())
             raise RuntimeError(f'Encountered network error when translating \"{text}\": {e}')
 
         if response.getStatusCode() != 200:

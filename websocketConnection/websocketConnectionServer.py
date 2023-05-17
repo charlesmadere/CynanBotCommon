@@ -1,6 +1,7 @@
 import asyncio
 import json
 import queue
+import traceback
 from datetime import datetime, timedelta, timezone
 from queue import SimpleQueue
 from typing import Any, Dict, Optional
@@ -129,7 +130,7 @@ class WebsocketConnectionServer():
 
                     await websocket.wait_closed()
             except Exception as e:
-                self.__timber.log('WebsocketConnectionServer', f'Encountered exception within `__start()`: {e}', e)
+                self.__timber.log('WebsocketConnectionServer', f'Encountered exception within `__start()`: {e}', e, traceback.format_exc())
 
                 if str(e) == 'Event loop is closed':
                     # this annoying code provides us an escape from this infinite loop when using
