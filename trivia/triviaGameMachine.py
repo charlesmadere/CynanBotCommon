@@ -255,15 +255,15 @@ class TriviaGameMachine():
         if not state.isToxic():
             return None
 
-        answeredUserIds = state.getAnsweredUserIds()
-
-        if action is not None:
-            del answeredUserIds[action.getUserId()]
-
         toxicTriviaPunishmentAmount = state.getToxicTriviaPunishmentAmount()
 
         if toxicTriviaPunishmentAmount <= 0:
             return None
+
+        answeredUserIds = state.getAnsweredUserIds()
+
+        if action is not None:
+            del answeredUserIds[action.getUserId()]
 
         toxicTriviaPunishments: List[ToxicTriviaPunishment] = list()
         twitchAccessToken = await self.__twitchTokensRepositoryInterface.getAccessToken(action.getTwitchChannel())
@@ -294,6 +294,10 @@ class TriviaGameMachine():
             ))
 
         self.__timber.log('TriviaGameMachine', f'Applied toxic trivia punishments to {len(toxicTriviaPunishments)} user(s) in \"{state.getTwitchChannel()}\" for a total punishment of {totalPointsStolen} point(s)')
+
+        if len(toxicTriviaPunishments) == 0:
+            return None
+
         toxicTriviaPunishments.sort(key = lambda punishment: (punishment.getPunishedByPoints(), punishment.getUserName().lower()))
 
         return ToxicTriviaPunishmentResult(
