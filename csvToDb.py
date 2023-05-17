@@ -170,5 +170,8 @@ def writeRowsToSqlite(databaseName: str, rows: List[List[str]]):
     print(f'Wrote {rowNumber} rows into \"{databaseName}\" database')
 
 
-multipleChoice = readInCsvRows('CynanBotCommon/multiple_choice.csv')
+trueFalse = readInCsvRows('CynanBotCommon/trivia/Delivery_500_TrueFalse_523A.csv')
+writeRowsToSqlite('CynanBotCommon/trivia/triviaDatabaseTriviaQuestionRepository.sqlite', trueFalse)
+
+multipleChoice = readInCsvRows('CynanBotCommon/trivia/Delivery_2KMC_523A.csv')
 writeRowsToSqlite('CynanBotCommon/trivia/triviaDatabaseTriviaQuestionRepository.sqlite', multipleChoice)
