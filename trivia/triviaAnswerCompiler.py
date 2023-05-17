@@ -91,7 +91,7 @@ class TriviaAnswerCompiler():
         try:
             return utils.strictStrToBool(cleanedAnswer)
         except ValueError as e:
-            raise BadTriviaAnswerException(f'answer can\'t be compiled to bool (answer=\"{answer}\") (cleanedAnswer=\"{cleanedAnswer}\"): {e}', e, traceback.format_exc())
+            raise BadTriviaAnswerException(f'answer can\'t be compiled to bool (answer=\"{answer}\") (cleanedAnswer=\"{cleanedAnswer}\"): {e}')
 
     async def compileTextAnswer(self, answer: Optional[str]) -> str:
         if not utils.isValidStr(answer):
