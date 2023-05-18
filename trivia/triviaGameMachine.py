@@ -261,13 +261,16 @@ class TriviaGameMachine():
             return None
 
         answeredUserIds = state.getAnsweredUserIds()
-        twitchAccessToken: Optional[str] = None
-        toxicTriviaPunishments: List[ToxicTriviaPunishment] = list()
-        totalPointsStolen: int = 0
 
         if action is not None:
             del answeredUserIds[action.getUserId()]
-            twitchAccessToken = await self.__twitchTokensRepositoryInterface.getAccessToken(action.getTwitchChannel())
+
+        twitchAccessToken: Optional[str] = None
+        if await self.__twitchTokensRepositoryInterface.hasAccessToken(state.getTwitchChannel()):
+            twitchAccessToken = await self.__twitchTokensRepositoryInterface.getAccessToken(state.getTwitchChannel())
+
+        toxicTriviaPunishments: List[ToxicTriviaPunishment] = list()
+        totalPointsStolen: int = 0
 
         for userId, answerCount in answeredUserIds.items():
             punishedByPoints: int = -1 * toxicTriviaPunishmentAmount * answerCount
