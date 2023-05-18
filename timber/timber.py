@@ -41,11 +41,24 @@ class Timber():
         self.__entryQueue: SimpleQueue[TimberEntry] = SimpleQueue()
         backgroundTaskHelper.createTask(self.__startEventLoop())
 
-    def __getErrorStatement(self, exception: Exception) -> str:
-        if not isinstance(exception, Exception):
-            raise ValueError(f'exception argument is malformed: \"{exception}\"')
+    def __getErrorStatement(self, ensureNewLine: bool, timberEntry: TimberEntry) -> Optional[str]:
+        if not utils.isValidBool(ensureNewLine):
+            raise ValueError(f'ensureNewLine argument is malformed: \"{ensureNewLine}\"')
+        elif not isinstance(timberEntry, TimberEntry):
+            raise ValueError(f'timberEntry argument is malformed: \"{timberEntry}\"')
 
-        return f'{exception}\n'
+        if not timberEntry.hasException():
+            return None
+
+        errorStatement = f'{timberEntry.getException()}'
+
+        if timberEntry.hasTraceback():
+            errorStatement = f'{errorStatement}\n{timberEntry.getTraceback()}'.strip()
+
+        if ensureNewLine:
+            errorStatement = f'{errorStatement}\n'
+
+        return errorStatement
 
     def __getLogStatement(self, ensureNewLine: bool, timberEntry: TimberEntry) -> str:
         if not utils.isValidBool(ensureNewLine):
@@ -149,5 +162,7 @@ class Timber():
             for timberErrorFile, entriesList in timberErrorFileToEntriesDict.items():
                 async with aiofiles.open(timberErrorFile, mode = 'a') as file:
                     for entry in entriesList:
-                        errorStatement = self.__getErrorStatement(entry.getException())
-                        await file.write(errorStatement)
+                        errorStatement = self.__getErrorStatement(True, entry)
+
+                        if utils.isValidStr(errorStatement):
+                            await file.write(errorStatement)
