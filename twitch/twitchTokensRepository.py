@@ -104,7 +104,12 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
             raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
 
         jsonContents = await self.__readJsonForTwitchHandle(twitchHandle)
-        return utils.getStrFromDict(jsonContents, 'accessToken', fallback = '')
+        accessToken = utils.getStrFromDict(jsonContents, 'accessToken', fallback = '')
+
+        if utils.isValidStr(accessToken):
+            return accessToken
+        else:
+            return None    
 
     async def getExpiringTwitchHandles(self) -> Optional[List[str]]:
         if not utils.hasItems(self.__tokenExpirations):
@@ -132,7 +137,12 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
             raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
 
         jsonContents = await self.__readJsonForTwitchHandle(twitchHandle)
-        return utils.getStrFromDict(jsonContents, 'refreshToken', fallback = '')
+        refreshToken = utils.getStrFromDict(jsonContents, 'refreshToken', fallback = '')
+
+        if utils.isValidStr(refreshToken):
+            return refreshToken
+        else:
+            return None
 
     async def hasAccessToken(self, twitchHandle: str) -> bool:
         if not utils.isValidStr(twitchHandle):

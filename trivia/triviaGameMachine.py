@@ -265,10 +265,7 @@ class TriviaGameMachine():
         if action is not None:
             del answeredUserIds[action.getUserId()]
 
-        twitchAccessToken: Optional[str] = None
-        if await self.__twitchTokensRepositoryInterface.hasAccessToken(state.getTwitchChannel()):
-            twitchAccessToken = await self.__twitchTokensRepositoryInterface.getAccessToken(state.getTwitchChannel())
-
+        twitchAccessToken = await self.__twitchTokensRepositoryInterface.getAccessToken(state.getTwitchChannel())
         toxicTriviaPunishments: List[ToxicTriviaPunishment] = list()
         totalPointsStolen: int = 0
 
