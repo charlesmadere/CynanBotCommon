@@ -298,6 +298,16 @@ class TriviaAnswerChecker():
         if word == 'st':
             yield 'saint'
 
+        # common names
+        if word == 'bob':
+            yield 'bobby'
+        if word in ('chris', 'christ'):
+            yield 'christopher'
+        if word == 'dick':
+            yield 'richard'
+        if word == 'rob':
+            yield 'robert'
+
         # geographical features/streets
         if word in ('aly', 'ally'):
             yield 'alley'
