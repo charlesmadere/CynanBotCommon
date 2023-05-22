@@ -520,13 +520,14 @@ class TriviaGameMachine():
                 state = state
             )
 
-            await self.__toxicTriviaHelper.toxicTriviaWin(
-                twitchChannel = state.getTwitchChannel(),
-                userId = action.getUserId(),
-                userName = action.getUserName()
-            )
+            if toxicTriviaPunishmentResult is not None:
+                await self.__toxicTriviaHelper.toxicTriviaWin(
+                    twitchChannel = state.getTwitchChannel(),
+                    userId = action.getUserId(),
+                    userName = action.getUserName()
+                )
 
-            pointsForWinning = pointsForWinning + toxicTriviaPunishmentResult.getTotalPointsStolen()
+                pointsForWinning = pointsForWinning + toxicTriviaPunishmentResult.getTotalPointsStolen()
 
         cutenessResult = await self.__cutenessRepository.fetchCutenessIncrementedBy(
             incrementAmount = pointsForWinning,
@@ -811,7 +812,8 @@ class TriviaGameMachine():
                 state = state
             )
 
-            pointsForWinning = pointsForWinning + toxicTriviaPunishmentResult.getTotalPointsStolen()
+            if toxicTriviaPunishmentResult is not None:
+                pointsForWinning = pointsForWinning + toxicTriviaPunishmentResult.getTotalPointsStolen()
 
         remainingQueueSize = await self.__queuedTriviaGameStore.getQueuedSuperGamesSize(
             twitchChannel = state.getTwitchChannel()
