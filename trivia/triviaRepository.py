@@ -517,7 +517,7 @@ class TriviaRepository():
         triviaContentCode = await self.__triviaVerifier.checkHistory(
             question = question, 
             emote = emote,
-            twitchChannel = triviaFetchOptions.getTwitchChannel()
+            triviaFetchOptions = triviaFetchOptions
         )
 
         if triviaContentCode is TriviaContentCode.OK:
