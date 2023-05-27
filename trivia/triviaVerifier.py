@@ -47,21 +47,18 @@ class TriviaVerifier():
         self.__triviaContentScanner: TriviaContentScanner = triviaContentScanner
         self.__triviaHistoryRepository: TriviaHistoryRepository = triviaHistoryRepository
 
-    async def verify(
+    async def checkContent(
         self,
         question: Optional[AbsTriviaQuestion],
-        emote: str,
         triviaFetchOptions: TriviaFetchOptions
     ) -> TriviaContentCode:
-        if question is not None and not isinstance(question, AbsTriviaQuestion):
-            raise ValueError(f'question argument is malformed: \"{question}\"')
-        elif not utils.isValidStr(emote):
-            raise ValueError(f'emote argument is malformed: \"{emote}\"')
-        elif not isinstance(triviaFetchOptions, TriviaFetchOptions):
-            raise ValueError(f'triviaFetchOptions argument is malformed: \"{triviaFetchOptions}\"')
-
         if question is None:
             return TriviaContentCode.IS_NONE
+
+        if not isinstance(question, AbsTriviaQuestion):
+            raise ValueError(f'question argument is malformed: \"{question}\"')
+        elif not isinstance(triviaFetchOptions, TriviaFetchOptions):
+            raise ValueError(f'triviaFetchOptions argument is malformed: \"{triviaFetchOptions}\"')
 
         if not triviaFetchOptions.areQuestionAnswerTriviaQuestionsEnabled() and question.getTriviaType() is TriviaType.QUESTION_ANSWER:
             self.__timber.log('TriviaVerifier', f'The given TriviaType is illegal: {question.getTriviaType()} (triviaFetchOptions: {triviaFetchOptions.toStr()})')
@@ -80,13 +77,28 @@ class TriviaVerifier():
         if contentScannerCode is not TriviaContentCode.OK:
             return contentScannerCode
 
-        historyRepositoryCode = await self.__triviaHistoryRepository.verify(
+        return TriviaContentCode.OK
+
+    async def checkHistory(
+        self,
+        question: AbsTriviaQuestion,
+        emote: str,
+        triviaFetchOptions: TriviaFetchOptions
+    ) -> TriviaContentCode:
+        if not isinstance(question, AbsTriviaQuestion):
+            raise ValueError(f'question argument is malformed: \"{question}\"')
+        elif not utils.isValidStr(emote):
+            raise ValueError(f'emote argument is malformed: \"{emote}\"')
+        elif not isinstance(triviaFetchOptions, TriviaFetchOptions):
+            raise ValueError(f'triviaFetchOptions argument is malformed: \"{triviaFetchOptions}\"')
+
+        contentCode = await self.__triviaHistoryRepository.verify(
             question = question, 
             emote = emote,
             twitchChannel = triviaFetchOptions.getTwitchChannel()
         )
 
-        if historyRepositoryCode is not TriviaContentCode.OK:
-            return historyRepositoryCode
+        if contentCode is not TriviaContentCode.OK:
+            return contentCode
 
         return TriviaContentCode.OK

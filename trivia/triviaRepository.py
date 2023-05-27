@@ -307,7 +307,10 @@ class TriviaRepository():
                     errorCount = self.__triviaSourceInstabilityHelper.incrementErrorCount(triviaSource)
                     self.__timber.log('TriviaRepository', f'Encountered unknown Exception when fetching trivia question (trivia source was \"{triviaSource}\") (new error count is {errorCount}): {e}', e, traceback.format_exc())
 
-            if await self.__verifyGoodTriviaQuestion(
+            if await self.__verifyTriviaQuestionContent(
+                question = question,
+                triviaFetchOptions = triviaFetchOptions
+            ) and await self.__verifyTriviaQuestionIsNotDuplicate(
                 question = question,
                 emote = emote,
                 triviaFetchOptions = triviaFetchOptions
@@ -421,10 +424,19 @@ class TriviaRepository():
         triviaQuestionRepository = await self.__chooseRandomTriviaSource(triviaFetchOptions)
         question = await triviaQuestionRepository.fetchTriviaQuestion(triviaFetchOptions.getTwitchChannel())
 
-        if question.getTriviaType() is TriviaType.QUESTION_ANSWER and isinstance(question, QuestionAnswerTriviaQuestion):
-            self.__superTriviaQuestionSpool.put(question)
-        else:
-            self.__timber.log('TriviaRepository', f'Encountered unexpected super trivia question type: \"{question}\"')
+        if question.getTriviaType() is not TriviaType.QUESTION_ANSWER or not isinstance(question, QuestionAnswerTriviaQuestion):
+            self.__timber.log('TriviaRepository', f'Encountered unexpected super trivia question type ({question}) when spooling a super trivia question')
+            return
+
+        if not await self.__verifyTriviaQuestionContent(
+            question = question,
+            triviaFetchOptions = triviaFetchOptions
+        ):
+            self.__timber.log('TriviaRepository', f'Encountered bad trivia question content when spooling a super trivia question')
+            return
+
+        self.__superTriviaQuestionSpool.put(question)
+        self.__timber.log('TriviaRepository', f'Finished spooling up a super trivia question (new qsize: {self.__superTriviaQuestionSpool.qsize()})')
 
     async def __spoolNewTriviaQuestion(self):
         if self.__triviaQuestionSpool.qsize() >= await self.__triviaSettingsRepository.getMaxTriviaQuestionSpoolSize():
@@ -441,9 +453,18 @@ class TriviaRepository():
         question = await triviaQuestionRepository.fetchTriviaQuestion(triviaFetchOptions.getTwitchChannel())
 
         if question.getTriviaType() is TriviaType.QUESTION_ANSWER or isinstance(question, QuestionAnswerTriviaQuestion):
-            self.__timber.log('TriviaRepository', f'Encountered unexpected trivia question type: \"{question}\"')
-        else:
-            self.__triviaQuestionSpool.put(question)
+            self.__timber.log('TriviaRepository', f'Encountered unexpected trivia question type ({question}) when spooling a trivia question')
+            return
+
+        if not await self.__verifyTriviaQuestionContent(
+            question = question,
+            triviaFetchOptions = triviaFetchOptions
+        ):
+            self.__timber.log('TriviaRepository', f'Encountered bad trivia question content when spooling a trivia question')
+            return
+
+        self.__triviaQuestionSpool.put(question)
+        self.__timber.log('TriviaRepository', f'Finished spooling up a trivia question (new qsize: {self.__triviaQuestionSpool.qsize()})')
 
     async def __startTriviaQuestionSpooler(self):
         while True:
@@ -459,27 +480,48 @@ class TriviaRepository():
 
             await asyncio.sleep(self.__spoolerLoopSleepTimeSeconds)
 
-    async def __verifyGoodTriviaQuestion(
+    async def __verifyTriviaQuestionContent(
         self,
         question: Optional[AbsTriviaQuestion],
-        emote: str,
         triviaFetchOptions: TriviaFetchOptions
     ) -> bool:
         if question is not None and not isinstance(question, AbsTriviaQuestion):
+            raise ValueError(f'question argument is malformed: \"{question}\"')
+        elif not isinstance(triviaFetchOptions, TriviaFetchOptions):
+            raise ValueError(f'triviaFetchOptions argument is malformed: \"{triviaFetchOptions}\"')
+
+        triviaContentCode = await self.__triviaVerifier.checkContent(
+            question = question,
+            triviaFetchOptions = triviaFetchOptions
+        )
+
+        if triviaContentCode is TriviaContentCode.OK:
+            return True
+        else:
+            self.__timber.log('TriviaRepository', f'Rejected a trivia question\'s content (code=\"{triviaContentCode}\")')
+            return False
+
+    async def __verifyTriviaQuestionIsNotDuplicate(
+        self,
+        question: AbsTriviaQuestion,
+        emote: str,
+        triviaFetchOptions: TriviaFetchOptions
+    ) -> bool:
+        if not isinstance(question, AbsTriviaQuestion):
             raise ValueError(f'question argument is malformed: \"{question}\"')
         elif not utils.isValidStr(emote):
             raise ValueError(f'emote argument is malformed: \"{emote}\"')
         elif not isinstance(triviaFetchOptions, TriviaFetchOptions):
             raise ValueError(f'triviaFetchOptions argument is malformed: \"{triviaFetchOptions}\"')
 
-        triviaContentCode = await self.__triviaVerifier.verify(
-            question = question,
+        triviaContentCode = await self.__triviaVerifier.checkHistory(
+            question = question, 
             emote = emote,
-            triviaFetchOptions = triviaFetchOptions
+            twitchChannel = triviaFetchOptions.getTwitchChannel()
         )
 
-        if triviaContentCode == TriviaContentCode.OK:
+        if triviaContentCode is TriviaContentCode.OK:
             return True
         else:
-            self.__timber.log('TriviaRepository', f'Rejected a trivia question due to content code: {triviaContentCode}')
+            self.__timber.log('TriviaRepository', f'Rejected a trivia question as it ended up being a duplicate (code=\"{triviaContentCode}\")')
             return False
