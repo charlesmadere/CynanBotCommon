@@ -42,7 +42,7 @@ class SuperTriviaGameState(AbsTriviaGameState):
 
         if not utils.isValidInt(perUserAttempts):
             raise ValueError(f'perUserAttempts argument is malformed: \"{perUserAttempts}\"')
-        elif perUserAttempts < 1 or perUserAttempts > 8:
+        elif perUserAttempts < 1 or perUserAttempts > 3:
             raise ValueError(f'perUserAttempts argument is out of bounds: {perUserAttempts}')
         elif not utils.isValidInt(toxicTriviaPunishmentAmount):
             raise ValueError(f'toxicTriviaPunishmentAmount argument is malformed: \"{toxicTriviaPunishmentAmount}\"')
