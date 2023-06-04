@@ -84,6 +84,7 @@ class TriviaGameStoreTests():
 
     game1 = TriviaGameState(
         triviaQuestion = normalQuestion1,
+        basePointsForWinning = 5,
         pointsForWinning = 5,
         secondsToLive = 60,
         specialTriviaStatus = None,
@@ -96,6 +97,7 @@ class TriviaGameStoreTests():
 
     game2 = TriviaGameState(
         triviaQuestion = normalQuestion2,
+        basePointsForWinning = 5,
         pointsForWinning = 5,
         secondsToLive = 60,
         specialTriviaStatus = None,
@@ -108,6 +110,7 @@ class TriviaGameStoreTests():
 
     game3 = TriviaGameState(
         triviaQuestion = normalQuestion3,
+        basePointsForWinning = 5,
         pointsForWinning = 5,
         secondsToLive = 60,
         specialTriviaStatus = None,
@@ -120,10 +123,12 @@ class TriviaGameStoreTests():
 
     game4 = SuperTriviaGameState(
         triviaQuestion = superQuestion1,
+        basePointsForWinning = 25,
         perUserAttempts = 2,
         pointsForWinning = 25,
+        regularTriviaPointsForWinning = 5,
         secondsToLive = 60,
-        toxicTriviaPunishmentAmount = 0,
+        toxicTriviaPunishmentMultiplier = 2,
         specialTriviaStatus = None,
         actionId = 'abc123',
         emote = '🍔',
@@ -132,10 +137,12 @@ class TriviaGameStoreTests():
 
     game5 = SuperTriviaGameState(
         triviaQuestion = superQuestion2,
+        basePointsForWinning = 25,
         perUserAttempts = 2,
         pointsForWinning = 25,
+        regularTriviaPointsForWinning = 5,
         secondsToLive = 60,
-        toxicTriviaPunishmentAmount = 0,
+        toxicTriviaPunishmentMultiplier = 2,
         specialTriviaStatus = None,
         actionId = 'abc123',
         emote = '🍔',

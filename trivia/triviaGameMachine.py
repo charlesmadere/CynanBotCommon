@@ -255,9 +255,9 @@ class TriviaGameMachine():
         if not state.isToxic():
             return None
 
-        toxicTriviaPunishmentAmount = state.getToxicTriviaPunishmentAmount()
+        toxicTriviaPunishmentMultiplier = state.getToxicTriviaPunishmentMultiplier()
 
-        if toxicTriviaPunishmentAmount <= 0:
+        if toxicTriviaPunishmentMultiplier <= 0:
             return None
 
         answeredUserIds = state.getAnsweredUserIds()
@@ -270,7 +270,7 @@ class TriviaGameMachine():
         totalPointsStolen: int = 0
 
         for userId, answerCount in answeredUserIds.items():
-            punishedByPoints: int = -1 * toxicTriviaPunishmentAmount * answerCount
+            punishedByPoints: int = -1 * answerCount * toxicTriviaPunishmentMultiplier * state.getRegularTriviaPointsForWinning()
             totalPointsStolen = totalPointsStolen + abs(punishedByPoints)
 
             userName = await self.__userIdsRepository.fetchUserName(
@@ -727,10 +727,12 @@ class TriviaGameMachine():
 
         state = SuperTriviaGameState(
             triviaQuestion = triviaQuestion,
+            basePointsForWinning = action.getPointsForWinning(),
             perUserAttempts = action.getPerUserAttempts(),
             pointsForWinning = pointsForWinning,
+            regularTriviaPointsForWinning = action.getRegularTriviaPointsForWinning(),
             secondsToLive = action.getSecondsToLive(),
-            toxicTriviaPunishmentAmount = action.getToxicTriviaPunishmentAmount(),
+            toxicTriviaPunishmentMultiplier = action.getToxicTriviaPunishmentMultiplier(),
             specialTriviaStatus = specialTriviaStatus,
             actionId = action.getActionId(),
             emote = emote,

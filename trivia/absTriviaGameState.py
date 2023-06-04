@@ -21,6 +21,7 @@ class AbsTriviaGameState(ABC):
     def __init__(
         self,
         triviaQuestion: AbsTriviaQuestion,
+        basePointsForWinning: int,
         pointsForWinning: int,
         secondsToLive: int,
         specialTriviaStatus: Optional[SpecialTriviaStatus],
@@ -31,6 +32,10 @@ class AbsTriviaGameState(ABC):
     ):
         if not isinstance(triviaQuestion, AbsTriviaQuestion):
             raise ValueError(f'triviaQuestion argument is malformed: \"{triviaQuestion}\"')
+        elif not utils.isValidInt(basePointsForWinning):
+            raise ValueError(f'basePointsForWinning argument is malformed: \"{basePointsForWinning}\"')
+        elif basePointsForWinning < 1 or basePointsForWinning > utils.getIntMaxSafeSize():
+            raise ValueError(f'basePointsForWinning argument is out of bounds: {basePointsForWinning}')
         elif not utils.isValidInt(pointsForWinning):
             raise ValueError(f'pointsForWinning argument is malformed: \"{pointsForWinning}\"')
         elif pointsForWinning < 1 or pointsForWinning > utils.getIntMaxSafeSize():
@@ -51,6 +56,7 @@ class AbsTriviaGameState(ABC):
             raise ValueError(f'triviaGameType argument is malformed: \"{triviaGameType}\"')
 
         self.__triviaQuestion: AbsTriviaQuestion = triviaQuestion
+        self.__basePointsForWinning: int = basePointsForWinning
         self.__pointsForWinning: int = pointsForWinning
         self.__secondsToLive: int = secondsToLive
         self.__specialTriviaStatus: Optional[SpecialTriviaStatus] = specialTriviaStatus
@@ -64,6 +70,9 @@ class AbsTriviaGameState(ABC):
 
     def getActionId(self) -> str:
         return self.__actionId
+
+    def getBasePointsForWinning(self) -> int:
+        return self.__basePointsForWinning
 
     def getEmote(self) -> str:
         return self.__emote

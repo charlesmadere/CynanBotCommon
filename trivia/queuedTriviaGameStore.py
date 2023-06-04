@@ -99,10 +99,11 @@ class QueuedTriviaGameStore():
                     numberOfGames = 1,
                     perUserAttempts = action.getPerUserAttempts(),
                     pointsForWinning = action.getPointsForWinning(),
+                    regularTriviaPointsForWinning = action.getRegularTriviaPointsForWinning(),
                     secondsToLive = action.getSecondsToLive(),
                     shinyMultiplier = action.getShinyMultiplier(),
                     toxicMultiplier = action.getToxicMultiplier(),
-                    toxicTriviaPunishmentAmount = action.getToxicTriviaPunishmentAmount(),
+                    toxicTriviaPunishmentMultiplier = action.getToxicTriviaPunishmentMultiplier(),
                     twitchChannel = action.getTwitchChannel(),
                     triviaFetchOptions = action.getTriviaFetchOptions()
                 ))

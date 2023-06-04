@@ -19,6 +19,7 @@ class TriviaGameState(AbsTriviaGameState):
     def __init__(
         self,
         triviaQuestion: AbsTriviaQuestion,
+        basePointsForWinning: int,
         pointsForWinning: int,
         secondsToLive: int,
         specialTriviaStatus: Optional[SpecialTriviaStatus],
@@ -30,6 +31,7 @@ class TriviaGameState(AbsTriviaGameState):
     ):
         super().__init__(
             triviaQuestion = triviaQuestion,
+            basePointsForWinning = basePointsForWinning,
             pointsForWinning = pointsForWinning,
             secondsToLive = secondsToLive,
             specialTriviaStatus = specialTriviaStatus,
