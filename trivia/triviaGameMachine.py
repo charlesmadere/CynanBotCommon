@@ -635,6 +635,7 @@ class TriviaGameMachine():
 
         state = TriviaGameState(
             triviaQuestion = triviaQuestion,
+            basePointsForWinning = action.getPointsForWinning(),
             pointsForWinning = pointsForWinning,
             secondsToLive = action.getSecondsToLive(),
             specialTriviaStatus = specialTriviaStatus,
