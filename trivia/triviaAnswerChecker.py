@@ -477,12 +477,29 @@ class TriviaAnswerChecker():
         if word in ('se', 'southeast', 'southeastern'):
             yield 'southeast'
 
+        # corporation things
+        if word == 'asst':
+            yield 'assistant'
+        if word == 'corp':
+            yield 'corporation'
+        if word == 'inc':
+            yield 'incorporated'
+        if word == 'llc':
+            yield 'limited liability company'
+        if word == 'ltd':
+            yield 'limited'
+        if word == 'vp':
+            yield 'vice president'
+
         # weird latin things
         if word == 'cv':
             yield 'curriculum vitae'
+        if word == 'et al':
+            yield 'et alia'
         if word == 'etc':
             yield 'et cetera'
         if word == 'eg':
+            yield 'example gratia'
             yield 'exempli gratia'
         if word == 'ie':
             yield 'id est'
@@ -518,8 +535,8 @@ class TriviaAnswerChecker():
         if word == 'gpu':
             yield 'graphics processing unit'
         if word in ('hd', 'hdd'):
-            yield 'hard drive'
             yield 'hard disk drive'
+            yield 'hard drive'
         if word == 'http':
             yield 'hypertext transfer protocol'
         if word == 'https':
@@ -593,6 +610,8 @@ class TriviaAnswerChecker():
             yield 'hectogram'
         if word == 'hm':
             yield 'hectometer'
+        if word == 'hr':
+            yield 'hour'
         if word == 'in':
             yield 'inch'
         if word == 'k':
@@ -621,6 +640,8 @@ class TriviaAnswerChecker():
             yield 'milligram'
         if word == 'mi':
             yield 'mile'
+        if word == 'min':
+            yield 'minute'
         if word == 'ml':
             yield 'milliliter'
         if word == 'mm':
@@ -635,6 +656,8 @@ class TriviaAnswerChecker():
             yield 'petabyte'
         if word == 'tb':
             yield 'terabyte'
+        if word in ('tbs', 'tbsp'):
+            yield 'tablespoon'
         if word == 'w':
             yield 'watt'
         if word in ('yd', 'yds', 'yrd', 'yrds'):
@@ -651,10 +674,18 @@ class TriviaAnswerChecker():
             yield 'direct current'
         if word == 'dept':
             yield 'department'
+        if word == 'eta':
+            yield 'estimated time of arrival'
+        if word == 'fyi':
+            yield 'for your information'
         if word == 'no':
             yield 'number'
         if word == 'ocd':
             yield 'obsessive compulsive disorder'
+        if word == 'tel':
+            yield 'telephone'
+        if word == 'temp':
+            yield 'temporary'
         if word == 'vs':
             yield 'versus'
         if word == 'wr':
