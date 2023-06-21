@@ -1,6 +1,6 @@
 try:
-    from ...bannedWords.bannedWord import BannedWord
-    from ...bannedWords.bannedWordCheckType import BannedWordCheckType
+    from ...trivia.bannedWords.bannedWord import BannedWord
+    from ...trivia.bannedWords.bannedWordCheckType import BannedWordCheckType
 except:
     from trivia.bannedWords.bannedWord import BannedWord
     from trivia.bannedWords.bannedWordCheckType import BannedWordCheckType

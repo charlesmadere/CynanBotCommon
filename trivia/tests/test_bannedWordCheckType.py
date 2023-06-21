@@ -1,5 +1,5 @@
 try:
-    from ...bannedWords.bannedWordCheckType import BannedWordCheckType
+    from ...trivia.bannedWords.bannedWordCheckType import BannedWordCheckType
 except:
     from trivia.bannedWords.bannedWordCheckType import BannedWordCheckType
 
