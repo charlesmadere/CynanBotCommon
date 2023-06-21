@@ -4,7 +4,7 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
-    from CynanBotCommon.trivia.bannedWordsRepository import \
+    from CynanBotCommon.trivia.bannedWords.bannedWordsRepository import \
         BannedWordsRepository
     from CynanBotCommon.trivia.triviaContentCode import TriviaContentCode
     from CynanBotCommon.trivia.triviaSettingsRepository import \
@@ -14,7 +14,7 @@ except:
     import utils
     from timber.timber import Timber
     from trivia.absTriviaQuestion import AbsTriviaQuestion
-    from trivia.bannedWordsRepository import BannedWordsRepository
+    from trivia.bannedWords.bannedWordsRepository import BannedWordsRepository
     from trivia.triviaContentCode import TriviaContentCode
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaType import TriviaType

@@ -8,9 +8,14 @@ import aiofiles.ospath
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.trivia.bannedWords.bannedWord import BannedWord
+    from CynanBotCommon.trivia.bannedWords.bannedWordCheckType import \
+        BannedWordCheckType
 except:
     import utils
     from timber.timber import Timber
+    from trivia.bannedWords.bannedWord import BannedWord
+    from trivia.bannedWords.bannedWordCheckType import BannedWordCheckType
 
 
 class BannedWordsRepository():

@@ -7,7 +7,7 @@ from typing import List, Optional, Set
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.timber.timber import Timber
-    from CynanBotCommon.trivia.bannedWordsRepository import \
+    from CynanBotCommon.trivia.bannedWords.bannedWordsRepository import \
         BannedWordsRepository
     from CynanBotCommon.trivia.triviaContentScanner import TriviaContentScanner
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
@@ -17,7 +17,7 @@ try:
 except:
     import utils
     from timber.timber import Timber
-    from trivia.bannedWordsRepository import BannedWordsRepository
+    from trivia.bannedWords.bannedWordsRepository import BannedWordsRepository
     from trivia.triviaContentScanner import TriviaContentScanner
     from trivia.triviaDifficulty import TriviaDifficulty
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
