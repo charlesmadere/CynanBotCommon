@@ -4,6 +4,8 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
+    from CynanBotCommon.trivia.bannedWords.bannedWordCheckType import \
+        BannedWordCheckType
     from CynanBotCommon.trivia.bannedWords.bannedWordsRepository import \
         BannedWordsRepository
     from CynanBotCommon.trivia.triviaContentCode import TriviaContentCode
@@ -14,6 +16,7 @@ except:
     import utils
     from timber.timber import Timber
     from trivia.absTriviaQuestion import AbsTriviaQuestion
+    from trivia.bannedWords.bannedWordCheckType import BannedWordCheckType
     from trivia.bannedWords.bannedWordsRepository import BannedWordsRepository
     from trivia.triviaContentCode import TriviaContentCode
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
@@ -109,9 +112,19 @@ class TriviaContentScanner():
                 return TriviaContentCode.CONTAINS_URL
 
             for bannedWord in bannedWords:
-                if bannedWord in string:
-                    self.__timber.log('TriviaContentScanner', f'Trivia content contains a banned word ({bannedWord}): \"{string}\"')
-                    return TriviaContentCode.CONTAINS_BANNED_WORD
+                checkType = bannedWord.getCheckType()
+
+                if checkType is BannedWordCheckType.ANYWHERE:
+                    if bannedWord.getWord() in string:
+                        self.__timber.log('TriviaContentScanner', f'Trivia content contains a banned word ({bannedWord}): \"{string}\"')
+                        return TriviaContentCode.CONTAINS_BANNED_WORD
+                elif checkType is BannedWordCheckType.EXACT_MATCH:
+                    splits = set(string.split())
+                    if bannedWord.getWord() in splits:
+                        self.__timber.log('TriviaContentScanner', f'Trivia content contains a banned word ({bannedWord}): \"{string}\"')
+                        return TriviaContentCode.CONTAINS_BANNED_WORD
+                else:
+                    raise RuntimeError(f'unknown BannedWordTypeType ({bannedWord}): \"{checkType}\"')
 
         return TriviaContentCode.OK
 

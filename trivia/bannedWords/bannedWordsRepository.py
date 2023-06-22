@@ -33,8 +33,8 @@ class BannedWordsRepository():
         self.__timber: Timber = timber
         self.__bannedWordsFile: str = bannedWordsFile
 
-        self.__quoteRegEx: Pattern = re.compile(r'^".+"$', re.IGNORECASE)
-        self.__bannedWordsCache: Optional[Set[str]] = None
+        self.__quoteRegEx: Pattern = re.compile(r'^"(.+)"$', re.IGNORECASE)
+        self.__bannedWordsCache: Optional[Set[BannedWord]] = None
 
     async def clearCaches(self):
         self.__bannedWordsCache = None
@@ -43,21 +43,21 @@ class BannedWordsRepository():
     def __createCleanedBannedWordsSetFromLines(
         self,
         lines: Optional[List[Optional[str]]]
-    ) -> Set[str]:
+    ) -> Set[BannedWord]:
         cleanedBannedWords: Set[str] = set()
 
         if not utils.hasItems(lines):
             return cleanedBannedWords
 
         for line in lines:
-            processedLine = self.__processWord(line)
+            bannedWord = self.__processLine(line)
 
-            if utils.isValidStr(processedLine):
-                cleanedBannedWords.add(processedLine)
+            if bannedWord is not None:
+                cleanedBannedWords.add(bannedWord)
 
         return cleanedBannedWords
 
-    def __fetchBannedWords(self) -> Set[str]:
+    def __fetchBannedWords(self) -> Set[BannedWord]:
         if not os.path.exists(self.__bannedWordsFile):
             raise FileNotFoundError(f'Banned words file not found: \"{self.__bannedWordsFile}\"')
 
@@ -68,7 +68,7 @@ class BannedWordsRepository():
 
         return self.__createCleanedBannedWordsSetFromLines(lines)
 
-    async def __fetchBannedWordsAsync(self) -> Set[str]:
+    async def __fetchBannedWordsAsync(self) -> Set[BannedWord]:
         if not await aiofiles.ospath.exists(self.__bannedWordsFile):
             raise FileNotFoundError(f'Banned words file not found: \"{self.__bannedWordsFile}\"')
 
@@ -79,7 +79,7 @@ class BannedWordsRepository():
 
         return self.__createCleanedBannedWordsSetFromLines(lines)
 
-    def getBannedWords(self) -> Set[str]:
+    def getBannedWords(self) -> Set[BannedWord]:
         if self.__bannedWordsCache is not None:
             return self.__bannedWordsCache
 
@@ -89,7 +89,7 @@ class BannedWordsRepository():
 
         return bannedWords
 
-    async def getBannedWordsAsync(self) -> Set[str]:
+    async def getBannedWordsAsync(self) -> Set[BannedWord]:
         if self.__bannedWordsCache is not None:
             return self.__bannedWordsCache
 
@@ -99,20 +99,23 @@ class BannedWordsRepository():
 
         return bannedWords
 
-    def __processWord(self, line: Optional[str]) -> Optional[str]:
+    def __processLine(self, line: Optional[str]) -> Optional[BannedWord]:
         if not utils.isValidStr(line):
             return None
 
-        line = line.strip().lower()
+        word = line.strip().lower()
 
-        if not utils.isValidStr(line):
+        if not utils.isValidStr(word):
             return None
 
-        quoteRegExMatch = self.__quoteRegEx.fullmatch(line)
+        quoteRegExMatch = self.__quoteRegEx.fullmatch(word)
+        checkType = BannedWordCheckType.ANYWHERE
+
         if quoteRegExMatch is not None:
-            line = quoteRegExMatch.group(1).strip()
+            word = quoteRegExMatch.group(1).strip()
+            checkType = BannedWordCheckType.EXACT_MATCH
 
-        if not utils.isValidStr(line):
-            return None
-
-        return line
+        return BannedWord(
+            checkType = checkType,
+            word = word
+        )
