@@ -44,5 +44,5 @@ class AddQueuedGamesResult():
     def getOldQueueSizeStr(self) -> str:
         return locale.format_string("%d", self.__oldQueueSize, grouping = True)
 
-    def toStr(self) -> str:
+    def __str__(self) -> str:
         return f'amountAdded={self.__amountAdded}, newQueueSize={self.__newQueueSize}, oldQueueSize={self.__oldQueueSize}'
