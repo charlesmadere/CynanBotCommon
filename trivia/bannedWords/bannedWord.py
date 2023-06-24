@@ -18,7 +18,7 @@ class BannedWord():
             raise ValueError(f'word argument is malformed: \"{word}\"')
 
         self.__checkType: BannedWordCheckType = checkType
-        self.__word: str = word
+        self.__word: str = word.lower()
 
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, BannedWord):
