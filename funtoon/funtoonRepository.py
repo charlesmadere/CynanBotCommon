@@ -9,6 +9,8 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.funtoon.funtoonPkmnCatchType import \
         FuntoonPkmnCatchType
+    from CynanBotCommon.funtoon.funtoonTokenRepository import \
+        FuntoonTokenRepository
     from CynanBotCommon.network.exceptions import GenericNetworkException
     from CynanBotCommon.network.networkClientProvider import \
         NetworkClientProvider
@@ -16,6 +18,7 @@ try:
 except:
     import utils
     from funtoon.funtoonPkmnCatchType import FuntoonPkmnCatchType
+    from funtoon.funtoonTokenRepository import FuntoonTokenRepository
     from network.exceptions import GenericNetworkException
     from network.networkClientProvider import NetworkClientProvider
     from timber.timber import Timber
@@ -25,12 +28,15 @@ class FuntoonRepository():
 
     def __init__(
         self,
+        funtoonTokenRepository: FuntoonTokenRepository,
         networkClientProvider: NetworkClientProvider,
         timber: Timber,
         funtoonApiUrl: str = 'https://funtoon.party/api',
         funtoonRepositoryFile: str = 'CynanBotCommon/funtoon/funtoonRepository.json'
     ):
-        if not isinstance(networkClientProvider, NetworkClientProvider):
+        if not isinstance(funtoonTokenRepository, FuntoonTokenRepository):
+            raise ValueError(f'funtoonTokenRepository argument is malformed: \"{funtoonTokenRepository}\"')
+        elif not isinstance(networkClientProvider, NetworkClientProvider):
             raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
         elif not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
@@ -39,6 +45,7 @@ class FuntoonRepository():
         elif not utils.isValidStr(funtoonRepositoryFile):
             raise ValueError(f'funtoonRepositoryFile argument is malformed: \"{funtoonRepositoryFile}\"')
 
+        self.__funtoonTokenRepository: FuntoonTokenRepository = funtoonTokenRepository
         self.__networkClientProvider: NetworkClientProvider = networkClientProvider
         self.__timber: Timber = timber
         self.__funtoonApiUrl: str = funtoonApiUrl
@@ -70,19 +77,11 @@ class FuntoonRepository():
         self.__cache = None
         self.__timber.log('FuntoonRepository', 'Caches cleared')
 
-    async def getFuntoonToken(self, twitchChannel: str) -> str:
+    async def getFuntoonToken(self, twitchChannel: str) -> Optional[str]:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
-        twitchChannelJson = await self.__readJsonForTwitchChannel(twitchChannel)
-        if twitchChannelJson is None:
-            return None
-
-        token = twitchChannelJson.get('token')
-        if not utils.isValidStr(token):
-            raise ValueError(f'\"token\" value for \"{twitchChannel}\" in Funtoon repository file ({self.__funtoonRepositoryFile}) is malformed: \"{token}\"')
-
-        return token
+        return await self.__funtoonTokenRepository.getToken(twitchChannel)
 
     async def __hitFuntoon(
         self,
@@ -207,10 +206,10 @@ class FuntoonRepository():
         elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
-        funtoonToken = await self.getFuntoonToken(twitchChannel)
-
-        if not utils.isValidStr(funtoonToken):
-            self.__timber.log('FuntoonRepository', f'Can\'t perform pkmnGiveEvolve as twitchChannel \"{twitchChannel}\" has no Funtoon token: \"{funtoonToken}\"')
+        try:
+            funtoonToken = await self.requireFuntoonToken(twitchChannel)
+        except ValueError as e:
+            self.__timber.log('FuntoonRepository', f'Can\'t perform pkmnGiveEvolve as twitchChannel \"{twitchChannel}\" has no Funtoon token: \"{funtoonToken}\"', e, traceback.format_exc())
             return False
 
         return await self.__hitFuntoon(
@@ -258,19 +257,8 @@ class FuntoonRepository():
         self.__cache = jsonContents
         return jsonContents
 
-    async def __readJsonForTwitchChannel(self, twitchChannel: str) -> Dict[str, Any]:
+    async def requireFuntoonToken(self, twitchChannel: str) -> Optional[str]:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
-        jsonContents = await self.__readAllJson()
-        twitchChannelsJson: Dict[str, Any] = jsonContents.get('twitchChannels')
-        if not utils.hasItems(twitchChannelsJson):
-            raise ValueError(f'\"twitchChannels\" JSON contents of Funtoon repository file \"{self.__funtoonRepositoryFile}\" is missing/empty')
-
-        twitchChannel = twitchChannel.lower()
-
-        for key in twitchChannelsJson:
-            if key.lower() == twitchChannel:
-                return twitchChannelsJson[key]
-
-        return None
+        return await self.__funtoonTokenRepository.requireToken(twitchChannel)
