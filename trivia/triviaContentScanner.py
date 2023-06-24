@@ -89,17 +89,17 @@ class TriviaContentScanner():
 
     async def __verifyQuestionContentSanity(self, question: AbsTriviaQuestion) -> TriviaContentCode:
         strings: Set[str] = set()
-        strings.add(question.getQuestion().lower())
-        strings.add(question.getPrompt().lower())
+        strings.update(question.getQuestion().lower().split())
+        strings.update(question.getPrompt().lower().split())
 
         if question.hasCategory():
-            strings.add(question.getCategory().lower())
+            strings.update(question.getCategory().lower().split())
 
         for correctAnswer in question.getCorrectAnswers():
-            strings.add(correctAnswer.lower())
+            strings.update(correctAnswer.lower().split())
 
         for response in question.getResponses():
-            strings.add(response.lower())
+            strings.update(response.lower().split())
 
         bannedWords = await self.__bannedWordsRepository.getBannedWordsAsync()
 
@@ -112,19 +112,16 @@ class TriviaContentScanner():
                 return TriviaContentCode.CONTAINS_URL
 
             for bannedWord in bannedWords:
-                checkType = bannedWord.getCheckType()
-
-                if checkType is BannedWordCheckType.ANYWHERE:
+                if bannedWord.getCheckType() is BannedWordCheckType.ANYWHERE:
                     if bannedWord.getWord() in string:
                         self.__timber.log('TriviaContentScanner', f'Trivia content contains a banned word ({bannedWord}): \"{string}\"')
                         return TriviaContentCode.CONTAINS_BANNED_WORD
-                elif checkType is BannedWordCheckType.EXACT_MATCH:
-                    splits = set(string.split())
-                    if bannedWord.getWord() in splits:
+                elif bannedWord.getCheckType() is BannedWordCheckType.EXACT_MATCH:
+                    if bannedWord.getWord() == string:
                         self.__timber.log('TriviaContentScanner', f'Trivia content contains a banned word ({bannedWord}): \"{string}\"')
                         return TriviaContentCode.CONTAINS_BANNED_WORD
                 else:
-                    raise RuntimeError(f'unknown BannedWordTypeType ({bannedWord}): \"{checkType}\"')
+                    raise RuntimeError(f'unknown BannedWordTypeType ({bannedWord}): \"{bannedWord.getCheckType()}\"')
 
         return TriviaContentCode.OK
 
