@@ -6,8 +6,8 @@ try:
     from CynanBotCommon.funtoon.exceptions import NoFuntoonTokenException
     from CynanBotCommon.funtoon.funtoonPkmnCatchType import \
         FuntoonPkmnCatchType
-    from CynanBotCommon.funtoon.funtoonTokenRepository import \
-        FuntoonTokenRepository
+    from CynanBotCommon.funtoon.funtoonTokensRepository import \
+        FuntoonTokensRepository
     from CynanBotCommon.network.exceptions import GenericNetworkException
     from CynanBotCommon.network.networkClientProvider import \
         NetworkClientProvider
@@ -16,7 +16,7 @@ except:
     import utils
     from funtoon.exceptions import NoFuntoonTokenException
     from funtoon.funtoonPkmnCatchType import FuntoonPkmnCatchType
-    from funtoon.funtoonTokenRepository import FuntoonTokenRepository
+    from funtoon.funtoonTokensRepository import FuntoonTokensRepository
     from network.exceptions import GenericNetworkException
     from network.networkClientProvider import NetworkClientProvider
     from timber.timber import Timber
@@ -26,13 +26,13 @@ class FuntoonRepository():
 
     def __init__(
         self,
-        funtoonTokenRepository: FuntoonTokenRepository,
+        funtoonTokensRepository: FuntoonTokensRepository,
         networkClientProvider: NetworkClientProvider,
         timber: Timber,
         funtoonApiUrl: str = 'https://funtoon.party/api'
     ):
-        if not isinstance(funtoonTokenRepository, FuntoonTokenRepository):
-            raise ValueError(f'funtoonTokenRepository argument is malformed: \"{funtoonTokenRepository}\"')
+        if not isinstance(funtoonTokensRepository, FuntoonTokensRepository):
+            raise ValueError(f'funtoonTokensRepository argument is malformed: \"{funtoonTokensRepository}\"')
         elif not isinstance(networkClientProvider, NetworkClientProvider):
             raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
         elif not isinstance(timber, Timber):
@@ -40,7 +40,7 @@ class FuntoonRepository():
         elif not utils.isValidUrl(funtoonApiUrl):
             raise ValueError(f'funtoonApiUrl argument is malformed: \"{funtoonApiUrl}\"')
 
-        self.__funtoonTokenRepository: FuntoonTokenRepository = funtoonTokenRepository
+        self.__funtoonTokensRepository: FuntoonTokensRepository = funtoonTokensRepository
         self.__networkClientProvider: NetworkClientProvider = networkClientProvider
         self.__timber: Timber = timber
         self.__funtoonApiUrl: str = funtoonApiUrl
@@ -129,7 +129,7 @@ class FuntoonRepository():
             raise ValueError(f'userToBattle argument is malformed: \"{userToBattle}\"')
 
         try:
-            funtoonToken = await self.__funtoonTokenRepository.requireToken(twitchChannel)
+            funtoonToken = await self.__funtoonTokensRepository.requireToken(twitchChannel)
         except NoFuntoonTokenException as e:
             self.__timber.log('FuntoonRepository', f'Can\'t perform pkmnBattle as twitchChannel \"{twitchChannel}\" has no Funtoon token', e, traceback.format_exc())
             return False
@@ -156,7 +156,7 @@ class FuntoonRepository():
             raise ValueError(f'userThatRedeemed argument is malformed: \"{userThatRedeemed}\"')
 
         try:
-            funtoonToken = await self.__funtoonTokenRepository.requireToken(twitchChannel)
+            funtoonToken = await self.__funtoonTokensRepository.requireToken(twitchChannel)
         except NoFuntoonTokenException as e:
             self.__timber.log('FuntoonRepository', f'Can\'t perform pkmnCatch as twitchChannel \"{twitchChannel}\" has no Funtoon token', e, traceback.format_exc())
             return False
@@ -188,7 +188,7 @@ class FuntoonRepository():
             raise ValueError(f'userThatRedeemed argument is malformed: \"{userThatRedeemed}\"')
 
         try:
-            funtoonToken = await self.__funtoonTokenRepository.requireToken(twitchChannel)
+            funtoonToken = await self.__funtoonTokensRepository.requireToken(twitchChannel)
         except NoFuntoonTokenException as e:
             self.__timber.log('FuntoonRepository', f'Can\'t perform pkmnGiveEvolve as twitchChannel \"{twitchChannel}\" has no Funtoon token', e, traceback.format_exc())
             return False
@@ -211,7 +211,7 @@ class FuntoonRepository():
             raise ValueError(f'userThatRedeemed argument is malformed: \"{userThatRedeemed}\"')
 
         try:
-            funtoonToken = await self.__funtoonTokenRepository.requireToken(twitchChannel)
+            funtoonToken = await self.__funtoonTokensRepository.requireToken(twitchChannel)
         except NoFuntoonTokenException as e:
             self.__timber.log('FuntoonRepository', f'Can\'t perform pkmnGiveShiny as twitchChannel \"{twitchChannel}\" has no Funtoon token', e, traceback.format_exc())
             return False

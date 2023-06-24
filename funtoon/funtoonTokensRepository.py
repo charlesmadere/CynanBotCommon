@@ -21,7 +21,7 @@ except:
     from timber.timber import Timber
 
 
-class FuntoonTokenRepository():
+class FuntoonTokensRepository():
 
     def __init__(
         self,
@@ -55,7 +55,7 @@ class FuntoonTokenRepository():
         self.__seedFile = None
 
         if not await aiofiles.ospath.exists(seedFile):
-            self.__timber.log('FuntoonTokenRepository', f'Seed file (\"{seedFile}\") does not exist')
+            self.__timber.log('FuntoonTokensRepository', f'Seed file (\"{seedFile}\") does not exist')
             return
 
         async with aiofiles.open(seedFile, mode = 'r') as file:
@@ -66,10 +66,10 @@ class FuntoonTokenRepository():
         os.remove(seedFile)
 
         if not utils.hasItems(jsonContents):
-            self.__timber.log('FuntoonTokenRepository', f'Seed file (\"{seedFile}\") is empty')
+            self.__timber.log('FuntoonTokensRepository', f'Seed file (\"{seedFile}\") is empty')
             return
 
-        self.__timber.log('FuntoonTokenRepository', f'Reading in seed file \"{seedFile}\"...')
+        self.__timber.log('FuntoonTokensRepository', f'Reading in seed file \"{seedFile}\"...')
 
         for twitchChannel, token in jsonContents.items():
             await self.setToken(
@@ -77,7 +77,7 @@ class FuntoonTokenRepository():
                 token = token
             )
 
-        self.__timber.log('FuntoonTokenRepository', f'Finished reading in seed file \"{seedFile}\"')
+        self.__timber.log('FuntoonTokensRepository', f'Finished reading in seed file \"{seedFile}\"')
 
     async def __getDatabaseConnection(self) -> DatabaseConnection:
         await self.__initDatabaseTable()
@@ -171,7 +171,7 @@ class FuntoonTokenRepository():
             )
 
             self.__cache[twitchChannel.lower()] = token
-            self.__timber.log('FuntoonTokenRepository', f'Funtoon token for \"{twitchChannel}\" has been updated to \"{token}\"')
+            self.__timber.log('FuntoonTokensRepository', f'Funtoon token for \"{twitchChannel}\" has been updated to \"{token}\"')
         else:
             await connection.execute(
                 '''
@@ -182,6 +182,6 @@ class FuntoonTokenRepository():
             )
 
             self.__cache[twitchChannel.lower()] = None
-            self.__timber.log('FuntoonTokenRepository', f'Funtoon token for \"{twitchChannel}\" has been deleted')
+            self.__timber.log('FuntoonTokensRepository', f'Funtoon token for \"{twitchChannel}\" has been deleted')
 
         await connection.close()
