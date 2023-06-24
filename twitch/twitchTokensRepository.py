@@ -10,6 +10,9 @@ import aiofiles.ospath
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.network.exceptions import GenericNetworkException
+    from CynanBotCommon.storage.backingDatabase import BackingDatabase
+    from CynanBotCommon.storage.databaseConnection import DatabaseConnection
+    from CynanBotCommon.storage.databaseType import DatabaseType
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.twitch.twitchApiService import TwitchApiService
     from CynanBotCommon.twitch.twitchTokensRepositoryInterface import \
@@ -17,6 +20,9 @@ try:
 except:
     import utils
     from network.exceptions import GenericNetworkException
+    from storage.backingDatabase import BackingDatabase
+    from storage.databaseConnection import DatabaseConnection
+    from storage.databaseType import DatabaseType
     from timber.timber import Timber
 
     from twitch.twitchApiService import TwitchApiService
@@ -28,16 +34,22 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
 
     def __init__(
         self,
+        backingDatabase: BackingDatabase,
         timber: Timber,
         twitchApiService: TwitchApiService,
+        seedFile: Optional[str] = None,
         twitchTokensFile: str = 'CynanBotCommon/twitch/twitchTokensRepository.json',
         tokensExpirationBuffer: timedelta = timedelta(minutes = 15),
         timeZone: timezone = timezone.utc
     ):
-        if not isinstance(timber, Timber):
+        if not isinstance(backingDatabase, BackingDatabase):
+            raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
+        elif not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(twitchApiService, TwitchApiService):
             raise ValueError(f'twitchApiService argument is malformed: \"{twitchApiService}\"')
+        elif seedFile is not None and not isinstance(seedFile, str):
+            raise ValueError(f'seedFile argument is malformed: \"{seedFile}\"')
         elif not utils.isValidStr(twitchTokensFile):
             raise ValueError(f'twitchTokensFile argument is malformed: \"{twitchTokensFile}\"')
         elif not isinstance(tokensExpirationBuffer, timedelta):
@@ -45,8 +57,10 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
         elif not isinstance(timeZone, timezone):
             raise ValueError(f'timeZone argument is malformed: \"{timeZone}\"')
 
+        self.__backingDatabase: BackingDatabase = backingDatabase
         self.__timber: Timber = timber
         self.__twitchApiService: TwitchApiService = twitchApiService
+        self.__seedFile: Optional[str] = seedFile
         self.__twitchTokensFile: str = twitchTokensFile
         self.__tokensExpirationBuffer: timedelta = tokensExpirationBuffer
         self.__timeZone: timezone = timeZone
