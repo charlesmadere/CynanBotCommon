@@ -7,12 +7,14 @@ import aiofiles.ospath
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.funtoon.exceptions import NoFuntoonTokenException
     from CynanBotCommon.storage.backingDatabase import BackingDatabase
     from CynanBotCommon.storage.databaseConnection import DatabaseConnection
     from CynanBotCommon.storage.databaseType import DatabaseType
     from CynanBotCommon.timber.timber import Timber
 except:
     import utils
+    from funtoon.exceptions import NoFuntoonTokenException
     from storage.backingDatabase import BackingDatabase
     from storage.databaseConnection import DatabaseConnection
     from storage.databaseType import DatabaseType
@@ -86,7 +88,7 @@ class FuntoonTokenRepository():
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
         if twitchChannel.lower() in self.__cache:
-            return self.__cache.get(twitchChannel.lower())
+            return self.__cache[twitchChannel.lower()]
 
         connection = await self.__getDatabaseConnection()
         record = await connection.fetchRow(
@@ -119,7 +121,7 @@ class FuntoonTokenRepository():
             await connection.createTableIfNotExists(
                 '''
                     CREATE TABLE IF NOT EXISTS funtoontokens (
-                        token text,
+                        token text NOT NULL,
                         twitchchannel public.citext NOT NULL PRIMARY KEY
                     )
                 '''
@@ -128,7 +130,7 @@ class FuntoonTokenRepository():
             await connection.createTableIfNotExists(
                 '''
                     CREATE TABLE IF NOT EXISTS funtoontokens (
-                        token TEXT,
+                        token TEXT NOT NULL,
                         twitchchannel TEXT NOT NULL PRIMARY KEY COLLATE NOCASE
                     )
                 '''
@@ -146,7 +148,7 @@ class FuntoonTokenRepository():
         token = await self.getToken(twitchChannel)
 
         if not utils.isValidStr(token):
-            raise ValueError(f'token for twitchChannel \"{twitchChannel}\" is missing/unavailable')
+            raise NoFuntoonTokenException(f'token for twitchChannel \"{twitchChannel}\" is missing/unavailable')
 
         return token
 

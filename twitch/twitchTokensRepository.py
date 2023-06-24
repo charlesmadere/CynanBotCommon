@@ -1,6 +1,8 @@
 import json
 import locale
+import os
 import traceback
+from collections import OrderedDict
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Set
 
@@ -14,7 +16,9 @@ try:
     from CynanBotCommon.storage.databaseConnection import DatabaseConnection
     from CynanBotCommon.storage.databaseType import DatabaseType
     from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.twitch.exceptions import NoTwitchTokenDetailsException
     from CynanBotCommon.twitch.twitchApiService import TwitchApiService
+    from CynanBotCommon.twitch.twitchTokensDetails import TwitchTokensDetails
     from CynanBotCommon.twitch.twitchTokensRepositoryInterface import \
         TwitchTokensRepositoryInterface
 except:
@@ -25,7 +29,9 @@ except:
     from storage.databaseType import DatabaseType
     from timber.timber import Timber
 
+    from twitch.exceptions import NoTwitchTokenDetailsException
     from twitch.twitchApiService import TwitchApiService
+    from twitch.twitchTokensDetails import TwitchTokensDetails
     from twitch.twitchTokensRepositoryInterface import \
         TwitchTokensRepositoryInterface
 
@@ -65,6 +71,8 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
         self.__tokensExpirationBuffer: timedelta = tokensExpirationBuffer
         self.__timeZone: timezone = timeZone
 
+        self.__isDatabaseReady: bool = False
+        self.__cache: Dict[str, TwitchTokensDetails] = dict()
         self.__jsonCache: Optional[Dict[str, Any]] = None
         self.__tokenExpirations: Dict[str, datetime] = dict()
 
@@ -96,7 +104,47 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
         await self.__flush(jsonContents)
 
     async def clearCaches(self):
+        self.__cache.clear()
         self.__jsonCache = None
+
+    async def __consumeSeedFile(self):
+        seedFile = self.__seedFile
+
+        if not utils.isValidStr(seedFile):
+            return
+
+        self.__seedFile = None
+
+        if not await aiofiles.ospath.exists(seedFile):
+            self.__timber.log('TwitchTokensRepository', f'Seed file (\"{seedFile}\") does not exist')
+            return
+
+        async with aiofiles.open(seedFile, mode = 'r') as file:
+            data = await file.read()
+            jsonContents: Optional[Dict[str, Dict[str, Any]]] = json.loads(data)
+
+        # I don't believe there is an aiofiles version of this call at this time (June 23rd, 2023).
+        os.remove(seedFile)
+
+        if not utils.hasItems(jsonContents):
+            self.__timber.log('TwitchTokensRepository', f'Seed file (\"{seedFile}\") is empty')
+            return
+
+        self.__timber.log('TwitchTokensRepository', f'Reading in seed file \"{seedFile}\"...')
+
+        for twitchChannel, tokensDetailsJson in jsonContents.items():
+            tokensDetails = TwitchTokensDetails(
+                expiresInSeconds = 0,
+                accessToken = utils.getStrFromDict(tokensDetailsJson, 'accessToken'),
+                refreshToken = utils.getStrFromDict(tokensDetailsJson, 'refreshToken')
+            )
+
+            await self.__setTokensDetails(
+                twitchChannel = twitchChannel,
+                tokensDetails = tokensDetails
+            )
+
+        self.__timber.log('TwitchTokensRepository', f'Finished reading in seed file \"{seedFile}\"')
 
     async def __flush(self, jsonContents: Dict[str, Any]):
         if not utils.hasItems(jsonContents):
@@ -124,6 +172,39 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
             return accessToken
         else:
             return None    
+
+    async def getAllTokensDetails(self) -> Dict[str, TwitchTokensDetails]:
+        await self.clearCaches()
+
+        connection = await self.__getDatabaseConnection()
+        records = await connection.fetchRows(
+            '''
+                SELECT expiresinseconds, accesstoken, refreshtoken, twitchchannel FROM twitchtokens
+                ORDER BY twitchchannel DESC
+            '''
+        )
+
+        await connection.close()
+        allTokensDetails: Dict[str, TwitchTokensDetails] = OrderedDict()
+
+        if not utils.hasItems(records):
+            return allTokensDetails
+
+        for record in records:
+            twitchChannel: str = record[3]
+            tokensDetails = TwitchTokensDetails(
+                expiresInSeconds = record[0],
+                accessToken = record[1],
+                refreshToken = record[2]
+            )
+            allTokensDetails[twitchChannel] = tokensDetails
+            self.__cache[twitchChannel.lower()] = tokensDetails
+
+        return allTokensDetails
+
+    async def __getDatabaseConnection(self) -> DatabaseConnection:
+        await self.__initDatabaseTable()
+        return await self.__backingDatabase.getConnection()
 
     async def getExpiringTwitchHandles(self) -> Optional[List[str]]:
         if not utils.hasItems(self.__tokenExpirations):
@@ -158,12 +239,78 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
         else:
             return None
 
+    async def getTokensDetails(self, twitchChannel: str) -> Optional[TwitchTokensDetails]:
+        if not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+
+        if twitchChannel.lower() in self.__cache:
+            return self.__cache[twitchChannel.lower()]
+
+        connection = await self.__getDatabaseConnection()
+        record = await connection.fetchRow(
+            '''
+                SELECT expiresinseconds, accesstoken, refreshtoken FROM twitchtokens
+                WHERE twitchchannel = $1
+                LIMIT 1
+            ''',
+            twitchChannel
+        )
+
+        tokensDetails: Optional[TwitchTokensDetails] = None
+
+        if utils.hasItems(record):
+            tokensDetails = TwitchTokensDetails(
+                expiresInSeconds = record[0],
+                accessToken = record[1],
+                refreshToken = record[2]
+            )
+
+        self.__cache[twitchChannel.lower()] = tokensDetails
+        await connection.close()
+
+        return tokensDetails
+
     async def hasAccessToken(self, twitchHandle: str) -> bool:
         if not utils.isValidStr(twitchHandle):
             raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
 
         accessToken = await self.getAccessToken(twitchHandle)
         return utils.isValidStr(accessToken)
+
+    async def __initDatabaseTable(self):
+        if self.__isDatabaseReady:
+            return
+
+        self.__isDatabaseReady = True
+        connection = await self.__backingDatabase.getConnection()
+
+        if connection.getDatabaseType() is DatabaseType.POSTGRESQL:
+            await connection.createTableIfNotExists(
+                '''
+                    CREATE TABLE IF NOT EXISTS twitchtokens (
+                        expiresinseconds int DEFAULT 0 NOT NULL,
+                        accesstoken text NOT NULL,
+                        refreshtoken text NOT NULL,
+                        twitchchannel public.citext NOT NULL PRIMARY KEY
+                    )
+                '''
+            )
+        elif connection.getDatabaseType() is DatabaseType.SQLITE:
+            await connection.createTableIfNotExists(
+                '''
+                    CREATE TABLE IF NOT EXISTS twitchtokens (
+                        expiresinseconds INTEGER NOT NULL DEFAULT 0,
+                        accesstoken TEXT NOT NULL,
+                        refreshtoken TEXT NOT NULL,
+                        twitchchannel TEXT NOT NULL PRIMARY KEY COLLATE NOCASE
+                    )
+                '''
+            )
+        else:
+            raise RuntimeError(f'Encountered unexpected DatabaseType when trying to create tables: \"{connection.getDatabaseType()}\"')
+
+        await connection.close()
+        await self.__consumeSeedFile()
 
     async def __isDebugLoggingEnabled(self) -> bool:
         jsonContents = await self.__readAllJson()
@@ -285,6 +432,17 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
 
         return refreshToken
 
+    async def requireTokensDetails(self, twitchChannel: str) -> TwitchTokensDetails:
+        if not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+
+        tokensDetails = await self.getTokensDetails(twitchChannel)
+
+        if tokensDetails is None:
+            raise NoTwitchTokenDetailsException(f'Twitch tokens details for twitchChannel \"{twitchChannel}\" is missing/unavailable')
+
+        return tokensDetails
+
     async def __saveUserTokenExpirationTime(self, twitchHandle: str, expiresInSeconds: int):
         if not utils.isValidStr(twitchHandle):
             raise ValueError(f'twitchHandle argument is malformed: \"{twitchHandle}\"')
@@ -304,6 +462,44 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
 
         if await self.__isDebugLoggingEnabled():
             self.__timber.log('TwitchTokensRepository', f'tokenExpirations contents: {self.__tokenExpirations}')
+
+    async def __setTokensDetails(
+        self,
+        twitchChannel: str,
+        tokensDetails: Optional[TwitchTokensDetails],
+    ):
+        if not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+        elif tokensDetails is not None and not isinstance(tokensDetails, TwitchTokensDetails):
+            raise ValueError(f'tokenDetails argument is malformed: \"{tokensDetails}\"')
+
+        connection = await self.__getDatabaseConnection()
+
+        if tokensDetails is None:
+            await connection.execute(
+                '''
+                    DELETE FROM twitchtokens
+                    WHERE twitchchannel = $1
+                ''',
+                twitchChannel
+            )
+
+            self.__cache[twitchChannel.lower()] = None
+            self.__timber.log('TwitchTokensRepository', f'Twitch tokens details for \"{twitchChannel}\" has been deleted')
+        else:
+            await connection.execute(
+                '''
+                    INSERT INTO twitchtokens (expiresinseconds, accesstoken, refreshtoken, twitchchannel)
+                    VALUES ($1, $2, $3, $4)
+                    ON CONFLICT (twitchchannel) DO UPDATE SET expiresinseconds = EXCLUDED.expiresinseconds, accesstoken = EXCLUDED.accesstoken, refreshtoken = EXCLUDED.refreshtoken
+                ''',
+                tokensDetails.getExpiresInSeconds(), tokensDetails.getAccessToken(), tokensDetails.getRefreshToken(), twitchChannel
+            )
+
+            self.__cache[twitchChannel.lower()] = tokensDetails
+            self.__timber.log('TwitchTokensRepository', f'Twitch tokens details for \"{twitchChannel}\" has been updated to \"{tokensDetails}\"')
+
+        await connection.close()
 
     async def validateAndRefreshAccessToken(self, twitchHandle: str):
         if not utils.isValidStr(twitchHandle):

@@ -31,3 +31,6 @@ class TwitchTokensDetails():
 
     def getRefreshToken(self) -> str:
         return self.__refreshToken
+
+    def __str__(self) -> str:
+        return f'expiresInSeconds={self.__expiresInSeconds}, accessToken=\"{self.__accessToken}\", refreshToken=\"{self.__refreshToken}\"'
