@@ -27,7 +27,7 @@ class FuntoonTokensRepository():
         self,
         backingDatabase: BackingDatabase,
         timber: Timber,
-        seedFile: Optional[str] = None
+        seedFile: Optional[str] = f'CynanBotCommon/funtoon/funtoonTokensRepositorySeedFile.json'
     ):
         if not isinstance(backingDatabase, BackingDatabase):
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
