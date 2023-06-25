@@ -1,4 +1,5 @@
-from typing import Optional, Set
+import re
+from typing import Optional, Pattern, Set
 
 try:
     import CynanBotCommon.utils as utils
@@ -41,6 +42,30 @@ class TriviaContentScanner():
         self.__bannedWordsRepository: BannedWordsRepository = bannedWordsRepository
         self.__timber: Timber = timber
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
+
+        self.__wordRegEx: Pattern = re.compile(r'\w', re.IGNORECASE)
+
+    async def __updateQuestionStringContent(
+        self,
+        strings: Set[str],
+        string: Optional[str]
+    ):
+        if not isinstance(string, str):
+            return
+
+        splits = string.lower().split()
+        if not utils.hasItems(splits):
+            return
+
+        for split in splits:
+            strings.update(split)
+
+            characters = self.__wordRegEx.findall(split)
+            if not utils.hasItems(characters):
+                continue
+
+            word = ''.join(characters)
+            strings.update(word)
 
     async def verify(self, question: Optional[AbsTriviaQuestion]) -> TriviaContentCode:
         if question is not None and not isinstance(question, AbsTriviaQuestion):
@@ -89,17 +114,17 @@ class TriviaContentScanner():
 
     async def __verifyQuestionContentSanity(self, question: AbsTriviaQuestion) -> TriviaContentCode:
         strings: Set[str] = set()
-        strings.update(question.getQuestion().lower().split())
-        strings.update(question.getPrompt().lower().split())
+        await self.__updateQuestionStringContent(strings, question.getQuestion())
+        await self.__updateQuestionStringContent(strings, question.getPrompt())
 
         if question.hasCategory():
-            strings.update(question.getCategory().lower().split())
+            await self.__updateQuestionStringContent(strings, question.getCategory())
 
         for correctAnswer in question.getCorrectAnswers():
-            strings.update(correctAnswer.lower().split())
+            await self.__updateQuestionStringContent(strings, correctAnswer)
 
         for response in question.getResponses():
-            strings.update(response.lower().split())
+            await self.__updateQuestionStringContent(strings, response)
 
         bannedWords = await self.__bannedWordsRepository.getBannedWordsAsync()
 

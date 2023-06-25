@@ -34,11 +34,10 @@ class BannedWordsRepository():
         self.__bannedWordsFile: str = bannedWordsFile
 
         self.__quoteRegEx: Pattern = re.compile(r'^"(.+)"$', re.IGNORECASE)
-        self.__bannedWordsCache: Optional[Set[BannedWord]] = None
+        self.__cache: Optional[Set[BannedWord]] = None
 
     async def clearCaches(self):
-        self.__bannedWordsCache = None
-        self.__timber.log('BannedWordsRepository', 'Caches cleared')
+        self.__cache = None
 
     def __createCleanedBannedWordsSetFromLines(
         self,
@@ -80,22 +79,22 @@ class BannedWordsRepository():
         return self.__createCleanedBannedWordsSetFromLines(lines)
 
     def getBannedWords(self) -> Set[BannedWord]:
-        if self.__bannedWordsCache is not None:
-            return self.__bannedWordsCache
+        if self.__cache is not None:
+            return self.__cache
 
         bannedWords = self.__fetchBannedWords()
+        self.__cache = bannedWords
         self.__timber.log('BannedWordsRepository', f'Synchronously read in {len(bannedWords)} banned word(s) from \"{self.__bannedWordsFile}\"')
-        self.__bannedWordsCache = bannedWords
 
         return bannedWords
 
     async def getBannedWordsAsync(self) -> Set[BannedWord]:
-        if self.__bannedWordsCache is not None:
-            return self.__bannedWordsCache
+        if self.__cache is not None:
+            return self.__cache
 
         bannedWords = await self.__fetchBannedWordsAsync()
+        self.__cache = bannedWords
         self.__timber.log('BannedWordsRepository', f'Asynchronously read in {len(bannedWords)} banned word(s) from \"{self.__bannedWordsFile}\"')
-        self.__bannedWordsCache = bannedWords
 
         return bannedWords
 
