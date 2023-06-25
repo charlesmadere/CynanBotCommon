@@ -1,34 +1,45 @@
-from typing import List, Optional
+from typing import Dict, List, Optional
+
+try:
+    from CynanBotCommon.twitch.twitchTokensDetails import TwitchTokensDetails
+except:
+    from twitch.twitchTokensDetails import TwitchTokensDetails
 
 
 class TwitchTokensRepositoryInterface():
 
-    async def addUser(self, twitchHandle: str, code: str):
+    async def addUser(self, code: str, twitchChannel: str):
         pass
 
     async def clearCaches(self):
         pass
 
-    async def getAccessToken(self, twitchHandle: str) -> Optional[str]:
+    async def getAccessToken(self, twitchChannel: str) -> Optional[str]:
         pass
 
-    async def getExpiringTwitchHandles(self) -> Optional[List[str]]:
+    async def getAllTokensDetails(self) -> Dict[str, TwitchTokensDetails]:
         pass
 
-    async def getRefreshToken(self, twitchHandle: str) -> Optional[str]:
+    async def getExpiringTwitchChannels(self) -> Optional[List[str]]:
         pass
 
-    async def hasAccessToken(self, twitchHandle: str) -> bool:
+    async def getRefreshToken(self, twitchChannel: str) -> Optional[str]:
         pass
 
-    async def removeUser(self, twitchHandle: str):
+    async def hasAccessToken(self, twitchChannel: str) -> bool:
         pass
 
-    async def requireAccessToken(self, twitchHandle: str) -> str:
+    async def removeUser(self, twitchChannel: str):
         pass
 
-    async def requireRefreshToken(self, twitchHandle: str) -> str:
+    async def requireAccessToken(self, twitchChannel: str) -> str:
         pass
 
-    async def validateAndRefreshAccessToken(self, twitchHandle: str):
+    async def requireRefreshToken(self, twitchChannel: str) -> str:
+        pass
+
+    async def requireTokensDetails(self, twitchChannel: str) -> TwitchTokensDetails:
+        pass
+
+    async def validateAndRefreshAccessToken(self, twitchChannel: str):
         pass
