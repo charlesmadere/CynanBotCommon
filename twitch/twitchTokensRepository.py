@@ -1,7 +1,6 @@
 import json
 import os
 import traceback
-from collections import OrderedDict
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Set
 
@@ -151,38 +150,6 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
             return None
 
         return tokensDetails.getAccessToken()
-
-    async def getAllTokensDetails(self) -> Dict[str, TwitchTokensDetails]:
-        await self.clearCaches()
-
-        connection = await self.__getDatabaseConnection()
-        records = await connection.fetchRows(
-            '''
-                SELECT expiresinseconds, accesstoken, refreshtoken, twitchchannel FROM twitchtokens
-                ORDER BY twitchchannel DESC
-            '''
-        )
-
-        await connection.close()
-        allTokensDetails: Dict[str, TwitchTokensDetails] = OrderedDict()
-
-        if not utils.hasItems(records):
-            return allTokensDetails
-
-        for record in records:
-            twitchChannel: str = record[3]
-            tokensDetails = TwitchTokensDetails(
-                expiresInSeconds = record[0],
-                accessToken = record[1],
-                refreshToken = record[2]
-            )
-            allTokensDetails[twitchChannel] = tokensDetails
-            self.__cache[twitchChannel.lower()] = tokensDetails
-
-            expirationTime = await self.__expiresInSecondsToTime(tokensDetails.getExpiresInSeconds())
-            self.__tokenExpirationTimes[twitchChannel.lower()] = expirationTime
-
-        return allTokensDetails
 
     async def __getDatabaseConnection(self) -> DatabaseConnection:
         await self.__initDatabaseTable()

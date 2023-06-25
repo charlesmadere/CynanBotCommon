@@ -17,9 +17,6 @@ class TwitchTokensRepositoryInterface():
     async def getAccessToken(self, twitchChannel: str) -> Optional[str]:
         pass
 
-    async def getAllTokensDetails(self) -> Dict[str, TwitchTokensDetails]:
-        pass
-
     async def getExpiringTwitchChannels(self) -> Optional[List[str]]:
         pass
 
