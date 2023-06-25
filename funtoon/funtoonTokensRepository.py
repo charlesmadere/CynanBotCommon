@@ -171,7 +171,7 @@ class FuntoonTokensRepository():
             )
 
             self.__cache[twitchChannel.lower()] = token
-            self.__timber.log('FuntoonTokensRepository', f'Funtoon token for \"{twitchChannel}\" has been updated to \"{token}\"')
+            self.__timber.log('FuntoonTokensRepository', f'Funtoon token for \"{twitchChannel}\" has been updated (\"{token}\")')
         else:
             await connection.execute(
                 '''
