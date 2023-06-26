@@ -200,11 +200,15 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
 
         if utils.hasItems(record):
             expirationTime = utils.getDateTimeFromStr(record[0])
-            nowDateTime = datetime.now(self.__timeZone)
-            expiresInTimeDelta: timedelta = expirationTime - nowDateTime
+            expiresInSeconds = 0
+
+            if utils.isValidStr(expirationTime):
+                nowDateTime = datetime.now(self.__timeZone)
+                expiresInTimeDelta: timedelta = expirationTime - nowDateTime
+                expiresInSeconds = expiresInTimeDelta.total_seconds()
 
             tokensDetails = TwitchTokensDetails(
-                expiresInSeconds = expiresInTimeDelta.total_seconds(),
+                expiresInSeconds = expiresInSeconds,
                 accessToken = record[1],
                 refreshToken = record[2]
             )
