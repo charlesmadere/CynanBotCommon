@@ -27,7 +27,7 @@ class BannedWordsRepository(BannedWordsRepositoryInterface):
     def __init__(
         self,
         timber: Timber,
-        bannedWordsFile: str = 'CynanBotCommon/trivia/bannedWords.txt'
+        bannedWordsFile: str = 'CynanBotCommon/trivia/bannedWords/bannedWords.txt'
     ):
         if not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
