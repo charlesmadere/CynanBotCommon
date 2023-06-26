@@ -11,14 +11,18 @@ try:
     from CynanBotCommon.trivia.bannedWords.bannedWord import BannedWord
     from CynanBotCommon.trivia.bannedWords.bannedWordCheckType import \
         BannedWordCheckType
+    from CynanBotCommon.trivia.bannedWords.bannedWordsRepositoryInterface import \
+        BannedWordsRepositoryInterface
 except:
     import utils
     from timber.timber import Timber
     from trivia.bannedWords.bannedWord import BannedWord
     from trivia.bannedWords.bannedWordCheckType import BannedWordCheckType
+    from trivia.bannedWords.bannedWordsRepositoryInterface import \
+        BannedWordsRepositoryInterface
 
 
-class BannedWordsRepository():
+class BannedWordsRepository(BannedWordsRepositoryInterface):
 
     def __init__(
         self,

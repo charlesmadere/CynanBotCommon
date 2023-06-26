@@ -7,8 +7,8 @@ try:
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.bannedWords.bannedWordCheckType import \
         BannedWordCheckType
-    from CynanBotCommon.trivia.bannedWords.bannedWordsRepository import \
-        BannedWordsRepository
+    from CynanBotCommon.trivia.bannedWords.bannedWordsRepositoryInterface import \
+        BannedWordsRepositoryInterface
     from CynanBotCommon.trivia.triviaContentCode import TriviaContentCode
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
@@ -18,7 +18,8 @@ except:
     from timber.timber import Timber
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.bannedWords.bannedWordCheckType import BannedWordCheckType
-    from trivia.bannedWords.bannedWordsRepository import BannedWordsRepository
+    from trivia.bannedWords.bannedWordsRepositoryInterface import \
+        BannedWordsRepositoryInterface
     from trivia.triviaContentCode import TriviaContentCode
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaType import TriviaType
@@ -28,18 +29,18 @@ class TriviaContentScanner():
 
     def __init__(
         self,
-        bannedWordsRepository: BannedWordsRepository,
+        bannedWordsRepositoryInterface: BannedWordsRepositoryInterface,
         timber: Timber,
         triviaSettingsRepository: TriviaSettingsRepository
     ):
-        if not isinstance(bannedWordsRepository, BannedWordsRepository):
-            raise ValueError(f'bannedWordsRepository argument is malformed: \"{bannedWordsRepository}\"')
+        if not isinstance(bannedWordsRepositoryInterface, BannedWordsRepositoryInterface):
+            raise ValueError(f'bannedWordsRepositoryInterface argument is malformed: \"{bannedWordsRepositoryInterface}\"')
         elif not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(triviaSettingsRepository, TriviaSettingsRepository):
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
 
-        self.__bannedWordsRepository: BannedWordsRepository = bannedWordsRepository
+        self.__bannedWordsRepositoryInterface: BannedWordsRepositoryInterface = bannedWordsRepositoryInterface
         self.__timber: Timber = timber
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
 
@@ -126,7 +127,7 @@ class TriviaContentScanner():
         for response in question.getResponses():
             await self.__updateQuestionStringContent(strings, response)
 
-        bannedWords = await self.__bannedWordsRepository.getBannedWordsAsync()
+        bannedWords = await self.__bannedWordsRepositoryInterface.getBannedWordsAsync()
 
         for string in strings:
             if not utils.isValidStr(string):

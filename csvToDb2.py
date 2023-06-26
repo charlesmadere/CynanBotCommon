@@ -9,6 +9,8 @@ try:
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.bannedWords.bannedWordsRepository import \
         BannedWordsRepository
+    from CynanBotCommon.trivia.bannedWords.bannedWordsRepositoryInterface import \
+        BannedWordsRepositoryInterface
     from CynanBotCommon.trivia.triviaContentScanner import TriviaContentScanner
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
     from CynanBotCommon.trivia.triviaSettingsRepository import \
@@ -18,6 +20,8 @@ except:
     import utils
     from timber.timber import Timber
     from trivia.bannedWords.bannedWordsRepository import BannedWordsRepository
+    from trivia.bannedWords.bannedWordsRepositoryInterface import \
+        BannedWordsRepositoryInterface
     from trivia.triviaContentScanner import TriviaContentScanner
     from trivia.triviaDifficulty import TriviaDifficulty
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
@@ -26,9 +30,9 @@ except:
 
 timber = Timber(eventLoop = asyncio.get_event_loop())
 
-bannedWordsRepository = BannedWordsRepository(timber = timber)
+bannedWordsRepositoryInterface: BannedWordsRepositoryInterface = BannedWordsRepository(timber = timber)
 triviaContentScanner = TriviaContentScanner(
-    bannedWordsRepository = bannedWordsRepository,
+    bannedWordsRepositoryInterface = bannedWordsRepositoryInterface,
     timber = timber,
     triviaSettingsRepository = TriviaSettingsRepository()
 )
@@ -37,7 +41,7 @@ def readInCsvRows(fileName: str) -> List[List[str]]:
     if not utils.isValidStr(fileName):
         raise ValueError(f'fileName argument is malformed: \"{fileName}\"')
 
-    bannedWords = bannedWordsRepository.getBannedWords()
+    bannedWords = bannedWordsRepositoryInterface.getBannedWords()
     rows: List[List[str]] = list()
 
     with open(fileName) as file:
