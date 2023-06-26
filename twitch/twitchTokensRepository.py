@@ -196,24 +196,25 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
             twitchChannel
         )
 
-        tokensDetails: Optional[TwitchTokensDetails] = None
-
-        if utils.hasItems(record):
-            expirationTime = utils.getDateTimeFromStr(record[0])
-            expiresInSeconds = 0
-
-            if utils.isValidStr(expirationTime):
-                nowDateTime = datetime.now(self.__timeZone)
-                expiresInTimeDelta: timedelta = expirationTime - nowDateTime
-                expiresInSeconds = expiresInTimeDelta.total_seconds()
-
-            tokensDetails = TwitchTokensDetails(
-                expiresInSeconds = expiresInSeconds,
-                accessToken = record[1],
-                refreshToken = record[2]
-            )
-
         await connection.close()
+
+        if not utils.hasItems(record):
+            return None
+
+        expirationTime = utils.getDateTimeFromStr(record[0])
+        expiresInSeconds = 0
+
+        if utils.isValidStr(expirationTime):
+            nowDateTime = datetime.now(self.__timeZone)
+            expiresInTimeDelta: timedelta = expirationTime - nowDateTime
+            expiresInSeconds = expiresInTimeDelta.total_seconds()
+
+        tokensDetails = TwitchTokensDetails(
+            expiresInSeconds = expiresInSeconds,
+            accessToken = record[1],
+            refreshToken = record[2]
+        )
+
         self.__cache[twitchChannel.lower()] = tokensDetails
 
         expirationTime = await self.__expiresInSecondsToTime(tokensDetails.getExpiresInSeconds())
