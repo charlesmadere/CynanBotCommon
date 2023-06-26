@@ -199,6 +199,7 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
         await connection.close()
 
         if not utils.hasItems(record):
+            self.__cache.pop(twitchChannel.lower(), None)
             return None
 
         expirationTime = utils.getDateTimeFromStr(record[0])
