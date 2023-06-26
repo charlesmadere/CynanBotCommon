@@ -1,7 +1,26 @@
+from typing import Optional
+
+try:
+    import CynanBotCommon.utils as utils
+except:
+    import utils
+
+
 class GenericNetworkException(Exception):
 
-    def __init__(self, message: str):
+    def __init__(self, message: str, statusCode: Optional[int] = None):
         super().__init__(message)
+
+        if statusCode is not None and not utils.isValidInt(statusCode):
+            raise ValueError(f'statusCode argument is malformed: \"{statusCode}\"')
+
+        self.__statusCode: Optional[int] = statusCode
+
+    def getStatusCode(self) -> Optional[int]:
+        return self.__statusCode
+
+    def hasStatusCode(self) -> bool:
+        return utils.isValidInt(self.__statusCode)
 
 
 class NetworkResponseIsClosedException(Exception):
