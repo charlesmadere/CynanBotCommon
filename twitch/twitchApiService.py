@@ -9,8 +9,8 @@ try:
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.twitch.exceptions import (
         TwitchAccessTokenMissingException, TwitchErrorException,
-        TwitchJsonException, TwitchRefreshTokenMissingException,
-        TwitchTokenIsExpiredException)
+        TwitchJsonException, TwitchPasswordChangedException,
+        TwitchRefreshTokenMissingException, TwitchTokenIsExpiredException)
     from CynanBotCommon.twitch.twitchBroadcasterType import \
         TwitchBroadcasterType
     from CynanBotCommon.twitch.twitchCredentialsProviderInterface import \
@@ -32,6 +32,7 @@ except:
 
     from twitch.exceptions import (TwitchAccessTokenMissingException,
                                    TwitchErrorException, TwitchJsonException,
+                                   TwitchPasswordChangedException,
                                    TwitchRefreshTokenMissingException,
                                    TwitchTokenIsExpiredException)
     from twitch.twitchBroadcasterType import TwitchBroadcasterType
@@ -344,7 +345,10 @@ class TwitchApiService():
             self.__timber.log('TwitchApiService', f'Encountered network error when refreshing tokens (twitchRefreshToken=\"{twitchRefreshToken}\"): {e}', e, traceback.format_exc())
             raise GenericNetworkException(f'TwitchApiService encountered network error when refreshing tokens (twitchRefreshToken=\"{twitchRefreshToken}\"): {e}')
 
-        if response.getStatusCode() != 200:
+        if response.getStatusCode() == 400:
+            self.__timber.log('TwitchApiService', f'Encountered HTTP 400 status code when refreshing tokens (twitchRefreshToken=\"{twitchRefreshToken}\"): {response.getStatusCode()}')
+            raise TwitchPasswordChangedException(f'Encountered HTTP 400 status code when refreshing tokens (twitchRefreshToken=\"{twitchRefreshToken}\"): {response.getStatusCode()}')
+        elif response.getStatusCode() != 200:
             self.__timber.log('TwitchApiService', f'Encountered non-200 HTTP status code when refreshing tokens (twitchRefreshToken=\"{twitchRefreshToken}\"): {response.getStatusCode()}')
             raise GenericNetworkException(f'TwitchApiService encountered non-200 HTTP status code when refreshing tokens (twitchRefreshToken=\"{twitchRefreshToken}\"): {response.getStatusCode()}')
 

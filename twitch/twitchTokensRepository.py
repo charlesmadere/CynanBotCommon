@@ -14,7 +14,8 @@ try:
     from CynanBotCommon.storage.databaseConnection import DatabaseConnection
     from CynanBotCommon.storage.databaseType import DatabaseType
     from CynanBotCommon.timber.timber import Timber
-    from CynanBotCommon.twitch.exceptions import NoTwitchTokenDetailsException
+    from CynanBotCommon.twitch.exceptions import (
+        NoTwitchTokenDetailsException, TwitchPasswordChangedException)
     from CynanBotCommon.twitch.twitchApiService import TwitchApiService
     from CynanBotCommon.twitch.twitchTokensDetails import TwitchTokensDetails
     from CynanBotCommon.twitch.twitchTokensRepositoryInterface import \
@@ -27,7 +28,8 @@ except:
     from storage.databaseType import DatabaseType
     from timber.timber import Timber
 
-    from twitch.exceptions import NoTwitchTokenDetailsException
+    from twitch.exceptions import (NoTwitchTokenDetailsException,
+                                   TwitchPasswordChangedException)
     from twitch.twitchApiService import TwitchApiService
     from twitch.twitchTokensDetails import TwitchTokensDetails
     from twitch.twitchTokensRepositoryInterface import \
@@ -284,6 +286,10 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
         except GenericNetworkException as e:
             self.__timber.log('TwitchTokensRepository', f'Encountered network error when trying to refresh Twitch tokens for \"{twitchChannel}\": {e}', e, traceback.format_exc())
             raise GenericNetworkException(f'TwitchTokensRepository encountered network error when trying to refresh Twitch tokens for \"{twitchChannel}\": {e}')
+        except TwitchPasswordChangedException as e:
+            self.__timber.log('TwitchTokensRepository', f'Encountered network error caused by password change when trying to refresh Twitch tokens for \"{twitchChannel}\": {e}', e, traceback.format_exc())
+            await self.removeUser(twitchChannel)
+            raise TwitchPasswordChangedException(f'TwitchTokensRepository encountered network error caused by password change when trying to refresh Twitch tokens for \"{twitchChannel}\": {e}')
 
         await self.__setTokensDetails(
             tokensDetails = newTokensDetails,
