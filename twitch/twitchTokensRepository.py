@@ -44,7 +44,7 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
         timber: Timber,
         twitchApiService: TwitchApiService,
         seedFile: Optional[str] = 'CynanBotCommon/twitch/twitchTokensRepositorySeedFile.json',
-        tokensExpirationBuffer: timedelta = timedelta(minutes = 15),
+        tokensExpirationBuffer: timedelta = timedelta(minutes = 10),
         timeZone: timezone = timezone.utc
     ):
         if not isinstance(backingDatabase, BackingDatabase):
