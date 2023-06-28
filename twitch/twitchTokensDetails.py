@@ -1,3 +1,5 @@
+from datetime import datetime
+
 try:
     import CynanBotCommon.utils as utils
 except:
@@ -8,29 +10,29 @@ class TwitchTokensDetails():
 
     def __init__(
         self,
-        expiresInSeconds: int,
+        expirationTime: datetime,
         accessToken: str,
         refreshToken: str
     ):
-        if not utils.isValidInt(expiresInSeconds):
-            raise ValueError(f'expiresInSeconds argument is malformed: \"{expiresInSeconds}\"')
+        if not isinstance(expirationTime, datetime):
+            raise ValueError(f'expirationTime argument is malformed: \"{expirationTime}\"')
         elif not utils.isValidStr(accessToken):
             raise ValueError(f'accessToken argument is malformed: \"{accessToken}\"')
         elif not utils.isValidStr(refreshToken):
             raise ValueError(f'refreshToken argument is malformed: \"{refreshToken}\"')
 
-        self.__expiresInSeconds: int = expiresInSeconds
+        self.__expirationTime: datetime = expirationTime
         self.__accessToken: str = accessToken
         self.__refreshToken: str = refreshToken
 
     def getAccessToken(self) -> str:
         return self.__accessToken
 
-    def getExpiresInSeconds(self) -> int:
-        return self.__expiresInSeconds
+    def getExpirationTime(self) -> datetime:
+        return self.__expirationTime
 
     def getRefreshToken(self) -> str:
         return self.__refreshToken
 
     def __str__(self) -> str:
-        return f'expiresInSeconds={self.__expiresInSeconds}, accessToken=\"{self.__accessToken}\", refreshToken=\"{self.__refreshToken}\"'
+        return f'expirationTime={self.__expirationTime}, accessToken=\"{self.__accessToken}\", refreshToken=\"{self.__refreshToken}\"'

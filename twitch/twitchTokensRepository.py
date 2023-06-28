@@ -120,7 +120,7 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
 
         for twitchChannel, tokensDetailsJson in jsonContents.items():
             tokensDetails = TwitchTokensDetails(
-                expiresInSeconds = 0,
+                expirationTime = await self.__createExpiredExpirationTime(),
                 accessToken = utils.getStrFromDict(tokensDetailsJson, 'accessToken'),
                 refreshToken = utils.getStrFromDict(tokensDetailsJson, 'refreshToken')
             )
@@ -132,15 +132,9 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
 
         self.__timber.log('TwitchTokensRepository', f'Finished reading in seed file \"{seedFile}\"')
 
-    async def __expiresInSecondsToTime(self, expiresInSeconds: int) -> datetime:
-        if not utils.isValidInt(expiresInSeconds):
-            raise ValueError(f'expiresInSeconds argument is malformed: \"{expiresInSeconds}\"')
-
+    async def __createExpiredExpirationTime(self) -> datetime:
         nowDateTime = datetime.now(self.__timeZone)
-        expiresInTimeDelta = timedelta(seconds = expiresInSeconds)
-        expirationTime = nowDateTime + expiresInTimeDelta
-
-        return expirationTime
+        return nowDateTime - timedelta(weeks = 1)
 
     async def getAccessToken(self, twitchChannel: str) -> Optional[str]:
         if not utils.isValidStr(twitchChannel):
@@ -213,15 +207,13 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
             expiresInSeconds = expiresInTimeDelta.total_seconds()
 
         tokensDetails = TwitchTokensDetails(
-            expiresInSeconds = expiresInSeconds,
+            expirationTime = expiresInSeconds,
             accessToken = record[1],
             refreshToken = record[2]
         )
 
         self.__cache[twitchChannel.lower()] = tokensDetails
-
-        expirationTime = await self.__expiresInSecondsToTime(tokensDetails.getExpiresInSeconds())
-        self.__tokenExpirationTimes[twitchChannel.lower()] = expirationTime
+        self.__tokenExpirationTimes[twitchChannel.lower()] = tokensDetails.getExpirationTime()
 
         return tokensDetails
 
@@ -350,15 +342,13 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
 
     async def __setExpirationTime(
         self,
-        expiresInSeconds: int,
+        expirationTime: datetime,
         twitchChannel: str
     ):
-        if not utils.isValidInt(expiresInSeconds):
-            raise ValueError(f'expiresInSeconds argument is malformed: \"{expiresInSeconds}\"')
+        if not isinstance(expirationTime, datetime):
+            raise ValueError(f'expirationTime argument is malformed: \"{expirationTime}\"')
         elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
-
-        expirationTime = await self.__expiresInSecondsToTime(expiresInSeconds)
 
         connection = await self.__getDatabaseConnection()
         await connection.execute(
@@ -399,7 +389,7 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
             self.__tokenExpirationTimes.pop(twitchChannel.lower(), None)
             self.__timber.log('TwitchTokensRepository', f'Twitch tokens details for \"{twitchChannel}\" has been deleted')
         else:
-            expirationTime = await self.__expiresInSecondsToTime(tokensDetails.getExpiresInSeconds())
+            expirationTime = tokensDetails.getExpirationTime()
 
             await connection.execute(
                 '''
@@ -428,18 +418,20 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
 
         self.__timber.log('TwitchTokensRepository', f'Validating Twitch tokens for \"{twitchChannel}\"...')
 
-        expiresInSeconds: Optional[int] = None
+        expirationTime: Optional[datetime] = None
         try:
-            expiresInSeconds = await self.__twitchApiService.validateTokens(
+            expirationTime = await self.__twitchApiService.validateTokens(
                 twitchAccessToken = tokensDetails.getAccessToken()
             )
         except GenericNetworkException as e:
             self.__timber.log('TwitchTokensRepository', f'Encountered network error when trying to validate Twitch tokens for \"{twitchChannel}\": {e}', e, traceback.format_exc())
             raise GenericNetworkException(f'TwitchTokensRepository encountered network error when trying to validate Twitch tokens for \"{twitchChannel}\": {e}')
 
-        if utils.isValidInt(expiresInSeconds) and expiresInSeconds >= self.__tokensExpirationBuffer.total_seconds():
+        nowDateTime = datetime.now(self.__timeZone)
+
+        if expirationTime is not None and expirationTime > nowDateTime + self.__tokensExpirationBuffer:
             await self.__setExpirationTime(
-                expiresInSeconds = expiresInSeconds,
+                expirationTime = expirationTime,
                 twitchChannel = twitchChannel
             )
         else:

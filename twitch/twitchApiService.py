@@ -1,4 +1,5 @@
 import traceback
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 try:
@@ -54,7 +55,8 @@ class TwitchApiService():
         self,
         networkClientProvider: NetworkClientProvider,
         timber: Timber,
-        twitchCredentialsProviderInterface: TwitchCredentialsProviderInterface
+        twitchCredentialsProviderInterface: TwitchCredentialsProviderInterface,
+        timeZone: timezone = timezone.utc
     ):
         if not isinstance(networkClientProvider, NetworkClientProvider):
             raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
@@ -62,10 +64,21 @@ class TwitchApiService():
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(twitchCredentialsProviderInterface, TwitchCredentialsProviderInterface):
             raise ValueError(f'twitchCredentialsProviderInterface argument is malformed: \"{twitchCredentialsProviderInterface}\"')
+        elif not isinstance(timeZone, timezone):
+            raise ValueError(f'timeZone argument is malformed: \"{timeZone}\"')
 
         self.__networkClientProvider: NetworkClientProvider = networkClientProvider
         self.__timber: Timber = timber
         self.__twitchCredentialsProviderInterface: TwitchCredentialsProviderInterface = twitchCredentialsProviderInterface
+        self.__timeZone: timezone = timeZone
+
+    async def __calculateExpirationTime(self, expiresInSeconds: Optional[int]) -> datetime:
+        nowDateTime = datetime.now(self.__timeZone)
+
+        if utils.isValidInt(expiresInSeconds) and expiresInSeconds > 0:
+            return nowDateTime + timedelta(seconds = expiresInSeconds)
+        else:
+            return nowDateTime - timedelta(weeks = 1)
 
     async def fetchLiveUserDetails(
         self,
@@ -170,6 +183,10 @@ class TwitchApiService():
             self.__timber.log('TwitchApiService', f'Received an error of some kind when fetching tokens (code=\"{code}\"): {jsonResponse}')
             raise TwitchErrorException(f'TwitchApiService received an error of some kind when fetching tokens (code=\"{code}\"): {jsonResponse}')
 
+        expirationTime = await self.__calculateExpirationTime(
+            expiresInSeconds = utils.getIntFromDict(jsonResponse, 'expires_in', fallback = -1)
+        )
+
         accessToken = utils.getStrFromDict(jsonResponse, 'access_token', fallback = '')
         if not utils.isValidStr(accessToken):
             self.__timber.log('TwitchApiService', f'Received malformed \"access_token\" ({accessToken}) when fetching tokens (code=\"{code}\"): {jsonResponse}')
@@ -181,7 +198,7 @@ class TwitchApiService():
             raise TwitchRefreshTokenMissingException(f'TwitchApiService received malformed \"refresh_token\" ({refreshToken}) when fetching tokens (code=\"{code}\"): {jsonResponse}')
 
         return TwitchTokensDetails(
-            expiresInSeconds = utils.getIntFromDict(jsonResponse, 'expires_in', fallback = -1),
+            expirationTime = expirationTime,
             accessToken = accessToken,
             refreshToken = refreshToken
         )
@@ -362,6 +379,10 @@ class TwitchApiService():
             self.__timber.log('TwitchApiService', f'Received an error of some kind when refreshing tokens (twitchRefreshToken=\"{twitchRefreshToken}\"): {jsonResponse}')
             raise TwitchErrorException(f'TwitchApiService received an error of some kind when refreshing tokens (twitchRefreshToken=\"{twitchRefreshToken}\"): {jsonResponse}')
 
+        expirationTime = await self.__calculateExpirationTime(
+            expiresInSeconds = utils.getIntFromDict(jsonResponse, 'expires_in', fallback = -1)
+        )
+
         accessToken = utils.getStrFromDict(jsonResponse, 'access_token', fallback = '')
         if not utils.isValidStr(accessToken):
             self.__timber.log('TwitchApiService', f'Received malformed \"access_token\" ({accessToken}) when refreshing tokens (twitchRefreshToken=\"{twitchRefreshToken}\"): {jsonResponse}')
@@ -373,12 +394,12 @@ class TwitchApiService():
             raise TwitchRefreshTokenMissingException(f'TwitchApiService received malformed \"refresh_token\" ({refreshToken}) when refreshing tokens (twitchRefreshToken=\"{twitchRefreshToken}\"): {jsonResponse}')
 
         return TwitchTokensDetails(
-            expiresInSeconds = utils.getIntFromDict(jsonResponse, 'expires_in', fallback = -1),
+            expirationTime = expirationTime,
             accessToken = accessToken,
             refreshToken = refreshToken
         )
 
-    async def validateTokens(self, twitchAccessToken: str) -> Optional[int]:
+    async def validateTokens(self, twitchAccessToken: str) -> Optional[datetime]:
         if not utils.isValidStr(twitchAccessToken):
             raise ValueError(f'twitchAccessToken argument is malformed: \"{twitchAccessToken}\"')
 
@@ -405,11 +426,15 @@ class TwitchApiService():
         if jsonResponse is not None and utils.isValidStr(jsonResponse.get('client_id')):
             clientId = utils.getStrFromDict(jsonResponse, 'client_id')
 
-        expiresInSeconds: int = -1
+        expiresInSeconds: Optional[int] = None
         if jsonResponse is not None and utils.isValidInt(jsonResponse.get('expires_in')):
             expiresInSeconds = utils.getIntFromDict(jsonResponse, 'expires_in')
 
-        if responseStatusCode == 200 and utils.isValidStr(clientId) and utils.isValidInt(expiresInSeconds):
-            return expiresInSeconds
-        else:
+        if responseStatusCode != 200 or not utils.isValidStr(clientId) or not utils.isValidInt(expiresInSeconds):
             return None
+
+        nowDateTime = datetime.now(self.__timeZone)
+        expiresInTimeDelta = timedelta(seconds = expiresInSeconds)
+        expirationTime = nowDateTime + expiresInTimeDelta
+
+        return expirationTime
