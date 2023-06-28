@@ -6,6 +6,7 @@ from typing import List, Optional, Set
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.storage.jsonFileReader import JsonFileReader
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.bannedWords.bannedWordsRepository import \
         BannedWordsRepository
@@ -18,6 +19,7 @@ try:
     from CynanBotCommon.trivia.triviaType import TriviaType
 except:
     import utils
+    from storage.jsonFileReader import JsonFileReader
     from timber.timber import Timber
     from trivia.bannedWords.bannedWordsRepository import BannedWordsRepository
     from trivia.bannedWords.bannedWordsRepositoryInterface import \
@@ -34,7 +36,9 @@ bannedWordsRepositoryInterface: BannedWordsRepositoryInterface = BannedWordsRepo
 triviaContentScanner = TriviaContentScanner(
     bannedWordsRepositoryInterface = bannedWordsRepositoryInterface,
     timber = timber,
-    triviaSettingsRepository = TriviaSettingsRepository()
+    triviaSettingsRepository = TriviaSettingsRepository(
+        settingsJsonReader = JsonFileReader('CynanBotCommon/trivia/triviaSettingsRepository.json')
+    )
 )
 
 def readInCsvRows(fileName: str) -> List[List[str]]:

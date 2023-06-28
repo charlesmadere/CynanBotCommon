@@ -1,14 +1,12 @@
-import json
 from typing import Any, Dict, Optional
-
-import aiofiles
-import aiofiles.ospath
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.storage.jsonReaderInterface import JsonReaderInterface
     from CynanBotCommon.trivia.triviaSource import TriviaSource
 except:
     import utils
+    from storage.jsonReaderInterface import JsonReaderInterface
     from trivia.triviaSource import TriviaSource
 
 
@@ -16,12 +14,12 @@ class TriviaSettingsRepository():
 
     def __init__(
         self,
-        settingsFile: str = 'CynanBotCommon/trivia/triviaSettingsRepository.json'
+        settingsJsonReader: JsonReaderInterface
     ):
-        if not utils.isValidStr(settingsFile):
-            raise ValueError(f'settingsFile argument is malformed: \"{settingsFile}\"')
+        if not isinstance(settingsJsonReader, JsonReaderInterface):
+            raise ValueError(f'settingsJsonReader argument is malformed: \"{settingsJsonReader}\"')
 
-        self.__settingsFile: str = settingsFile
+        self.__settingsJsonReader: JsonReaderInterface = settingsJsonReader
 
         self.__settingsCache: Optional[Dict[str, Any]] = None
 
@@ -179,15 +177,13 @@ class TriviaSettingsRepository():
 
         jsonContents: Optional[Dict[str, Any]] = None
 
-        if await aiofiles.ospath.exists(self.__settingsFile):
-            async with aiofiles.open(self.__settingsFile, mode = 'r') as file:
-                data = await file.read()
-                jsonContents = json.loads(data)
+        if await self.__settingsJsonReader.fileExistsAsync():
+            jsonContents = await self.__settingsJsonReader.readJsonAsync()
         else:
             jsonContents = dict()
 
         if jsonContents is None:
-            raise IOError(f'Error reading from trivia settings file: \"{self.__settingsFile}\"')
+            raise IOError(f'Error reading from trivia settings file: {self.__settingsJsonReader}')
 
         self.__settingsCache = jsonContents
         return jsonContents

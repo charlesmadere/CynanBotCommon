@@ -5,6 +5,7 @@ import pytest
 
 try:
     from ...backgroundTaskHelper import BackgroundTaskHelper
+    from ...storage.jsonStaticReader import JsonStaticReader
     from ...timber.timber import Timber
     from ...trivia.questionAnswerTriviaConditions import \
         QuestionAnswerTriviaConditions
@@ -15,6 +16,7 @@ try:
     from ...trivia.triviaSettingsRepository import TriviaSettingsRepository
 except:
     from backgroundTaskHelper import BackgroundTaskHelper
+    from storage.jsonStaticReader import JsonStaticReader
     from timber.timber import Timber
     from trivia.questionAnswerTriviaConditions import \
         QuestionAnswerTriviaConditions
@@ -25,12 +27,15 @@ except:
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
 
 
+
 class TestQueuedTriviaGameStore1():
 
     eventLoop: AbstractEventLoop = asyncio.get_event_loop()
     backgroundTaskHelper = BackgroundTaskHelper(eventLoop = eventLoop)
     timber = Timber(backgroundTaskHelper = backgroundTaskHelper)
-    triviaSettingsRepository = TriviaSettingsRepository()
+    triviaSettingsRepository = TriviaSettingsRepository(
+        settingsJsonReader = JsonStaticReader(dict())
+    )
 
     queuedTriviaGameStore = QueuedTriviaGameStore(
         timber = timber,
