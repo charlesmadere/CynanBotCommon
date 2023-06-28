@@ -33,6 +33,7 @@ class TestQueuedTriviaGameStore1():
     eventLoop: AbstractEventLoop = asyncio.get_event_loop()
     backgroundTaskHelper = BackgroundTaskHelper(eventLoop = eventLoop)
     timber = Timber(backgroundTaskHelper = backgroundTaskHelper)
+
     triviaSettingsRepository = TriviaSettingsRepository(
         settingsJsonReader = JsonStaticReader(dict())
     )
@@ -181,7 +182,10 @@ class TestQueuedTriviaGameStore2():
     eventLoop: AbstractEventLoop = asyncio.get_event_loop()
     backgroundTaskHelper = BackgroundTaskHelper(eventLoop = eventLoop)
     timber = Timber(backgroundTaskHelper = backgroundTaskHelper)
-    triviaSettingsRepository = TriviaSettingsRepository()
+
+    triviaSettingsRepository = TriviaSettingsRepository(
+        settingsJsonReader = JsonStaticReader(dict())
+    )
 
     queuedTriviaGameStore = QueuedTriviaGameStore(
         timber = timber,
@@ -203,7 +207,10 @@ class TestQueuedTriviaGameStore3():
     eventLoop: AbstractEventLoop = asyncio.get_event_loop()
     backgroundTaskHelper = BackgroundTaskHelper(eventLoop = eventLoop)
     timber = Timber(backgroundTaskHelper = backgroundTaskHelper)
-    triviaSettingsRepository = TriviaSettingsRepository()
+
+    triviaSettingsRepository = TriviaSettingsRepository(
+        settingsJsonReader = JsonStaticReader(dict())
+    )
 
     queuedTriviaGameStore = QueuedTriviaGameStore(
         timber = timber,
@@ -226,7 +233,10 @@ class TestQueuedTriviaGameStore4():
     eventLoop: AbstractEventLoop = asyncio.get_event_loop()
     backgroundTaskHelper = BackgroundTaskHelper(eventLoop = eventLoop)
     timber = Timber(backgroundTaskHelper = backgroundTaskHelper)
-    triviaSettingsRepository = TriviaSettingsRepository()
+
+    triviaSettingsRepository = TriviaSettingsRepository(
+        settingsJsonReader = JsonStaticReader(dict())
+    )
 
     queuedTriviaGameStore = QueuedTriviaGameStore(
         timber = timber,
@@ -277,7 +287,10 @@ class TestQueuedTriviaGameStore5():
     eventLoop: AbstractEventLoop = asyncio.get_event_loop()
     backgroundTaskHelper = BackgroundTaskHelper(eventLoop = eventLoop)
     timber = Timber(backgroundTaskHelper = backgroundTaskHelper)
-    triviaSettingsRepository = TriviaSettingsRepository()
+
+    triviaSettingsRepository = TriviaSettingsRepository(
+        settingsJsonReader = JsonStaticReader(dict())
+    )
 
     queuedTriviaGameStore = QueuedTriviaGameStore(
         timber = timber,
@@ -328,7 +341,10 @@ class TestQueuedTriviaGameStore6():
     eventLoop: AbstractEventLoop = asyncio.get_event_loop()
     backgroundTaskHelper = BackgroundTaskHelper(eventLoop = eventLoop)
     timber = Timber(backgroundTaskHelper = backgroundTaskHelper)
-    triviaSettingsRepository = TriviaSettingsRepository()
+
+    triviaSettingsRepository = TriviaSettingsRepository(
+        settingsJsonReader = JsonStaticReader(dict())
+    )
 
     queuedTriviaGameStore = QueuedTriviaGameStore(
         timber = timber,
@@ -400,7 +416,10 @@ class TestQueuedTriviaGameStore7():
     eventLoop: AbstractEventLoop = asyncio.get_event_loop()
     backgroundTaskHelper = BackgroundTaskHelper(eventLoop = eventLoop)
     timber = Timber(backgroundTaskHelper = backgroundTaskHelper)
-    triviaSettingsRepository = TriviaSettingsRepository()
+
+    triviaSettingsRepository = TriviaSettingsRepository(
+        settingsJsonReader = JsonStaticReader(dict())
+    )
 
     queuedTriviaGameStore = QueuedTriviaGameStore(
         timber = timber,
