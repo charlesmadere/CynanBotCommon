@@ -22,7 +22,7 @@ class BannedWord():
 
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, BannedWord):
-            return self.__word == other.__word
+            return self.__checkType is other.__checkType and self.__word == other.__word
         else:
             raise ValueError(f'`other` is an unsupported type: \"{other}\"')
 
@@ -33,7 +33,7 @@ class BannedWord():
         return self.__word
 
     def __hash__(self) -> int:
-        return hash(self.__word)
+        return hash((self.__checkType, self.__word))
 
     def __str__(self) -> str:
         return f'word=\"{self.__word}\", checkType={self.__checkType}'

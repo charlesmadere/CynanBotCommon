@@ -8,6 +8,31 @@ except:
 
 class TestBannedWord():
 
+    def test_equals_withDifferentCheckTypes(self):
+        one = BannedWord(
+            checkType = BannedWordCheckType.ANYWHERE,
+            word = 'hello'
+        )
+
+        two = BannedWord(
+            checkType = BannedWordCheckType.EXACT_MATCH,
+            word = 'hello'
+        )
+
+        assert one != two
+
+        one = BannedWord(
+            checkType = BannedWordCheckType.ANYWHERE,
+            word = 'HELLO'
+        )
+
+        two = BannedWord(
+            checkType = BannedWordCheckType.EXACT_MATCH,
+            word = 'hello'
+        )
+
+        assert one != two
+
     def test_equals_withDifferentWords(self):
         one = BannedWord(
             checkType = BannedWordCheckType.ANYWHERE,
@@ -45,27 +70,23 @@ class TestBannedWord():
 
         assert one != two
 
-    def test_equals_withDifferentCheckTypes(self):
+    def test_equals(self):
         one = BannedWord(
             checkType = BannedWordCheckType.ANYWHERE,
-            word = 'hello'
+            word = 'zebra'
         )
 
         two = BannedWord(
-            checkType = BannedWordCheckType.EXACT_MATCH,
-            word = 'hello'
+            checkType = BannedWordCheckType.ANYWHERE,
+            word = 'Zebra'
         )
 
         assert one == two
 
-        one = BannedWord(
-            checkType = BannedWordCheckType.ANYWHERE,
-            word = 'HELLO'
-        )
-
-        two = BannedWord(
+        three = BannedWord(
             checkType = BannedWordCheckType.EXACT_MATCH,
-            word = 'hello'
+            word = 'zebra'
         )
 
-        assert one == two
+        assert one != three
+        assert two != three

@@ -1,12 +1,11 @@
-import os
 import re
+import traceback
 from typing import List, Optional, Pattern, Set
-
-import aiofiles
-import aiofiles.ospath
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.storage.linesReaderInterface import \
+        LinesReaderInterface
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.bannedWords.bannedWord import BannedWord
     from CynanBotCommon.trivia.bannedWords.bannedWordCheckType import \
@@ -15,6 +14,7 @@ try:
         BannedWordsRepositoryInterface
 except:
     import utils
+    from storage.linesReaderInterface import LinesReaderInterface
     from timber.timber import Timber
     from trivia.bannedWords.bannedWord import BannedWord
     from trivia.bannedWords.bannedWordCheckType import BannedWordCheckType
@@ -26,16 +26,16 @@ class BannedWordsRepository(BannedWordsRepositoryInterface):
 
     def __init__(
         self,
-        timber: Timber,
-        bannedWordsFile: str = 'CynanBotCommon/trivia/bannedWords/bannedWords.txt'
+        bannedWordsLinesReader: LinesReaderInterface,
+        timber: Timber
     ):
-        if not isinstance(timber, Timber):
+        if not isinstance(bannedWordsLinesReader, LinesReaderInterface):
+            raise ValueError(f'bannedWordsLinesReader argument is malformed: \"{bannedWordsLinesReader}\"')
+        elif not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif not utils.isValidStr(bannedWordsFile):
-            raise ValueError(f'bannedWordsFile argument is malformed: \"{bannedWordsFile}\"')
 
+        self.__bannedWordsLinesReader: LinesReaderInterface = bannedWordsLinesReader
         self.__timber: Timber = timber
-        self.__bannedWordsFile: str = bannedWordsFile
 
         self.__quoteRegEx: Pattern = re.compile(r'^"(.+)"$', re.IGNORECASE)
         self.__cache: Optional[Set[BannedWord]] = None
@@ -61,24 +61,24 @@ class BannedWordsRepository(BannedWordsRepositoryInterface):
         return cleanedBannedWords
 
     def __fetchBannedWords(self) -> Set[BannedWord]:
-        if not os.path.exists(self.__bannedWordsFile):
-            raise FileNotFoundError(f'Banned words file not found: \"{self.__bannedWordsFile}\"')
+        lines: Optional[List[Optional[str]]] = None
 
-        lines: Optional[List[str]] = None
-
-        with open(self.__bannedWordsFile, 'r') as file:
-            lines = file.readlines()
+        try:
+            lines = self.__bannedWordsLinesReader.readLines()
+        except FileNotFoundError as e:
+            self.__timber.log('BannedWordsRepository', f'Banned words file not found when trying to synchronously read from banned words file', e, traceback.format_exc())
+            raise FileNotFoundError('Banned words file not found when trying to synchronously read from banned words file')
 
         return self.__createCleanedBannedWordsSetFromLines(lines)
 
     async def __fetchBannedWordsAsync(self) -> Set[BannedWord]:
-        if not await aiofiles.ospath.exists(self.__bannedWordsFile):
-            raise FileNotFoundError(f'Banned words file not found: \"{self.__bannedWordsFile}\"')
+        lines: Optional[List[Optional[str]]] = None
 
-        lines: Optional[List[str]] = None
-
-        async with aiofiles.open(self.__bannedWordsFile, 'r') as file:
-            lines = await file.readlines()
+        try:
+            lines = await self.__bannedWordsLinesReader.readLinesAsync()
+        except FileNotFoundError as e:
+            self.__timber.log('BannedWordsRepository', 'Banned words file not found when trying to asynchronously read from banned words file', e, traceback.format_exc())
+            raise FileNotFoundError('Banned words file not found when trying to asynchronously read from banned words file')
 
         return self.__createCleanedBannedWordsSetFromLines(lines)
 
@@ -88,7 +88,7 @@ class BannedWordsRepository(BannedWordsRepositoryInterface):
 
         bannedWords = self.__fetchBannedWords()
         self.__cache = bannedWords
-        self.__timber.log('BannedWordsRepository', f'Synchronously read in {len(bannedWords)} banned word(s) from \"{self.__bannedWordsFile}\"')
+        self.__timber.log('BannedWordsRepository', f'Synchronously read in {len(bannedWords)} banned word(s)')
 
         return bannedWords
 
@@ -98,7 +98,7 @@ class BannedWordsRepository(BannedWordsRepositoryInterface):
 
         bannedWords = await self.__fetchBannedWordsAsync()
         self.__cache = bannedWords
-        self.__timber.log('BannedWordsRepository', f'Asynchronously read in {len(bannedWords)} banned word(s) from \"{self.__bannedWordsFile}\"')
+        self.__timber.log('BannedWordsRepository', f'Asynchronously read in {len(bannedWords)} banned word(s)')
 
         return bannedWords
 
