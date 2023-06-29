@@ -1,16 +1,14 @@
-import json
-from typing import Any, Dict
-
-import aiofiles
-import aiofiles.ospath
+from typing import Any, Dict, Optional
 
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.location.location import Location
+    from CynanBotCommon.storage.jsonReaderInterface import JsonReaderInterface
     from CynanBotCommon.timeZoneRepository import TimeZoneRepository
 except:
     import utils
     from location.location import Location
+    from storage.jsonReaderInterface import JsonReaderInterface
     from timeZoneRepository import TimeZoneRepository
 
 
@@ -18,20 +16,21 @@ class LocationsRepository():
 
     def __init__(
         self,
-        timeZoneRepository: TimeZoneRepository,
-        locationsFile: str = 'CynanBotCommon/location/locationsRepository.json'
+        locationsJsonReader: JsonReaderInterface,
+        timeZoneRepository: TimeZoneRepository
     ):
-        if not isinstance(timeZoneRepository, TimeZoneRepository):
+        if not isinstance(locationsJsonReader, JsonReaderInterface):
+            raise ValueError(f'locationsJsonReader argument is malformed: \"{locationsJsonReader}\"')
+        elif not isinstance(timeZoneRepository, TimeZoneRepository):
             raise ValueError(f'timeZoneRepository argument is malformed: \"{timeZoneRepository}\"')
-        elif not utils.isValidStr(locationsFile):
-            raise ValueError(f'locationsFile argument is malformed: \"{locationsFile}\"')
 
+        self.__locationsJsonReader: JsonReaderInterface = locationsJsonReader
         self.__timeZoneRepository: TimeZoneRepository = timeZoneRepository
-        self.__locationsFile: str = locationsFile
-        self.__locationsCache: Dict[str, Location] = dict()
+
+        self.__cache: Dict[str, Optional[Location]] = dict()
 
     async def clearCaches(self):
-        self.__locationsCache.clear()
+        self.__cache.clear()
 
     async def getLocation(self, locationId: str) -> Location:
         if not utils.isValidStr(locationId):
@@ -39,40 +38,35 @@ class LocationsRepository():
 
         locationId = locationId.lower()
 
-        if locationId in self.__locationsCache:
-            return self.__locationsCache[locationId]
+        if locationId in self.__cache:
+            return self.__cache[locationId]
 
         jsonContents = await self.__readAllJson()
 
-        for _id in jsonContents:
-            if _id.lower() == locationId:
-                timeZoneStr = jsonContents[_id]['timeZone']
+        for jsonLocationId, jsonLocationContents in jsonContents.items():
+            if jsonLocationId.lower() == locationId:
+                timeZoneStr = utils.getStrFromDict(jsonLocationContents, 'timeZone')
                 timeZone = self.__timeZoneRepository.getTimeZone(timeZoneStr)
 
                 location = Location(
-                    latitude = jsonContents[_id]['lat'],
-                    longitude = jsonContents[_id]['lon'],
-                    locationId = _id,
-                    name = jsonContents[_id]['name'],
+                    latitude = utils.getFloatFromDict(jsonLocationContents, 'lat'),
+                    longitude = utils.getFloatFromDict(jsonLocationContents, 'lon'),
+                    locationId = jsonLocationId,
+                    name = utils.getStrFromDict(jsonLocationContents, 'name'),
                     timeZone = timeZone
                 )
 
-                self.__locationsCache[_id.lower()] = location
+                self.__cache[jsonLocationId.lower()] = location
                 return location
 
-        raise RuntimeError(f'Unable to find location with ID \"{locationId}\" in locations file: \"{self.__locationsFile}\"')
+        raise RuntimeError(f'Unable to find location with ID \"{locationId}\" in locations file: {self.__locationsJsonReader}')
 
-    async def __readAllJson(self) -> Dict[str, Any]:
-        if not await aiofiles.ospath.exists(self.__locationsFile):
-            raise FileNotFoundError(f'Locations file not found: \"{self.__locationsFile}\"')
-
-        async with aiofiles.open(self.__locationsFile, mode = 'r') as file:
-            data = await file.read()
-            jsonContents = json.loads(data)
+    async def __readAllJson(self) -> Dict[str, Dict[str, Any]]:
+        jsonContents: Optional[Dict[str, Dict[str, Any]]] = await self.__locationsJsonReader.readJsonAsync()
 
         if jsonContents is None:
-            raise IOError(f'Error reading from locations file: \"{self.__locationsFile}\"')
+            raise IOError(f'Error reading from locations file: {self.__locationsJsonReader}')
         elif len(jsonContents) == 0:
-            raise ValueError(f'JSON contents of locations file \"{self.__locationsFile}\" is empty')
+            raise ValueError(f'JSON contents of locations file {self.__locationsJsonReader} is empty')
 
         return jsonContents
