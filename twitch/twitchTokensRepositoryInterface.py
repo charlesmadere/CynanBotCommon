@@ -1,9 +1,13 @@
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 try:
     from CynanBotCommon.twitch.twitchTokensDetails import TwitchTokensDetails
+    from CynanBotCommon.twitch.twitchTokensRepositoryListener import \
+        TwitchTokensRepositoryListener
 except:
     from twitch.twitchTokensDetails import TwitchTokensDetails
+    from twitch.twitchTokensRepositoryListener import \
+        TwitchTokensRepositoryListener
 
 
 class TwitchTokensRepositoryInterface():
@@ -36,6 +40,9 @@ class TwitchTokensRepositoryInterface():
         pass
 
     async def requireTokensDetails(self, twitchChannel: str) -> TwitchTokensDetails:
+        pass
+
+    def setListener(self, listener: Optional[TwitchTokensRepositoryListener]):
         pass
 
     async def validateAndRefreshAccessToken(self, twitchChannel: str):

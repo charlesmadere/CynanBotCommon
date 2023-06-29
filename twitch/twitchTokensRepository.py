@@ -16,6 +16,8 @@ try:
     from CynanBotCommon.twitch.twitchTokensDetails import TwitchTokensDetails
     from CynanBotCommon.twitch.twitchTokensRepositoryInterface import \
         TwitchTokensRepositoryInterface
+    from CynanBotCommon.twitch.twitchTokensRepositoryListener import \
+        TwitchTokensRepositoryListener
 except:
     import utils
     from network.exceptions import GenericNetworkException
@@ -31,6 +33,8 @@ except:
     from twitch.twitchTokensDetails import TwitchTokensDetails
     from twitch.twitchTokensRepositoryInterface import \
         TwitchTokensRepositoryInterface
+    from twitch.twitchTokensRepositoryListener import \
+        TwitchTokensRepositoryListener
 
 
 class TwitchTokensRepository(TwitchTokensRepositoryInterface):
@@ -67,6 +71,7 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
         self.__isDatabaseReady: bool = False
         self.__cache: Dict[str, TwitchTokensDetails] = dict()
         self.__tokenExpirationTimes: Dict[str, Optional[datetime]] = dict()
+        self.__twitchTokensRepositoryListener: Optional[TwitchTokensRepositoryListener] = None
 
     async def addUser(self, code: str, twitchChannel: str):
         if not utils.isValidStr(code):
@@ -86,6 +91,19 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
             tokensDetails = tokensDetails,
             twitchChannel = twitchChannel
         )
+
+        twitchTokensRepositoryListener = self.__twitchTokensRepositoryListener
+
+        if twitchTokensRepositoryListener is not None:
+            if tokensDetails is None:
+                await twitchTokensRepositoryListener.onUserRemoved(
+                    twitchChannel = twitchChannel
+                )
+            else:
+                await twitchTokensRepositoryListener.onUserAdded(
+                    tokensDetails = tokensDetails,
+                    twitchChannel = twitchChannel
+                )
 
     async def clearCaches(self):
         self.__cache.clear()
@@ -297,6 +315,13 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
         self.__cache.pop(twitchChannel.lower(), None)
         self.__tokenExpirationTimes.pop(twitchChannel.lower(), None)
 
+        twitchTokensRepositoryListener = self.__twitchTokensRepositoryListener
+
+        if twitchTokensRepositoryListener is not None:
+            await twitchTokensRepositoryListener.onUserRemoved(
+                twitchChannel = twitchChannel
+            )
+
     async def requireAccessToken(self, twitchChannel: str) -> str:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
@@ -353,6 +378,12 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
         await connection.close()
         self.__cache.pop(twitchChannel.lower(), None)
         self.__tokenExpirationTimes[twitchChannel.lower()] = expirationTime
+
+    def setListener(self, listener: Optional[TwitchTokensRepositoryListener]):
+        if listener is not None and not isinstance(listener, TwitchTokensRepositoryListener):
+            raise ValueError(f'listener argument is malformed: \"{listener}\"')
+
+        self.__twitchTokensRepositoryListener = listener
 
     async def __setTokensDetails(
         self,
