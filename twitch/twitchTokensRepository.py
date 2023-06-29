@@ -66,7 +66,7 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
 
         self.__isDatabaseReady: bool = False
         self.__cache: Dict[str, TwitchTokensDetails] = dict()
-        self.__tokenExpirationTimes: Dict[str, datetime] = dict()
+        self.__tokenExpirationTimes: Dict[str, Optional[datetime]] = dict()
 
     async def addUser(self, code: str, twitchChannel: str):
         if not utils.isValidStr(code):
