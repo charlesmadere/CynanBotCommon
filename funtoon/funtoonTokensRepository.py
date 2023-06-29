@@ -1,9 +1,4 @@
-import json
-import os
 from typing import Dict, Optional
-
-import aiofiles
-import aiofiles.ospath
 
 try:
     import CynanBotCommon.utils as utils
@@ -11,6 +6,7 @@ try:
     from CynanBotCommon.storage.backingDatabase import BackingDatabase
     from CynanBotCommon.storage.databaseConnection import DatabaseConnection
     from CynanBotCommon.storage.databaseType import DatabaseType
+    from CynanBotCommon.storage.jsonReaderInterface import JsonReaderInterface
     from CynanBotCommon.timber.timber import Timber
 except:
     import utils
@@ -18,6 +14,7 @@ except:
     from storage.backingDatabase import BackingDatabase
     from storage.databaseConnection import DatabaseConnection
     from storage.databaseType import DatabaseType
+    from storage.jsonReaderInterface import JsonReaderInterface
     from timber.timber import Timber
 
 
@@ -27,18 +24,18 @@ class FuntoonTokensRepository():
         self,
         backingDatabase: BackingDatabase,
         timber: Timber,
-        seedFile: Optional[str] = f'CynanBotCommon/funtoon/funtoonTokensRepositorySeedFile.json'
+        seedFileReader: Optional[JsonReaderInterface] = None
     ):
         if not isinstance(backingDatabase, BackingDatabase):
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
         elif not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif seedFile is not None and not isinstance(seedFile, str):
-            raise ValueError(f'seedFile argument is malformed: \"{seedFile}\"')
+        elif seedFileReader is not None and not isinstance(seedFileReader, JsonReaderInterface):
+            raise ValueError(f'seedFileReader argument is malformed: \"{seedFileReader}\"')
 
         self.__backingDatabase: BackingDatabase = backingDatabase
         self.__timber: Timber = timber
-        self.__seedFile: Optional[str] = seedFile
+        self.__seedFileReader: Optional[JsonReaderInterface] = seedFileReader
 
         self.__isDatabaseReady: bool = False
         self.__cache: Dict[str, str] = dict()
@@ -47,29 +44,25 @@ class FuntoonTokensRepository():
         self.__cache.clear()
 
     async def __consumeSeedFile(self):
-        seedFile = self.__seedFile
+        seedFileReader = self.__seedFileReader
 
-        if not utils.isValidStr(seedFile):
+        if seedFileReader is None:
             return
 
-        self.__seedFile = None
+        self.__seedFileReader = None
 
-        if not await aiofiles.ospath.exists(seedFile):
-            self.__timber.log('FuntoonTokensRepository', f'Seed file (\"{seedFile}\") does not exist')
+        if not await seedFileReader.fileExistsAsync():
+            self.__timber.log('FuntoonTokensRepository', f'Seed file (\"{seedFileReader}\") does not exist')
             return
 
-        async with aiofiles.open(seedFile, mode = 'r') as file:
-            data = await file.read()
-            jsonContents: Optional[Dict[str, str]] = json.loads(data)
-
-        # I don't believe there is an aiofiles version of this call at this time (June 23rd, 2023).
-        os.remove(seedFile)
+        jsonContents: Optional[Dict[str, str]] = await seedFileReader.readJsonAsync()
+        await seedFileReader.deleteFileAsync()
 
         if not utils.hasItems(jsonContents):
-            self.__timber.log('FuntoonTokensRepository', f'Seed file (\"{seedFile}\") is empty')
+            self.__timber.log('FuntoonTokensRepository', f'Seed file (\"{seedFileReader}\") is empty')
             return
 
-        self.__timber.log('FuntoonTokensRepository', f'Reading in seed file \"{seedFile}\"...')
+        self.__timber.log('FuntoonTokensRepository', f'Reading in seed file \"{seedFileReader}\"...')
 
         for twitchChannel, token in jsonContents.items():
             await self.setToken(
@@ -77,7 +70,7 @@ class FuntoonTokensRepository():
                 token = token
             )
 
-        self.__timber.log('FuntoonTokensRepository', f'Finished reading in seed file \"{seedFile}\"')
+        self.__timber.log('FuntoonTokensRepository', f'Finished reading in seed file \"{seedFileReader}\"')
 
     async def __getDatabaseConnection(self) -> DatabaseConnection:
         await self.__initDatabaseTable()

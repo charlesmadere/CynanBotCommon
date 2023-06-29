@@ -32,3 +32,6 @@ class JsonStaticReader(JsonReaderInterface):
 
     async def readJsonAsync(self) -> Optional[Dict[Any, Any]]:
         return self.readJson()
+
+    def __str__(self) -> str:
+        return f'jsonContents=\"{self.__jsonContents}\", isDeleted={self.__isDeleted}'
