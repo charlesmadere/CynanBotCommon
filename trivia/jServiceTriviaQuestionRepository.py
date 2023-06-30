@@ -150,10 +150,10 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
                 self.__timber.log('JServiceTriviaQuestionRepository', f'Rejecting jService\'s JSON data due to null/empty contents: {jsonResponse}')
                 raise MalformedTriviaJsonException(f'Rejecting jService\'s JSON data due to null/empty contents: {jsonResponse}')
 
-            category = utils.getStrFromDict(triviaJson['category'], 'title', fallback = '')
+            category = utils.getStrFromDict(triviaJson['category'], 'title', fallback = '').encode('latin1').decode('utf8')
             category = await self.__triviaQuestionCompiler.compileCategory(category)
 
-            question = utils.getStrFromDict(triviaJson, 'question')
+            question = utils.getStrFromDict(triviaJson, 'question').encode('latin1').decode('utf8')
             question = await self.__triviaQuestionCompiler.compileQuestion(question)
 
             triviaId = utils.getStrFromDict(triviaJson, 'id', fallback = '')
@@ -161,7 +161,7 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
                 triviaId = await self.__triviaIdGenerator.generate(category = category, question = question)
 
             correctAnswers: List[str] = list()
-            correctAnswers.append(utils.getStrFromDict(triviaJson, 'answer'))
+            correctAnswers.append(utils.getStrFromDict(triviaJson, 'answer').encode('latin1').decode('utf8'))
 
             await self.__addAdditionalAnswers(
                 correctAnswers = correctAnswers,
@@ -171,7 +171,7 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
             correctAnswers = await self.__triviaQuestionCompiler.compileResponses(correctAnswers)
 
             cleanedCorrectAnswers: List[str] = list()
-            cleanedCorrectAnswers.append(utils.getStrFromDict(triviaJson, 'answer'))
+            cleanedCorrectAnswers.append(utils.getStrFromDict(triviaJson, 'answer').encode('latin1').decode('utf8'))
             cleanedCorrectAnswers = await self.__triviaAnswerCompiler.compileTextAnswersList(cleanedCorrectAnswers)
 
             expandedCleanedCorrectAnswers: Set[str] = set()
