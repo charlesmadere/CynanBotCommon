@@ -331,7 +331,9 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         await connection.close()
 
-        sessionToken = record[0]
+        if utils.hasItems(record):
+            sessionToken = record[0]
+
         self.__cache[twitchChannel.lower()] = sessionToken
 
         return sessionToken
