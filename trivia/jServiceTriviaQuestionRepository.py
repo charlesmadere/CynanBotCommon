@@ -125,7 +125,7 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
             self.__timber.log('JServiceTriviaQuestionRepository', f'Rejecting jService\'s JSON data due to null/empty contents: {jsonResponse}')
             raise MalformedTriviaJsonException(f'Rejecting jService\'s JSON data due to null/empty contents: {jsonResponse}')
 
-        triviaJson = jsonResponse[0]
+        triviaJson: Optional[Dict[str, Any]] = jsonResponse[0]
 
         if not utils.hasItems(triviaJson) or 'category' not in triviaJson:
             self.__timber.log('JServiceTriviaQuestionRepository', f'Rejecting jService\'s JSON data due to null/empty contents: {jsonResponse}')
