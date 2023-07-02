@@ -6,6 +6,9 @@ try:
     from CynanBotCommon.network.exceptions import GenericNetworkException
     from CynanBotCommon.network.networkClientProvider import \
         NetworkClientProvider
+    from CynanBotCommon.storage.backingDatabase import BackingDatabase
+    from CynanBotCommon.storage.databaseConnection import DatabaseConnection
+    from CynanBotCommon.storage.databaseType import DatabaseType
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.absTriviaQuestionRepository import \
@@ -29,6 +32,9 @@ except:
     import utils
     from network.exceptions import GenericNetworkException
     from network.networkClientProvider import NetworkClientProvider
+    from storage.backingDatabase import BackingDatabase
+    from storage.databaseConnection import DatabaseConnection
+    from storage.databaseType import DatabaseType
     from timber.timber import Timber
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.absTriviaQuestionRepository import AbsTriviaQuestionRepository
@@ -50,6 +56,7 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
     def __init__(
         self,
+        backingDatabase: BackingDatabase,
         networkClientProvider: NetworkClientProvider,
         timber: Timber,
         triviaIdGenerator: TriviaIdGenerator,
@@ -58,7 +65,9 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
     ):
         super().__init__(triviaSettingsRepository)
 
-        if not isinstance(networkClientProvider, NetworkClientProvider):
+        if not isinstance(backingDatabase, BackingDatabase):
+            raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
+        elif not isinstance(networkClientProvider, NetworkClientProvider):
             raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
         elif not isinstance(timber, Timber):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
@@ -67,16 +76,23 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
         elif not isinstance(triviaQuestionCompiler, TriviaQuestionCompiler):
             raise ValueError(f'triviaQuestionCompiler argument is malformed: \"{triviaQuestionCompiler}\"')
 
+        self.__backingDatabase: BackingDatabase = backingDatabase
         self.__networkClientProvider: NetworkClientProvider = networkClientProvider
         self.__timber: Timber = timber
         self.__triviaIdGenerator: TriviaIdGenerator = triviaIdGenerator
         self.__triviaQuestionCompiler: TriviaQuestionCompiler = triviaQuestionCompiler
 
-        self.__sessionTokens: Dict[str, str] = dict()
+        self.__isDatabaseReady: bool = False
+        self.__cache: Dict[str, Optional[str]] = dict()
+
+    async def clearCaches(self):
+        self.__cache.clear()
 
     async def __fetchNewSessionToken(self, twitchChannel: str) -> str:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+
+        self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Fetching new session token for \"{twitchChannel}\"...')
 
         clientSession = await self.__networkClientProvider.get()
 
@@ -221,21 +237,26 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         raise UnsupportedTriviaTypeException(f'triviaType \"{triviaType}\" is not supported for Open Trivia Database: {jsonResponse}')
 
+    async def __getDatabaseConnection(self) -> DatabaseConnection:
+        await self.__initDatabaseTable()
+        return await self.__backingDatabase.getConnection()
+
     async def __getOrFetchNewSessionToken(self, twitchChannel: str) -> Optional[str]:
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
-        sessionToken: Optional[str] = self.__sessionTokens.get(twitchChannel.lower())
+        sessionToken = await self.__retrieveSessionToken(twitchChannel)
 
         if not utils.isValidStr(sessionToken):
-            self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Fetching new session token for \"{twitchChannel}\"...')
-
             try:
                 sessionToken = await self.__fetchNewSessionToken(twitchChannel)
-                self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Fetched new session token for \"{twitchChannel}\": \"{sessionToken}\"')
-                self.__sessionTokens[twitchChannel.lower()] = sessionToken
             except BadTriviaSessionTokenException:
-                await self.__removeSessionToken(twitchChannel)
+                pass
+
+        await self.__storeSessionToken(
+            sessionToken = sessionToken,
+            twitchChannel = twitchChannel
+        )
 
         return sessionToken
 
@@ -248,8 +269,103 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
     async def hasQuestionSetAvailable(self) -> bool:
         return True
 
+    async def __initDatabaseTable(self):
+        if self.__isDatabaseReady:
+            return
+
+        self.__isDatabaseReady = True
+        connection = await self.__backingDatabase.getConnection()
+
+        if connection.getDatabaseType() is DatabaseType.POSTGRESQL:
+            await connection.createTableIfNotExists(
+                '''
+                    CREATE TABLE IF NOT EXISTS opentriviadatabasesessiontokens (
+                        twitchchannel public.citext NOT NULL PRIMARY KEY,
+                        sessiontoken text DEFAULT NULL
+                    )
+                '''
+            )
+        elif connection.getDatabaseType() is DatabaseType.SQLITE:
+            await connection.createTableIfNotExists(
+                '''
+                    CREATE TABLE IF NOT EXISTS opentriviadatabasesessiontokens (
+                        twitchchannel TEXT NOT NULL PRIMARY KEY COLLATE NOCASE,
+                        sessiontoken TEXT DEFAULT NULL
+                    )
+                '''
+            )
+        else:
+            raise RuntimeError(f'Encountered unexpected DatabaseType when trying to create tables: \"{connection.getDatabaseType()}\"')
+
+        await connection.close()
+
     async def __removeSessionToken(self, twitchChannel: str):
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
-        self.__sessionTokens.pop(twitchChannel.lower(), '')
+        await self.__storeSessionToken(
+            sessionToken = None,
+            twitchChannel = twitchChannel
+        )
+
+    async def __retrieveSessionToken(self, twitchChannel: str) -> Optional[str]:
+        if not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+
+        sessionToken = self.__cache.get(twitchChannel.lower())
+
+        if utils.isValidStr(sessionToken):
+            return sessionToken
+
+        connection = await self.__getDatabaseConnection()
+        record = await connection.fetchRow(
+            '''
+                SELECT sessiontoken FROM opentriviadatabasesessiontokens
+                WHERE twitchchannel = $1
+                LIMIT 1
+            ''',
+            twitchChannel
+        )
+
+        await connection.close()
+
+        sessionToken = record[0]
+        self.__cache[twitchChannel.lower()] = sessionToken
+
+        return sessionToken
+
+    async def __storeSessionToken(
+        self,
+        sessionToken: Optional[str],
+        twitchChannel: str
+    ):
+        if sessionToken is not None and not isinstance(sessionToken, str):
+            raise ValueError(f'sessionToken argument is malformed: \"{sessionToken}\"')
+        elif not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+
+        connection = await self.__getDatabaseConnection()
+
+        if utils.isValidStr(sessionToken):
+            await connection.execute(
+                '''
+                    INSERT INTO opentriviadatabasesessiontokens (sessiontoken, twitchchannel)
+                    VALUES ($1, $2)
+                    ON CONFLICT (twitchchannel) DO UPDATE SET sessiontoken = EXCLUDED.sessiontoken
+                ''',
+                sessionToken, twitchChannel
+            )
+
+            self.__cache[twitchChannel.lower()] = sessionToken
+        else:
+            await connection.execute(
+                '''
+                    DELETE FROM opentriviadatabasesessiontokens
+                    WHERE twitchchannel = $1
+                ''',
+                twitchChannel
+            )
+
+            self.__cache.pop(twitchChannel.lower(), None)
+
+        await connection.close()
