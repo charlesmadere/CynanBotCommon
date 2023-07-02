@@ -282,8 +282,8 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
             await connection.createTableIfNotExists(
                 '''
                     CREATE TABLE IF NOT EXISTS opentriviadatabasesessiontokens (
-                        twitchchannel public.citext NOT NULL PRIMARY KEY,
-                        sessiontoken text DEFAULT NULL
+                        sessiontoken text DEFAULT NULL,
+                        twitchchannel public.citext NOT NULL PRIMARY KEY
                     )
                 '''
             )
@@ -291,8 +291,8 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
             await connection.createTableIfNotExists(
                 '''
                     CREATE TABLE IF NOT EXISTS opentriviadatabasesessiontokens (
-                        twitchchannel TEXT NOT NULL PRIMARY KEY COLLATE NOCASE,
-                        sessiontoken TEXT DEFAULT NULL
+                        sessiontoken TEXT DEFAULT NULL,
+                        twitchchannel TEXT NOT NULL PRIMARY KEY COLLATE NOCASE
                     )
                 '''
             )
