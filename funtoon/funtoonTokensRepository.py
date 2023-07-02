@@ -114,7 +114,7 @@ class FuntoonTokensRepository():
             await connection.createTableIfNotExists(
                 '''
                     CREATE TABLE IF NOT EXISTS funtoontokens (
-                        token text NOT NULL,
+                        token text,
                         twitchchannel public.citext NOT NULL PRIMARY KEY
                     )
                 '''
@@ -123,7 +123,7 @@ class FuntoonTokensRepository():
             await connection.createTableIfNotExists(
                 '''
                     CREATE TABLE IF NOT EXISTS funtoontokens (
-                        token TEXT NOT NULL,
+                        token TEXT,
                         twitchchannel TEXT NOT NULL PRIMARY KEY COLLATE NOCASE
                     )
                 '''
