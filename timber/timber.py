@@ -12,13 +12,15 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.backgroundTaskHelper import BackgroundTaskHelper
     from CynanBotCommon.timber.timberEntry import TimberEntry
+    from CynanBotCommon.timber.timberInterface import TimberInterface
 except:
     import utils
     from backgroundTaskHelper import BackgroundTaskHelper
     from timber.timberEntry import TimberEntry
+    from timber.timberInterface import TimberInterface
 
 
-class Timber():
+class Timber(TimberInterface):
 
     def __init__(
         self,

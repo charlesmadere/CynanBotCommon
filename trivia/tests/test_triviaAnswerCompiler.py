@@ -1,29 +1,22 @@
-import asyncio
 from typing import List
 
 import pytest
 
 try:
-    from ...backgroundTaskHelper import BackgroundTaskHelper
-    from ...timber.timber import Timber
+    from ...timber.timberInterface import TimberInterface
+    from ...timber.timberStub import TimberStub
     from ...trivia.triviaAnswerCompiler import TriviaAnswerCompiler
     from ...trivia.triviaExceptions import BadTriviaAnswerException
 except:
-    from backgroundTaskHelper import BackgroundTaskHelper
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
+    from timber.timberStub import TimberStub
     from trivia.triviaAnswerCompiler import TriviaAnswerCompiler
     from trivia.triviaExceptions import BadTriviaAnswerException
 
 
 class TestTriviaAnswerCompiler():
 
-    backgroundTaskHelper = BackgroundTaskHelper(
-        eventLoop = asyncio.get_event_loop()
-    )
-
-    timber = Timber(
-        backgroundTaskHelper = backgroundTaskHelper
-    )
+    timber: TimberInterface = TimberStub()
 
     triviaAnswerCompiler = TriviaAnswerCompiler(
         timber = timber

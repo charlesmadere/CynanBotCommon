@@ -3,7 +3,7 @@ from typing import Optional, Pattern, Set
 
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.bannedWords.bannedWordCheckType import \
         BannedWordCheckType
@@ -15,7 +15,7 @@ try:
     from CynanBotCommon.trivia.triviaType import TriviaType
 except:
     import utils
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.bannedWords.bannedWordCheckType import BannedWordCheckType
     from trivia.bannedWords.bannedWordsRepositoryInterface import \
@@ -30,18 +30,18 @@ class TriviaContentScanner():
     def __init__(
         self,
         bannedWordsRepositoryInterface: BannedWordsRepositoryInterface,
-        timber: Timber,
+        timber: TimberInterface,
         triviaSettingsRepository: TriviaSettingsRepository
     ):
         if not isinstance(bannedWordsRepositoryInterface, BannedWordsRepositoryInterface):
             raise ValueError(f'bannedWordsRepositoryInterface argument is malformed: \"{bannedWordsRepositoryInterface}\"')
-        elif not isinstance(timber, Timber):
+        elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(triviaSettingsRepository, TriviaSettingsRepository):
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
 
         self.__bannedWordsRepositoryInterface: BannedWordsRepositoryInterface = bannedWordsRepositoryInterface
-        self.__timber: Timber = timber
+        self.__timber: TimberInterface = timber
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
 
         self.__wordRegEx: Pattern = re.compile(r'\w', re.IGNORECASE)
