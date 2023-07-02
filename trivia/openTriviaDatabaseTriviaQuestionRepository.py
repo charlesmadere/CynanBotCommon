@@ -18,7 +18,7 @@ try:
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
     from CynanBotCommon.trivia.triviaExceptions import (
         BadTriviaSessionTokenException, GenericTriviaNetworkException,
-        UnsupportedTriviaTypeException)
+        MalformedTriviaJsonException, UnsupportedTriviaTypeException)
     from CynanBotCommon.trivia.triviaIdGenerator import TriviaIdGenerator
     from CynanBotCommon.trivia.triviaQuestionCompiler import \
         TriviaQuestionCompiler
@@ -43,6 +43,7 @@ except:
     from trivia.triviaDifficulty import TriviaDifficulty
     from trivia.triviaExceptions import (BadTriviaSessionTokenException,
                                          GenericTriviaNetworkException,
+                                         MalformedTriviaJsonException,
                                          UnsupportedTriviaTypeException)
     from trivia.triviaIdGenerator import TriviaIdGenerator
     from trivia.triviaQuestionCompiler import TriviaQuestionCompiler
@@ -154,19 +155,20 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         if not utils.hasItems(jsonResponse):
             self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Rejecting Open Trivia Database\'s JSON data due to null/empty JSON contents: {jsonResponse}')
-            raise ValueError(f'Rejecting Open Trivia Database\'s JSON data due to null/empty JSON contents: {jsonResponse}')
+            raise MalformedTriviaJsonException(f'Rejecting Open Trivia Database\'s JSON data due to null/empty JSON contents: {jsonResponse}')
         elif utils.getIntFromDict(jsonResponse, 'response_code', fallback = -1) != 0:
             await self.__removeSessionToken(twitchChannel)
             self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Rejecting Open Trivia Database\'s JSON data due to bad \"response_code\" value: {jsonResponse}')
-            raise ValueError(f'Rejecting Open Trivia Database\'s JSON data due to bad \"response_code\" value: {jsonResponse}')
+            raise GenericTriviaNetworkException(f'Rejecting Open Trivia Database\'s JSON data due to bad \"response_code\" value: {jsonResponse}')
         elif not utils.hasItems(jsonResponse.get('results')):
             self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Rejecting Open Trivia Database\'s JSON data due to missing/null/empty \"results\" array: {jsonResponse}')
-            raise ValueError(f'Rejecting Open Trivia Database\'s JSON data due to missing/null/empty \"results\" array: {jsonResponse}')
+            raise MalformedTriviaJsonException(f'Rejecting Open Trivia Database\'s JSON data due to missing/null/empty \"results\" array: {jsonResponse}')
 
-        triviaJson: Dict[str, Any] = jsonResponse['results'][0]
+        triviaJson: Optional[Dict[str, Any]] = jsonResponse['results'][0]
+
         if not utils.hasItems(triviaJson):
             self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Rejecting Open Trivia Database\'s JSON data due to null/empty \"results\" contents: {jsonResponse}')
-            raise ValueError(f'Rejecting Open Trivia Database\'s JSON API data due to null/empty contents: {jsonResponse}')
+            raise MalformedTriviaJsonException(f'Rejecting Open Trivia Database\'s JSON API data due to null/empty contents: {jsonResponse}')
 
         triviaDifficulty = TriviaDifficulty.fromStr(utils.getStrFromDict(triviaJson, 'difficulty', fallback = ''))
         triviaType = TriviaType.fromStr(utils.getStrFromDict(triviaJson, 'type'))
