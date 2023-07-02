@@ -66,8 +66,8 @@ class FuntoonTokensRepository():
 
         for twitchChannel, token in jsonContents.items():
             await self.setToken(
-                twitchChannel = twitchChannel,
-                token = token
+                token = token,
+                twitchChannel = twitchChannel
             )
 
         self.__timber.log('FuntoonTokensRepository', f'Finished reading in seed file \"{seedFileReader}\"')
@@ -145,11 +145,11 @@ class FuntoonTokensRepository():
 
         return token
 
-    async def setToken(self, twitchChannel: str, token: Optional[str]):
-        if not utils.isValidStr(twitchChannel):
-            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
-        elif token is not None and not isinstance(token, str):
+    async def setToken(self, token: Optional[str], twitchChannel: str):
+        if token is not None and not isinstance(token, str):
             raise ValueError(f'token argument is malformed: \"{token}\"')
+        elif not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
         connection = await self.__getDatabaseConnection()
 
