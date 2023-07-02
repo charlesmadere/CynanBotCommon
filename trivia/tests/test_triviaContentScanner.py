@@ -40,7 +40,7 @@ except:
 class TestTriviaContentScanner():
 
     triviaSettingsRepository = TriviaSettingsRepository(
-        settingsJsonReader = JsonStaticReader(jsonContents = None)
+        settingsJsonReader = JsonStaticReader(jsonContents = dict())
     )
 
     bannedWordsLinesReader: LinesReaderInterface = LinesStaticReader(
