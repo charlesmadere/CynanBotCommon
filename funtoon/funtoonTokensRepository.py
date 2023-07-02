@@ -38,7 +38,7 @@ class FuntoonTokensRepository():
         self.__seedFileReader: Optional[JsonReaderInterface] = seedFileReader
 
         self.__isDatabaseReady: bool = False
-        self.__cache: Dict[str, str] = dict()
+        self.__cache: Dict[str, Optional[str]] = dict()
 
     async def clearCaches(self):
         self.__cache.clear()
@@ -93,13 +93,13 @@ class FuntoonTokensRepository():
             twitchChannel
         )
 
+        await connection.close()
         token: Optional[str] = None
 
         if utils.hasItems(record):
             token = record[0]
 
         self.__cache[twitchChannel.lower()] = token
-        await connection.close()
 
         return token
 
