@@ -8,21 +8,22 @@ from roman import RomanError
 
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.trivia.triviaExceptions import BadTriviaAnswerException
 except:
     import utils
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
+
     from trivia.triviaExceptions import BadTriviaAnswerException
 
 
 class TriviaAnswerCompiler():
 
-    def __init__(self, timber: Timber):
-        if not isinstance(timber, Timber):
+    def __init__(self, timber: TimberInterface):
+        if not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
 
-        self.__timber: Timber = timber
+        self.__timber: TimberInterface = timber
 
         self.__ampersandRegEx: Pattern = re.compile(r'(^&\s+)|(\s+&\s+)|(\s+&$)', re.IGNORECASE)
         self.__decadeRegEx: Pattern = re.compile(r'^((in\s+)?the\s+)?(\d{4})\'?s$', re.IGNORECASE)

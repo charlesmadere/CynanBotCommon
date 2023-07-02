@@ -1,6 +1,7 @@
 import pytest
 
 try:
+    from ...storage.jsonStaticReader import JsonStaticReader
     from ...storage.linesReaderInterface import LinesReaderInterface
     from ...storage.linesStaticReader import LinesStaticReader
     from ...timber.timberInterface import TimberInterface
@@ -17,6 +18,7 @@ try:
     from ...trivia.triviaSource import TriviaSource
     from ...trivia.trueFalseTriviaQuestion import TrueFalseTriviaQuestion
 except:
+    from storage.jsonStaticReader import JsonStaticReader
     from storage.linesReaderInterface import LinesReaderInterface
     from storage.linesStaticReader import LinesStaticReader
     from timber.timberInterface import TimberInterface
@@ -36,7 +38,7 @@ except:
 class TestTriviaContentScanner():
 
     triviaSettingsRepository = TriviaSettingsRepository(
-        settingsJsonReader = LinesStaticReader(lines = None)
+        settingsJsonReader = JsonStaticReader(jsonContents = None)
     )
 
     bannedWordsLinesReader: LinesReaderInterface = LinesStaticReader(
