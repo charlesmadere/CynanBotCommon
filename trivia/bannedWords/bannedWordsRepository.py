@@ -6,7 +6,7 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.storage.linesReaderInterface import \
         LinesReaderInterface
-    from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.trivia.bannedWords.bannedWord import BannedWord
     from CynanBotCommon.trivia.bannedWords.bannedWordCheckType import \
         BannedWordCheckType
@@ -15,7 +15,7 @@ try:
 except:
     import utils
     from storage.linesReaderInterface import LinesReaderInterface
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
     from trivia.bannedWords.bannedWord import BannedWord
     from trivia.bannedWords.bannedWordCheckType import BannedWordCheckType
     from trivia.bannedWords.bannedWordsRepositoryInterface import \
@@ -27,15 +27,15 @@ class BannedWordsRepository(BannedWordsRepositoryInterface):
     def __init__(
         self,
         bannedWordsLinesReader: LinesReaderInterface,
-        timber: Timber
+        timber: TimberInterface
     ):
         if not isinstance(bannedWordsLinesReader, LinesReaderInterface):
             raise ValueError(f'bannedWordsLinesReader argument is malformed: \"{bannedWordsLinesReader}\"')
-        elif not isinstance(timber, Timber):
+        elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
 
         self.__bannedWordsLinesReader: LinesReaderInterface = bannedWordsLinesReader
-        self.__timber: Timber = timber
+        self.__timber: TimberInterface = timber
 
         self.__quoteRegEx: Pattern = re.compile(r'^"(.+)"$', re.IGNORECASE)
         self.__cache: Optional[Set[BannedWord]] = None
