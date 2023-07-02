@@ -1,3 +1,5 @@
+from typing import List
+
 import pytest
 
 try:
@@ -65,8 +67,11 @@ class TestTriviaContentScanner():
 
     @pytest.mark.asyncio
     async def test_verify_withSimpleTriviaQuestion1(self):
+        correctAnswers: List[bool] = list()
+        correctAnswers.append(True)
+
         question: AbsTriviaQuestion = TrueFalseTriviaQuestion(
-            correctAnswers = list(True),
+            correctAnswers = correctAnswers,
             category = None,
             categoryId = None,
             question = 'What is?',
@@ -80,8 +85,11 @@ class TestTriviaContentScanner():
 
     @pytest.mark.asyncio
     async def test_verify_withSimpleTriviaQuestion2(self):
+        correctAnswers: List[bool] = list()
+        correctAnswers.append(False)
+
         question: AbsTriviaQuestion = TrueFalseTriviaQuestion(
-            correctAnswers = list(False),
+            correctAnswers = correctAnswers,
             category = None,
             categoryId = None,
             question = 'Blah blah question here?',
