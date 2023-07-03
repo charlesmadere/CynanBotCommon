@@ -6,7 +6,7 @@ try:
     from CynanBotCommon.storage.backingDatabase import BackingDatabase
     from CynanBotCommon.storage.databaseConnection import DatabaseConnection
     from CynanBotCommon.storage.databaseType import DatabaseType
-    from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.triviaContentCode import TriviaContentCode
     from CynanBotCommon.trivia.triviaQuestionReference import \
@@ -20,7 +20,7 @@ except:
     from storage.backingDatabase import BackingDatabase
     from storage.databaseConnection import DatabaseConnection
     from storage.databaseType import DatabaseType
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.triviaContentCode import TriviaContentCode
     from trivia.triviaQuestionReference import TriviaQuestionReference
@@ -34,13 +34,13 @@ class TriviaHistoryRepository():
     def __init__(
         self,
         backingDatabase: BackingDatabase,
-        timber: Timber,
+        timber: TimberInterface,
         triviaSettingsRepository: TriviaSettingsRepository,
         timeZone: timezone = timezone.utc
     ):
         if not isinstance(backingDatabase, BackingDatabase):
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
-        elif not isinstance(timber, Timber):
+        elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(triviaSettingsRepository, TriviaSettingsRepository):
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
@@ -48,7 +48,7 @@ class TriviaHistoryRepository():
             raise ValueError(f'timeZone argument is malformed: \"{timeZone}\"')
 
         self.__backingDatabase: BackingDatabase = backingDatabase
-        self.__timber: Timber = timber
+        self.__timber: TimberInterface = timber
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
         self.__timeZone: timezone = timeZone
 

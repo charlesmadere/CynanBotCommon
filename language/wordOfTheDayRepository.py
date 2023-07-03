@@ -12,7 +12,7 @@ try:
     from CynanBotCommon.network.exceptions import GenericNetworkException
     from CynanBotCommon.network.networkClientProvider import \
         NetworkClientProvider
-    from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.timedDict import TimedDict
 except:
     import utils
@@ -20,7 +20,7 @@ except:
     from language.wordOfTheDayResponse import WordOfTheDayResponse
     from network.exceptions import GenericNetworkException
     from network.networkClientProvider import NetworkClientProvider
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
     from timedDict import TimedDict
 
 
@@ -29,18 +29,18 @@ class WordOfTheDayRepository():
     def __init__(
         self,
         networkClientProvider: NetworkClientProvider,
-        timber: Timber,
+        timber: TimberInterface,
         cacheTimeDelta: timedelta = timedelta(hours = 1)
     ):
         if not isinstance(networkClientProvider, NetworkClientProvider):
             raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
-        elif not isinstance(timber, Timber):
+        elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(cacheTimeDelta, timedelta):
             raise ValueError(f'cacheTimeDelta argument is malformed: \"{cacheTimeDelta}\"')
 
         self.__networkClientProvider: NetworkClientProvider = networkClientProvider
-        self.__timber: Timber = timber
+        self.__timber: TimberInterface = timber
         self.__cache: TimedDict = TimedDict(timeDelta = cacheTimeDelta)
 
     async def clearCaches(self):

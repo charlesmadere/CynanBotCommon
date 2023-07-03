@@ -169,9 +169,9 @@ class ShinyTriviaOccurencesRepository():
         connection = await self.__getDatabaseConnection()
         await connection.execute(
             '''
-                    INSERT INTO shinytriviaoccurences (count, mostrecent, twitchchannel, userid)
-                    VALUES ($1, $2, $3, $4)
-                    ON CONFLICT (twitchchannel, userid) DO UPDATE SET count = EXCLUDED.count, mostrecent = EXCLUDED.mostrecent
+                INSERT INTO shinytriviaoccurences (count, mostrecent, twitchchannel, userid)
+                VALUES ($1, $2, $3, $4)
+                ON CONFLICT (twitchchannel, userid) DO UPDATE SET count = EXCLUDED.count, mostrecent = EXCLUDED.mostrecent
             ''',
             newShinyCount, nowDateTimeStr, twitchChannel, userId
         )

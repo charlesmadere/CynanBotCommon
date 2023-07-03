@@ -7,13 +7,15 @@ try:
     from ...backgroundTaskHelper import BackgroundTaskHelper
     from ...storage.backingDatabase import BackingDatabase
     from ...storage.backingSqliteDatabase import BackingSqliteDatabase
-    from ...timber.timber import Timber
+    from ...timber.timberInterface import TimberInterface
+    from ...timber.timberStub import TimberStub
     from ...trivia.triviaEmoteGenerator import TriviaEmoteGenerator
 except:
     from backgroundTaskHelper import BackgroundTaskHelper
     from storage.backingDatabase import BackingDatabase
     from storage.backingSqliteDatabase import BackingSqliteDatabase
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
+    from timber.timberStub import TimberStub
     from trivia.triviaEmoteGenerator import TriviaEmoteGenerator
 
 
@@ -22,7 +24,7 @@ class TestTriviaEmoteGenerator():
     eventLoop: AbstractEventLoop = asyncio.get_event_loop()
     backgroundTaskHelper = BackgroundTaskHelper(eventLoop = eventLoop)
     backingDatabase: BackingDatabase = BackingSqliteDatabase(eventLoop = eventLoop)
-    timber: Timber = Timber(backgroundTaskHelper = backgroundTaskHelper)
+    timber: TimberInterface = TimberStub()
     triviaEmoteGenerator: TriviaEmoteGenerator = TriviaEmoteGenerator(
         backingDatabase = backingDatabase,
         timber = timber

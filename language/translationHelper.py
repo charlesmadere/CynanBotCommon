@@ -18,7 +18,7 @@ try:
     from CynanBotCommon.network.exceptions import GenericNetworkException
     from CynanBotCommon.network.networkClientProvider import \
         NetworkClientProvider
-    from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.timber.timberInterface import TimberInterface
 except:
     import utils
     from language.languageEntry import LanguageEntry
@@ -27,7 +27,7 @@ except:
     from language.translationResponse import TranslationResponse
     from network.exceptions import GenericNetworkException
     from network.networkClientProvider import NetworkClientProvider
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
 
 
 class TranslationHelper():
@@ -37,7 +37,7 @@ class TranslationHelper():
         languagesRepository: LanguagesRepository,
         networkClientProvider: NetworkClientProvider,
         deepLAuthKey: str,
-        timber: Timber,
+        timber: TimberInterface,
         googleServiceAccountFile: str = 'CynanBotCommon/language/googleServiceAccount.json'
     ):
         if not isinstance(languagesRepository, LanguagesRepository):
@@ -46,7 +46,7 @@ class TranslationHelper():
             raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
         elif not utils.isValidStr(deepLAuthKey):
             raise ValueError(f'deepLAuthKey argument is malformed: \"{deepLAuthKey}\"')
-        elif not isinstance(timber, Timber):
+        elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not utils.isValidStr(googleServiceAccountFile):
             raise ValueError(f'googleServiceAccountFile argument is malformed: \"{googleServiceAccountFile}\"')
@@ -54,10 +54,10 @@ class TranslationHelper():
         self.__languagesRepository: LanguagesRepository = languagesRepository
         self.__networkClientProvider: NetworkClientProvider = networkClientProvider
         self.__deepLAuthKey: str = deepLAuthKey
-        self.__timber: Timber = timber
+        self.__timber: TimberInterface = timber
         self.__googleServiceAccountFile: str = googleServiceAccountFile
 
-        self.__googleTranslateClient = None
+        self.__googleTranslateClient: Optional[Any] = None
 
     async def __deepLTranslate(self, text: str, targetLanguageEntry: LanguageEntry) -> TranslationResponse:
         self.__timber.log('TranslationHelper', f'Fetching translation from DeepL...')

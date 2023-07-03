@@ -2,19 +2,19 @@ from typing import Dict, Optional
 
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.timber.timberInterface import TimberInterface
 except:
     import utils
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
 
 
 class NonceRepository():
 
-    def __init__(self, timber: Timber):
-        if not isinstance(timber, Timber):
+    def __init__(self, timber: TimberInterface):
+        if not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
 
-        self.__timber: Timber = timber
+        self.__timber: TimberInterface = timber
         self.__nonces: Dict[str, Optional[str]] = dict()
 
     def __delitem__(self, key: str):

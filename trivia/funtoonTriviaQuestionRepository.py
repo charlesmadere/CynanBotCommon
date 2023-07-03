@@ -6,7 +6,7 @@ try:
     from CynanBotCommon.network.exceptions import GenericNetworkException
     from CynanBotCommon.network.networkClientProvider import \
         NetworkClientProvider
-    from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.absTriviaQuestionRepository import \
         AbsTriviaQuestionRepository
@@ -28,7 +28,7 @@ except:
     import utils
     from network.exceptions import GenericNetworkException
     from network.networkClientProvider import NetworkClientProvider
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.absTriviaQuestionRepository import AbsTriviaQuestionRepository
     from trivia.additionalTriviaAnswersRepository import \
@@ -51,7 +51,7 @@ class FuntoonTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self,
         additionalTriviaAnswersRepository: AdditionalTriviaAnswersRepository,
         networkClientProvider: NetworkClientProvider,
-        timber: Timber,
+        timber: TimberInterface,
         triviaAnswerCompiler: TriviaAnswerCompiler,
         triviaQuestionCompiler: TriviaQuestionCompiler,
         triviaSettingsRepository: TriviaSettingsRepository
@@ -62,7 +62,7 @@ class FuntoonTriviaQuestionRepository(AbsTriviaQuestionRepository):
             raise ValueError(f'additionalTriviaAnswersRepository argument is malformed: \"{additionalTriviaAnswersRepository}\"')
         elif not isinstance(networkClientProvider, NetworkClientProvider):
             raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
-        elif not isinstance(timber, Timber):
+        elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(triviaAnswerCompiler, TriviaAnswerCompiler):
             raise ValueError(f'triviaAnswerCompiler argument is malformed: \"{triviaAnswerCompiler}\"')
@@ -71,7 +71,7 @@ class FuntoonTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         self.__additionalTriviaAnswersRepository: AdditionalTriviaAnswersRepository = additionalTriviaAnswersRepository
         self.__networkClientProvider: NetworkClientProvider = networkClientProvider
-        self.__timber: Timber = timber
+        self.__timber: TimberInterface = timber
         self.__triviaAnswerCompiler: TriviaAnswerCompiler = triviaAnswerCompiler
         self.__triviaQuestionCompiler: TriviaQuestionCompiler = triviaQuestionCompiler
 

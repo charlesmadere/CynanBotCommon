@@ -9,13 +9,14 @@ try:
         NetworkResponseIsClosedException
     from CynanBotCommon.network.networkClientType import NetworkClientType
     from CynanBotCommon.network.networkResponse import NetworkResponse
-    from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.timber.timberInterface import TimberInterface
 except:
     import utils
+    from timber.timberInterface import TimberInterface
+
     from network.exceptions import NetworkResponseIsClosedException
     from network.networkClientType import NetworkClientType
     from network.networkResponse import NetworkResponse
-    from timber.timber import Timber
 
 
 class RequestsResponse(NetworkResponse):
@@ -24,18 +25,18 @@ class RequestsResponse(NetworkResponse):
         self,
         response: Response,
         url: str,
-        timber: Timber
+        timber: TimberInterface
     ):
         if not isinstance(response, Response):
             raise ValueError(f'response argument is malformed: \"{response}\"')
         elif not utils.isValidStr(url):
             raise ValueError(f'url argument is malformed: \"{url}\"')
-        elif not isinstance(timber, Timber):
+        elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
 
         self.__response: Response = response
         self.__url: str = url
-        self.__timber: Timber = timber
+        self.__timber: TimberInterface = timber
 
         self.__isClosed: bool = False
 

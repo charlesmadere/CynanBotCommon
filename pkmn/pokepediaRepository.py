@@ -20,12 +20,12 @@ try:
     from CynanBotCommon.pkmn.pokepediaNature import PokepediaNature
     from CynanBotCommon.pkmn.pokepediaPokemon import PokepediaPokemon
     from CynanBotCommon.pkmn.pokepediaStat import PokepediaStat
-    from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.timber.timberInterface import TimberInterface
 except:
     import utils
     from network.exceptions import GenericNetworkException
     from network.networkClientProvider import NetworkClientProvider
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
 
     from pkmn.pokepediaContestType import PokepediaContestType
     from pkmn.pokepediaDamageClass import PokepediaDamageClass
@@ -45,15 +45,15 @@ class PokepediaRepository():
     def __init__(
         self,
         networkClientProvider: NetworkClientProvider,
-        timber: Timber
+        timber: TimberInterface
     ):
         if not isinstance(networkClientProvider, NetworkClientProvider):
             raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
-        elif not isinstance(timber, Timber):
+        elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
 
         self.__networkClientProvider: NetworkClientProvider = networkClientProvider
-        self.__timber: Timber = timber
+        self.__timber: TimberInterface = timber
 
         self.__machineNumberRegEx: Pattern = re.compile(r'^(hm|tm|tr)(\d+)$', re.IGNORECASE)
         self.__pokeApiIdRegEx: Pattern = re.compile(r'^.+\/(\d+)\/$', re.IGNORECASE)

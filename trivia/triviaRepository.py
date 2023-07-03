@@ -8,7 +8,7 @@ from typing import Dict, List, Optional, Set
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.backgroundTaskHelper import BackgroundTaskHelper
-    from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.absTriviaQuestionRepository import \
         AbsTriviaQuestionRepository
@@ -63,7 +63,7 @@ try:
 except:
     import utils
     from backgroundTaskHelper import BackgroundTaskHelper
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.absTriviaQuestionRepository import AbsTriviaQuestionRepository
     from trivia.funtoonTriviaQuestionRepository import \
@@ -127,7 +127,7 @@ class TriviaRepository():
         openTriviaDatabaseTriviaQuestionRepository: OpenTriviaDatabaseTriviaQuestionRepository,
         openTriviaQaTriviaQuestionRepository: OpenTriviaQaTriviaQuestionRepository,
         pkmnTriviaQuestionRepository: PkmnTriviaQuestionRepository,
-        timber: Timber,
+        timber: TimberInterface,
         triviaDatabaseTriviaQuestionRepository: TriviaDatabaseTriviaQuestionRepository,
         triviaQuestionCompanyTriviaQuestionRepository: TriviaQuestionCompanyTriviaQuestionRepository,
         triviaSettingsRepository: TriviaSettingsRepository,
@@ -161,7 +161,7 @@ class TriviaRepository():
             raise ValueError(f'pkmnTriviaQuestionRepository argument is malformed: \"{pkmnTriviaQuestionRepository}\"')
         elif quizApiTriviaQuestionRepository is not None and not isinstance(quizApiTriviaQuestionRepository, QuizApiTriviaQuestionRepository):
             raise ValueError(f'quizApiTriviaQuestionRepository argument is malformed: \"{quizApiTriviaQuestionRepository}\"')
-        elif not isinstance(timber, Timber):
+        elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(triviaDatabaseTriviaQuestionRepository, TriviaDatabaseTriviaQuestionRepository):
             raise ValueError(f'triviaDatabaseTriviaQuestionRepository argument is malformed: \"{triviaDatabaseTriviaQuestionRepository}\"')
@@ -198,7 +198,7 @@ class TriviaRepository():
         self.__openTriviaQaTriviaQuestionRepository: AbsTriviaQuestionRepository = openTriviaQaTriviaQuestionRepository
         self.__pkmnTriviaQuestionRepository: AbsTriviaQuestionRepository = pkmnTriviaQuestionRepository
         self.__quizApiTriviaQuestionRepository: Optional[AbsTriviaQuestionRepository] = quizApiTriviaQuestionRepository
-        self.__timber: Timber = timber
+        self.__timber: TimberInterface = timber
         self.__triviaDatabaseTriviaQuestionRepository: AbsTriviaQuestionRepository = triviaDatabaseTriviaQuestionRepository
         self.__triviaQuestionCompanyTriviaQuestionRepository: AbsTriviaQuestionRepository = triviaQuestionCompanyTriviaQuestionRepository
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository

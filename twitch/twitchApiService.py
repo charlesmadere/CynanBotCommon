@@ -7,7 +7,7 @@ try:
     from CynanBotCommon.network.exceptions import GenericNetworkException
     from CynanBotCommon.network.networkClientProvider import \
         NetworkClientProvider
-    from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.twitch.exceptions import (
         TwitchAccessTokenMissingException, TwitchErrorException,
         TwitchJsonException, TwitchPasswordChangedException,
@@ -29,7 +29,7 @@ except:
     import utils
     from network.exceptions import GenericNetworkException
     from network.networkClientProvider import NetworkClientProvider
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
 
     from twitch.exceptions import (TwitchAccessTokenMissingException,
                                    TwitchErrorException, TwitchJsonException,
@@ -54,13 +54,13 @@ class TwitchApiService():
     def __init__(
         self,
         networkClientProvider: NetworkClientProvider,
-        timber: Timber,
+        timber: TimberInterface,
         twitchCredentialsProviderInterface: TwitchCredentialsProviderInterface,
         timeZone: timezone = timezone.utc
     ):
         if not isinstance(networkClientProvider, NetworkClientProvider):
             raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
-        elif not isinstance(timber, Timber):
+        elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(twitchCredentialsProviderInterface, TwitchCredentialsProviderInterface):
             raise ValueError(f'twitchCredentialsProviderInterface argument is malformed: \"{twitchCredentialsProviderInterface}\"')
@@ -68,7 +68,7 @@ class TwitchApiService():
             raise ValueError(f'timeZone argument is malformed: \"{timeZone}\"')
 
         self.__networkClientProvider: NetworkClientProvider = networkClientProvider
-        self.__timber: Timber = timber
+        self.__timber: TimberInterface = timber
         self.__twitchCredentialsProviderInterface: TwitchCredentialsProviderInterface = twitchCredentialsProviderInterface
         self.__timeZone: timezone = timeZone
 

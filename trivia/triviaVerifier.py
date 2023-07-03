@@ -2,7 +2,7 @@ from typing import Optional
 
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.bannedTriviaIdsRepository import \
         BannedTriviaIdsRepository
@@ -14,7 +14,7 @@ try:
     from CynanBotCommon.trivia.triviaType import TriviaType
 except:
     import utils
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.bannedTriviaIdsRepository import BannedTriviaIdsRepository
     from trivia.triviaContentCode import TriviaContentCode
@@ -29,13 +29,13 @@ class TriviaVerifier():
     def __init__(
         self,
         bannedTriviaIdsRepository: BannedTriviaIdsRepository,
-        timber: Timber,
+        timber: TimberInterface,
         triviaContentScanner: TriviaContentScanner,
         triviaHistoryRepository: TriviaHistoryRepository
     ):
         if not isinstance(bannedTriviaIdsRepository, BannedTriviaIdsRepository):
             raise ValueError(f'bannedTriviaIdsRepository argument is malformed: \"bannedTriviaIdsRepository\"')
-        elif not isinstance(timber, Timber):
+        elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(triviaContentScanner, TriviaContentScanner):
             raise ValueError(f'triviaContentScanner argument is malformed: \"{triviaContentScanner}\"')
@@ -43,7 +43,7 @@ class TriviaVerifier():
             raise ValueError(f'triviaHistoryRepository argument is malformed: \"{triviaHistoryRepository}\"')
 
         self.__bannedTriviaIdsRepository: BannedTriviaIdsRepository = bannedTriviaIdsRepository
-        self.__timber: Timber = timber
+        self.__timber: TimberInterface = timber
         self.__triviaContentScanner: TriviaContentScanner = triviaContentScanner
         self.__triviaHistoryRepository: TriviaHistoryRepository = triviaHistoryRepository
 

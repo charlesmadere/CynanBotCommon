@@ -7,7 +7,7 @@ try:
     from CynanBotCommon.storage.databaseConnection import DatabaseConnection
     from CynanBotCommon.storage.databaseType import DatabaseType
     from CynanBotCommon.storage.jsonReaderInterface import JsonReaderInterface
-    from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.timber.timberInterface import TimberInterface
 except:
     import utils
     from funtoon.exceptions import NoFuntoonTokenException
@@ -15,7 +15,7 @@ except:
     from storage.databaseConnection import DatabaseConnection
     from storage.databaseType import DatabaseType
     from storage.jsonReaderInterface import JsonReaderInterface
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
 
 
 class FuntoonTokensRepository():
@@ -23,18 +23,18 @@ class FuntoonTokensRepository():
     def __init__(
         self,
         backingDatabase: BackingDatabase,
-        timber: Timber,
+        timber: TimberInterface,
         seedFileReader: Optional[JsonReaderInterface] = None
     ):
         if not isinstance(backingDatabase, BackingDatabase):
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
-        elif not isinstance(timber, Timber):
+        elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif seedFileReader is not None and not isinstance(seedFileReader, JsonReaderInterface):
             raise ValueError(f'seedFileReader argument is malformed: \"{seedFileReader}\"')
 
         self.__backingDatabase: BackingDatabase = backingDatabase
-        self.__timber: Timber = timber
+        self.__timber: TimberInterface = timber
         self.__seedFileReader: Optional[JsonReaderInterface] = seedFileReader
 
         self.__isDatabaseReady: bool = False

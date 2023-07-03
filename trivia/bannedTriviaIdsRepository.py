@@ -5,7 +5,7 @@ try:
     from CynanBotCommon.storage.backingDatabase import BackingDatabase
     from CynanBotCommon.storage.databaseConnection import DatabaseConnection
     from CynanBotCommon.storage.databaseType import DatabaseType
-    from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
     from CynanBotCommon.trivia.triviaSource import TriviaSource
@@ -14,7 +14,7 @@ except:
     from storage.backingDatabase import BackingDatabase
     from storage.databaseConnection import DatabaseConnection
     from storage.databaseType import DatabaseType
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
 
@@ -24,18 +24,18 @@ class BannedTriviaIdsRepository():
     def __init__(
         self,
         backingDatabase: BackingDatabase,
-        timber: Timber,
+        timber: TimberInterface,
         triviaSettingsRepository: TriviaSettingsRepository
     ):
         if not isinstance(backingDatabase, BackingDatabase):
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
-        elif not isinstance(timber, Timber):
+        elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(triviaSettingsRepository, TriviaSettingsRepository):
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
 
         self.__backingDatabase: BackingDatabase = backingDatabase
-        self.__timber: Timber = timber
+        self.__timber: TimberInterface = timber
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
 
         self.__isDatabaseReady: bool = False

@@ -10,7 +10,7 @@ try:
     from CynanBotCommon.network.networkHandle import NetworkHandle
     from CynanBotCommon.network.networkResponse import NetworkResponse
     from CynanBotCommon.network.requestsResponse import RequestsResponse
-    from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.timber.timberInterface import TimberInterface
 except:
     import utils
     from network.exceptions import GenericNetworkException
@@ -18,24 +18,24 @@ except:
     from network.networkHandle import NetworkHandle
     from network.networkResponse import NetworkResponse
     from network.requestsResponse import RequestsResponse
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
 
 
 class RequestsHandle(NetworkHandle):
 
     def __init__(
         self,
-        timber: Timber,
+        timber: TimberInterface,
         timeoutSeconds: int = 8
     ):
-        if not isinstance(timber, Timber):
+        if not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not utils.isValidNum(timeoutSeconds):
             raise ValueError(f'timeoutSeconds argument is malformed: \"{timeoutSeconds}\"')
         elif timeoutSeconds < 2 or timeoutSeconds > 16:
             raise ValueError(f'timeoutSeconds argument is out of bounds: {timeoutSeconds}')
 
-        self.__timber: Timber = timber
+        self.__timber: TimberInterface = timber
         self.__timeoutSeconds: int = timeoutSeconds
 
     async def get(

@@ -7,7 +7,7 @@ import polyleven
 
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
@@ -25,7 +25,7 @@ try:
         TrueFalseTriviaQuestion
 except:
     import utils
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
@@ -44,18 +44,18 @@ class TriviaAnswerChecker():
 
     def __init__(
         self,
-        timber: Timber,
+        timber: TimberInterface,
         triviaAnswerCompiler: TriviaAnswerCompiler,
         triviaSettingsRepository: TriviaSettingsRepository,
     ):
-        if not isinstance(timber, Timber):
+        if not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(triviaAnswerCompiler, TriviaAnswerCompiler):
             raise ValueError(f'triviaAnswerCompiler argument is malformed: \"{triviaAnswerCompiler}\"')
         elif not isinstance(triviaSettingsRepository, TriviaSettingsRepository):
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
 
-        self.__timber: Timber = timber
+        self.__timber: TimberInterface = timber
         self.__triviaAnswerCompiler: TriviaAnswerCompiler = triviaAnswerCompiler
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
 

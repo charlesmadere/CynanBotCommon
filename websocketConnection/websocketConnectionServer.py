@@ -13,13 +13,13 @@ import websockets
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.backgroundTaskHelper import BackgroundTaskHelper
-    from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.websocketConnection.websocketEvent import \
         WebsocketEvent
 except:
     import utils
     from backgroundTaskHelper import BackgroundTaskHelper
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
     from websocketConnection.websocketEvent import WebsocketEvent
 
 
@@ -28,7 +28,7 @@ class WebsocketConnectionServer():
     def __init__(
         self,
         backgroundTaskHelper: BackgroundTaskHelper,
-        timber: Timber,
+        timber: TimberInterface,
         sleepTimeSeconds: float = 5,
         port: int = 8765,
         host: str = '0.0.0.0',
@@ -37,7 +37,7 @@ class WebsocketConnectionServer():
     ):
         if not isinstance(backgroundTaskHelper, BackgroundTaskHelper):
             raise ValueError(f'backgroundTaskHelper argument is malformed: \"{backgroundTaskHelper}\"')
-        elif not isinstance(timber, Timber):
+        elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not utils.isValidNum(sleepTimeSeconds):
             raise ValueError(f'sleepTimeSeconds argument is malformed: \"{sleepTimeSeconds}\"')
@@ -54,7 +54,7 @@ class WebsocketConnectionServer():
         elif not isinstance(eventTimeToLive, timedelta):
             raise ValueError(f'eventTimeToLive argument is malformed: \"{eventTimeToLive}\"')
 
-        self.__timber: Timber = timber
+        self.__timber: TimberInterface = timber
         self.__port: int = port
         self.__sleepTimeSeconds: int = sleepTimeSeconds
         self.__host: str = host
@@ -67,7 +67,6 @@ class WebsocketConnectionServer():
 
     async def clearCaches(self):
         self.__cache = None
-        self.__timber.log('WebsocketConnectionServer', 'Caches cleared')
 
     async def __isDebugLoggingEnabled(self) -> bool:
         jsonContents = await self.__readJson()

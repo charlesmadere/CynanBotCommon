@@ -6,7 +6,7 @@ import aiosqlite
 
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.absTriviaQuestionRepository import \
         AbsTriviaQuestionRepository
@@ -24,7 +24,7 @@ try:
     from CynanBotCommon.trivia.triviaType import TriviaType
 except:
     import utils
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.absTriviaQuestionRepository import AbsTriviaQuestionRepository
     from trivia.additionalTriviaAnswersRepository import \
@@ -44,7 +44,7 @@ class LotrTriviaQuestionRepository(AbsTriviaQuestionRepository):
     def __init__(
         self,
         additionalTriviaAnswersRepository: AdditionalTriviaAnswersRepository,
-        timber: Timber,
+        timber: TimberInterface,
         triviaAnswerCompiler: TriviaAnswerCompiler,
         triviaQuestionCompiler: TriviaQuestionCompiler,
         triviaSettingsRepository: TriviaSettingsRepository,
@@ -54,7 +54,7 @@ class LotrTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         if not isinstance(additionalTriviaAnswersRepository, AdditionalTriviaAnswersRepository):
             raise ValueError(f'additionalTriviaAnswersRepository argument is malformed: \"{additionalTriviaAnswersRepository}\"')
-        elif not isinstance(timber, Timber):
+        elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(triviaAnswerCompiler, TriviaAnswerCompiler):
             raise ValueError(f'triviaAnswerCompiler argument is malformed: \"{triviaAnswerCompiler}\"')
@@ -64,7 +64,7 @@ class LotrTriviaQuestionRepository(AbsTriviaQuestionRepository):
             raise ValueError(f'triviaDatabaseFile argument is malformed: \"{triviaDatabaseFile}\"')
 
         self.__additionalTriviaAnswersRepository: AdditionalTriviaAnswersRepository = additionalTriviaAnswersRepository
-        self.__timber: Timber = timber
+        self.__timber: TimberInterface = timber
         self.__triviaAnswerCompiler: TriviaAnswerCompiler = triviaAnswerCompiler
         self.__triviaQuestionCompiler: TriviaQuestionCompiler = triviaQuestionCompiler
         self.__triviaDatabaseFile: str = triviaDatabaseFile

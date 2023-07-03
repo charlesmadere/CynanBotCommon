@@ -8,6 +8,7 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.storage.jsonFileReader import JsonFileReader
     from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.trivia.bannedWords.bannedWordsRepository import \
         BannedWordsRepository
     from CynanBotCommon.trivia.bannedWords.bannedWordsRepositoryInterface import \
@@ -21,6 +22,7 @@ except:
     import utils
     from storage.jsonFileReader import JsonFileReader
     from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
     from trivia.bannedWords.bannedWordsRepository import BannedWordsRepository
     from trivia.bannedWords.bannedWordsRepositoryInterface import \
         BannedWordsRepositoryInterface
@@ -30,8 +32,7 @@ except:
     from trivia.triviaType import TriviaType
 
 
-timber = Timber(eventLoop = asyncio.get_event_loop())
-
+timber: TimberInterface = Timber(eventLoop = asyncio.get_event_loop())
 bannedWordsRepositoryInterface: BannedWordsRepositoryInterface = BannedWordsRepository(timber = timber)
 triviaContentScanner = TriviaContentScanner(
     bannedWordsRepositoryInterface = bannedWordsRepositoryInterface,

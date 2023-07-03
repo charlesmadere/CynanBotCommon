@@ -7,11 +7,11 @@ import aiofiles.ospath
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.storage.backingDatabase import BackingDatabase
-    from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.timber.timberInterface import TimberInterface
 except:
     import utils
     from storage.backingDatabase import BackingDatabase
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
 
 
 class MigrationHelper():
@@ -19,18 +19,18 @@ class MigrationHelper():
     def __init__(
         self,
         backingDatabase: BackingDatabase,
-        timber: Timber,
+        timber: TimberInterface,
         migrationsFile: str = 'CynanBotCommon/migration/migrations.json'
     ):
         if not isinstance(backingDatabase, BackingDatabase):
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
-        elif not isinstance(timber, Timber):
+        elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not utils.isValidStr(migrationsFile):
             raise ValueError(f'migrationsFile argument is malformed: \"{migrationsFile}\"')
 
         self.__backingDatabase: BackingDatabase = backingDatabase
-        self.__timber: Timber = timber
+        self.__timber: TimberInterface = timber
         self.__migrationsFile: str = migrationsFile
 
         self.__migrationsPerformed: bool = False

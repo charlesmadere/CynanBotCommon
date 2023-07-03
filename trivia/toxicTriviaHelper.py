@@ -2,14 +2,14 @@ import random
 
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.trivia.toxicTriviaOccurencesRepository import \
         ToxicTriviaOccurencesRepository
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
 except:
     import utils
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
     from trivia.toxicTriviaOccurencesRepository import \
         ToxicTriviaOccurencesRepository
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
@@ -20,18 +20,18 @@ class ToxicTriviaHelper():
     def __init__(
         self,
         toxicTriviaOccurencesRepository: ToxicTriviaOccurencesRepository,
-        timber: Timber,
+        timber: TimberInterface,
         triviaSettingsRepository: TriviaSettingsRepository
     ):
         if not isinstance(toxicTriviaOccurencesRepository, ToxicTriviaOccurencesRepository):
             raise ValueError(f'toxicTriviaOccurencesRepository argument is malformed: \"{toxicTriviaOccurencesRepository}\"')
-        elif not isinstance(timber, Timber):
+        elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(triviaSettingsRepository, TriviaSettingsRepository):
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
 
         self.__toxicTriviaOccurencesRepository: ToxicTriviaOccurencesRepository = toxicTriviaOccurencesRepository
-        self.__timber: Timber = timber
+        self.__timber: TimberInterface = timber
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
 
     async def isToxicSuperTriviaQuestion(self, twitchChannel: str) -> bool:

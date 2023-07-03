@@ -6,7 +6,7 @@ import aiosqlite
 
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.absTriviaQuestionRepository import \
         AbsTriviaQuestionRepository
@@ -25,7 +25,7 @@ try:
         TrueFalseTriviaQuestion
 except:
     import utils
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.absTriviaQuestionRepository import AbsTriviaQuestionRepository
     from trivia.multipleChoiceTriviaQuestion import \
@@ -43,21 +43,21 @@ class OpenTriviaQaTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
     def __init__(
         self,
-        timber: Timber,
+        timber: TimberInterface,
         triviaQuestionCompiler: TriviaQuestionCompiler,
         triviaSettingsRepository: TriviaSettingsRepository,
         triviaDatabaseFile: str = 'CynanBotCommon/trivia/questionSources/openTriviaQaTriviaQuestionDatabase.sqlite'
     ):
         super().__init__(triviaSettingsRepository)
 
-        if not isinstance(timber, Timber):
+        if not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(triviaQuestionCompiler, TriviaQuestionCompiler):
             raise ValueError(f'triviaQuestionCompiler argument is malformed: \"{triviaQuestionCompiler}\"')
         elif not utils.isValidStr(triviaDatabaseFile):
             raise ValueError(f'triviaDatabaseFile argument is malformed: \"{triviaDatabaseFile}\"')
 
-        self.__timber: Timber = timber
+        self.__timber: TimberInterface = timber
         self.__triviaQuestionCompiler: TriviaQuestionCompiler = triviaQuestionCompiler
         self.__triviaDatabaseFile: str = triviaDatabaseFile
 

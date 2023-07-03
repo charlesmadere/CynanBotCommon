@@ -8,14 +8,14 @@ try:
     from CynanBotCommon.network.networkClientType import NetworkClientType
     from CynanBotCommon.network.networkHandle import NetworkHandle
     from CynanBotCommon.network.networkResponse import NetworkResponse
-    from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.timber.timberInterface import TimberInterface
 except:
     from network.aioHttpResponse import AioHttpResponse
     from network.exceptions import GenericNetworkException
     from network.networkClientType import NetworkClientType
     from network.networkHandle import NetworkHandle
     from network.networkResponse import NetworkResponse
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
 
 
 class AioHttpHandle(NetworkHandle):
@@ -23,15 +23,15 @@ class AioHttpHandle(NetworkHandle):
     def __init__(
         self,
         clientSession: aiohttp.ClientSession,
-        timber: Timber
+        timber: TimberInterface
     ):
         if not isinstance(clientSession, aiohttp.ClientSession):
             raise ValueError(f'clientSession argument is malformed: \"{clientSession}\"')
-        elif not isinstance(timber, Timber):
+        elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
 
         self.__clientSession: aiohttp.ClientSession = clientSession
-        self.__timber: Timber = timber
+        self.__timber: TimberInterface = timber
 
     async def get(
         self,

@@ -1,13 +1,10 @@
-import asyncio
-from asyncio import AbstractEventLoop
-
 import pytest
 
 try:
-    from ...backgroundTaskHelper import BackgroundTaskHelper
     from ...storage.linesReaderInterface import LinesReaderInterface
     from ...storage.linesStaticReader import LinesStaticReader
-    from ...timber.timber import Timber
+    from ...timber.timberInterface import TimberInterface
+    from ...timber.timberStub import TimberStub
     from ...trivia.bannedWords.bannedWord import BannedWord
     from ...trivia.bannedWords.bannedWordCheckType import BannedWordCheckType
     from ...trivia.bannedWords.bannedWordsRepository import \
@@ -15,10 +12,10 @@ try:
     from ...trivia.bannedWords.bannedWordsRepositoryInterface import \
         BannedWordsRepositoryInterface
 except:
-    from backgroundTaskHelper import BackgroundTaskHelper
     from storage.linesReaderInterface import LinesReaderInterface
     from storage.linesStaticReader import LinesStaticReader
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
+    from timber.timberStub import TimberStub
     from trivia.bannedWords.bannedWord import BannedWord
     from trivia.bannedWords.bannedWordCheckType import BannedWordCheckType
     from trivia.bannedWords.bannedWordsRepository import BannedWordsRepository
@@ -28,9 +25,7 @@ except:
 
 class TestBannedWordsRepository():
 
-    eventLoop: AbstractEventLoop = asyncio.get_event_loop()
-    backgroundTaskHelper = BackgroundTaskHelper(eventLoop = eventLoop)
-    timber = Timber(backgroundTaskHelper = backgroundTaskHelper)
+    timber: TimberInterface = TimberStub()
 
     bannedWordsLinesReader: LinesReaderInterface = LinesStaticReader(
         lines = [ 'Hello', 'WORLD', '"QAnon"' ]

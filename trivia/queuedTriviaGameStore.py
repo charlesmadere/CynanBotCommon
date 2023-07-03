@@ -5,7 +5,7 @@ from typing import Dict, List, Set
 
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.trivia.addQueuedGamesResult import AddQueuedGamesResult
     from CynanBotCommon.trivia.clearQueuedGamesResult import \
         ClearQueuedGamesResult
@@ -15,7 +15,7 @@ try:
         TriviaSettingsRepository
 except:
     import utils
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
     from trivia.addQueuedGamesResult import AddQueuedGamesResult
     from trivia.clearQueuedGamesResult import ClearQueuedGamesResult
     from trivia.startNewSuperTriviaGameAction import \
@@ -27,11 +27,11 @@ class QueuedTriviaGameStore():
 
     def __init__(
         self,
-        timber: Timber,
+        timber: TimberInterface,
         triviaSettingsRepository: TriviaSettingsRepository,
         queueTimeoutSeconds: int = 3
     ):
-        if not isinstance(timber, Timber):
+        if not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(triviaSettingsRepository, TriviaSettingsRepository):
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
@@ -40,7 +40,7 @@ class QueuedTriviaGameStore():
         elif queueTimeoutSeconds < 1 or queueTimeoutSeconds > 5:
             raise ValueError(f'queueTimeoutSeconds argument is out of bounds: {queueTimeoutSeconds}')
 
-        self.__timber: Timber = timber
+        self.__timber: TimberInterface = timber
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
         self.__queueTimeoutSeconds: int = queueTimeoutSeconds
 

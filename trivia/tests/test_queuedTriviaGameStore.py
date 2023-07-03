@@ -1,12 +1,9 @@
-import asyncio
-from asyncio import AbstractEventLoop
-
 import pytest
 
 try:
-    from ...backgroundTaskHelper import BackgroundTaskHelper
     from ...storage.jsonStaticReader import JsonStaticReader
-    from ...timber.timber import Timber
+    from ...timber.timberInterface import TimberInterface
+    from ...timber.timberStub import TimberStub
     from ...trivia.questionAnswerTriviaConditions import \
         QuestionAnswerTriviaConditions
     from ...trivia.queuedTriviaGameStore import QueuedTriviaGameStore
@@ -15,9 +12,9 @@ try:
     from ...trivia.triviaFetchOptions import TriviaFetchOptions
     from ...trivia.triviaSettingsRepository import TriviaSettingsRepository
 except:
-    from backgroundTaskHelper import BackgroundTaskHelper
     from storage.jsonStaticReader import JsonStaticReader
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
+    from timber.timberStub import TimberStub
     from trivia.questionAnswerTriviaConditions import \
         QuestionAnswerTriviaConditions
     from trivia.queuedTriviaGameStore import QueuedTriviaGameStore
@@ -27,12 +24,9 @@ except:
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
 
 
-
 class TestQueuedTriviaGameStore1():
 
-    eventLoop: AbstractEventLoop = asyncio.get_event_loop()
-    backgroundTaskHelper = BackgroundTaskHelper(eventLoop = eventLoop)
-    timber = Timber(backgroundTaskHelper = backgroundTaskHelper)
+    timber: TimberInterface = TimberStub()
 
     triviaSettingsRepository = TriviaSettingsRepository(
         settingsJsonReader = JsonStaticReader(dict())
@@ -179,9 +173,7 @@ class TestQueuedTriviaGameStore1():
 
 class TestQueuedTriviaGameStore2():
 
-    eventLoop: AbstractEventLoop = asyncio.get_event_loop()
-    backgroundTaskHelper = BackgroundTaskHelper(eventLoop = eventLoop)
-    timber = Timber(backgroundTaskHelper = backgroundTaskHelper)
+    timber: TimberInterface = TimberStub()
 
     triviaSettingsRepository = TriviaSettingsRepository(
         settingsJsonReader = JsonStaticReader(dict())
@@ -204,9 +196,7 @@ class TestQueuedTriviaGameStore2():
 
 class TestQueuedTriviaGameStore3():
 
-    eventLoop: AbstractEventLoop = asyncio.get_event_loop()
-    backgroundTaskHelper = BackgroundTaskHelper(eventLoop = eventLoop)
-    timber = Timber(backgroundTaskHelper = backgroundTaskHelper)
+    timber: TimberInterface = TimberStub()
 
     triviaSettingsRepository = TriviaSettingsRepository(
         settingsJsonReader = JsonStaticReader(dict())
@@ -230,9 +220,7 @@ class TestQueuedTriviaGameStore3():
 
 class TestQueuedTriviaGameStore4():
 
-    eventLoop: AbstractEventLoop = asyncio.get_event_loop()
-    backgroundTaskHelper = BackgroundTaskHelper(eventLoop = eventLoop)
-    timber = Timber(backgroundTaskHelper = backgroundTaskHelper)
+    timber: TimberInterface = TimberStub()
 
     triviaSettingsRepository = TriviaSettingsRepository(
         settingsJsonReader = JsonStaticReader(dict())
@@ -284,9 +272,7 @@ class TestQueuedTriviaGameStore4():
 
 class TestQueuedTriviaGameStore5():
 
-    eventLoop: AbstractEventLoop = asyncio.get_event_loop()
-    backgroundTaskHelper = BackgroundTaskHelper(eventLoop = eventLoop)
-    timber = Timber(backgroundTaskHelper = backgroundTaskHelper)
+    timber: TimberInterface = TimberStub()
 
     triviaSettingsRepository = TriviaSettingsRepository(
         settingsJsonReader = JsonStaticReader(dict())
@@ -338,9 +324,7 @@ class TestQueuedTriviaGameStore5():
 
 class TestQueuedTriviaGameStore6():
 
-    eventLoop: AbstractEventLoop = asyncio.get_event_loop()
-    backgroundTaskHelper = BackgroundTaskHelper(eventLoop = eventLoop)
-    timber = Timber(backgroundTaskHelper = backgroundTaskHelper)
+    timber: TimberInterface = TimberStub()
 
     triviaSettingsRepository = TriviaSettingsRepository(
         settingsJsonReader = JsonStaticReader(dict())
@@ -413,9 +397,7 @@ class TestQueuedTriviaGameStore6():
 
 class TestQueuedTriviaGameStore7():
 
-    eventLoop: AbstractEventLoop = asyncio.get_event_loop()
-    backgroundTaskHelper = BackgroundTaskHelper(eventLoop = eventLoop)
-    timber = Timber(backgroundTaskHelper = backgroundTaskHelper)
+    timber: TimberInterface = TimberStub()
 
     triviaSettingsRepository = TriviaSettingsRepository(
         settingsJsonReader = JsonStaticReader(dict())

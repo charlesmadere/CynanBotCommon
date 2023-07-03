@@ -6,13 +6,13 @@ try:
     from CynanBotCommon.storage.backingDatabase import BackingDatabase
     from CynanBotCommon.storage.databaseConnection import DatabaseConnection
     from CynanBotCommon.storage.databaseType import DatabaseType
-    from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.timber.timberInterface import TimberInterface
 except:
     import utils
     from storage.backingDatabase import BackingDatabase
     from storage.databaseConnection import DatabaseConnection
     from storage.databaseType import DatabaseType
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
 
 
 class TriviaEmoteGenerator():
@@ -20,15 +20,15 @@ class TriviaEmoteGenerator():
     def __init__(
         self,
         backingDatabase: BackingDatabase,
-        timber: Timber
+        timber: TimberInterface
     ):
         if not isinstance(backingDatabase, BackingDatabase):
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
-        elif not isinstance(timber, Timber):
+        elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber arguent is malformed: \"{timber}\"')
 
         self.__backingDatabase: BackingDatabase = backingDatabase
-        self.__timber: Timber = timber
+        self.__timber: TimberInterface = timber
 
         self.__isDatabaseReady: bool = False
         self.__emotesDict: Dict[str, Optional[Set[str]]] = self.__createEmotesDict()

@@ -6,7 +6,7 @@ try:
     from CynanBotCommon.network.exceptions import GenericNetworkException
     from CynanBotCommon.network.networkClientProvider import \
         NetworkClientProvider
-    from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.absTriviaQuestionRepository import \
         AbsTriviaQuestionRepository
@@ -27,7 +27,7 @@ except:
     import utils
     from network.exceptions import GenericNetworkException
     from network.networkClientProvider import NetworkClientProvider
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.absTriviaQuestionRepository import AbsTriviaQuestionRepository
     from trivia.multipleChoiceTriviaQuestion import \
@@ -50,7 +50,7 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self,
         networkClientProvider: NetworkClientProvider,
         quizApiKey: str,
-        timber: Timber,
+        timber: TimberInterface,
         triviaIdGenerator: TriviaIdGenerator,
         triviaSettingsRepository: TriviaSettingsRepository
     ):
@@ -60,14 +60,14 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
             raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
         elif not utils.isValidStr(quizApiKey):
             raise ValueError(f'quizApiKey argument is malformed: \"{quizApiKey}\"')
-        elif not isinstance(timber, Timber):
+        elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(triviaIdGenerator, TriviaIdGenerator):
             raise ValueError(f'triviaIdGenerator argument is malformed: \"{triviaIdGenerator}\"')
 
         self.__networkClientProvider: NetworkClientProvider = networkClientProvider
         self.__quizApiKey: str = quizApiKey
-        self.__timber: Timber = timber
+        self.__timber: TimberInterface = timber
         self.__triviaIdGenerator: TriviaIdGenerator = triviaIdGenerator
 
     async def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:

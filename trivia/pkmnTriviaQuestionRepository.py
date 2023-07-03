@@ -15,7 +15,7 @@ try:
     from CynanBotCommon.pkmn.pokepediaNature import PokepediaNature
     from CynanBotCommon.pkmn.pokepediaRepository import PokepediaRepository
     from CynanBotCommon.pkmn.pokepediaStat import PokepediaStat
-    from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.absTriviaQuestionRepository import \
         AbsTriviaQuestionRepository
@@ -35,7 +35,7 @@ try:
 except:
     import utils
     from network.exceptions import GenericNetworkException
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.absTriviaQuestionRepository import AbsTriviaQuestionRepository
     from trivia.multipleChoiceTriviaQuestion import \
@@ -67,7 +67,7 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
     def __init__(
         self,
         pokepediaRepository: PokepediaRepository,
-        timber: Timber,
+        timber: TimberInterface,
         triviaIdGenerator: TriviaIdGenerator,
         triviaSettingsRepository: TriviaSettingsRepository,
         maxGeneration: PokepediaGeneration = PokepediaGeneration.GENERATION_3
@@ -76,7 +76,7 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         if not isinstance(pokepediaRepository, PokepediaRepository):
             raise ValueError(f'pokepediaRepository argument is malformed: \"{pokepediaRepository}\"')
-        elif not isinstance(timber, Timber):
+        elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(triviaIdGenerator, TriviaIdGenerator):
             raise ValueError(f'triviaIdGenerator argument is malformed: \"{triviaIdGenerator}\"')
@@ -84,7 +84,7 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
             raise ValueError(f'maxGeneration argument is malformed: \"{maxGeneration}\"')
 
         self.__pokepediaRepository: PokepediaRepository = pokepediaRepository
-        self.__timber: Timber = timber
+        self.__timber: TimberInterface = timber
         self.__triviaIdGenerator: TriviaIdGenerator = triviaIdGenerator
         self.__maxGeneration: PokepediaGeneration = maxGeneration
 

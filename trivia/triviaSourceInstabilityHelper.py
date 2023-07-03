@@ -3,10 +3,10 @@ from datetime import datetime, timedelta, timezone
 from typing import Dict, Optional
 
 try:
-    from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.trivia.triviaSource import TriviaSource
 except:
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
     from trivia.triviaSource import TriviaSource
 
 
@@ -14,18 +14,18 @@ class TriviaSourceInstabilityHelper():
 
     def __init__(
         self,
-        timber: Timber,
+        timber: TimberInterface,
         fallOffTimeDelta: timedelta = timedelta(minutes = 20),
         timeZone: timezone = timezone.utc
     ):
-        if not isinstance(timber, Timber):
+        if not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(fallOffTimeDelta, timedelta):
             raise ValueError(f'fallOffTimeDelta argument is malformed: \"{fallOffTimeDelta}\"')
         elif not isinstance(timeZone, timezone):
             raise ValueError(f'timeZone argument is malformed: \"{timeZone}\"')
 
-        self.__timber: Timber = timber
+        self.__timber: TimberInterface = timber
         self.__fallOffTimeDelta: timedelta = fallOffTimeDelta
         self.__timeZone: timezone = timeZone
 

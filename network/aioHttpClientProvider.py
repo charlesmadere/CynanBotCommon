@@ -10,14 +10,14 @@ try:
         NetworkClientProvider
     from CynanBotCommon.network.networkClientType import NetworkClientType
     from CynanBotCommon.network.networkHandle import NetworkHandle
-    from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.timber.timberInterface import TimberInterface
 except:
     import utils
     from network.aioHttpHandle import AioHttpHandle
     from network.networkClientProvider import NetworkClientProvider
     from network.networkClientType import NetworkClientType
     from network.networkHandle import NetworkHandle
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
 
 
 class AioHttpClientProvider(NetworkClientProvider):
@@ -25,12 +25,12 @@ class AioHttpClientProvider(NetworkClientProvider):
     def __init__(
         self,
         eventLoop: AbstractEventLoop,
-        timber: Timber,
+        timber: TimberInterface,
         timeoutSeconds: int = 8
     ):
         if not isinstance(eventLoop, AbstractEventLoop):
             raise ValueError(f'eventLoop argument is malformed: \"{eventLoop}\"')
-        elif not isinstance(timber, Timber):
+        elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not utils.isValidNum(timeoutSeconds):
             raise ValueError(f'timeoutSeconds argument is malformed: \"{timeoutSeconds}\"')
@@ -38,7 +38,7 @@ class AioHttpClientProvider(NetworkClientProvider):
             raise ValueError(f'timeoutSeconds argument is out of bounds: {timeoutSeconds}')
 
         self.__eventLoop: AbstractEventLoop = eventLoop
-        self.__timber: Timber = timber
+        self.__timber: TimberInterface = timber
         self.__timeoutSeconds: int = timeoutSeconds
 
         self.__clientSession: Optional[aiohttp.ClientSession] = None

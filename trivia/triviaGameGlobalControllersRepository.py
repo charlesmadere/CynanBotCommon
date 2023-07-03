@@ -8,7 +8,7 @@ try:
     from CynanBotCommon.storage.backingDatabase import BackingDatabase
     from CynanBotCommon.storage.databaseConnection import DatabaseConnection
     from CynanBotCommon.storage.databaseType import DatabaseType
-    from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.trivia.addTriviaGameControllerResult import \
         AddTriviaGameControllerResult
     from CynanBotCommon.trivia.removeTriviaGameControllerResult import \
@@ -24,7 +24,7 @@ except:
     from storage.backingDatabase import BackingDatabase
     from storage.databaseConnection import DatabaseConnection
     from storage.databaseType import DatabaseType
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
     from trivia.addTriviaGameControllerResult import \
         AddTriviaGameControllerResult
     from trivia.removeTriviaGameControllerResult import \
@@ -42,7 +42,7 @@ class TriviaGameGlobalControllersRepository():
         self,
         administratorProviderInterface: AdministratorProviderInterface,
         backingDatabase: BackingDatabase,
-        timber: Timber,
+        timber: TimberInterface,
         twitchTokensRepositoryInterface: TwitchTokensRepositoryInterface,
         userIdsRepository: UserIdsRepository
     ):
@@ -50,7 +50,7 @@ class TriviaGameGlobalControllersRepository():
             raise ValueError(f'administratorProviderInterface argument is malformed: \"{administratorProviderInterface}\"')
         elif not isinstance(backingDatabase, BackingDatabase):
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
-        elif not isinstance(timber, Timber):
+        elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(twitchTokensRepositoryInterface, TwitchTokensRepositoryInterface):
             raise ValueError(f'twitchTokensRepositoryInterface argument is malformed: \"{twitchTokensRepositoryInterface}\"')
@@ -59,7 +59,7 @@ class TriviaGameGlobalControllersRepository():
 
         self.__administratorProviderInterface: AdministratorProviderInterface = administratorProviderInterface
         self.__backingDatabase: BackingDatabase = backingDatabase
-        self.__timber: Timber = timber
+        self.__timber: TimberInterface = timber
         self.__twitchTokensRepositoryInterface: TwitchTokensRepositoryInterface = twitchTokensRepositoryInterface
         self.__userIdsRepository: UserIdsRepository = userIdsRepository
 

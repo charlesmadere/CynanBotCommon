@@ -6,7 +6,7 @@ try:
     from CynanBotCommon.storage.backingDatabase import BackingDatabase
     from CynanBotCommon.storage.databaseConnection import DatabaseConnection
     from CynanBotCommon.storage.databaseType import DatabaseType
-    from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.trivia.additionalTriviaAnswers import \
         AdditionalTriviaAnswers
     from CynanBotCommon.trivia.triviaExceptions import (
@@ -23,7 +23,7 @@ except:
     from storage.backingDatabase import BackingDatabase
     from storage.databaseConnection import DatabaseConnection
     from storage.databaseType import DatabaseType
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
     from trivia.additionalTriviaAnswers import AdditionalTriviaAnswers
     from trivia.triviaExceptions import (
         AdditionalTriviaAnswerAlreadyExistsException,
@@ -40,18 +40,18 @@ class AdditionalTriviaAnswersRepository():
     def __init__(
         self,
         backingDatabase: BackingDatabase,
-        timber: Timber,
+        timber: TimberInterface,
         triviaSettingsRepository: TriviaSettingsRepository
     ):
         if not isinstance(backingDatabase, BackingDatabase):
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
-        elif not isinstance(timber, Timber):
+        elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(triviaSettingsRepository, TriviaSettingsRepository):
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
 
         self.__backingDatabase: BackingDatabase = backingDatabase
-        self.__timber: Timber = timber
+        self.__timber: TimberInterface = timber
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
 
         self.__isDatabaseReady: bool = False
@@ -172,6 +172,7 @@ class AdditionalTriviaAnswersRepository():
         )
 
         await connection.close()
+
         self.__timber.log('AdditionalTriviaAnswersRepository', f'Deleted additional answers for {triviaSource.toStr()}:{triviaId} (existing additional answers were {reference.getAdditionalAnswers()})')
 
         return reference
@@ -202,12 +203,12 @@ class AdditionalTriviaAnswersRepository():
             triviaId, triviaSource.toStr(), triviaType.toStr()
         )
 
+        await connection.close()
+
         if not utils.hasItems(record):
-            await connection.close()
             return None
 
         additionalAnswersJson: Optional[str] = record[0]
-        await connection.close()
 
         if not utils.isValidStr(additionalAnswersJson):
             return None

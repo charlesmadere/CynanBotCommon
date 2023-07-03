@@ -1,13 +1,11 @@
-import asyncio
-from asyncio import AbstractEventLoop
 from typing import Set
 
 import pytest
 
 try:
-    from ...backgroundTaskHelper import BackgroundTaskHelper
     from ...storage.jsonStaticReader import JsonStaticReader
-    from ...timber.timber import Timber
+    from ...timber.timberInterface import TimberInterface
+    from ...timber.timberStub import TimberStub
     from ...trivia.absTriviaQuestion import AbsTriviaQuestion
     from ...trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
@@ -22,9 +20,9 @@ try:
     from ...trivia.triviaSource import TriviaSource
     from ...trivia.trueFalseTriviaQuestion import TrueFalseTriviaQuestion
 except:
-    from backgroundTaskHelper import BackgroundTaskHelper
     from storage.jsonStaticReader import JsonStaticReader
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
+    from timber.timberStub import TimberStub
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
@@ -42,9 +40,7 @@ except:
 
 class TestTriviaAnswerChecker():
 
-    eventLoop: AbstractEventLoop = asyncio.get_event_loop()
-    backgroundTaskHelper = BackgroundTaskHelper(eventLoop = eventLoop)
-    timber = Timber(backgroundTaskHelper = backgroundTaskHelper)
+    timber: TimberInterface = TimberStub()
     triviaAnswerCompiler = TriviaAnswerCompiler(timber = timber)
     triviaQuestionCompiler = TriviaQuestionCompiler()
     triviaSettingsRepository = TriviaSettingsRepository(

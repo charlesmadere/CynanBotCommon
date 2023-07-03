@@ -8,7 +8,7 @@ try:
     from CynanBotCommon.network.exceptions import GenericNetworkException
     from CynanBotCommon.network.networkClientProvider import \
         NetworkClientProvider
-    from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.timedDict import TimedDict
     from CynanBotCommon.weather.airQualityIndex import AirQualityIndex
     from CynanBotCommon.weather.uvIndex import UvIndex
@@ -18,7 +18,7 @@ except:
     from location.location import Location
     from network.exceptions import GenericNetworkException
     from network.networkClientProvider import NetworkClientProvider
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
     from timedDict import TimedDict
     from weather.airQualityIndex import AirQualityIndex
     from weather.uvIndex import UvIndex
@@ -31,7 +31,7 @@ class WeatherRepository():
         self,
         networkClientProvider: NetworkClientProvider,
         oneWeatherApiKey: str,
-        timber: Timber,
+        timber: TimberInterface,
         maxAlerts: int = 2,
         cacheTimeDelta: timedelta = timedelta(minutes = 20)
     ):
@@ -39,7 +39,7 @@ class WeatherRepository():
             raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
         elif not utils.isValidStr(oneWeatherApiKey):
             raise ValueError(f'oneWeatherApiKey argument is malformed: \"{oneWeatherApiKey}\"')
-        elif not isinstance(timber, Timber):
+        elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not utils.isValidInt(maxAlerts):
             raise ValueError(f'maxAlerts argument is malformed: \"{maxAlerts}\"')
@@ -50,7 +50,7 @@ class WeatherRepository():
 
         self.__networkClientProvider: NetworkClientProvider = networkClientProvider
         self.__oneWeatherApiKey: str = oneWeatherApiKey
-        self.__timber: Timber = timber
+        self.__timber: TimberInterface = timber
         self.__maxAlerts: int = maxAlerts
 
         self.__cache = TimedDict(timeDelta = cacheTimeDelta)

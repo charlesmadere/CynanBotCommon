@@ -9,7 +9,7 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.backgroundTaskHelper import BackgroundTaskHelper
     from CynanBotCommon.cuteness.cutenessRepository import CutenessRepository
-    from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.trivia.absTriviaAction import AbsTriviaAction
     from CynanBotCommon.trivia.absTriviaEvent import AbsTriviaEvent
     from CynanBotCommon.trivia.absTriviaGameState import AbsTriviaGameState
@@ -90,7 +90,7 @@ except:
     import utils
     from backgroundTaskHelper import BackgroundTaskHelper
     from cuteness.cutenessRepository import CutenessRepository
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
     from trivia.absTriviaAction import AbsTriviaAction
     from trivia.absTriviaEvent import AbsTriviaEvent
     from trivia.absTriviaGameState import AbsTriviaGameState
@@ -167,7 +167,7 @@ class TriviaGameMachine():
         queuedTriviaGameStore: QueuedTriviaGameStore,
         shinyTriviaHelper: ShinyTriviaHelper,
         superTriviaCooldownHelper: SuperTriviaCooldownHelper,
-        timber: Timber,
+        timber: TimberInterface,
         toxicTriviaHelper: ToxicTriviaHelper,
         triviaAnswerChecker: TriviaAnswerChecker,
         triviaEmoteGenerator: TriviaEmoteGenerator,
@@ -190,7 +190,7 @@ class TriviaGameMachine():
             raise ValueError(f'shinyTriviaHelper argument is malformed: \"{shinyTriviaHelper}\"')
         elif not isinstance(superTriviaCooldownHelper, SuperTriviaCooldownHelper):
             raise ValueError(f'superTriviaCooldownHelper argument is malformed: \"{superTriviaCooldownHelper}\"')
-        elif not isinstance(timber, Timber):
+        elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(toxicTriviaHelper, ToxicTriviaHelper):
             raise ValueError(f'toxicTriviaHelper argument is malformed: \"{toxicTriviaHelper}\"')
@@ -223,7 +223,7 @@ class TriviaGameMachine():
         self.__queuedTriviaGameStore: QueuedTriviaGameStore = queuedTriviaGameStore
         self.__shinyTriviaHelper: ShinyTriviaHelper = shinyTriviaHelper
         self.__superTriviaCooldownHelper: SuperTriviaCooldownHelper = superTriviaCooldownHelper
-        self.__timber: Timber = timber
+        self.__timber: TimberInterface = timber
         self.__toxicTriviaHelper: ToxicTriviaHelper = toxicTriviaHelper
         self.__triviaAnswerChecker: TriviaAnswerChecker = triviaAnswerChecker
         self.__triviaEmoteGenerator: TriviaEmoteGenerator = triviaEmoteGenerator

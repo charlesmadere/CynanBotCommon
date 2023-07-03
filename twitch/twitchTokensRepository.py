@@ -9,7 +9,7 @@ try:
     from CynanBotCommon.storage.databaseConnection import DatabaseConnection
     from CynanBotCommon.storage.databaseType import DatabaseType
     from CynanBotCommon.storage.jsonReaderInterface import JsonReaderInterface
-    from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.twitch.exceptions import (
         NoTwitchTokenDetailsException, TwitchPasswordChangedException)
     from CynanBotCommon.twitch.twitchApiService import TwitchApiService
@@ -25,7 +25,7 @@ except:
     from storage.databaseConnection import DatabaseConnection
     from storage.databaseType import DatabaseType
     from storage.jsonReaderInterface import JsonReaderInterface
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
 
     from twitch.exceptions import (NoTwitchTokenDetailsException,
                                    TwitchPasswordChangedException)
@@ -42,7 +42,7 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
     def __init__(
         self,
         backingDatabase: BackingDatabase,
-        timber: Timber,
+        timber: TimberInterface,
         twitchApiService: TwitchApiService,
         seedFileReader: Optional[JsonReaderInterface] = None,
         tokensExpirationBuffer: timedelta = timedelta(minutes = 10),
@@ -50,7 +50,7 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
     ):
         if not isinstance(backingDatabase, BackingDatabase):
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
-        elif not isinstance(timber, Timber):
+        elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(twitchApiService, TwitchApiService):
             raise ValueError(f'twitchApiService argument is malformed: \"{twitchApiService}\"')
@@ -62,7 +62,7 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
             raise ValueError(f'timeZone argument is malformed: \"{timeZone}\"')
 
         self.__backingDatabase: BackingDatabase = backingDatabase
-        self.__timber: Timber = timber
+        self.__timber: TimberInterface = timber
         self.__twitchApiService: TwitchApiService = twitchApiService
         self.__seedFileReader: Optional[JsonReaderInterface] = seedFileReader
         self.__tokensExpirationBuffer: timedelta = tokensExpirationBuffer

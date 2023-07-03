@@ -9,14 +9,14 @@ try:
     from CynanBotCommon.network.exceptions import GenericNetworkException
     from CynanBotCommon.network.networkClientProvider import \
         NetworkClientProvider
-    from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.timber.timberInterface import TimberInterface
 except:
     import utils
     from language.jishoResult import JishoResult
     from language.jishoVariant import JishoVariant
     from network.exceptions import GenericNetworkException
     from network.networkClientProvider import NetworkClientProvider
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
 
 
 class JishoHelper():
@@ -24,13 +24,13 @@ class JishoHelper():
     def __init__(
         self,
         networkClientProvider: NetworkClientProvider,
-        timber: Timber,
+        timber: TimberInterface,
         definitionsMaxSize: int = 3,
         variantsMaxSize: int = 3
     ):
         if not isinstance(networkClientProvider, NetworkClientProvider):
             raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
-        elif not isinstance(timber, Timber):
+        elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not utils.isValidInt(definitionsMaxSize):
             raise ValueError(f'definitionsMaxSize argument is malformed: \"{definitionsMaxSize}\"')
@@ -42,7 +42,7 @@ class JishoHelper():
             raise ValueError(f'variantsMaxSize argument is out of bounds: \"{variantsMaxSize}\"')
 
         self.__networkClientProvider: NetworkClientProvider = networkClientProvider
-        self.__timber: Timber = timber
+        self.__timber: TimberInterface = timber
         self.__definitionsMaxSize: int = definitionsMaxSize
         self.__variantsMaxSize: int = variantsMaxSize
 

@@ -9,7 +9,7 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.chatBand.chatBandInstrument import ChatBandInstrument
     from CynanBotCommon.chatBand.chatBandMember import ChatBandMember
-    from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.timedDict import TimedDict
     from CynanBotCommon.websocketConnection.websocketConnectionServer import \
         WebsocketConnectionServer
@@ -17,7 +17,7 @@ except:
     import utils
     from chatBand.chatBandInstrument import ChatBandInstrument
     from chatBand.chatBandMember import ChatBandMember
-    from timber.timber import Timber
+    from timber.timberInterface import TimberInterface
     from timedDict import TimedDict
     from websocketConnection.websocketConnectionServer import \
         WebsocketConnectionServer
@@ -27,14 +27,14 @@ class ChatBandManager():
 
     def __init__(
         self,
-        timber: Timber,
+        timber: TimberInterface,
         websocketConnectionServer: WebsocketConnectionServer,
         chatBandFile: str = 'CynanBotCommon/chatBand/chatBandManager.json',
         eventType: str = 'chatBand',
         eventCooldown: timedelta = timedelta(minutes = 5),
         memberCacheTimeToLive: timedelta = timedelta(minutes = 15)
     ):
-        if not isinstance(timber, Timber):
+        if not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(websocketConnectionServer, WebsocketConnectionServer):
             raise ValueError(f'websocketConnectionServer argument is malformed: \"{websocketConnectionServer}\"')
@@ -47,7 +47,7 @@ class ChatBandManager():
         elif not isinstance(memberCacheTimeToLive, timedelta):
             raise ValueError(f'memberCacheTimeToLive argument is malformed: \"{memberCacheTimeToLive}\"')
 
-        self.__timber: Timber = timber
+        self.__timber: TimberInterface = timber
         self.__websocketConnectionServer: WebsocketConnectionServer = websocketConnectionServer
         self.__chatBandFile: str = chatBandFile
         self.__eventType: str = eventType
