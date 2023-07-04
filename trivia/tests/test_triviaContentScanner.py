@@ -117,8 +117,12 @@ class TestTriviaContentScanner():
         correctAnswers: List[str] = list()
         correctAnswers.append('a trumpet')
 
+        cleanedCorrectAnswers: List[str] = list()
+        cleanedCorrectAnswers.append('trumpet')
+
         question: AbsTriviaQuestion = QuestionAnswerTriviaQuestion(
             correctAnswers = correctAnswers,
+            cleanedCorrectAnswers = cleanedCorrectAnswers,
             category = None,
             categoryId = None,
             question = 'This instrument is made from brass.', 
