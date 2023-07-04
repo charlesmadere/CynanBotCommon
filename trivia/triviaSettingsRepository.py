@@ -12,10 +12,7 @@ except:
 
 class TriviaSettingsRepository():
 
-    def __init__(
-        self,
-        settingsJsonReader: JsonReaderInterface
-    ):
+    def __init__(self, settingsJsonReader: JsonReaderInterface):
         if not isinstance(settingsJsonReader, JsonReaderInterface):
             raise ValueError(f'settingsJsonReader argument is malformed: \"{settingsJsonReader}\"')
 

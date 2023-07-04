@@ -1,14 +1,11 @@
-import json
 from datetime import timedelta
 from typing import Any, Dict, Optional
-
-import aiofiles
-import aiofiles.ospath
 
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.chatBand.chatBandInstrument import ChatBandInstrument
     from CynanBotCommon.chatBand.chatBandMember import ChatBandMember
+    from CynanBotCommon.storage.jsonReaderInterface import JsonReaderInterface
     from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.timedDict import TimedDict
     from CynanBotCommon.websocketConnection.websocketConnectionServer import \
@@ -17,6 +14,7 @@ except:
     import utils
     from chatBand.chatBandInstrument import ChatBandInstrument
     from chatBand.chatBandMember import ChatBandMember
+    from storage.jsonReaderInterface import JsonReaderInterface
     from timber.timberInterface import TimberInterface
     from timedDict import TimedDict
     from websocketConnection.websocketConnectionServer import \
@@ -27,19 +25,19 @@ class ChatBandManager():
 
     def __init__(
         self,
+        settingsJsonReader: JsonReaderInterface,
         timber: TimberInterface,
         websocketConnectionServer: WebsocketConnectionServer,
-        chatBandFile: str = 'CynanBotCommon/chatBand/chatBandManager.json',
         eventType: str = 'chatBand',
         eventCooldown: timedelta = timedelta(minutes = 5),
         memberCacheTimeToLive: timedelta = timedelta(minutes = 15)
     ):
-        if not isinstance(timber, TimberInterface):
+        if not isinstance(settingsJsonReader, JsonReaderInterface):
+            raise ValueError(f'settingsJsonReader argument is malformed: \"{settingsJsonReader}\"')
+        elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(websocketConnectionServer, WebsocketConnectionServer):
             raise ValueError(f'websocketConnectionServer argument is malformed: \"{websocketConnectionServer}\"')
-        elif not utils.isValidStr(chatBandFile):
-            raise ValueError(f'chatBandFile argument is malformed: \"{chatBandFile}\"')
         elif not utils.isValidStr(eventType):
             raise ValueError(f'eventType argument is malformed: \"{eventType}\"')
         elif not isinstance(eventCooldown, timedelta):
@@ -47,20 +45,26 @@ class ChatBandManager():
         elif not isinstance(memberCacheTimeToLive, timedelta):
             raise ValueError(f'memberCacheTimeToLive argument is malformed: \"{memberCacheTimeToLive}\"')
 
+        self.__settingsJsonReader: JsonReaderInterface = settingsJsonReader
         self.__timber: TimberInterface = timber
         self.__websocketConnectionServer: WebsocketConnectionServer = websocketConnectionServer
-        self.__chatBandFile: str = chatBandFile
         self.__eventType: str = eventType
-        self.__lastChatBandMessageTimes: TimedDict = TimedDict(eventCooldown)
-        self.__chatBandMemberCache: TimedDict = TimedDict(memberCacheTimeToLive)
-        self.__stubChatBandMember: ChatBandMember = ChatBandMember(False, ChatBandInstrument.BASS, 'stub', 'stub')
+
+        self.__stubChatBandMember: ChatBandMember = ChatBandMember(
+            isEnabled = False,
+            instrument = ChatBandInstrument.BASS,
+            author = 'stub',
+            keyPhrase = 'stub'
+        )
+
         self.__jsonCache: Optional[Dict[str, Any]] = None
+        self.__chatBandMemberCache: TimedDict = TimedDict(memberCacheTimeToLive)
+        self.__lastChatBandMessageTimes: TimedDict = TimedDict(eventCooldown)
 
     async def clearCaches(self):
         self.__lastChatBandMessageTimes.clear()
         self.__chatBandMemberCache.clear()
         self.__jsonCache = None
-        self.__timber.log('ChatBandManager', 'Caches cleared')
 
     async def __findChatBandMember(
         self,
@@ -161,17 +165,15 @@ class ChatBandManager():
         if self.__jsonCache is not None:
             return self.__jsonCache
 
-        if not await aiofiles.ospath.exists(self.__chatBandFile):
-            raise FileNotFoundError(f'Chat Band file not found: \"{self.__chatBandFile}\"')
+        if not await self.__settingsJsonReader.fileExistsAsync():
+            raise FileNotFoundError(f'Chat Band file not found: \"{self.__settingsJsonReader}\"')
 
-        async with aiofiles.open(self.__chatBandFile, mode = 'r') as file:
-            data = await file.read()
-            jsonContents = json.loads(data)
+        jsonContents = await self.__settingsJsonReader.readJsonAsync()
 
         if jsonContents is None:
-            raise IOError(f'Error reading from Chat Band file: \"{self.__chatBandFile}\"')
+            raise IOError(f'Error reading from Chat Band file: \"{self.__settingsJsonReader}\"')
         elif len(jsonContents) == 0:
-            raise ValueError(f'JSON contents of Chat Band file \"{self.__chatBandFile}\" is empty')
+            raise ValueError(f'JSON contents of Chat Band file \"{self.__settingsJsonReader}\" is empty')
 
         self.__jsonCache = jsonContents
         return jsonContents
@@ -183,7 +185,7 @@ class ChatBandManager():
         jsonContents = await self.__readAllJson()
         twitchChannelsJson: Dict[str, Any] = jsonContents.get('twitchChannels')
         if not utils.hasItems(twitchChannelsJson):
-            raise ValueError(f'\"twitchChannels\" JSON contents of Chat Band file \"{self.__chatBandFile}\" is missing/empty')
+            raise ValueError(f'\"twitchChannels\" JSON contents of Chat Band file \"{self.__settingsJsonReader}\" is missing/empty')
 
         twitchChannel = twitchChannel.lower()
 
