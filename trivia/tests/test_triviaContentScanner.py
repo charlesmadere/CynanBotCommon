@@ -177,7 +177,9 @@ class TestTriviaContentScanner():
         correctAnswers.append('Nintendo 64')
 
         multipleChoiceResponses: List[str] = list()
-        multipleChoiceResponses.append('Nintendo Entertainment System', 'Nintendo 64', 'Sony PlayStation')
+        multipleChoiceResponses.append('Nintendo Entertainment System')
+        multipleChoiceResponses.append('Nintendo 64')
+        multipleChoiceResponses.append('Sony PlayStation')
 
         question: AbsTriviaQuestion = MultipleChoiceTriviaQuestion(
             correctAnswers = correctAnswers,
