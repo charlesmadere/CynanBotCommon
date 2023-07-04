@@ -51,6 +51,9 @@ class TriviaContentScanner():
         strings: Set[str],
         string: Optional[str]
     ):
+        if not isinstance(strings, Set):
+            raise ValueError(f'strings argument is malformed: \"{strings}\"')
+
         if not isinstance(string, str):
             return
 
@@ -59,7 +62,7 @@ class TriviaContentScanner():
             return
 
         for split in splits:
-            strings.update(split)
+            strings.add(split)
 
             characters = self.__wordRegEx.findall(split)
             if not utils.hasItems(characters):
