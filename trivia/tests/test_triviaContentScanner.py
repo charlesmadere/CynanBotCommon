@@ -52,7 +52,7 @@ class TestTriviaContentScanner():
     )
 
     bannedWordsLinesReader: LinesReaderInterface = LinesStaticReader(
-        lines = [ 'bitch', '"trump"' ],
+        lines = [ 'bitch', '"trump"' ]
     )
 
     timber: TimberInterface = TimberStub()
@@ -102,7 +102,8 @@ class TestTriviaContentScanner():
             category = None,
             categoryId = None,
             question = 'bitching', # the banned word is actually "bitch", but
-                                   # that word is hidden within "bitching"
+                                   # that word is hidden within "bitching", so
+                                   # this question should end up banned
             triviaId = 'asdfasdfasdf',
             triviaDifficulty = TriviaDifficulty.UNKNOWN,
             triviaSource = TriviaSource.J_SERVICE
@@ -113,7 +114,7 @@ class TestTriviaContentScanner():
 
     @pytest.mark.asyncio
     async def test_verify_withTriviaQuestionThatAlmostContainsBannedWord(self):
-        # the banned word is "trump", but this this answer contains "trumpet", which is not banned
+        # the banned word is "trump", but this answer contains "trumpet", which is not banned
         correctAnswers: List[str] = list()
         correctAnswers.append('a trumpet')
 
