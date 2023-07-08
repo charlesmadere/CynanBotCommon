@@ -130,9 +130,15 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
         self.__timber.log('TwitchTokensRepository', f'Reading in seed file \"{seedFileReader}\"...')
 
         for twitchChannel, tokensDetailsJson in jsonContents.items():
+            tokensDetails: Optional[TwitchTokensDetails] = None
+
             if 'code' in tokensDetailsJson and utils.isValidStr(tokensDetailsJson.get('code')):
                 code = utils.getStrFromDict(tokensDetailsJson, 'code')
-                tokensDetails = await self.__twitchApiService.fetchTokens(code)
+
+                try:
+                    tokensDetails = await self.__twitchApiService.fetchTokens(code)
+                except GenericNetworkException as e:
+                    self.__timber.log('TwitchTokensRepository', f'Unable to fetch tokens for \"{twitchChannel}\" with code \"{code}\": {e}', e, traceback.format_exc())
             else:
                 tokensDetails = TwitchTokensDetails(
                     expirationTime = await self.__createExpiredExpirationTime(),
@@ -140,10 +146,11 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
                     refreshToken = utils.getStrFromDict(tokensDetailsJson, 'refreshToken')
                 )
 
-            await self.__setTokensDetails(
-                tokensDetails = tokensDetails,
-                twitchChannel = twitchChannel
-            )
+            if tokensDetails is not None:
+                await self.__setTokensDetails(
+                    tokensDetails = tokensDetails,
+                    twitchChannel = twitchChannel
+                )
 
         self.__timber.log('TwitchTokensRepository', f'Finished reading in seed file \"{seedFileReader}\"')
 
