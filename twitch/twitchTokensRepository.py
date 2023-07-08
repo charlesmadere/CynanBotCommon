@@ -130,11 +130,15 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
         self.__timber.log('TwitchTokensRepository', f'Reading in seed file \"{seedFileReader}\"...')
 
         for twitchChannel, tokensDetailsJson in jsonContents.items():
-            tokensDetails = TwitchTokensDetails(
-                expirationTime = await self.__createExpiredExpirationTime(),
-                accessToken = utils.getStrFromDict(tokensDetailsJson, 'accessToken'),
-                refreshToken = utils.getStrFromDict(tokensDetailsJson, 'refreshToken')
-            )
+            if 'code' in tokensDetailsJson and utils.isValidStr(tokensDetailsJson.get('code')):
+                code = utils.getStrFromDict(tokensDetailsJson, 'code')
+                tokensDetails = await self.__twitchApiService.fetchTokens(code)
+            else:
+                tokensDetails = TwitchTokensDetails(
+                    expirationTime = await self.__createExpiredExpirationTime(),
+                    accessToken = utils.getStrFromDict(tokensDetailsJson, 'accessToken'),
+                    refreshToken = utils.getStrFromDict(tokensDetailsJson, 'refreshToken')
+                )
 
             await self.__setTokensDetails(
                 tokensDetails = tokensDetails,
