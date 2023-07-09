@@ -16,6 +16,11 @@ try:
         TwitchBroadcasterType
     from CynanBotCommon.twitch.twitchCredentialsProviderInterface import \
         TwitchCredentialsProviderInterface
+    from CynanBotCommon.twitch.twitchEmoteDetails import TwitchEmoteDetails
+    from CynanBotCommon.twitch.twitchEmoteImage import TwitchEmoteImage
+    from CynanBotCommon.twitch.twitchEmoteImageScale import \
+        TwitchEmoteImageScale
+    from CynanBotCommon.twitch.twitchEmoteType import TwitchEmoteType
     from CynanBotCommon.twitch.twitchLiveUserDetails import \
         TwitchLiveUserDetails
     from CynanBotCommon.twitch.twitchStreamType import TwitchStreamType
@@ -39,6 +44,10 @@ except:
     from twitch.twitchBroadcasterType import TwitchBroadcasterType
     from twitch.twitchCredentialsProviderInterface import \
         TwitchCredentialsProviderInterface
+    from twitch.twitchEmoteDetails import TwitchEmoteDetails
+    from twitch.twitchEmoteImage import TwitchEmoteImage
+    from twitch.twitchEmoteImageScale import TwitchEmoteImageScale
+    from twitch.twitchEmoteType import TwitchEmoteType
     from twitch.twitchLiveUserDetails import TwitchLiveUserDetails
     from twitch.twitchStreamType import TwitchStreamType
     from twitch.twitchSubscriberTier import TwitchSubscriberTier
@@ -79,6 +88,78 @@ class TwitchApiService():
             return nowDateTime + timedelta(seconds = expiresInSeconds)
         else:
             return nowDateTime - timedelta(weeks = 1)
+
+    async def fetchEmoteDetails(
+        self,
+        broadcasterId: str,
+        twitchAccessToken: str
+    ) -> List[TwitchEmoteDetails]:
+        if not utils.isValidStr(broadcasterId):
+            raise ValueError(f'broadcasterId argument is malformed: \"{broadcasterId}\"')
+        if not utils.isValidStr(twitchAccessToken):
+            raise ValueError(f'twitchAccessToken argument is malformed: \"{twitchAccessToken}\"')
+
+        self.__timber.log('TwitchApiService', f'Fetching emote details... (broadcasterId=\"{broadcasterId}\")')
+        twitchClientId = await self.__twitchCredentialsProviderInterface.getTwitchClientId()
+        clientSession = await self.__networkClientProvider.get()
+
+        try:
+            response = await clientSession.get(
+                url = f'https://api.twitch.tv/helix/emotes?broadcaster_id={broadcasterId}',
+                headers = {
+                    'Authorization': f'Bearer {twitchAccessToken}',
+                    'Client-Id': twitchClientId
+                }
+            )
+        except GenericNetworkException as e:
+            self.__timber.log('TwitchApiService', f'Encountered network error when fetching emote details (broadcasterId=\"{broadcasterId}\"): {e}', e, traceback.format_exc())
+            raise GenericNetworkException(f'TwitchApiService encountered network error when fetching emote details (broadcasterId=\"{broadcasterId}\"): {e}')
+
+        responseStatusCode = response.getStatusCode()
+        jsonResponse: Optional[Dict[str, Any]] = await response.json()
+        await response.close()
+
+        if not utils.hasItems(jsonResponse):
+            self.__timber.log('TwitchApiService', f'Received a null/empty JSON response when fetching emote details (broadcasterId=\"{broadcasterId}\"): {jsonResponse}')
+            raise TwitchJsonException(f'TwitchApiService received a null/empty JSON response when fetching emote details (broadcasterId=\"{broadcasterId}\"): {jsonResponse}')
+        elif responseStatusCode == 401 or ('error' in jsonResponse and len(jsonResponse['error']) >= 1):
+            self.__timber.log('TwitchApiService', f'Received an error ({responseStatusCode}) when fetching emote details (broadcasterId=\"{broadcasterId}\"): {jsonResponse}')
+            raise TwitchTokenIsExpiredException(f'TwitchApiService received an error ({responseStatusCode}) when fetching emote details (broadcasterId=\"{broadcasterId}\"): {jsonResponse}')
+        elif responseStatusCode != 200:
+            self.__timber.log('TwitchApiService', f'Encountered non-200 HTTP status code when fetching emote details (broadcasterId=\"{broadcasterId}\"): {responseStatusCode}')
+            raise GenericNetworkException(f'TwitchApiService encountered non-200 HTTP status code when fetching emote details (broadcasterId=\"{broadcasterId}\"): {responseStatusCode}')
+
+        data: Optional[List[Dict[str, Any]]] = jsonResponse.get('data')
+        if not utils.hasItems(data):
+            self.__timber.log('TwitchApiService', f'Received a null/empty \"data\" field in the JSON response when fetching emote details (broadcasterId=\"{broadcasterId}\"): {jsonResponse}')
+            raise TwitchJsonException(f'TwitchApiService received a null/empty \"data\" field in the JSON response when fetching emote details (broadcasterId=\"{broadcasterId}\"): {jsonResponse}')
+
+        emoteDetailsList: List[TwitchEmoteDetails] = list()
+
+        for emoteJson in data:
+            imagesJson: Dict[str, str] = emoteJson['images']
+            emoteImages: List[TwitchEmoteImage] = list()
+
+            for imageJsonKey, imageJsonValue in imagesJson:
+                emoteImages.append(TwitchEmoteImage(
+                    url = imageJsonKey,
+                    imageScale = TwitchEmoteImageScale.fromStr(imageJsonValue)
+                ))
+
+            emoteId = utils.getStrFromDict(emoteJson, 'id')
+            emoteName = utils.getStrFromDict(emoteName, 'name')
+            emoteType = TwitchEmoteType.fromStr(utils.getStrFromDict(emoteJson, 'emote_type'))
+            subscriberTier = TwitchSubscriberTier.fromStr(utils.getStrFromDict(emoteJson, 'tier'))
+
+            emoteDetailsList.append(TwitchEmoteDetails(
+                emoteImages = emoteImages,
+                emoteId = emoteId,
+                emoteName = emoteName,
+                emoteType = emoteType,
+                subscriberTier = subscriberTier
+            ))
+
+        return emoteDetailsList
 
     async def fetchLiveUserDetails(
         self,
