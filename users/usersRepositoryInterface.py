@@ -28,3 +28,6 @@ class UsersRepositoryInterface():
 
     async def getUsersAsync(self) -> List[UserInterface]:
         pass
+
+    async def setUserEnabled(self, handle: str, enabled: bool):
+        pass
