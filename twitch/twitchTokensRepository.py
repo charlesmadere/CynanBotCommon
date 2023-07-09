@@ -132,7 +132,7 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
         for twitchChannel, tokensDetailsJson in jsonContents.items():
             tokensDetails: Optional[TwitchTokensDetails] = None
 
-            if 'code' in tokensDetailsJson and utils.isValidStr(tokensDetailsJson.get('code')):
+            if utils.isValidStr(tokensDetailsJson.get('code')):
                 code = utils.getStrFromDict(tokensDetailsJson, 'code')
 
                 try:

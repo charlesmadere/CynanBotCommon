@@ -8,6 +8,9 @@ except:
 
 class UsersRepositoryInterface():
 
+    async def clearCaches(self):
+        pass
+
     def containsUser(self, handle: str) -> bool:
         pass
 
