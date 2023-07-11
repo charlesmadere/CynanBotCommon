@@ -169,12 +169,12 @@ class LanguagesRepository():
 
         return languagesList
 
-    def getAllWotdApiCodes(self, delimiter: str = ', ') -> str:
+    async def getAllWotdApiCodes(self, delimiter: str = ', ') -> str:
         if not isinstance(delimiter, str):
             raise ValueError(f'delimiter argument is malformed: \"{delimiter}\"')
 
         wotdApiCodes: List[str] = list()
-        validEntries = self.__getLanguageEntries(hasWotdApiCode = True)
+        validEntries = await self.__getLanguageEntries(hasWotdApiCode = True)
 
         for entry in validEntries:
             wotdApiCodes.append(entry.getPrimaryCommandName())
@@ -182,7 +182,7 @@ class LanguagesRepository():
         wotdApiCodes.sort(key = lambda commandName: commandName.lower())
         return delimiter.join(wotdApiCodes)
 
-    def getExampleLanguageEntry(
+    async def getExampleLanguageEntry(
         self,
         hasIso6391Code: Optional[bool] = None,
         hasWotdApiCode: Optional[bool] = None
@@ -192,10 +192,14 @@ class LanguagesRepository():
         elif hasWotdApiCode is not None and not utils.isValidBool(hasWotdApiCode):
             raise ValueError(f'hasWotdApiCode argument is malformed: \"{hasWotdApiCode}\"')
 
-        validEntries = self.__getLanguageEntries(hasIso6391Code, hasWotdApiCode)
+        validEntries = await self.__getLanguageEntries(
+            hasIso6391Code = hasIso6391Code,
+            hasWotdApiCode = hasWotdApiCode
+        )
+
         return random.choice(validEntries)
 
-    def __getLanguageEntries(
+    async def __getLanguageEntries(
         self,
         hasIso6391Code: Optional[bool] = None,
         hasWotdApiCode: Optional[bool] = None
@@ -225,7 +229,7 @@ class LanguagesRepository():
 
         return validEntries
 
-    def getLanguageForCommand(
+    async def getLanguageForCommand(
         self,
         command: str,
         hasIso6391Code: Optional[bool] = None,
@@ -238,7 +242,10 @@ class LanguagesRepository():
         elif hasWotdApiCode is not None and not utils.isValidBool(hasWotdApiCode):
             raise ValueError(f'hasWotdApiCode argumet is malformed: \"{hasWotdApiCode}\"')
 
-        validEntries = self.__getLanguageEntries(hasIso6391Code, hasWotdApiCode)
+        validEntries = await self.__getLanguageEntries(
+            hasIso6391Code = hasIso6391Code,
+            hasWotdApiCode = hasWotdApiCode
+        )
 
         for entry in validEntries:
             for entryCommandName in entry.getCommandNames():
@@ -254,7 +261,7 @@ class LanguagesRepository():
         if not utils.isValidStr(wotdApiCode):
             raise ValueError(f'wotdApiCode argument is malformed: \"{wotdApiCode}\"')
 
-        validEntries = self.__getLanguageEntries(hasWotdApiCode = True)
+        validEntries = await self.__getLanguageEntries(hasWotdApiCode = True)
 
         for entry in validEntries:
             if entry.getWotdApiCode() == wotdApiCode.lower():
@@ -262,7 +269,7 @@ class LanguagesRepository():
 
         return None
 
-    def requireLanguageForCommand(
+    async def requireLanguageForCommand(
         self,
         command: str,
         hasIso6391Code: Optional[bool] = None,
@@ -275,7 +282,11 @@ class LanguagesRepository():
         elif hasWotdApiCode is not None and not utils.isValidBool(hasWotdApiCode):
             raise ValueError(f'hasWotdApiCode argumet is malformed: \"{hasWotdApiCode}\"')
 
-        languageEntry = self.getLanguageForCommand(command, hasIso6391Code, hasWotdApiCode)
+        languageEntry = await self.getLanguageForCommand(
+            command = command,
+            hasIso6391Code = hasIso6391Code,
+            hasWotdApiCode = hasWotdApiCode
+        )
 
         if languageEntry is None:
             raise RuntimeError(f'Unable to find LanguageEntry for command \"{command}\"')
@@ -289,7 +300,9 @@ class LanguagesRepository():
         if not utils.isValidStr(wotdApiCode):
             raise ValueError(f'wotdApiCode argument is malformed: \"{wotdApiCode}\"')
 
-        languageEntry = await self.getLanguageForWotdApiCode(wotdApiCode)
+        languageEntry = await self.getLanguageForWotdApiCode(
+            wotdApiCode = wotdApiCode
+        )
 
         if languageEntry is None:
             raise RuntimeError(f'Unable to find LanguageEntry for wotdApiCode \"{wotdApiCode}\"')

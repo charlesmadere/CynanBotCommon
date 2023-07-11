@@ -97,7 +97,10 @@ class TranslationHelper():
         originalLanguage: LanguageEntry = None
         detectedSourceLanguage: str = translationJson.get('detected_source_language')
         if utils.isValidStr(detectedSourceLanguage):
-            originalLanguage = self.__languagesRepository.getLanguageForCommand(detectedSourceLanguage, hasIso6391Code = True)
+            originalLanguage = await self.__languagesRepository.getLanguageForCommand(
+                command = detectedSourceLanguage,
+                hasIso6391Code = True
+            )
 
         return TranslationResponse(
             originalLanguage = originalLanguage,
@@ -140,10 +143,13 @@ class TranslationHelper():
         if not utils.isValidStr(translatedText):
             raise RuntimeError(f'\"translatedText\" field is missing or malformed from translation result for \"{text}\": {translationResult}')
 
-        originalLanguage: LanguageEntry = None
-        detectedSourceLanguage: str = translationResult.get('detectedSourceLanguage')
+        originalLanguage: Optional[LanguageEntry] = None
+        detectedSourceLanguage: Optional[str] = translationResult.get('detectedSourceLanguage')
         if utils.isValidStr(detectedSourceLanguage):
-            originalLanguage = self.__languagesRepository.getLanguageForCommand(detectedSourceLanguage, hasIso6391Code = True)
+            originalLanguage = await self.__languagesRepository.getLanguageForCommand(
+                command = detectedSourceLanguage,
+                hasIso6391Code = True
+            )
 
         return TranslationResponse(
             originalLanguage = originalLanguage,
@@ -183,7 +189,10 @@ class TranslationHelper():
         if targetLanguageEntry is not None and not targetLanguageEntry.hasIso6391Code():
             raise ValueError(f'the given LanguageEntry is not supported for translation: \"{targetLanguageEntry.getName()}\"')
         elif targetLanguageEntry is None:
-            targetLanguageEntry = self.__languagesRepository.requireLanguageForCommand('en', hasIso6391Code = True)
+            targetLanguageEntry = await self.__languagesRepository.requireLanguageForCommand(
+                command = 'en',
+                hasIso6391Code = True
+            )
 
         if self.__googleTranslateClient is None and not await self.__hasGoogleApiCredentials():
             # This isn't an optimal situation, but it means that we're currently running in a
