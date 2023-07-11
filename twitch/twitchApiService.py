@@ -147,7 +147,7 @@ class TwitchApiService():
                 ))
 
             emoteId = utils.getStrFromDict(emoteJson, 'id')
-            emoteName = utils.getStrFromDict(emoteName, 'name')
+            emoteName = utils.getStrFromDict(emoteJson, 'name')
             emoteType = TwitchEmoteType.fromStr(utils.getStrFromDict(emoteJson, 'emote_type'))
             subscriberTier = TwitchSubscriberTier.fromStr(utils.getStrFromDict(emoteJson, 'tier'))
 
