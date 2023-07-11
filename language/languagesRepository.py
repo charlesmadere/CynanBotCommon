@@ -247,6 +247,21 @@ class LanguagesRepository():
 
         return None
 
+    async def getLanguageForWotdApiCode(
+        self,
+        wotdApiCode: str
+    ) -> Optional[LanguageEntry]:
+        if not utils.isValidStr(wotdApiCode):
+            raise ValueError(f'wotdApiCode argument is malformed: \"{wotdApiCode}\"')
+
+        validEntries = self.__getLanguageEntries(hasWotdApiCode = True)
+
+        for entry in validEntries:
+            if entry.getWotdApiCode() == wotdApiCode.lower():
+                return entry
+
+        return None
+
     def requireLanguageForCommand(
         self,
         command: str,
@@ -263,6 +278,20 @@ class LanguagesRepository():
         languageEntry = self.getLanguageForCommand(command, hasIso6391Code, hasWotdApiCode)
 
         if languageEntry is None:
-            raise RuntimeError(f'Unable to find LanguageEntry for \"{command}\"')
+            raise RuntimeError(f'Unable to find LanguageEntry for command \"{command}\"')
+
+        return languageEntry
+
+    async def requireLanguageForWotdApiCode(
+        self,
+        wotdApiCode: str
+    ) -> LanguageEntry:
+        if not utils.isValidStr(wotdApiCode):
+            raise ValueError(f'wotdApiCode argument is malformed: \"{wotdApiCode}\"')
+
+        languageEntry = await self.getLanguageForWotdApiCode(wotdApiCode)
+
+        if languageEntry is None:
+            raise RuntimeError(f'Unable to find LanguageEntry for wotdApiCode \"{wotdApiCode}\"')
 
         return languageEntry

@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Any, List, Optional
 
 try:
     import CynanBotCommon.utils as utils
@@ -33,6 +33,12 @@ class LanguageEntry():
         self.__iso6391Code: Optional[str] = iso6391Code
         self.__wotdApiCode: Optional[str] = wotdApiCode
 
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, LanguageEntry):
+            return self.__name.lower() == other.__name.lower()
+        else:
+            raise ValueError(f'`other` is an unsupported type: \"{other}\"')
+
     def getCommandNames(self) -> List[str]:
         return self.__commandNames
 
@@ -60,8 +66,14 @@ class LanguageEntry():
     def hasFlag(self) -> bool:
         return utils.isValidStr(self.__flag)
 
+    def __hash__(self) -> int:
+        return hash(self.__name.lower())
+
     def hasIso6391Code(self) -> bool:
         return utils.isValidStr(self.__iso6391Code)
 
     def hasWotdApiCode(self) -> bool:
         return utils.isValidStr(self.__wotdApiCode)
+
+    def __str__(self) -> str:
+        return self.getName()
