@@ -1,5 +1,5 @@
 import random
-from typing import List, Optional
+from typing import List, Optional, Set
 
 try:
     import CynanBotCommon.utils as utils
@@ -166,6 +166,17 @@ class LanguagesRepository():
             name = 'Chinese',
             wotdApiCode = 'zh'
         ))
+
+        if not utils.hasItems(languagesList):
+            raise RuntimeError(f'languagesList must contain at least 1 entry: \"{languagesList}\"')
+
+        languagesNames: Set[str] = set()
+
+        for language in languagesList:
+            if language.getName().lower() in languagesNames:
+                raise ValueError(f'Every language name must be unique (found duplicate of \"{language.getName()}\"): {languagesList}')
+            else:
+                languagesNames.add(language.getName().lower())
 
         return languagesList
 
