@@ -28,7 +28,7 @@ class RecurringActionType(Enum):
         else:
             raise ValueError(f'unknown RecurringActionType: \"{text}\"')
 
-    def getRecurringActionTimingMinutes(self) -> int:
+    def getDefaultRecurringActionTimingMinutes(self) -> int:
         if self is RecurringActionType.SUPER_TRIVIA:
             return 10
         elif self is RecurringActionType.WEATHER:
