@@ -51,11 +51,13 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
         elif queueTimeoutSeconds < 1 or queueTimeoutSeconds > 5:
             raise ValueError(f'queueTimeoutSeconds argument is out of bounds: {queueTimeoutSeconds}')
 
+        self.__backgroundTaskHelper: BackgroundTaskHelper = backgroundTaskHelper
         self.__recurringActionsRepositoryInterface: RecurringActionsRepositoryInterface = recurringActionsRepositoryInterface
         self.__timber: TimberInterface = timber
         self.__sleepTimeoutSeconds: float = sleepTimeSeconds
         self.__queueTimeoutSeconds: int = queueTimeoutSeconds
 
+        self.__isStarted: bool = False
         self.__actionListener: Optional[RecurringActionListener] = None
         self.__actionQueue: SimpleQueue[AbsRecurringAction] = SimpleQueue()
 
@@ -66,5 +68,15 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
         self.__actionListener = listener
 
     def startRecurringActions(self):
+        if self.__isStarted:
+            self.__timber.log('RecurringActionsMachine', 'Not starting RecurringActionsMachine as it has already been started')
+            return
+
+        self.__isStarted = True
+        self.__timber.log('RecurringActionsMachine', 'Starting RecurringActionsMachine...')
+
+        self.__backgroundTaskHelper.createTask(self.__startRefreshLoop())
+
+    async def __startRefreshLoop(self):
         # TODO
         pass
