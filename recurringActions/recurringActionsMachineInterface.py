@@ -9,7 +9,7 @@ except:
         RecurringActionListener
 
 
-class RecurringActionsHelperInterface():
+class RecurringActionsMachineInterface():
 
     def __init__(self):
         pass
