@@ -2,6 +2,8 @@ from typing import Optional
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.recurringActions.recurringActionsJsonParserInterface import \
+        RecurringActionsJsonParserInterface
     from CynanBotCommon.recurringActions.recurringActionsRepositoryInterface import \
         RecurringActionsRepositoryInterface
     from CynanBotCommon.recurringActions.weatherRecurringAction import \
@@ -14,6 +16,8 @@ try:
     from CynanBotCommon.timber.timberInterface import TimberInterface
 except:
     import utils
+    from recurringActions.recurringActionsJsonParserInterface import \
+        RecurringActionsJsonParserInterface
     from recurringActions.recurringActionsRepositoryInterface import \
         RecurringActionsRepositoryInterface
     from recurringActions.weatherRecurringAction import WeatherRecurringAction
@@ -30,14 +34,18 @@ class RecurringActionsRepository(RecurringActionsRepositoryInterface):
     def __init__(
         self,
         backingDatabase: BackingDatabase,
+        recurringActionsJsonParser: RecurringActionsJsonParserInterface,
         timber: TimberInterface
     ):
         if not isinstance(backingDatabase, BackingDatabase):
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
+        elif not isinstance(recurringActionsJsonParser, RecurringActionsJsonParserInterface):
+            raise ValueError(f'recurringActionsJsonParser argument is malformed: \"{recurringActionsJsonParser}\"')
         elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
 
         self.__backingDatabase: BackingDatabase = backingDatabase
+        self.__recurringActionsJsonParser: RecurringActionsJsonParserInterface = recurringActionsJsonParser
         self.__timber: TimberInterface = timber
 
         self.__isDatabaseReady: bool = False
@@ -54,7 +62,8 @@ class RecurringActionsRepository(RecurringActionsRepositoryInterface):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
         # TODO
-        pass
+
+        return None
 
     async def getWordOfTheDayRecurringAction(
         self,
@@ -64,7 +73,8 @@ class RecurringActionsRepository(RecurringActionsRepositoryInterface):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
         # TODO
-        pass
+
+        return None
 
     async def __initDatabaseTable(self):
         if self.__isDatabaseReady:
