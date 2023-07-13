@@ -17,15 +17,20 @@ class RecurringActionsJsonParserInterface(ABC):
     @abstractmethod
     async def parseWeather(
         self,
+        enabled: bool,
         minutesBetween: Optional[int],
-        jsonString: Optional[str]
+        jsonString: Optional[str],
+        twitchChannel: str
     ) -> Optional[WeatherRecurringAction]:
         pass
 
     @abstractmethod
     async def parseWordOfTheDay(
         self,
-        jsonString: Optional[str]
+        enabled: bool,
+        minutesBetween: Optional[int],
+        jsonString: Optional[str],
+        twitchChannel: str
     ) -> Optional[WordOfTheDayRecurringAction]:
         pass
 
