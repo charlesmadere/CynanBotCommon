@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 try:
     from CynanBotCommon.recurringActions.recurringAction import RecurringAction
@@ -6,8 +6,8 @@ except:
     from recurringActions.recurringAction import RecurringAction
 
 
-class RecurringActionListener(ABC):
+class WeatherRecurringAction(RecurringAction):
 
     @abstractmethod
-    async def onNewRecurringAction(self, action: RecurringAction):
+    def isAlertsOnly(self) -> bool:
         pass

@@ -1,11 +1,11 @@
+import asyncio
 from queue import SimpleQueue
 from typing import Optional
 
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.backgroundTaskHelper import BackgroundTaskHelper
-    from CynanBotCommon.recurringActions.absRecurringAction import \
-        AbsRecurringAction
+    from CynanBotCommon.recurringActions.recurringAction import RecurringAction
     from CynanBotCommon.recurringActions.recurringActionListener import \
         RecurringActionListener
     from CynanBotCommon.recurringActions.recurringActionsMachineInterface import \
@@ -16,7 +16,7 @@ try:
 except:
     import utils
     from backgroundTaskHelper import BackgroundTaskHelper
-    from recurringActions.absRecurringAction import AbsRecurringAction
+    from recurringActions.recurringAction import RecurringAction
     from recurringActions.recurringActionListener import \
         RecurringActionListener
     from recurringActions.recurringActionsMachineInterface import \
@@ -54,12 +54,12 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
         self.__backgroundTaskHelper: BackgroundTaskHelper = backgroundTaskHelper
         self.__recurringActionsRepositoryInterface: RecurringActionsRepositoryInterface = recurringActionsRepositoryInterface
         self.__timber: TimberInterface = timber
-        self.__sleepTimeoutSeconds: float = sleepTimeSeconds
+        self.__sleepTimeSeconds: float = sleepTimeSeconds
         self.__queueTimeoutSeconds: int = queueTimeoutSeconds
 
         self.__isStarted: bool = False
         self.__actionListener: Optional[RecurringActionListener] = None
-        self.__actionQueue: SimpleQueue[AbsRecurringAction] = SimpleQueue()
+        self.__actionQueue: SimpleQueue[RecurringAction] = SimpleQueue()
 
     def setRecurringActionListener(self, listener: Optional[RecurringActionListener]):
         if listener is not None and not isinstance(listener, RecurringActionListener):
@@ -78,5 +78,6 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
         self.__backgroundTaskHelper.createTask(self.__startRefreshLoop())
 
     async def __startRefreshLoop(self):
-        # TODO
-        pass
+        while True:
+            # TODO
+            await asyncio.sleep(self.__sleepTimeSeconds)

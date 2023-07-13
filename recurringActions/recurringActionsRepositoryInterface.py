@@ -1,29 +1,43 @@
 from abc import ABC, abstractmethod
+from typing import Optional
 
 try:
-    from CynanBotCommon.recurringActions.weatherRecurringActionConfiguration import \
-        WeatherRecurringActionConfiguration
-    from CynanBotCommon.recurringActions.wordOfTheDayRecurringActionConfiguration import \
-        WordOfTheDayRecurringActionConfiguration
+    from CynanBotCommon.recurringActions.weatherRecurringAction import \
+        WeatherRecurringAction
+    from CynanBotCommon.recurringActions.wordOfTheDayRecurringAction import \
+        WordOfTheDayRecurringAction
 except:
-    from recurringActions.weatherRecurringActionConfiguration import \
-        WeatherRecurringActionConfiguration
-    from recurringActions.wordOfTheDayRecurringActionConfiguration import \
-        WordOfTheDayRecurringActionConfiguration
+    from recurringActions.weatherRecurringAction import WeatherRecurringAction
+    from recurringActions.wordOfTheDayRecurringAction import \
+        WordOfTheDayRecurringAction
 
 
 class RecurringActionsRepositoryInterface(ABC):
 
     @abstractmethod
-    async def configureWeatherRecurringAction(
+    async def getWeatherRecurringAction(
         self,
-        action: WeatherRecurringActionConfiguration
+        twitchChannel: str
+    ) -> Optional[WeatherRecurringAction]:
+        pass
+
+    @abstractmethod
+    async def getWordOfTheDayRecurringAction(
+        self,
+        twitchChannel: str
+    ) -> Optional[WordOfTheDayRecurringAction]:
+        pass
+
+    @abstractmethod
+    async def setWeatherRecurringAction(
+        self,
+        action: WeatherRecurringAction
     ):
         pass
 
     @abstractmethod
-    async def configureWordOfTheDayRecurringAction(
+    async def setWordOfTheDayRecurringAction(
         self,
-        action: WordOfTheDayRecurringActionConfiguration
+        action: WordOfTheDayRecurringAction
     ):
         pass
