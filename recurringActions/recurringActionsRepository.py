@@ -2,6 +2,7 @@ from typing import Any, List, Optional
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.recurringActions.recurringAction import RecurringAction
     from CynanBotCommon.recurringActions.recurringActionsJsonParserInterface import \
         RecurringActionsJsonParserInterface
     from CynanBotCommon.recurringActions.recurringActionsRepositoryInterface import \
@@ -18,6 +19,7 @@ try:
     from CynanBotCommon.timber.timberInterface import TimberInterface
 except:
     import utils
+    from recurringActions.recurringAction import RecurringAction
     from recurringActions.recurringActionsJsonParserInterface import \
         RecurringActionsJsonParserInterface
     from recurringActions.recurringActionsRepositoryInterface import \
@@ -166,6 +168,23 @@ class RecurringActionsRepository(RecurringActionsRepositoryInterface):
 
         await connection.close()
 
+    async def __setRecurringAction(
+        self,
+        action: RecurringAction,
+        configurationJson: str
+    ):
+        connection = await self.__getDatabaseConnection()
+        await connection.execute(
+            '''
+                INSERT INTO recurringactions (actiontype, configurationjson, isenabled, minutesbetween, twitchchannel)
+                VALUES ($1, $2, $3, $4, $5)
+                ON CONFLICT (actiontype, twitchchannel) DO UPDATE SET configurationjson = EXCLUDED.configurationjson, isenabled = EXCLUDED.isenabled, minutesbetween = EXCLUDED.minutesbetween
+            ''',
+            action.getActionType().toStr(), configurationJson, action.isEnabled(), action.getMinutesBetween(), action.getTwitchChannel()
+        )
+
+        await connection.close()
+
     async def setWeatherRecurringAction(
         self,
         action: WeatherRecurringAction
@@ -173,8 +192,14 @@ class RecurringActionsRepository(RecurringActionsRepositoryInterface):
         if not isinstance(action, WeatherRecurringAction):
             raise ValueError(f'action argument is malformed: \"{action}\"')
 
-        # TODO
-        pass
+        configurationJson = await self.__recurringActionsJsonParser.weatherToJson(action)
+
+        await self.__setRecurringAction(
+            action = action,
+            configurationJson = configurationJson
+        )
+
+        self.__timber.log('RecurringActionsRepository', f'Updated {action.getActionType()} action for \"{action.getTwitchChannel()}\"')
 
     async def setWordOfTheDayRecurringAction(
         self,
@@ -183,5 +208,11 @@ class RecurringActionsRepository(RecurringActionsRepositoryInterface):
         if not isinstance(action, WordOfTheDayRecurringAction):
             raise ValueError(f'action argument is malformed: \"{action}\"')
 
-        # TODO
-        pass
+        configurationJson = await self.__recurringActionsJsonParser.wordOfTheDayToJson(action)
+
+        await self.__setRecurringAction(
+            action = action,
+            configurationJson = configurationJson
+        )
+
+        self.__timber.log('RecurringActionsRepository', f'Updated {action.getActionType()} action for \"{action.getTwitchChannel()}\"')

@@ -1,4 +1,4 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from typing import Set
 
 try:
@@ -15,7 +15,7 @@ except:
         RemoveAutoWordOfTheDayLanguageResult
 
 
-class AutoWordOfTheDayRepositoryInterface():
+class AutoWordOfTheDayRepositoryInterface(ABC):
 
     @abstractmethod
     async def addAutoLanguageEntry(

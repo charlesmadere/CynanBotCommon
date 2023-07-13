@@ -85,6 +85,9 @@ class RecurringActionsJsonParser(RecurringActionsJsonParserInterface):
         self,
         weather: WeatherRecurringAction
     ) -> str:
+        if not isinstance(weather, WeatherRecurringAction):
+            raise ValueError(f'weather argument is malformed: \"{weather}\"')
+
         jsonContents: Dict[str, Any] = {
             'alertsOnly': weather.isAlertsOnly()
         }
@@ -95,6 +98,9 @@ class RecurringActionsJsonParser(RecurringActionsJsonParserInterface):
         self,
         wordOfTheDay: WordOfTheDayRecurringAction
     ) -> str:
+        if not isinstance(wordOfTheDay, WordOfTheDayRecurringAction):
+            raise ValueError(f'wordOfTheDay argument is malformed: \"{wordOfTheDay}\"')
+
         jsonContents: Dict[str, Any] = {
             'languageEntry': wordOfTheDay.requireLanguageEntry().getWotdApiCode()
         }
