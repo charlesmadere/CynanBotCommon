@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, List, Optional
 
 try:
     import CynanBotCommon.utils as utils
@@ -6,6 +6,8 @@ try:
         RecurringActionsJsonParserInterface
     from CynanBotCommon.recurringActions.recurringActionsRepositoryInterface import \
         RecurringActionsRepositoryInterface
+    from CynanBotCommon.recurringActions.recurringActionType import \
+        RecurringActionType
     from CynanBotCommon.recurringActions.weatherRecurringAction import \
         WeatherRecurringAction
     from CynanBotCommon.recurringActions.wordOfTheDayRecurringAction import \
@@ -20,6 +22,7 @@ except:
         RecurringActionsJsonParserInterface
     from recurringActions.recurringActionsRepositoryInterface import \
         RecurringActionsRepositoryInterface
+    from recurringActions.recurringActionType import RecurringActionType
     from recurringActions.weatherRecurringAction import WeatherRecurringAction
     from recurringActions.wordOfTheDayRecurringAction import \
         WordOfTheDayRecurringAction
@@ -54,6 +57,33 @@ class RecurringActionsRepository(RecurringActionsRepositoryInterface):
         await self.__initDatabaseTable()
         return await self.__backingDatabase.getConnection()
 
+    async def __getRecurringAction(
+        self,
+        actionType: RecurringActionType,
+        twitchChannel: str
+    ) -> Optional[List[Any]]:
+        if not isinstance(actionType, RecurringActionType):
+            raise ValueError(f'actionType argument is malformed: \"{actionType}\"')
+        elif not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+
+        connection = await self.__getDatabaseConnection()
+        record = await connection.fetchRow(
+            '''
+                SELECT configurationjson, isenabled, minutesbetween FROM recurringactions
+                WHERE actiontype = $1 AND twitchchannel = $2
+                LIMIT 1
+            ''',
+            actionType.toStr(), twitchChannel
+        )
+
+        await connection.close()
+
+        if utils.hasItems(record):
+            return record
+        else:
+            return None
+
     async def getWeatherRecurringAction(
         self,
         twitchChannel: str
@@ -61,9 +91,20 @@ class RecurringActionsRepository(RecurringActionsRepositoryInterface):
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
-        # TODO
+        record = await self.__getRecurringAction(
+            actionType = RecurringActionType.WEATHER,
+            twitchChannel = twitchChannel
+        )
 
-        return None
+        if not utils.hasItems(record):
+            return None
+
+        return await self.__recurringActionsJsonParser.parseWordOfTheDay(
+            enabled = utils.numToBool(record[1]),
+            minutesBetween = record[2],
+            jsonString = record[0],
+            twitchChannel = twitchChannel
+        )
 
     async def getWordOfTheDayRecurringAction(
         self,
@@ -72,9 +113,20 @@ class RecurringActionsRepository(RecurringActionsRepositoryInterface):
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
-        # TODO
+        record = await self.__getRecurringAction(
+            actionType = RecurringActionType.WORD_OF_THE_DAY,
+            twitchChannel = twitchChannel
+        )
 
-        return None
+        if not utils.hasItems(record):
+            return None
+
+        return await self.__recurringActionsJsonParser.parseWordOfTheDay(
+            enabled = utils.numToBool(record[1]),
+            minutesBetween = record[2],
+            jsonString = record[0],
+            twitchChannel = twitchChannel
+        )
 
     async def __initDatabaseTable(self):
         if self.__isDatabaseReady:
