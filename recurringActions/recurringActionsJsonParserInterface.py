@@ -2,17 +2,33 @@ from abc import ABC, abstractmethod
 from typing import Optional
 
 try:
+    from CynanBotCommon.recurringActions.recurringAction import RecurringAction
+    from CynanBotCommon.recurringActions.superTriviaRecurringAction import \
+        SuperTriviaRecurringAction
     from CynanBotCommon.recurringActions.weatherRecurringAction import \
         WeatherRecurringAction
     from CynanBotCommon.recurringActions.wordOfTheDayRecurringAction import \
         WordOfTheDayRecurringAction
 except:
+    from recurringActions.recurringAction import RecurringAction
+    from recurringActions.superTriviaRecurringAction import \
+        SuperTriviaRecurringAction
     from recurringActions.weatherRecurringAction import WeatherRecurringAction
     from recurringActions.wordOfTheDayRecurringAction import \
         WordOfTheDayRecurringAction
 
 
 class RecurringActionsJsonParserInterface(ABC):
+
+    @abstractmethod
+    async def parseSuperTrivia(
+        self,
+        enabled: bool,
+        minutesBetween: Optional[int],
+        jsonString: Optional[str],
+        twitchChannel: str
+    ) -> Optional[SuperTriviaRecurringAction]:
+        pass
 
     @abstractmethod
     async def parseWeather(
@@ -35,9 +51,5 @@ class RecurringActionsJsonParserInterface(ABC):
         pass
 
     @abstractmethod
-    async def weatherToJson(self, weather: WeatherRecurringAction) -> str:
-        pass
-
-    @abstractmethod
-    async def wordOfTheDayToJson(self, wordOfTheDay: WordOfTheDayRecurringAction) -> str:
+    async def toJson(self, action: RecurringAction) -> str:
         pass
