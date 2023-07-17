@@ -9,6 +9,8 @@ try:
         RecurringActionsRepositoryInterface
     from CynanBotCommon.recurringActions.recurringActionType import \
         RecurringActionType
+    from CynanBotCommon.recurringActions.superTriviaRecurringAction import \
+        SuperTriviaRecurringAction
     from CynanBotCommon.recurringActions.weatherRecurringAction import \
         WeatherRecurringAction
     from CynanBotCommon.recurringActions.wordOfTheDayRecurringAction import \
@@ -25,6 +27,8 @@ except:
     from recurringActions.recurringActionsRepositoryInterface import \
         RecurringActionsRepositoryInterface
     from recurringActions.recurringActionType import RecurringActionType
+    from recurringActions.superTriviaRecurringAction import \
+        SuperTriviaRecurringAction
     from recurringActions.weatherRecurringAction import WeatherRecurringAction
     from recurringActions.wordOfTheDayRecurringAction import \
         WordOfTheDayRecurringAction
@@ -86,6 +90,28 @@ class RecurringActionsRepository(RecurringActionsRepositoryInterface):
         else:
             return None
 
+    async def getSuperTriviaRecurringAction(
+        self,
+        twitchChannel: str
+    ) -> Optional[SuperTriviaRecurringAction]:
+        if not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+
+        record = await self.__getRecurringAction(
+            actionType = RecurringActionType.SUPER_TRIVIA,
+            twitchChannel = twitchChannel
+        )
+
+        if not utils.hasItems(record):
+            return None
+
+        return await self.__recurringActionsJsonParser.parseSuperTrivia(
+            enabled = utils.numToBool(record[1]),
+            minutesBetween = record[2],
+            jsonString = record[0],
+            twitchChannel = twitchChannel
+        )
+
     async def getWeatherRecurringAction(
         self,
         twitchChannel: str
@@ -101,7 +127,7 @@ class RecurringActionsRepository(RecurringActionsRepositoryInterface):
         if not utils.hasItems(record):
             return None
 
-        return await self.__recurringActionsJsonParser.parseWordOfTheDay(
+        return await self.__recurringActionsJsonParser.parseWeather(
             enabled = utils.numToBool(record[1]),
             minutesBetween = record[2],
             jsonString = record[0],
@@ -168,6 +194,19 @@ class RecurringActionsRepository(RecurringActionsRepositoryInterface):
 
         await connection.close()
 
+    async def setRecurringAction(self, action: RecurringAction):
+        if not isinstance(action, RecurringAction):
+            raise ValueError(f'action argument is malformed: \"{action}\"')
+
+        configurationJson = await self.__recurringActionsJsonParser.toJson(action)
+
+        await self.__setRecurringAction(
+            action = action,
+            configurationJson = configurationJson
+        )
+
+        self.__timber.log('RecurringActionsRepository', f'Updated {action.getActionType()} action for \"{action.getTwitchChannel()}\"')
+
     async def __setRecurringAction(
         self,
         action: RecurringAction,
@@ -184,35 +223,3 @@ class RecurringActionsRepository(RecurringActionsRepositoryInterface):
         )
 
         await connection.close()
-
-    async def setWeatherRecurringAction(
-        self,
-        action: WeatherRecurringAction
-    ):
-        if not isinstance(action, WeatherRecurringAction):
-            raise ValueError(f'action argument is malformed: \"{action}\"')
-
-        configurationJson = await self.__recurringActionsJsonParser.weatherToJson(action)
-
-        await self.__setRecurringAction(
-            action = action,
-            configurationJson = configurationJson
-        )
-
-        self.__timber.log('RecurringActionsRepository', f'Updated {action.getActionType()} action for \"{action.getTwitchChannel()}\"')
-
-    async def setWordOfTheDayRecurringAction(
-        self,
-        action: WordOfTheDayRecurringAction
-    ):
-        if not isinstance(action, WordOfTheDayRecurringAction):
-            raise ValueError(f'action argument is malformed: \"{action}\"')
-
-        configurationJson = await self.__recurringActionsJsonParser.wordOfTheDayToJson(action)
-
-        await self.__setRecurringAction(
-            action = action,
-            configurationJson = configurationJson
-        )
-
-        self.__timber.log('RecurringActionsRepository', f'Updated {action.getActionType()} action for \"{action.getTwitchChannel()}\"')

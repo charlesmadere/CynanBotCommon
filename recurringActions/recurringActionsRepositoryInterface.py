@@ -2,17 +2,30 @@ from abc import ABC, abstractmethod
 from typing import Optional
 
 try:
+    from CynanBotCommon.recurringActions.recurringAction import RecurringAction
+    from CynanBotCommon.recurringActions.superTriviaRecurringAction import \
+        SuperTriviaRecurringAction
     from CynanBotCommon.recurringActions.weatherRecurringAction import \
         WeatherRecurringAction
     from CynanBotCommon.recurringActions.wordOfTheDayRecurringAction import \
         WordOfTheDayRecurringAction
 except:
+    from recurringActions.recurringAction import RecurringAction
+    from recurringActions.superTriviaRecurringAction import \
+        SuperTriviaRecurringAction
     from recurringActions.weatherRecurringAction import WeatherRecurringAction
     from recurringActions.wordOfTheDayRecurringAction import \
         WordOfTheDayRecurringAction
 
 
 class RecurringActionsRepositoryInterface(ABC):
+
+    @abstractmethod
+    async def getSuperTriviaRecurringAction(
+        self,
+        twitchChannel: str
+    ) -> Optional[SuperTriviaRecurringAction]:
+        pass
 
     @abstractmethod
     async def getWeatherRecurringAction(
@@ -29,15 +42,5 @@ class RecurringActionsRepositoryInterface(ABC):
         pass
 
     @abstractmethod
-    async def setWeatherRecurringAction(
-        self,
-        action: WeatherRecurringAction
-    ):
-        pass
-
-    @abstractmethod
-    async def setWordOfTheDayRecurringAction(
-        self,
-        action: WordOfTheDayRecurringAction
-    ):
+    async def setRecurringAction(self, action: RecurringAction):
         pass

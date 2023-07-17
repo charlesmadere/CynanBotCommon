@@ -57,10 +57,6 @@ class RecurringActionsJsonParser(RecurringActionsJsonParserInterface):
         if not utils.isValidStr(jsonString):
             return None
 
-        jsonContents: Optional[Dict[str, Any]] = json.loads(jsonString)
-        if not utils.hasItems(jsonContents):
-            return None
-
         return ImmutableSuperTriviaRecurringAction(
             twitchChannel = twitchChannel,
             enabled = enabled,
@@ -78,10 +74,12 @@ class RecurringActionsJsonParser(RecurringActionsJsonParserInterface):
             return None
 
         jsonContents: Optional[Dict[str, Any]] = json.loads(jsonString)
-        if not utils.hasItems(jsonContents):
-            return None
 
-        alertsOnly = utils.getBoolFromDict(jsonContents, 'alertsOnly')
+        alertsOnly = utils.getBoolFromDict(
+            d = jsonContents,
+            key = 'alertsOnly',
+            fallback = False
+        )
 
         return ImmutableWeatherRecurringAction(
             twitchChannel = twitchChannel,
@@ -101,10 +99,16 @@ class RecurringActionsJsonParser(RecurringActionsJsonParserInterface):
             return None
 
         jsonContents: Optional[Dict[str, Any]] = json.loads(jsonString)
-        if not utils.hasItems(jsonContents):
+
+        wotdApiCode = utils.getStrFromDict(
+            d = jsonContents,
+            key = 'languageEntry',
+            fallback = ''
+        )
+
+        if not utils.isValidStr(wotdApiCode):
             return None
 
-        wotdApiCode = utils.getStrFromDict(jsonContents, 'languageEntry')
         languageEntry = await self.__languagesRepository.requireLanguageForWotdApiCode(wotdApiCode)
 
         return ImmutableWordOfTheDayRecurringAction(
