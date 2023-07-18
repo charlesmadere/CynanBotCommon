@@ -668,6 +668,8 @@ class TriviaAnswerChecker():
             yield 'air conditioner'
             yield 'air conditioning'
             yield 'alternating current'
+        if word == 'aluminium':
+            yield 'aluminum'
         if word == 'bday':
             yield 'birthday'
         if word == 'dc':
