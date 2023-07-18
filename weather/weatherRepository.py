@@ -33,7 +33,7 @@ class WeatherRepository():
         oneWeatherApiKey: str,
         timber: TimberInterface,
         maxAlerts: int = 2,
-        cacheTimeDelta: timedelta = timedelta(minutes = 20)
+        cacheTimeDelta: timedelta = timedelta(minutes = 15)
     ):
         if not isinstance(networkClientProvider, NetworkClientProvider):
             raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
