@@ -36,9 +36,3 @@ class MostRecentRecurringAction():
 
     def getTwitchChannel(self) -> str:
         return self.__twitchChannel
-
-    def hasActionType(self) -> bool:
-        return self.__actionType is not None
-
-    def hasDateTime(self) -> bool:
-        return self.__dateTime is not None

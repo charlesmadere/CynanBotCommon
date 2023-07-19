@@ -1,6 +1,8 @@
 import asyncio
 import queue
+import random
 import traceback
+from datetime import datetime, timedelta, timezone
 from queue import SimpleQueue
 from typing import List, Optional
 
@@ -16,6 +18,8 @@ try:
         RecurringActionsMachineInterface
     from CynanBotCommon.recurringActions.recurringActionsRepositoryInterface import \
         RecurringActionsRepositoryInterface
+    from CynanBotCommon.recurringActions.recurringActionType import \
+        RecurringActionType
     from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.users.userInterface import UserInterface
     from CynanBotCommon.users.usersRepositoryInterface import \
@@ -32,6 +36,7 @@ except:
         RecurringActionsMachineInterface
     from recurringActions.recurringActionsRepositoryInterface import \
         RecurringActionsRepositoryInterface
+    from recurringActions.recurringActionType import RecurringActionType
     from timber.timberInterface import TimberInterface
 
     from users.userInterface import UserInterface
@@ -49,7 +54,9 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
         usersRepository: UsersRepositoryInterface,
         queueSleepTimeSeconds: float = 3,
         refreshSleepTimeSeconds: float = 30,
-        queueTimeoutSeconds: int = 3
+        queueTimeoutSeconds: int = 3,
+        cooldown: timedelta = timedelta(minutes = 3),
+        timeZone: timezone = timezone.utc
     ):
         if not isinstance(backgroundTaskHelper, BackgroundTaskHelper):
             raise ValueError(f'backgroundTaskHelper argument is malformed: \"{backgroundTaskHelper}\"')
@@ -73,6 +80,10 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
             raise ValueError(f'queueTimeoutSeconds argument is malformed: \"{queueTimeoutSeconds}\"')
         elif queueTimeoutSeconds < 1 or queueTimeoutSeconds > 5:
             raise ValueError(f'queueTimeoutSeconds argument is out of bounds: {queueTimeoutSeconds}')
+        elif not isinstance(cooldown, timedelta):
+            raise ValueError(f'cooldown argument is malformed: \"{cooldown}\"')
+        elif not isinstance(timeZone, timezone):
+            raise ValueError(f'timeZone argument is malformed: \"{timeZone}\"')
 
         self.__backgroundTaskHelper: BackgroundTaskHelper = backgroundTaskHelper
         self.__mostRecentRecurringActionsRepository: MostRecentRecurringActionRepositoryInterface = mostRecentRecurringActionRepository
@@ -82,6 +93,8 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
         self.__queueSleepTimeSeconds: float = queueSleepTimeSeconds
         self.__refreshSleepTimeSeconds: float = refreshSleepTimeSeconds
         self.__queueTimeoutSeconds: int = queueTimeoutSeconds
+        self.__cooldown: timedelta = cooldown
+        self.__timeZone: timezone = timeZone
 
         self.__isStarted: bool = False
         self.__actionListener: Optional[RecurringActionListener] = None
@@ -90,6 +103,31 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
     async def __processRecurringActionFor(self, user: UserInterface):
         if not isinstance(user, UserInterface):
             raise ValueError(f'user argument is malformed: \"{user}\"')
+
+        actionTypes: List[RecurringActionType] = list(RecurringActionType)
+        action: Optional[RecurringAction] = None
+
+        mostRecentAction = await self.__mostRecentRecurringActionsRepository.getMostRecentRecurringAction(user.getHandle())
+        now = datetime.now(self.__timeZone)
+
+        while len(actionTypes) >= 1 and action is None:
+            actionType = random.choice(actionTypes)
+            actionTypes.remove(actionType)
+
+            if actionType is RecurringActionType.SUPER_TRIVIA:
+                action = await self.__recurringActionsRepository.getSuperTriviaRecurringAction(user.getHandle())
+            elif actionType is RecurringActionType.WEATHER:
+                action = await self.__recurringActionsRepository.getWeatherRecurringAction(user.getHandle())
+            elif actionType is RecurringActionType.WORD_OF_THE_DAY:
+                action = await self.__recurringActionsRepository.getWordOfTheDayRecurringAction(user.getHandle())
+            else:
+                raise RuntimeError(f'Unknown RecurringActionType: \"{actionType}\"')
+
+            if mostRecentAction is not None and now < mostRecentAction.getDateTime() + self.__cooldown:
+                action = None
+
+        if action is None:
+            return
 
         # TODO
         pass
