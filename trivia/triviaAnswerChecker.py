@@ -428,6 +428,8 @@ class TriviaAnswerChecker():
             yield 'korea'
         if word == 'nyc':
             yield 'new york city'
+        if word == 'uae':
+            yield 'united arab emirates'
         if word == 'uk':
             yield 'united kingdom'
         if word == 'un':
