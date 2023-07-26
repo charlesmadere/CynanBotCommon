@@ -6,6 +6,7 @@ try:
     from CynanBotCommon.twitch.twitchStreamType import TwitchStreamType
 except:
     import utils
+
     from twitch.twitchStreamType import TwitchStreamType
 
 

@@ -20,7 +20,14 @@ try:
         RecurringActionsRepositoryInterface
     from CynanBotCommon.recurringActions.recurringActionType import \
         RecurringActionType
+    from CynanBotCommon.recurringActions.superTriviaRecurringAction import \
+        SuperTriviaRecurringAction
+    from CynanBotCommon.recurringActions.weatherRecurringAction import \
+        WeatherRecurringAction
+    from CynanBotCommon.recurringActions.wordOfTheDayRecurringAction import \
+        WordOfTheDayRecurringAction
     from CynanBotCommon.timber.timberInterface import TimberInterface
+    from CynanBotCommon.twitch.twitchApiService import TwitchApiService
     from CynanBotCommon.users.userInterface import UserInterface
     from CynanBotCommon.users.usersRepositoryInterface import \
         UsersRepositoryInterface
@@ -37,8 +44,14 @@ except:
     from recurringActions.recurringActionsRepositoryInterface import \
         RecurringActionsRepositoryInterface
     from recurringActions.recurringActionType import RecurringActionType
+    from recurringActions.superTriviaRecurringAction import \
+        SuperTriviaRecurringAction
+    from recurringActions.weatherRecurringAction import WeatherRecurringAction
+    from recurringActions.wordOfTheDayRecurringAction import \
+        WordOfTheDayRecurringAction
     from timber.timberInterface import TimberInterface
 
+    from twitch.twitchApiService import TwitchApiService
     from users.userInterface import UserInterface
     from users.usersRepositoryInterface import UsersRepositoryInterface
 
@@ -51,6 +64,7 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
         mostRecentRecurringActionRepository: MostRecentRecurringActionRepositoryInterface,
         recurringActionsRepository: RecurringActionsRepositoryInterface,
         timber: TimberInterface,
+        twitchApiService: TwitchApiService,
         usersRepository: UsersRepositoryInterface,
         queueSleepTimeSeconds: float = 3,
         refreshSleepTimeSeconds: float = 30,
@@ -66,6 +80,8 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
             raise ValueError(f'recurringActionsRepository argument is malformed: \"{recurringActionsRepository}\"')
         elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
+        elif not isinstance(twitchApiService, TwitchApiService):
+            raise ValueError(f'twitchApiService argument is malformed: \"{twitchApiService}\"')
         elif not isinstance(usersRepository, UsersRepositoryInterface):
             raise ValueError(f'usersRepository argument is malformed: \"{usersRepository}\"')
         elif not utils.isValidNum(queueSleepTimeSeconds):
@@ -89,6 +105,7 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
         self.__mostRecentRecurringActionsRepository: MostRecentRecurringActionRepositoryInterface = mostRecentRecurringActionRepository
         self.__recurringActionsRepository: RecurringActionsRepositoryInterface = recurringActionsRepository
         self.__timber: TimberInterface = timber
+        self.__twitchApiService: TwitchApiService = twitchApiService
         self.__usersRepository: UsersRepositoryInterface = usersRepository
         self.__queueSleepTimeSeconds: float = queueSleepTimeSeconds
         self.__refreshSleepTimeSeconds: float = refreshSleepTimeSeconds
@@ -100,7 +117,7 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
         self.__actionListener: Optional[RecurringActionListener] = None
         self.__actionQueue: SimpleQueue[RecurringAction] = SimpleQueue()
 
-    async def __processRecurringActionFor(self, user: UserInterface):
+    async def __findDueRecurringAction(self, user: UserInterface) -> Optional[RecurringAction]:
         if not isinstance(user, UserInterface):
             raise ValueError(f'user argument is malformed: \"{user}\"')
 
@@ -123,27 +140,108 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
             else:
                 raise RuntimeError(f'Unknown RecurringActionType: \"{actionType}\"')
 
-            if mostRecentAction is not None and now < mostRecentAction.getDateTime() + self.__cooldown:
-                action = None
+            if mostRecentAction is not None and action is not None:
+                if now < mostRecentAction.getDateTime() + self.__cooldown:
+                    action = None
+                else:
+                    minutesBetweenInt = action.getMinutesBetween()
 
-        if action is None:
-            return
+                    if not utils.isValidInt(minutesBetweenInt):
+                        minutesBetweenInt = action.getActionType().getDefaultRecurringActionTimingMinutes()
+
+                    minutesBetween = timedelta(minutes = minutesBetweenInt)
+
+                    if now < mostRecentAction.getDateTime() + minutesBetween:
+                        action = None
+
+        return action
+
+    async def __processRecurringAction(self, user: UserInterface, action: RecurringAction):
+        if not isinstance(user, UserInterface):
+            raise ValueError(f'user argument is malformed: \"{user}\"')
+        elif not isinstance(action, RecurringAction):
+            raise ValueError(f'action argument is malformed: \"{action}\"')
+
+        actionType = action.getActionType()
+
+        if actionType is RecurringActionType.SUPER_TRIVIA:
+            action = await self.__processSuperTriviaRecurringAction(
+                user = user,
+                action = action
+            )
+        elif actionType is RecurringActionType.WEATHER:
+            action = await self.__processWeatherRecurringAction(
+                user = user,
+                action = action
+            )
+        elif actionType is RecurringActionType.WORD_OF_THE_DAY:
+            action = await self.__processWordOfTheDayRecurringAction(
+                user = user,
+                action = action
+            )
+        else:
+            raise RuntimeError(f'Unknown RecurringActionType: \"{actionType}\"')
+
+    async def __processSuperTriviaRecurringAction(
+        self,
+        user: UserInterface,
+        action: SuperTriviaRecurringAction
+    ) -> bool:
+        if not isinstance(user, UserInterface):
+            raise ValueError(f'user argument is malformed: \"{user}\"')
+        elif not isinstance(action, SuperTriviaRecurringAction):
+            raise ValueError(f'action argument is malformed: \"{action}\"')
 
         # TODO
         pass
 
+        return True
+
+    async def __processWeatherRecurringAction(self, user: UserInterface, action: WeatherRecurringAction):
+        if not isinstance(user, UserInterface):
+            raise ValueError(f'user argument is malformed: \"{user}\"')
+        elif not isinstance(action, WeatherRecurringAction):
+            raise ValueError(f'action argument is malformed: \"{action}\"')
+
+        # TODO
+        pass
+
+        return True
+
+    async def __processWordOfTheDayRecurringAction(self, user: UserInterface, action: WordOfTheDayRecurringAction):
+        if not isinstance(user, UserInterface):
+            raise ValueError(f'user argument is malformed: \"{user}\"')
+        elif not isinstance(action, WordOfTheDayRecurringAction):
+            raise ValueError(f'action argument is malformed: \"{action}\"')
+
+        # TODO
+        pass
+
+        return True
+
     async def __refresh(self):
         users = await self.__usersRepository.getUsersAsync()
+        usersToRemove: List[UserInterface] = list()
 
         for user in users:
             if not user.isEnabled() or not user.areRecurringActionsEnabled():
-                users.remove(user)
+                usersToRemove.append(user)
+
+        for userToRemove in usersToRemove:
+            users.remove(userToRemove)
 
         if not utils.hasItems(users):
             return
 
         for user in users:
-            await self.__processRecurringActionFor(user)
+            action = await self.__findDueRecurringAction(user)
+
+            if action is not None:
+                if await self.__processRecurringAction(
+                    user = user,
+                    action = action
+                ):
+                    await self.__mostRecentRecurringActionsRepository.setMostRecentRecurringAction(action)
 
     def setRecurringActionListener(self, listener: Optional[RecurringActionListener]):
         if listener is not None and not isinstance(listener, RecurringActionListener):
