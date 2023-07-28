@@ -418,16 +418,69 @@ class TriviaAnswerChecker():
             yield 'crossing'
 
         # countries and specific places
+        if word == 'antigua':
+            yield 'antigua and barbuda'
+        if word == 'bosnia':
+            yield 'bosnia and herzegovina'
+        if word == 'burma':
+            yield 'myanmar'
+        if word == 'cape verde':
+            yield 'cabo verde'
+        if word == 'car':
+            yield 'central african republic'
+        if word == 'czech republic':
+            yield 'czechia'
+        if word == 'czechia':
+            yield 'czech republic'
+        if word == 'dr':
+            yield 'dominican republic'
+        if word == 'drc':
+            yield 'democratic republic of congo'
+            yield 'democratic republic of the congo'
         if word == 'eu':
             yield 'european union'
         if word == 'gb':
             yield 'great britain'
+        if word == 'holland':
+            yield 'netherlands'
+        if word == 'ivory coast':
+            yield 'cote d ivoire'
+            yield 'cote divoire'
         if word in ('jp', 'jpn'):
             yield 'japan'
         if word == 'kr':
             yield 'korea'
+        if word == 'macedonia':
+            yield 'north macedonia'
+        if word == 'mx':
+            yield 'mexico'
+        if word == 'myanmar':
+            yield 'burma'
+        if word == 'new guinea':
+            yield 'papua new guinea'
         if word == 'nyc':
             yield 'new york city'
+        if word in ('palestine', 'palestine state'):
+            yield 'palestinian'
+            yield 'palestinian state'
+            yield 'west bank'
+        if word in ('palestinian'):
+            yield 'palestine'
+            yield 'palestine state'
+            yield 'west bank'
+        if word == 'palestinian state':
+            yield 'palestine'
+            yield 'west bank'
+        if word == 'pr':
+            yield 'puerto rico'
+        if word == 'swaziland':
+            yield 'eswatini'
+        if word in ('timor', 'east timor'):
+            yield 'timor leste'
+        if word == 'turkey':
+            yield 'turkiye'
+        if word == 'turkiye':
+            yield 'turkey'
         if word == 'uae':
             yield 'united arab emirates'
         if word == 'uk':
@@ -449,6 +502,8 @@ class TriviaAnswerChecker():
             yield 'secret intelligence service'
         if word == 'nsa':
             yield 'natural security agency'
+        if word == 'tsa':
+            yield 'transportation security administration'
 
         # currencies
         if word == 'eur':
@@ -462,6 +517,24 @@ class TriviaAnswerChecker():
         if word == 'usd':
             yield 'dollar'
             yield 'united states dollar'
+
+        # sports
+        if word == 'asl':
+            yield 'american soccer league'
+        if word == 'cfl':
+            yield 'canadian football league'
+        if word == 'fifa':
+            yield 'federation internationale de football association'
+        if word == 'mlb':
+            yield 'major league baseball'
+        if word == 'mls':
+            yield 'major league soccer'
+        if word == 'nba':
+            yield 'national basketball association'
+        if word == 'nfl':
+            yield 'national football league'
+        if word == 'nhl':
+            yield 'national hockey league'
 
         # directions
         if word in ('n', 'north', 'northerly', 'northern'):
@@ -680,6 +753,8 @@ class TriviaAnswerChecker():
             yield 'direct current'
         if word == 'dept':
             yield 'department'
+        if word == 'espn':
+            yield 'entertainment and sports programming network'
         if word == 'eta':
             yield 'estimated time of arrival'
         if word == 'fyi':
@@ -690,7 +765,7 @@ class TriviaAnswerChecker():
             yield 'obsessive compulsive disorder'
         if word == 'tel':
             yield 'telephone'
-        if word == 'temp':
+        if word in ('temp', 'tmp'):
             yield 'temporary'
         if word == 'vs':
             yield 'versus'
