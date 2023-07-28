@@ -439,6 +439,8 @@ class TriviaAnswerChecker():
             yield 'united states of america'
 
         # government organizations
+        if word == 'cia':
+            yield 'central intelligence agency'
         if word == 'fbi':
             yield 'federal bureau of investigation'
         if word == 'irs':
