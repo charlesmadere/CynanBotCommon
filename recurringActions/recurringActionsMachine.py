@@ -105,6 +105,7 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
         queueSleepTimeSeconds: float = 3,
         refreshSleepTimeSeconds: float = 30,
         queueTimeoutSeconds: int = 3,
+        superTriviaCountdownSeconds: int = 5,
         cooldown: timedelta = timedelta(minutes = 3),
         timeZone: timezone = timezone.utc
     ):
@@ -142,6 +143,10 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
             raise ValueError(f'queueTimeoutSeconds argument is malformed: \"{queueTimeoutSeconds}\"')
         elif queueTimeoutSeconds < 1 or queueTimeoutSeconds > 5:
             raise ValueError(f'queueTimeoutSeconds argument is out of bounds: {queueTimeoutSeconds}')
+        elif not utils.isValidNum(superTriviaCountdownSeconds):
+            raise ValueError(f'superTriviaCountdownSeconds argument is malformed: \"{superTriviaCountdownSeconds}\"')
+        elif superTriviaCountdownSeconds < 3 or superTriviaCountdownSeconds > 10:
+            raise ValueError(f'superTriviaCountdownSeconds argument is out of bounds: {superTriviaCountdownSeconds}')
         elif not isinstance(cooldown, timedelta):
             raise ValueError(f'cooldown argument is malformed: \"{cooldown}\"')
         elif not isinstance(timeZone, timezone):
@@ -161,6 +166,7 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
         self.__queueSleepTimeSeconds: float = queueSleepTimeSeconds
         self.__refreshSleepTimeSeconds: float = refreshSleepTimeSeconds
         self.__queueTimeoutSeconds: int = queueTimeoutSeconds
+        self.__superTriviaCountdownSeconds: int = superTriviaCountdownSeconds
         self.__cooldown: timedelta = cooldown
         self.__timeZone: timezone = timeZone
 
@@ -251,14 +257,16 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
         if newTriviaGame is None:
             return False
 
-        self.__triviaGameMachine.submitAction(newTriviaGame)
-
         await self.__submitEvent(ImmutableSuperTriviaRecurringAction(
             twitchChannel = action.getTwitchChannel(),
             enabled = action.isEnabled(),
             minutesBetween = action.getMinutesBetween()
         ))
 
+        # delay to allow users to prepare for an incoming trivia question
+        await asyncio.sleep(self.__superTriviaCountdownSeconds)
+
+        self.__triviaGameMachine.submitAction(newTriviaGame)
         return True
 
     async def __processWeatherRecurringAction(
