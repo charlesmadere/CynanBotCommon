@@ -19,11 +19,11 @@ class RecurringActionType(Enum):
 
         text = text.lower()
 
-        if text == 'super_trivia':
+        if text in ('supertrivia', 'super_trivia'):
             return RecurringActionType.SUPER_TRIVIA
         elif text == 'weather':
             return RecurringActionType.WEATHER
-        elif text == 'word_of_the_day':
+        elif text == ('wordoftheday', 'word_of_the_day', 'wotd'):
             return RecurringActionType.WORD_OF_THE_DAY
         else:
             raise ValueError(f'unknown RecurringActionType: \"{text}\"')
@@ -35,6 +35,16 @@ class RecurringActionType(Enum):
             return 120
         elif self is RecurringActionType.WORD_OF_THE_DAY:
             return 60
+        else:
+            raise RuntimeError(f'unknown RecurringActionType: \"{self}\"')
+
+    def getMinimumRecurringActionTimingMinutes(self) -> int:
+        if self is RecurringActionType.SUPER_TRIVIA:
+            return 5
+        elif self is RecurringActionType.WEATHER:
+            return 30
+        elif self is RecurringActionType.WORD_OF_THE_DAY:
+            return 30
         else:
             raise RuntimeError(f'unknown RecurringActionType: \"{self}\"')
 
