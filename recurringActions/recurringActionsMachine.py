@@ -63,7 +63,7 @@ except:
     from recurringActions.mostRecentRecurringActionRepositoryInterface import \
         MostRecentRecurringActionRepositoryInterface
     from recurringActions.recurringAction import RecurringAction
-    from recurringActions.recurringActionListener import \
+    from recurringActions.recurringActionEventListener import \
         RecurringActionEventListener
     from recurringActions.recurringActionsMachineInterface import \
         RecurringActionsMachineInterface
@@ -386,7 +386,6 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
 
             if eventListener is not None:
                 events: List[RecurringAction] = list()
-                pass
 
                 try:
                     while not self.__eventQueue.empty():
@@ -394,11 +393,11 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
                 except queue.Empty as e:
                     self.__timber.log('RecurringActionsMachine', f'Encountered queue.Empty when building up events list (queue size: {self.__eventQueue.qsize()}) (events size: {len(events)})', e, traceback.format_exc())
 
-            for event in events:
-                try:
-                    await eventListener.onNewRecurringActionEvent(event)
-                except Exception as e:
-                    self.__timber.log('RecurringActionsMachine', f'Encountered unknown Exception when looping through events (queue size: {self.__eventQueue.qsize()}) (event: {event})', e, traceback.format_exc())
+                for event in events:
+                    try:
+                        await eventListener.onNewRecurringActionEvent(event)
+                    except Exception as e:
+                        self.__timber.log('RecurringActionsMachine', f'Encountered unknown Exception when looping through events (queue size: {self.__eventQueue.qsize()}) (event: {event})', e, traceback.format_exc())
 
             await asyncio.sleep(self.__queueSleepTimeSeconds)
 

@@ -5,7 +5,7 @@ try:
     from CynanBotCommon.recurringActions.recurringActionEventListener import \
         RecurringActionEventListener
 except:
-    from recurringActions.recurringActionListener import \
+    from recurringActions.recurringActionEventListener import \
         RecurringActionEventListener
 
 
