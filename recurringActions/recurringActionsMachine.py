@@ -23,8 +23,8 @@ try:
     from CynanBotCommon.recurringActions.mostRecentRecurringActionRepositoryInterface import \
         MostRecentRecurringActionRepositoryInterface
     from CynanBotCommon.recurringActions.recurringAction import RecurringAction
-    from CynanBotCommon.recurringActions.recurringActionListener import \
-        RecurringActionListener
+    from CynanBotCommon.recurringActions.recurringActionEventListener import \
+        RecurringActionEventListener
     from CynanBotCommon.recurringActions.recurringActionsMachineInterface import \
         RecurringActionsMachineInterface
     from CynanBotCommon.recurringActions.recurringActionsRepositoryInterface import \
@@ -64,7 +64,7 @@ except:
         MostRecentRecurringActionRepositoryInterface
     from recurringActions.recurringAction import RecurringAction
     from recurringActions.recurringActionListener import \
-        RecurringActionListener
+        RecurringActionEventListener
     from recurringActions.recurringActionsMachineInterface import \
         RecurringActionsMachineInterface
     from recurringActions.recurringActionsRepositoryInterface import \
@@ -165,8 +165,8 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
         self.__timeZone: timezone = timeZone
 
         self.__isStarted: bool = False
-        self.__actionListener: Optional[RecurringActionListener] = None
-        self.__actionQueue: SimpleQueue[RecurringAction] = SimpleQueue()
+        self.__eventListener: Optional[RecurringActionEventListener] = None
+        self.__eventQueue: SimpleQueue[RecurringAction] = SimpleQueue()
 
     async def __findDueRecurringAction(self, user: UserInterface) -> Optional[RecurringAction]:
         if not isinstance(user, UserInterface):
@@ -253,6 +253,12 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
 
         self.__triviaGameMachine.submitAction(newTriviaGame)
 
+        await self.__submitEvent(ImmutableSuperTriviaRecurringAction(
+            twitchChannel = action.getTwitchChannel(),
+            enabled = action.isEnabled(),
+            minutesBetween = action.getMinutesBetween()
+        ))
+
         return True
 
     async def __processWeatherRecurringAction(
@@ -281,8 +287,13 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
         elif action.isAlertsOnly() and not weatherReport.hasAlerts():
             return False
 
-        # TODO
-        pass
+        await self.__submitEvent(ImmutableWeatherRecurringAction(
+            twitchChannel = action.getTwitchChannel(),
+            alertsOnly = action.isAlertsOnly(),
+            enabled = action.isEnabled(),
+            minutesBetween = action.getMinutesBetween(),
+            weatherReport = weatherReport
+        ))
 
         return True
 
@@ -299,18 +310,23 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
         if not action.hasLanguageEntry():
             return False
 
-        wordOfTheDay = Optional[WordOfTheDayResponse] = None
+        wordOfTheDayResponse = Optional[WordOfTheDayResponse] = None
 
         try:
-            wordOfTheDay = await self.__wordOfTheDayRepository.fetchWotd(action.requireLanguageEntry())
+            wordOfTheDayResponse = await self.__wordOfTheDayRepository.fetchWotd(action.requireLanguageEntry())
         except:
             return False
 
-        if wordOfTheDay is None:
+        if wordOfTheDayResponse is None:
             return False
 
-        # TODO
-        pass
+        await self.__submitEvent(ImmutableWordOfTheDayRecurringAction(
+            twitchChannel = action.getTwitchChannel(),
+            enabled = action.isEnabled(),
+            minutesBetween = action.getMinutesBetween(),
+            languageEntry = action.getLanguageEntry(),
+            wordOfTheDayResponse = wordOfTheDayResponse
+        ))
 
         return True
 
@@ -350,22 +366,31 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
             ):
                 await self.__mostRecentRecurringActionsRepository.setMostRecentRecurringAction(action)
 
-    def setRecurringActionListener(self, listener: Optional[RecurringActionListener]):
-        if listener is not None and not isinstance(listener, RecurringActionListener):
+    def setRecurringActionListener(self, listener: Optional[RecurringActionEventListener]):
+        if listener is not None and not isinstance(listener, RecurringActionEventListener):
             raise ValueError(f'listener argument is malformed: \"{listener}\"')
 
-        self.__actionListener = listener
+        self.__eventListener = listener
 
-    async def __startQueueLoop(self):
+    async def __startEventLoop(self):
         while True:
-            actionListener = self.__actionListener
+            eventListener = self.__eventListener
 
-            if actionListener is not None:
-                
+            if eventListener is not None:
+                events: List[RecurringAction] = list()
                 pass
 
-            # TODO
-            pass
+                try:
+                    while not self.__eventQueue.empty():
+                        events.append(self.__eventQueue.get_nowait())
+                except queue.Empty as e:
+                    self.__timber.log('RecurringActionsMachine', f'Encountered queue.Empty when building up events list (queue size: {self.__eventQueue.qsize()}) (events size: {len(events)})', e, traceback.format_exc())
+
+            for event in events:
+                try:
+                    await eventListener.onNewRecurringActionEvent(event)
+                except Exception as e:
+                    self.__timber.log('RecurringActionsMachine', f'Encountered unknown Exception when looping through events (queue size: {self.__eventQueue.qsize()}) (event: {event})', e, traceback.format_exc())
 
             await asyncio.sleep(self.__queueSleepTimeSeconds)
 
@@ -378,7 +403,7 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
         self.__timber.log('RecurringActionsMachine', 'Starting RecurringActionsMachine...')
 
         self.__backgroundTaskHelper.createTask(self.__startRefreshLoop())
-        self.__backgroundTaskHelper.createTask(self.__startQueueLoop())
+        self.__backgroundTaskHelper.createTask(self.__startEventLoop())
 
     async def __startRefreshLoop(self):
         while True:
@@ -388,3 +413,12 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
                 self.__timber.log('RecurringActionsMachine', f'Encountered unknown Exception when refreshing: {e}', e, traceback.format_exc())
 
             await asyncio.sleep(self.__refreshSleepTimeSeconds)
+
+    async def __submitEvent(self, event: RecurringAction):
+        if not isinstance(event, RecurringAction):
+            raise ValueError(f'action argument is malformed: \"{event}\"')
+
+        try:
+            self.__eventQueue.put(event, block = True, timeout = self.__queueTimeoutSeconds)
+        except queue.Full as e:
+            self.__timber.log('RecurringActionsMachine', f'Encountered queue.Full when submitting a new event ({event}) into the event queue (queue size: {self.__eventQueue.qsize()})', e, traceback.format_exc())

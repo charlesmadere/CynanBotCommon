@@ -2,11 +2,11 @@ from abc import abstractmethod
 from typing import Optional
 
 try:
-    from CynanBotCommon.recurringActions.recurringActionListener import \
-        RecurringActionListener
+    from CynanBotCommon.recurringActions.recurringActionEventListener import \
+        RecurringActionEventListener
 except:
     from recurringActions.recurringActionListener import \
-        RecurringActionListener
+        RecurringActionEventListener
 
 
 class RecurringActionsMachineInterface():
@@ -15,7 +15,7 @@ class RecurringActionsMachineInterface():
         pass
 
     @abstractmethod
-    def setRecurringActionListener(self, listener: Optional[RecurringActionListener]):
+    def setRecurringActionListener(self, listener: Optional[RecurringActionEventListener]):
         pass
 
     @abstractmethod

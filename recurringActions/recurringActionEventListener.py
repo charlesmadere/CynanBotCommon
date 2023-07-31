@@ -6,8 +6,8 @@ except:
     from recurringActions.recurringAction import RecurringAction
 
 
-class RecurringActionListener(ABC):
+class RecurringActionEventListener(ABC):
 
     @abstractmethod
-    async def onNewRecurringAction(self, action: RecurringAction):
+    async def onNewRecurringActionEvent(self, event: RecurringAction):
         pass
