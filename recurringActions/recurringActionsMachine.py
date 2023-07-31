@@ -14,6 +14,12 @@ try:
     from CynanBotCommon.language.wordOfTheDayResponse import \
         WordOfTheDayResponse
     from CynanBotCommon.location.locationsRepository import LocationsRepository
+    from CynanBotCommon.recurringActions.immutableSuperTriviaRecurringAction import \
+        ImmutableSuperTriviaRecurringAction
+    from CynanBotCommon.recurringActions.immutableWeatherRecurringAction import \
+        ImmutableWeatherRecurringAction
+    from CynanBotCommon.recurringActions.immutableWordOfTheDayRecurringAction import \
+        ImmutableWordOfTheDayRecurringAction
     from CynanBotCommon.recurringActions.mostRecentRecurringActionRepositoryInterface import \
         MostRecentRecurringActionRepositoryInterface
     from CynanBotCommon.recurringActions.recurringAction import RecurringAction
@@ -48,6 +54,12 @@ except:
     from language.wordOfTheDayRepository import WordOfTheDayRepository
     from language.wordOfTheDayResponse import WordOfTheDayResponse
     from location.locationsRepository import LocationsRepository
+    from recurringActions.immutableSuperTriviaRecurringAction import \
+        ImmutableSuperTriviaRecurringAction
+    from recurringActions.immutableWeatherRecurringAction import \
+        ImmutableWeatherRecurringAction
+    from recurringActions.immutableWordOfTheDayRecurringAction import \
+        ImmutableWordOfTheDayRecurringAction
     from recurringActions.mostRecentRecurringActionRepositoryInterface import \
         MostRecentRecurringActionRepositoryInterface
     from recurringActions.recurringAction import RecurringAction
@@ -240,6 +252,7 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
             return False
 
         self.__triviaGameMachine.submitAction(newTriviaGame)
+
         return True
 
     async def __processWeatherRecurringAction(
@@ -263,7 +276,9 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
         except:
             return False
 
-        if action.isAlertsOnly() and not weatherReport.hasAlerts():
+        if weatherReport is None:
+            return False
+        elif action.isAlertsOnly() and not weatherReport.hasAlerts():
             return False
 
         # TODO
@@ -289,6 +304,9 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
         try:
             wordOfTheDay = await self.__wordOfTheDayRepository.fetchWotd(action.requireLanguageEntry())
         except:
+            return False
+
+        if wordOfTheDay is None:
             return False
 
         # TODO
@@ -343,6 +361,7 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
             actionListener = self.__actionListener
 
             if actionListener is not None:
+                
                 pass
 
             # TODO
