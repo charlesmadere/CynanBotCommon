@@ -301,10 +301,14 @@ class TriviaAnswerChecker():
         # common names
         if word == 'bob':
             yield 'bobby'
+        if word in ('charlie', 'chuck'):
+            yield 'charles'
         if word in ('chris', 'christ'):
             yield 'christopher'
         if word == 'dick':
             yield 'richard'
+        if word in ('micheal', 'mike'):
+            yield 'michael'
         if word == 'rob':
             yield 'robert'
 
@@ -418,6 +422,8 @@ class TriviaAnswerChecker():
             yield 'crossing'
 
         # countries and specific places
+        if word == 'asl':
+            yield 'american sign language'
         if word == 'antigua':
             yield 'antigua and barbuda'
         if word == 'bosnia':
@@ -749,6 +755,8 @@ class TriviaAnswerChecker():
             yield 'aluminum'
         if word == 'bday':
             yield 'birthday'
+        if word == 'colour':
+            yield 'color'
         if word == 'dc':
             yield 'direct current'
         if word == 'dept':
@@ -759,11 +767,15 @@ class TriviaAnswerChecker():
             yield 'estimated time of arrival'
         if word == 'fyi':
             yield 'for your information'
+        if word == 'grey':
+            yield 'gray'
         if word == 'no':
             yield 'number'
         if word == 'ocd':
             yield 'obsessive compulsive disorder'
-        if word == 'tel':
+        if word == 'fridge':
+            yield 'refrigerator'
+        if word in ('phone', 'tel'):
             yield 'telephone'
         if word in ('temp', 'tmp'):
             yield 'temporary'
