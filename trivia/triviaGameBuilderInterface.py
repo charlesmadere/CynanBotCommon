@@ -1,20 +1,32 @@
 from abc import ABC, abstractmethod
+from typing import Optional
 
 try:
-    from CynanBotCommon.trivia.newSuperTriviaGameEvent import \
-        NewSuperTriviaGameEvent
-    from CynanBotCommon.trivia.newTriviaGameEvent import NewTriviaGameEvent
+    from CynanBotCommon.trivia.startNewSuperTriviaGameAction import \
+        StartNewSuperTriviaGameAction
+    from CynanBotCommon.trivia.startNewTriviaGameAction import \
+        StartNewTriviaGameAction
 except:
-    from trivia.newSuperTriviaGameEvent import NewSuperTriviaGameEvent
-    from trivia.newTriviaGameEvent import NewTriviaGameEvent    
+    from trivia.startNewSuperTriviaGameAction import \
+        StartNewSuperTriviaGameAction
+    from trivia.startNewTriviaGameAction import StartNewTriviaGameAction    
 
 
 class TriviaGameBuilderInterface(ABC):
 
     @abstractmethod
-    async def createNewTriviaGame(self, twitchChannel: str) -> NewTriviaGameEvent:
+    async def createNewTriviaGame(
+        self,
+        twitchChannel: str,
+        userId: str,
+        userName: str
+    ) -> Optional[StartNewTriviaGameAction]:
         pass
 
     @abstractmethod
-    async def createNewSuperTriviaGame(self, twitchChannel: str) -> NewSuperTriviaGameEvent:
+    async def createNewSuperTriviaGame(
+        self,
+        twitchChannel: str,
+        numberOfGames: int = 1
+    ) -> Optional[StartNewSuperTriviaGameAction]:
         pass

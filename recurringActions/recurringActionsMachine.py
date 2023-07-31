@@ -4,11 +4,16 @@ import random
 import traceback
 from datetime import datetime, timedelta, timezone
 from queue import SimpleQueue
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.backgroundTaskHelper import BackgroundTaskHelper
+    from CynanBotCommon.language.wordOfTheDayRepository import \
+        WordOfTheDayRepository
+    from CynanBotCommon.language.wordOfTheDayResponse import \
+        WordOfTheDayResponse
+    from CynanBotCommon.location.locationsRepository import LocationsRepository
     from CynanBotCommon.recurringActions.mostRecentRecurringActionRepositoryInterface import \
         MostRecentRecurringActionRepositoryInterface
     from CynanBotCommon.recurringActions.recurringAction import RecurringAction
@@ -27,13 +32,22 @@ try:
     from CynanBotCommon.recurringActions.wordOfTheDayRecurringAction import \
         WordOfTheDayRecurringAction
     from CynanBotCommon.timber.timberInterface import TimberInterface
-    from CynanBotCommon.twitch.twitchApiService import TwitchApiService
+    from CynanBotCommon.trivia.triviaGameBuilderInterface import \
+        TriviaGameBuilderInterface
+    from CynanBotCommon.trivia.triviaGameMachine import TriviaGameMachine
+    from CynanBotCommon.twitch.isLiveOnTwitchRepositoryInterface import \
+        IsLiveOnTwitchRepositoryInterface
     from CynanBotCommon.users.userInterface import UserInterface
     from CynanBotCommon.users.usersRepositoryInterface import \
         UsersRepositoryInterface
+    from CynanBotCommon.weather.weatherReport import WeatherReport
+    from CynanBotCommon.weather.weatherRepository import WeatherRepository
 except:
     import utils
     from backgroundTaskHelper import BackgroundTaskHelper
+    from language.wordOfTheDayRepository import WordOfTheDayRepository
+    from language.wordOfTheDayResponse import WordOfTheDayResponse
+    from location.locationsRepository import LocationsRepository
     from recurringActions.mostRecentRecurringActionRepositoryInterface import \
         MostRecentRecurringActionRepositoryInterface
     from recurringActions.recurringAction import RecurringAction
@@ -50,8 +64,13 @@ except:
     from recurringActions.wordOfTheDayRecurringAction import \
         WordOfTheDayRecurringAction
     from timber.timberInterface import TimberInterface
+    from trivia.triviaGameBuilderInterface import TriviaGameBuilderInterface
+    from trivia.triviaGameMachine import TriviaGameMachine
+    from weather.weatherReport import WeatherReport
+    from weather.weatherRepository import WeatherRepository
 
-    from twitch.twitchApiService import TwitchApiService
+    from twitch.isLiveOnTwitchRepositoryInterface import \
+        IsLiveOnTwitchRepositoryInterface
     from users.userInterface import UserInterface
     from users.usersRepositoryInterface import UsersRepositoryInterface
 
@@ -61,11 +80,16 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
     def __init__(
         self,
         backgroundTaskHelper: BackgroundTaskHelper,
+        isLiveOnTwitchRepository: IsLiveOnTwitchRepositoryInterface,
+        locationsRepository: LocationsRepository,
         mostRecentRecurringActionRepository: MostRecentRecurringActionRepositoryInterface,
         recurringActionsRepository: RecurringActionsRepositoryInterface,
         timber: TimberInterface,
-        twitchApiService: TwitchApiService,
+        triviaGameBuilder: TriviaGameBuilderInterface,
+        triviaGameMachine: TriviaGameMachine,
         usersRepository: UsersRepositoryInterface,
+        weatherRepository: WeatherRepository,
+        wordOfTheDayRepository: WordOfTheDayRepository,
         queueSleepTimeSeconds: float = 3,
         refreshSleepTimeSeconds: float = 30,
         queueTimeoutSeconds: int = 3,
@@ -74,16 +98,26 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
     ):
         if not isinstance(backgroundTaskHelper, BackgroundTaskHelper):
             raise ValueError(f'backgroundTaskHelper argument is malformed: \"{backgroundTaskHelper}\"')
+        elif not isinstance(isLiveOnTwitchRepository, IsLiveOnTwitchRepositoryInterface):
+            raise ValueError(f'isLiveOnTwitchRepository argument is malformed: \"{isLiveOnTwitchRepository}\"')
+        elif not isinstance(locationsRepository, LocationsRepository):
+            raise ValueError(f'locationsRepository argument is malformed: \"{locationsRepository}\"')
         elif not isinstance(mostRecentRecurringActionRepository, MostRecentRecurringActionRepositoryInterface):
             raise ValueError(f'mostRecentRecurringActionRepository argument is malformed: \"{mostRecentRecurringActionRepository}\"')
         elif not isinstance(recurringActionsRepository, RecurringActionsRepositoryInterface):
             raise ValueError(f'recurringActionsRepository argument is malformed: \"{recurringActionsRepository}\"')
         elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif not isinstance(twitchApiService, TwitchApiService):
-            raise ValueError(f'twitchApiService argument is malformed: \"{twitchApiService}\"')
+        elif not isinstance(triviaGameBuilder, TriviaGameBuilderInterface):
+            raise ValueError(f'triviaGameBuilder argument is malformed: \"{triviaGameBuilder}\"')
+        elif not isinstance(triviaGameMachine, TriviaGameMachine):
+            raise ValueError(f'triviaGameMachine argument is malformed: \"{triviaGameMachine}\"')
         elif not isinstance(usersRepository, UsersRepositoryInterface):
             raise ValueError(f'usersRepository argument is malformed: \"{usersRepository}\"')
+        elif not isinstance(weatherRepository, WeatherRepository):
+            raise ValueError(f'weatherRepository argument is malformed: \"{weatherRepository}\"')
+        elif not isinstance(wordOfTheDayRepository, WordOfTheDayRepository):
+            raise ValueError(f'wordOfTheDayRepository argument is malformed: \"{wordOfTheDayRepository}\"')
         elif not utils.isValidNum(queueSleepTimeSeconds):
             raise ValueError(f'queueSleepTimeSeconds argument is malformed: \"{queueSleepTimeSeconds}\"')
         elif queueSleepTimeSeconds < 1 or queueSleepTimeSeconds > 15:
@@ -102,11 +136,16 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
             raise ValueError(f'timeZone argument is malformed: \"{timeZone}\"')
 
         self.__backgroundTaskHelper: BackgroundTaskHelper = backgroundTaskHelper
+        self.__isLiveOnTwitchRepository: IsLiveOnTwitchRepositoryInterface = isLiveOnTwitchRepository
+        self.__locationsRepository: LocationsRepository = locationsRepository
         self.__mostRecentRecurringActionsRepository: MostRecentRecurringActionRepositoryInterface = mostRecentRecurringActionRepository
         self.__recurringActionsRepository: RecurringActionsRepositoryInterface = recurringActionsRepository
         self.__timber: TimberInterface = timber
-        self.__twitchApiService: TwitchApiService = twitchApiService
+        self.__triviaGameBuilder: TriviaGameBuilderInterface = triviaGameBuilder
+        self.__triviaGameMachine: TriviaGameMachine = triviaGameMachine
         self.__usersRepository: UsersRepositoryInterface = usersRepository
+        self.__weatherRepository: WeatherRepository = weatherRepository
+        self.__wordOfTheDayRepository: WordOfTheDayRepository = wordOfTheDayRepository
         self.__queueSleepTimeSeconds: float = queueSleepTimeSeconds
         self.__refreshSleepTimeSeconds: float = refreshSleepTimeSeconds
         self.__queueTimeoutSeconds: int = queueTimeoutSeconds
@@ -192,27 +231,65 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
         elif not isinstance(action, SuperTriviaRecurringAction):
             raise ValueError(f'action argument is malformed: \"{action}\"')
 
-        # TODO
-        pass
+        newTriviaGame = await self.__triviaGameBuilder.createNewSuperTriviaGame(
+            twitchChannel = user.getHandle(),
+            numberOfGames = 1
+        )
 
+        if newTriviaGame is None:
+            return False
+
+        self.__triviaGameMachine.submitAction(newTriviaGame)
         return True
 
-    async def __processWeatherRecurringAction(self, user: UserInterface, action: WeatherRecurringAction):
+    async def __processWeatherRecurringAction(
+        self,
+        user: UserInterface,
+        action: WeatherRecurringAction
+    ) -> bool:
         if not isinstance(user, UserInterface):
             raise ValueError(f'user argument is malformed: \"{user}\"')
         elif not isinstance(action, WeatherRecurringAction):
             raise ValueError(f'action argument is malformed: \"{action}\"')
 
+        if not user.hasLocationId():
+            return False
+
+        location = await self.__locationsRepository.getLocation(user.getLocationId())
+        weatherReport: Optional[WeatherReport] = None
+
+        try:
+            weatherReport = await self.__weatherRepository.fetchWeather(location)
+        except:
+            return False
+
+        if action.isAlertsOnly() and not weatherReport.hasAlerts():
+            return False
+
         # TODO
         pass
 
         return True
 
-    async def __processWordOfTheDayRecurringAction(self, user: UserInterface, action: WordOfTheDayRecurringAction):
+    async def __processWordOfTheDayRecurringAction(
+        self,
+        user: UserInterface,
+        action: WordOfTheDayRecurringAction
+    ) -> bool:
         if not isinstance(user, UserInterface):
             raise ValueError(f'user argument is malformed: \"{user}\"')
         elif not isinstance(action, WordOfTheDayRecurringAction):
             raise ValueError(f'action argument is malformed: \"{action}\"')
+
+        if not action.hasLanguageEntry():
+            return False
+
+        wordOfTheDay = Optional[WordOfTheDayResponse] = None
+
+        try:
+            wordOfTheDay = await self.__wordOfTheDayRepository.fetchWotd(action.requireLanguageEntry())
+        except:
+            return False
 
         # TODO
         pass
@@ -233,15 +310,27 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
         if not utils.hasItems(users):
             return
 
+        usersToRemove.clear()
+        usersToRecurringAction: Dict[UserInterface, RecurringAction] = dict()
+
         for user in users:
             action = await self.__findDueRecurringAction(user)
 
             if action is not None:
-                if await self.__processRecurringAction(
-                    user = user,
-                    action = action
-                ):
-                    await self.__mostRecentRecurringActionsRepository.setMostRecentRecurringAction(action)
+                usersToRecurringAction[user] = action
+
+        twitchHandles = list(usersToRecurringAction.keys())
+        usersToLiveStatus = await self.__isLiveOnTwitchRepository.isLive(twitchHandles)
+
+        for user, action in usersToRecurringAction.items():
+            if not usersToLiveStatus.get(user.getHandle(), False):
+                continue
+
+            if await self.__processRecurringAction(
+                user = user,
+                action = action
+            ):
+                await self.__mostRecentRecurringActionsRepository.setMostRecentRecurringAction(action)
 
     def setRecurringActionListener(self, listener: Optional[RecurringActionListener]):
         if listener is not None and not isinstance(listener, RecurringActionListener):

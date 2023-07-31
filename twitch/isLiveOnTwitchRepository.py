@@ -32,7 +32,7 @@ class IsLiveOnTwitchRepository(IsLiveOnTwitchRepositoryInterface):
         administratorProviderInterface: AdministratorProviderInterface,
         twitchApiService: TwitchApiService,
         twitchTokensRepositoryInterface: TwitchTokensRepositoryInterface,
-        cacheTimeDelta: timedelta = timedelta(minutes = 15)
+        cacheTimeDelta: timedelta = timedelta(minutes = 5)
     ):
         if not isinstance(administratorProviderInterface, AdministratorProviderInterface):
             raise ValueError(f'administratorProviderInterface argument is malformed: \"{administratorProviderInterface}\"')
