@@ -307,6 +307,8 @@ class TriviaAnswerChecker():
             yield 'christopher'
         if word == 'dick':
             yield 'richard'
+        if word in ('jon', 'jhon'):
+            yield 'john'
         if word in ('micheal', 'mike'):
             yield 'michael'
         if word == 'rob':
