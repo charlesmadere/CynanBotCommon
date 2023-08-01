@@ -210,7 +210,6 @@ class TwitchApiService():
         users: List[TwitchLiveUserDetails] = list()
 
         if not utils.hasItems(data):
-            self.__timber.log('TwitchApiService', f'Received null/empty \"data\" field in JSON response when fetching live user details (userNames=\"{userNames}\"): {jsonResponse}')
             return users
 
         for dataEntry in data:

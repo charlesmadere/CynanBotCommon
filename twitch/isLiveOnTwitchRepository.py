@@ -78,6 +78,11 @@ class IsLiveOnTwitchRepository(IsLiveOnTwitchRepositoryInterface):
             twitchHandlesToLiveStatus[liveUserDetail.getUserName().lower()] = isLive
             self.__cache[liveUserDetail.getUserName().lower()] = isLive
 
+        for twitchHandle in twitchHandles:
+            if twitchHandle.lower() not in twitchHandlesToLiveStatus:
+                twitchHandlesToLiveStatus[twitchHandle.lower()] = False
+                self.__cache[twitchHandle.lower()] = False
+
     async def isLive(self, twitchHandles: List[str]) -> Dict[str, bool]:
         twitchHandlesToLiveStatus: Dict[str, bool] = dict()
 
