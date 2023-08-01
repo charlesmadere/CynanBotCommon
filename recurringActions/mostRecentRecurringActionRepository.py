@@ -114,7 +114,7 @@ class MostRecentRecurringActionRepository(MostRecentRecurringActionRepositoryInt
 
         return MostRecentRecurringAction(
             actionType = actionType,
-            simpleDateTime = simpleDateTime,
+            dateTime = simpleDateTime,
             twitchChannel = twitchChannel
         )
 
