@@ -354,18 +354,19 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
 
         usersToRemove.clear()
         usersToRecurringAction: Dict[UserInterface, RecurringAction] = dict()
+        twitchHandles: List[str] = list()
 
         for user in users:
             action = await self.__findDueRecurringAction(user)
 
             if action is not None:
                 usersToRecurringAction[user] = action
+                twitchHandles.append(user.getHandle().lower())
 
-        twitchHandles = list(usersToRecurringAction.keys())
         usersToLiveStatus = await self.__isLiveOnTwitchRepository.isLive(twitchHandles)
 
         for user, action in usersToRecurringAction.items():
-            if not usersToLiveStatus.get(user.getHandle(), False):
+            if not usersToLiveStatus.get(user.getHandle().lower(), False):
                 continue
 
             if await self.__processRecurringAction(
