@@ -173,7 +173,7 @@ class TwitchApiService():
         elif len(userNames) > 100:
             raise ValueError(f'userNames argument has too many values (len is {len(userNames)}, max is 100): \"{userNames}\"')
 
-        userNames = userNames.sort(key = lambda userName: userName.lower())
+        userNames.sort(key = lambda userName: userName.lower())
         self.__timber.log('TwitchApiService', f'Fetching live user details... (userNames=\"{userNames}\")')
 
         userNamesStr = '&user_login='.join(userNames)
