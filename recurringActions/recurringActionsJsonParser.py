@@ -134,9 +134,9 @@ class RecurringActionsJsonParser(RecurringActionsJsonParserInterface):
 
         if actionType is RecurringActionType.SUPER_TRIVIA:
             return await self.__superTriviaToJson(action)
-        elif action is RecurringActionType.WEATHER:
+        elif actionType is RecurringActionType.WEATHER:
             return await self.__weatherToJson(action)
-        elif action is RecurringActionType.WORD_OF_THE_DAY:
+        elif actionType is RecurringActionType.WORD_OF_THE_DAY:
             return await self.__wordOfTheDayToJson(action)
         else:
             raise RuntimeError(f'Encountered unknown actionType (\"{actionType}\") for action (\"{action}\")')
