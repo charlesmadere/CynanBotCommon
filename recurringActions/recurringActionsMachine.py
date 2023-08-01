@@ -222,17 +222,17 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
         actionType = action.getActionType()
 
         if actionType is RecurringActionType.SUPER_TRIVIA:
-            action = await self.__processSuperTriviaRecurringAction(
+            return await self.__processSuperTriviaRecurringAction(
                 user = user,
                 action = action
             )
         elif actionType is RecurringActionType.WEATHER:
-            action = await self.__processWeatherRecurringAction(
+            return await self.__processWeatherRecurringAction(
                 user = user,
                 action = action
             )
         elif actionType is RecurringActionType.WORD_OF_THE_DAY:
-            action = await self.__processWordOfTheDayRecurringAction(
+            return await self.__processWordOfTheDayRecurringAction(
                 user = user,
                 action = action
             )
@@ -318,7 +318,7 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
         if not action.hasLanguageEntry():
             return False
 
-        wordOfTheDayResponse = Optional[WordOfTheDayResponse] = None
+        wordOfTheDayResponse: Optional[WordOfTheDayResponse] = None
 
         try:
             wordOfTheDayResponse = await self.__wordOfTheDayRepository.fetchWotd(action.requireLanguageEntry())
