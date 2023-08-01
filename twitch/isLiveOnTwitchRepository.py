@@ -65,6 +65,9 @@ class IsLiveOnTwitchRepository(IsLiveOnTwitchRepositoryInterface):
 
             twitchHandlesToFetch.add(twitchHandle.lower())
 
+        if not utils.hasItems(twitchHandlesToFetch):
+            return
+
         userName = await self.__administratorProviderInterface.getAdministratorUserName()
         twitchAccessToken = await self.__twitchTokensRepositoryInterface.requireAccessToken(userName)
 
