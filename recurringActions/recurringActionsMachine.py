@@ -288,7 +288,7 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
         try:
             weatherReport = await self.__weatherRepository.fetchWeather(location)
         except:
-            return False
+            pass
 
         if weatherReport is None:
             return False
@@ -323,7 +323,7 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
         try:
             wordOfTheDayResponse = await self.__wordOfTheDayRepository.fetchWotd(action.requireLanguageEntry())
         except:
-            return False
+            pass
 
         if wordOfTheDayResponse is None:
             return False

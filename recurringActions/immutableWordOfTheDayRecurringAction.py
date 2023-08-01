@@ -38,7 +38,7 @@ class ImmutableWordOfTheDayRecurringAction(WordOfTheDayRecurringAction):
             raise ValueError(f'minutesBetween argument is out of bounds: {minutesBetween}')
         elif languageEntry is not None and not isinstance(languageEntry, LanguageEntry):
             raise ValueError(f'languageEntry argument is malformed: \"{languageEntry}\"')
-        elif wordOfTheDayResponse is not None and isinstance(wordOfTheDayResponse, WordOfTheDayResponse):
+        elif wordOfTheDayResponse is not None and not isinstance(wordOfTheDayResponse, WordOfTheDayResponse):
             raise ValueError(f'wordOfTheDayResponse argument is malformed: \"{wordOfTheDayResponse}\"')
 
         self.__twitchChannel: str = twitchChannel
