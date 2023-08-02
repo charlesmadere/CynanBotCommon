@@ -29,23 +29,23 @@ class IsLiveOnTwitchRepository(IsLiveOnTwitchRepositoryInterface):
 
     def __init__(
         self,
-        administratorProviderInterface: AdministratorProviderInterface,
+        administratorProvider: AdministratorProviderInterface,
         twitchApiService: TwitchApiService,
-        twitchTokensRepositoryInterface: TwitchTokensRepositoryInterface,
-        cacheTimeDelta: timedelta = timedelta(minutes = 5)
+        twitchTokensRepository: TwitchTokensRepositoryInterface,
+        cacheTimeDelta: timedelta = timedelta(minutes = 10)
     ):
-        if not isinstance(administratorProviderInterface, AdministratorProviderInterface):
-            raise ValueError(f'administratorProviderInterface argument is malformed: \"{administratorProviderInterface}\"')
+        if not isinstance(administratorProvider, AdministratorProviderInterface):
+            raise ValueError(f'administratorProvider argument is malformed: \"{administratorProvider}\"')
         elif not isinstance(twitchApiService, TwitchApiService):
             raise ValueError(f'twitchApiService argument is malformed: \"{twitchApiService}\"')
-        elif not isinstance(twitchTokensRepositoryInterface, TwitchTokensRepositoryInterface):
-            raise ValueError(f'twitchTokensRepositoryInterface argument is malformed: \"{twitchTokensRepositoryInterface}\"')
+        elif not isinstance(twitchTokensRepository, TwitchTokensRepositoryInterface):
+            raise ValueError(f'twitchTokensRepositoryInterface argument is malformed: \"{twitchTokensRepository}\"')
         elif not isinstance(cacheTimeDelta, timedelta):
             raise ValueError(f'cacheTimeDelta argument is malformed: \"{cacheTimeDelta}\"')
 
-        self.__administratorProviderInterface: AdministratorProviderInterface = administratorProviderInterface
+        self.__administratorProvider: AdministratorProviderInterface = administratorProvider
         self.__twitchApiService: TwitchApiService = twitchApiService
-        self.__twitchTokensRepositoryInterface: TwitchTokensRepositoryInterface = twitchTokensRepositoryInterface
+        self.__twitchTokensRepository: TwitchTokensRepositoryInterface = twitchTokensRepository
 
         self.__cache: TimedDict = TimedDict(cacheTimeDelta)
 
@@ -68,8 +68,8 @@ class IsLiveOnTwitchRepository(IsLiveOnTwitchRepositoryInterface):
         if not utils.hasItems(twitchHandlesToFetch):
             return
 
-        userName = await self.__administratorProviderInterface.getAdministratorUserName()
-        twitchAccessToken = await self.__twitchTokensRepositoryInterface.requireAccessToken(userName)
+        userName = await self.__administratorProvider.getAdministratorUserName()
+        twitchAccessToken = await self.__twitchTokensRepository.requireAccessToken(userName)
 
         liveUserDetails = await self.__twitchApiService.fetchLiveUserDetails(
             twitchAccessToken = twitchAccessToken,
@@ -110,7 +110,7 @@ class IsLiveOnTwitchRepository(IsLiveOnTwitchRepositoryInterface):
         twitchHandlesToLiveStatus: Dict[str, bool]
     ):
         for twitchHandle in twitchHandles:
-            liveStatus = self.__cache[twitchHandle.lower()]
+            isLive = self.__cache[twitchHandle.lower()]
 
-            if utils.isValidBool(liveStatus):
-                twitchHandlesToLiveStatus[twitchHandle.lower()] = liveStatus
+            if utils.isValidBool(isLive):
+                twitchHandlesToLiveStatus[twitchHandle.lower()] = isLive
