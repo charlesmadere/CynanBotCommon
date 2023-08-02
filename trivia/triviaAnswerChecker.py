@@ -423,7 +423,7 @@ class TriviaAnswerChecker():
         if word in ('crssng', 'xing'):
             yield 'crossing'
 
-        # countries and specific places
+        # countries, languages, and specific places
         if word == 'asl':
             yield 'american sign language'
         if word == 'antigua':
@@ -636,8 +636,9 @@ class TriviaAnswerChecker():
             yield 'pixels per inch'
         if word == 'pt':
             yield 'point'
-        if word == 'px':
+        if word in ('px', 'pxl'):
             yield 'pixel'
+            yield 'pixels'
         if word == 'ram':
             yield 'random access memory'
         if word == 'rgb':
@@ -658,7 +659,7 @@ class TriviaAnswerChecker():
 
         # measurements (imperial and metric)
         if word == 'atm':
-            yield 'atmosphere'
+            yield 'atmospheres'
         if word == 'bps':
             yield 'bits per second'
         if word == 'c':
@@ -713,38 +714,58 @@ class TriviaAnswerChecker():
             yield 'kilometers per hour'
         if word == 'kw':
             yield 'kilowatt'
+        if word == 'kwh':
+            yield 'kilowatt hours'
         if word == 'l':
             yield 'liter'
+            yield 'liters'
         if word in ('lb', 'lbs'):
             yield 'pound'
+            yield 'pounds'
         if word == 'm':
             yield 'meter'
         if word == 'mb':
             yield 'megabyte'
+            yield 'megabytes'
         if word == 'mg':
             yield 'milligram'
+            yield 'milligrams'
         if word == 'mi':
             yield 'mile'
+            yield 'miles'
         if word == 'min':
             yield 'minute'
+            yield 'minutes'
         if word == 'ml':
             yield 'milliliter'
         if word == 'mm':
             yield 'millimeter'
+        if word == 'mpg':
+            yield 'miles per gallon'
         if word == 'mph':
             yield 'miles per hour'
+        if word == 'mps':
+            yield 'meters per second'
         if word == 'nmi':
-            yield 'nautical mile'
+            yield 'nautical miles'
         if word == 'oz':
             yield 'ounce'
+            yield 'ounces'
         if word == 'pb':
             yield 'petabyte'
+            yield 'petabytes'
         if word == 'tb':
             yield 'terabyte'
+            yield 'terabytes'
         if word in ('tbs', 'tbsp'):
             yield 'tablespoon'
+            yield 'tablespoons'
+        if word == 'tsp':
+            yield 'teaspoon'
+            yield 'teaspoons'
         if word == 'w':
             yield 'watt'
+            yield 'wattage'
         if word in ('yd', 'yds', 'yrd', 'yrds'):
             yield 'yard'
 
