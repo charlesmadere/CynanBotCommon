@@ -25,9 +25,9 @@ class ImmutableSuperTriviaRecurringAction(SuperTriviaRecurringAction):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
         elif not utils.isValidBool(enabled):
             raise ValueError(f'enabled argument is malformed: \"{enabled}\"')
-        if not utils.isValidInt(minutesBetween):
+        elif minutesBetween is not None and not utils.isValidInt(minutesBetween):
             raise ValueError(f'minutesBetween argument is malformed: \"{minutesBetween}\"')
-        elif minutesBetween < 1 or minutesBetween >= utils.getIntMaxSafeSize():
+        elif minutesBetween is not None and (minutesBetween < 1 or minutesBetween >= utils.getIntMaxSafeSize()):
             raise ValueError(f'minutesBetween argument is out of bounds: {minutesBetween}')
 
         self.__twitchChannel: str = twitchChannel

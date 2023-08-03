@@ -30,9 +30,9 @@ class ImmutableWeatherRecurringAction(WeatherRecurringAction):
             raise ValueError(f'alertsOnly argument is malformed: \"{alertsOnly}\"')
         elif not utils.isValidBool(enabled):
             raise ValueError(f'enabled argument is malformed: \"{enabled}\"')
-        if not utils.isValidInt(minutesBetween):
+        elif minutesBetween is not None and not utils.isValidInt(minutesBetween):
             raise ValueError(f'minutesBetween argument is malformed: \"{minutesBetween}\"')
-        elif minutesBetween < 1 or minutesBetween >= utils.getIntMaxSafeSize():
+        elif minutesBetween is not None and (minutesBetween < 1 or minutesBetween >= utils.getIntMaxSafeSize()):
             raise ValueError(f'minutesBetween argument is out of bounds: {minutesBetween}')
         elif weatherReport is not None and not isinstance(weatherReport, WeatherReport):
             raise ValueError(f'weatherReport argument is malformed: \"{weatherReport}\"')
