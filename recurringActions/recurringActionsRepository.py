@@ -212,6 +212,8 @@ class RecurringActionsRepository(RecurringActionsRepositoryInterface):
         action: RecurringAction,
         configurationJson: str
     ):
+        isEnabled = utils.numToBool(action.isEnabled())
+
         connection = await self.__getDatabaseConnection()
         await connection.execute(
             '''
@@ -219,7 +221,7 @@ class RecurringActionsRepository(RecurringActionsRepositoryInterface):
                 VALUES ($1, $2, $3, $4, $5)
                 ON CONFLICT (actiontype, twitchchannel) DO UPDATE SET configurationjson = EXCLUDED.configurationjson, isenabled = EXCLUDED.isenabled, minutesbetween = EXCLUDED.minutesbetween
             ''',
-            action.getActionType().toStr(), configurationJson, action.isEnabled(), action.getMinutesBetween(), action.getTwitchChannel()
+            action.getActionType().toStr(), configurationJson, isEnabled, action.getMinutesBetween(), action.getTwitchChannel()
         )
 
         await connection.close()
