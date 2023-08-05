@@ -235,6 +235,9 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
         elif not isinstance(action, RecurringAction):
             raise ValueError(f'action argument is malformed: \"{action}\"')
 
+        if not action.isEnabled():
+            raise RuntimeError(f'Attempting to process a disabled action: \"{action}\"')
+
         actionType = action.getActionType()
 
         if actionType is RecurringActionType.SUPER_TRIVIA:
