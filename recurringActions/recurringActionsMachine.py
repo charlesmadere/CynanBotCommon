@@ -104,7 +104,7 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
         weatherRepository: WeatherRepository,
         wordOfTheDayRepository: WordOfTheDayRepository,
         queueSleepTimeSeconds: float = 3,
-        refreshSleepTimeSeconds: float = 30,
+        refreshSleepTimeSeconds: float = 90,
         queueTimeoutSeconds: int = 3,
         superTriviaCountdownSeconds: int = 5,
         cooldown: timedelta = timedelta(minutes = 3),
