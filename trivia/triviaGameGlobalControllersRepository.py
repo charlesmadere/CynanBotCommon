@@ -1,4 +1,3 @@
-import traceback
 from typing import List, Optional
 
 try:
@@ -17,7 +16,8 @@ try:
         TriviaGameGlobalController
     from CynanBotCommon.twitch.twitchTokensRepositoryInterface import \
         TwitchTokensRepositoryInterface
-    from CynanBotCommon.users.userIdsRepository import UserIdsRepository
+    from CynanBotCommon.users.userIdsRepositoryInterface import \
+        UserIdsRepositoryInterface
 except:
     import utils
     from administratorProviderInterface import AdministratorProviderInterface
@@ -33,7 +33,7 @@ except:
 
     from twitch.twitchTokensRepositoryInterface import \
         TwitchTokensRepositoryInterface
-    from users.userIdsRepository import UserIdsRepository
+    from users.userIdsRepositoryInterface import UserIdsRepositoryInterface
 
 
 class TriviaGameGlobalControllersRepository():
@@ -44,7 +44,7 @@ class TriviaGameGlobalControllersRepository():
         backingDatabase: BackingDatabase,
         timber: TimberInterface,
         twitchTokensRepositoryInterface: TwitchTokensRepositoryInterface,
-        userIdsRepository: UserIdsRepository
+        userIdsRepository: UserIdsRepositoryInterface
     ):
         if not isinstance(administratorProviderInterface, AdministratorProviderInterface):
             raise ValueError(f'administratorProviderInterface argument is malformed: \"{administratorProviderInterface}\"')
@@ -54,14 +54,14 @@ class TriviaGameGlobalControllersRepository():
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(twitchTokensRepositoryInterface, TwitchTokensRepositoryInterface):
             raise ValueError(f'twitchTokensRepositoryInterface argument is malformed: \"{twitchTokensRepositoryInterface}\"')
-        elif not isinstance(userIdsRepository, UserIdsRepository):
+        elif not isinstance(userIdsRepository, UserIdsRepositoryInterface):
             raise ValueError(f'userIdsRepository argument is malformed: \"{userIdsRepository}\"')
 
         self.__administratorProviderInterface: AdministratorProviderInterface = administratorProviderInterface
         self.__backingDatabase: BackingDatabase = backingDatabase
         self.__timber: TimberInterface = timber
         self.__twitchTokensRepositoryInterface: TwitchTokensRepositoryInterface = twitchTokensRepositoryInterface
-        self.__userIdsRepository: UserIdsRepository = userIdsRepository
+        self.__userIdsRepository: UserIdsRepositoryInterface = userIdsRepository
 
         self.__isDatabaseReady: bool = False
 
@@ -71,16 +71,11 @@ class TriviaGameGlobalControllersRepository():
 
         administrator = await self.__administratorProviderInterface.getAdministratorUserName()
         twitchAccessToken = await self.__twitchTokensRepositoryInterface.getAccessToken(administrator)
-        userId: Optional[str] = None
 
-        try:
-            userId = await self.__userIdsRepository.fetchUserId(
-                userName = userName,
-                twitchAccessToken = twitchAccessToken
-            )
-        except (RuntimeError, ValueError) as e:
-            self.__timber.log('TriviaGameGlobalControllersRepository', f'Encountered exception when trying to add \"{userName}\" as a trivia game global controller: {e}', e, traceback.format_exc())
-            return AddTriviaGameControllerResult.ERROR
+        userId = await self.__userIdsRepository.fetchUserId(
+            userName = userName,
+            twitchAccessToken = twitchAccessToken
+        )
 
         if not utils.isValidStr(userId):
             self.__timber.log('TriviaGameGlobalControllersRepository', f'Retrieved no userId from UserIdsRepository when trying to add \"{userName}\" as a trivia game global controller: \"{userId}\"')
@@ -182,13 +177,7 @@ class TriviaGameGlobalControllersRepository():
         if not utils.isValidStr(userName):
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
 
-        userId: Optional[str] = None
-
-        try:
-            userId = await self.__userIdsRepository.fetchUserId(userName)
-        except (RuntimeError, ValueError) as e:
-            self.__timber.log('TriviaGameGlobalControllersRepository', f'Encountered exception when trying to remove \"{userName}\" as a trivia game global controller: {e}', e, traceback.format_exc())
-            return RemoveTriviaGameControllerResult.ERROR
+        userId = await self.__userIdsRepository.fetchUserId(userName = userName)
 
         if not utils.isValidStr(userId):
             self.__timber.log('TriviaGameGlobalControllersRepository', f'Retrieved no userId from UserIdsRepository when trying to remove \"{userName}\" as a trivia game global controller')
