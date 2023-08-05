@@ -15,9 +15,9 @@ class RecurringActionsMachineInterface():
         pass
 
     @abstractmethod
-    def setRecurringActionListener(self, listener: Optional[RecurringActionEventListener]):
+    def setEventListener(self, listener: Optional[RecurringActionEventListener]):
         pass
 
     @abstractmethod
-    def startRecurringActions(self):
+    def startMachine(self):
         pass

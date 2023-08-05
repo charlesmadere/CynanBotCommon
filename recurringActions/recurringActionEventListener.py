@@ -1,13 +1,13 @@
 from abc import ABC, abstractmethod
 
 try:
-    from CynanBotCommon.recurringActions.recurringAction import RecurringAction
+    from CynanBotCommon.recurringActions.recurringEvent import RecurringEvent
 except:
-    from recurringActions.recurringAction import RecurringAction
+    from recurringActions.recurringEvent import RecurringEvent
 
 
 class RecurringActionEventListener(ABC):
 
     @abstractmethod
-    async def onNewRecurringActionEvent(self, event: RecurringAction):
+    async def onNewRecurringActionEvent(self, event: RecurringEvent):
         pass

@@ -14,12 +14,6 @@ try:
     from CynanBotCommon.language.wordOfTheDayResponse import \
         WordOfTheDayResponse
     from CynanBotCommon.location.locationsRepository import LocationsRepository
-    from CynanBotCommon.recurringActions.immutableSuperTriviaRecurringAction import \
-        ImmutableSuperTriviaRecurringAction
-    from CynanBotCommon.recurringActions.immutableWeatherRecurringAction import \
-        ImmutableWeatherRecurringAction
-    from CynanBotCommon.recurringActions.immutableWordOfTheDayRecurringAction import \
-        ImmutableWordOfTheDayRecurringAction
     from CynanBotCommon.recurringActions.mostRecentRecurringActionRepositoryInterface import \
         MostRecentRecurringActionRepositoryInterface
     from CynanBotCommon.recurringActions.recurringAction import RecurringAction
@@ -31,12 +25,19 @@ try:
         RecurringActionsRepositoryInterface
     from CynanBotCommon.recurringActions.recurringActionType import \
         RecurringActionType
+    from CynanBotCommon.recurringActions.recurringEvent import RecurringEvent
     from CynanBotCommon.recurringActions.superTriviaRecurringAction import \
         SuperTriviaRecurringAction
+    from CynanBotCommon.recurringActions.superTriviaRecurringEvent import \
+        SuperTriviaRecurringEvent
     from CynanBotCommon.recurringActions.weatherRecurringAction import \
         WeatherRecurringAction
+    from CynanBotCommon.recurringActions.weatherRecurringEvent import \
+        WeatherRecurringEvent
     from CynanBotCommon.recurringActions.wordOfTheDayRecurringAction import \
         WordOfTheDayRecurringAction
+    from CynanBotCommon.recurringActions.wordOfTheDayRecurringEvent import \
+        WordOfTheDayRecurringEvent
     from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.trivia.triviaGameBuilderInterface import \
         TriviaGameBuilderInterface
@@ -54,12 +55,6 @@ except:
     from language.wordOfTheDayRepository import WordOfTheDayRepository
     from language.wordOfTheDayResponse import WordOfTheDayResponse
     from location.locationsRepository import LocationsRepository
-    from recurringActions.immutableSuperTriviaRecurringAction import \
-        ImmutableSuperTriviaRecurringAction
-    from recurringActions.immutableWeatherRecurringAction import \
-        ImmutableWeatherRecurringAction
-    from recurringActions.immutableWordOfTheDayRecurringAction import \
-        ImmutableWordOfTheDayRecurringAction
     from recurringActions.mostRecentRecurringActionRepositoryInterface import \
         MostRecentRecurringActionRepositoryInterface
     from recurringActions.recurringAction import RecurringAction
@@ -70,11 +65,17 @@ except:
     from recurringActions.recurringActionsRepositoryInterface import \
         RecurringActionsRepositoryInterface
     from recurringActions.recurringActionType import RecurringActionType
+    from recurringActions.recurringEvent import RecurringEvent
     from recurringActions.superTriviaRecurringAction import \
         SuperTriviaRecurringAction
+    from recurringActions.superTriviaRecurringEvent import \
+        SuperTriviaRecurringEvent
     from recurringActions.weatherRecurringAction import WeatherRecurringAction
+    from recurringActions.weatherRecurringEvent import WeatherRecurringEvent
     from recurringActions.wordOfTheDayRecurringAction import \
         WordOfTheDayRecurringAction
+    from recurringActions.wordOfTheDayRecurringEvent import \
+        WordOfTheDayRecurringEvent
     from timber.timberInterface import TimberInterface
     from trivia.triviaGameBuilderInterface import TriviaGameBuilderInterface
     from trivia.triviaGameMachine import TriviaGameMachine
@@ -257,10 +258,8 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
         if newTriviaGame is None:
             return False
 
-        await self.__submitEvent(ImmutableSuperTriviaRecurringAction(
-            twitchChannel = action.getTwitchChannel(),
-            enabled = action.isEnabled(),
-            minutesBetween = action.getMinutesBetween()
+        await self.__submitEvent(SuperTriviaRecurringEvent(
+            twitchChannel = action.getTwitchChannel()
         ))
 
         # delay to allow users to prepare for an incoming trivia question
@@ -295,11 +294,9 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
         elif action.isAlertsOnly() and not weatherReport.hasAlerts():
             return False
 
-        await self.__submitEvent(ImmutableWeatherRecurringAction(
+        await self.__submitEvent(WeatherRecurringEvent(
             twitchChannel = action.getTwitchChannel(),
             alertsOnly = action.isAlertsOnly(),
-            enabled = action.isEnabled(),
-            minutesBetween = action.getMinutesBetween(),
             weatherReport = weatherReport
         ))
 
@@ -328,11 +325,9 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
         if wordOfTheDayResponse is None:
             return False
 
-        await self.__submitEvent(ImmutableWordOfTheDayRecurringAction(
-            twitchChannel = action.getTwitchChannel(),
-            enabled = action.isEnabled(),
-            minutesBetween = action.getMinutesBetween(),
+        await self.__submitEvent(WordOfTheDayRecurringEvent(
             languageEntry = action.getLanguageEntry(),
+            twitchChannel = action.getTwitchChannel(),
             wordOfTheDayResponse = wordOfTheDayResponse
         ))
 
@@ -378,7 +373,7 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
             ):
                 await self.__mostRecentRecurringActionsRepository.setMostRecentRecurringAction(action)
 
-    def setRecurringActionListener(self, listener: Optional[RecurringActionEventListener]):
+    def setEventListener(self, listener: Optional[RecurringActionEventListener]):
         if listener is not None and not isinstance(listener, RecurringActionEventListener):
             raise ValueError(f'listener argument is malformed: \"{listener}\"')
 
@@ -389,7 +384,7 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
             eventListener = self.__eventListener
 
             if eventListener is not None:
-                events: List[RecurringAction] = list()
+                events: List[RecurringEvent] = list()
 
                 try:
                     while not self.__eventQueue.empty():
@@ -405,7 +400,7 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
 
             await asyncio.sleep(self.__queueSleepTimeSeconds)
 
-    def startRecurringActions(self):
+    def startMachine(self):
         # TODO FIX THIS CLASS
         return
 
@@ -428,9 +423,9 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
 
             await asyncio.sleep(self.__refreshSleepTimeSeconds)
 
-    async def __submitEvent(self, event: RecurringAction):
-        if not isinstance(event, RecurringAction):
-            raise ValueError(f'action argument is malformed: \"{event}\"')
+    async def __submitEvent(self, event: RecurringEvent):
+        if not isinstance(event, RecurringEvent):
+            raise ValueError(f'event argument is malformed: \"{event}\"')
 
         try:
             self.__eventQueue.put(event, block = True, timeout = self.__queueTimeoutSeconds)
