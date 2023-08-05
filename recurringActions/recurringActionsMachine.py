@@ -175,6 +175,19 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
         self.__eventListener: Optional[RecurringActionEventListener] = None
         self.__eventQueue: SimpleQueue[RecurringAction] = SimpleQueue()
 
+    async def __fetchViableUsers(self) -> List[UserInterface]:
+        users = await self.__usersRepository.getUsersAsync()
+        usersToRemove: List[UserInterface] = list()
+
+        for user in users:
+            if not user.isEnabled() or not user.areRecurringActionsEnabled():
+                usersToRemove.append(user)
+
+        for userToRemove in usersToRemove:
+            users.remove(userToRemove)
+
+        return users
+
     async def __findDueRecurringAction(self, user: UserInterface) -> Optional[RecurringAction]:
         if not isinstance(user, UserInterface):
             raise ValueError(f'user argument is malformed: \"{user}\"')
@@ -333,21 +346,9 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
 
         return True
 
-    async def __refresh(self):
-        users = await self.__usersRepository.getUsersAsync()
-        usersToRemove: List[UserInterface] = list()
+    async def __refreshActions(self):
+        users = await self.__fetchViableUsers()
 
-        for user in users:
-            if not user.isEnabled() or not user.areRecurringActionsEnabled():
-                usersToRemove.append(user)
-
-        for userToRemove in usersToRemove:
-            users.remove(userToRemove)
-
-        if not utils.hasItems(users):
-            return
-
-        usersToRemove.clear()
         usersToRecurringAction: Dict[UserInterface, RecurringAction] = dict()
         twitchHandles: List[str] = list()
 
@@ -372,6 +373,15 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
                 action = action
             ):
                 await self.__mostRecentRecurringActionsRepository.setMostRecentRecurringAction(action)
+
+    async def __startActionRefreshLoop(self):
+        while True:
+            try:
+                await self.__refreshActions()
+            except Exception as e:
+                self.__timber.log('RecurringActionsMachine', f'Encountered unknown Exception when refreshing actions: {e}', e, traceback.format_exc())
+
+            await asyncio.sleep(self.__refreshSleepTimeSeconds)
 
     def setEventListener(self, listener: Optional[RecurringActionEventListener]):
         if listener is not None and not isinstance(listener, RecurringActionEventListener):
@@ -411,17 +421,8 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
         self.__isStarted = True
         self.__timber.log('RecurringActionsMachine', 'Starting RecurringActionsMachine...')
 
-        self.__backgroundTaskHelper.createTask(self.__startRefreshLoop())
+        self.__backgroundTaskHelper.createTask(self.__startActionRefreshLoop())
         self.__backgroundTaskHelper.createTask(self.__startEventLoop())
-
-    async def __startRefreshLoop(self):
-        while True:
-            try:
-                await self.__refresh()
-            except Exception as e:
-                self.__timber.log('RecurringActionsMachine', f'Encountered unknown Exception when refreshing: {e}', e, traceback.format_exc())
-
-            await asyncio.sleep(self.__refreshSleepTimeSeconds)
 
     async def __submitEvent(self, event: RecurringEvent):
         if not isinstance(event, RecurringEvent):

@@ -55,6 +55,37 @@ class MostRecentRecurringActionRepository(MostRecentRecurringActionRepositoryInt
         await self.__initDatabaseTable()
         return await self.__backingDatabase.getConnection()
 
+    async def getMostRecentRecurringAction(
+        self,
+        twitchChannel: str
+    ) -> Optional[MostRecentRecurringAction]:
+        if not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+
+        connection = await self.__getDatabaseConnection()
+        record = await connection.fetchRow(
+            '''
+                SELECT actiontype, datetime FROM mostrecentrecurringaction
+                WHERE twitchchannel = $1
+                LIMIT 1
+            ''',
+            twitchChannel
+        )
+
+        await connection.close()
+
+        if not utils.hasItems(record):
+            return None
+
+        actionType = RecurringActionType.fromStr(record[0])
+        simpleDateTime = SimpleDateTime(utils.getDateTimeFromStr(record[1]))
+
+        return MostRecentRecurringAction(
+            actionType = actionType,
+            dateTime = simpleDateTime,
+            twitchChannel = twitchChannel
+        )
+
     async def __initDatabaseTable(self):
         if self.__isDatabaseReady:
             return
@@ -86,37 +117,6 @@ class MostRecentRecurringActionRepository(MostRecentRecurringActionRepositoryInt
             raise RuntimeError(f'Encountered unexpected DatabaseType when trying to create tables: \"{connection.getDatabaseType()}\"')
 
         await connection.close()
-
-    async def getMostRecentRecurringAction(
-        self,
-        twitchChannel: str
-    ) -> Optional[MostRecentRecurringAction]:
-        if not utils.isValidStr(twitchChannel):
-            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
-
-        connection = await self.__getDatabaseConnection()
-        record = await connection.fetchRow(
-            '''
-                SELECT actiontype, datetime FROM mostrecentrecurringaction
-                WHERE twitchchannel = $1
-                LIMIT 1
-            ''',
-            twitchChannel
-        )
-
-        await connection.close()
-
-        if not utils.hasItems(record):
-            return None
-
-        actionType = RecurringActionType.fromStr(record[0])
-        simpleDateTime = SimpleDateTime(utils.getDateTimeFromStr(record[1]))
-
-        return MostRecentRecurringAction(
-            actionType = actionType,
-            dateTime = simpleDateTime,
-            twitchChannel = twitchChannel
-        )
 
     async def setMostRecentRecurringAction(self, action: RecurringAction):
         if not isinstance(action, RecurringAction):
