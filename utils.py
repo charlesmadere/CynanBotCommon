@@ -43,6 +43,15 @@ def areValidStrs(l: Optional[List[Optional[str]]]) -> bool:
 
     return True
 
+def boolToNum(b: bool) -> int:
+    if not isValidBool(b):
+        raise ValueError(f'b argument is malformed: \"{b}\"')
+
+    if b:
+        return 1
+    else:
+        return 0
+
 def cToF(celsius: float) -> float:
     if not isValidNum(celsius):
         raise ValueError(f'celsius argument is malformed: \"{celsius}\"')

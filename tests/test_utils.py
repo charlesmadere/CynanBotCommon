@@ -95,6 +95,14 @@ class TestUtils():
         result = utils.areValidStrs([ 'hello', 'world' ])
         assert result is True
 
+    def test_boolToNum_withFalse(self):
+        result = utils.boolToNum(False)
+        assert result == 0
+
+    def test_boolToNum_withTrue(self):
+        result = utils.boolToNum(True)
+        assert result == 1
+
     def test_containsUrl_withEmptyString(self):
         result = utils.containsUrl('')
         assert result is False

@@ -212,7 +212,7 @@ class RecurringActionsRepository(RecurringActionsRepositoryInterface):
         action: RecurringAction,
         configurationJson: str
     ):
-        isEnabled = utils.numToBool(action.isEnabled())
+        isEnabled = utils.boolToNum(action.isEnabled())
 
         connection = await self.__getDatabaseConnection()
         await connection.execute(
