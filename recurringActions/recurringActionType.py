@@ -30,11 +30,11 @@ class RecurringActionType(Enum):
 
     def getDefaultRecurringActionTimingMinutes(self) -> int:
         if self is RecurringActionType.SUPER_TRIVIA:
-            return 30
-        elif self is RecurringActionType.WEATHER:
-            return 120
-        elif self is RecurringActionType.WORD_OF_THE_DAY:
             return 60
+        elif self is RecurringActionType.WEATHER:
+            return 150
+        elif self is RecurringActionType.WORD_OF_THE_DAY:
+            return 90
         else:
             raise RuntimeError(f'unknown RecurringActionType: \"{self}\"')
 
