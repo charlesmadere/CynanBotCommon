@@ -219,6 +219,7 @@ class TriviaGameMachine():
         elif not isinstance(timeZone, timezone):
             raise ValueError(f'timeZone argument is malformed: \"{timeZone}\"')
 
+        self.__backgroundTaskHelper: BackgroundTaskHelper = backgroundTaskHelper
         self.__cutenessRepository: CutenessRepository = cutenessRepository
         self.__queuedTriviaGameStore: QueuedTriviaGameStore = queuedTriviaGameStore
         self.__shinyTriviaHelper: ShinyTriviaHelper = shinyTriviaHelper
@@ -236,11 +237,10 @@ class TriviaGameMachine():
         self.__queueTimeoutSeconds: int = queueTimeoutSeconds
         self.__timeZone: timezone = timeZone
 
+        self.__isStarted: bool = False
         self.__eventListener: Optional[TriviaEventListener] = None
         self.__actionQueue: SimpleQueue[AbsTriviaAction] = SimpleQueue()
         self.__eventQueue: SimpleQueue[AbsTriviaEvent] = SimpleQueue()
-        backgroundTaskHelper.createTask(self.__startActionLoop())
-        backgroundTaskHelper.createTask(self.__startEventLoop())
 
     async def __applyToxicSuperTriviaPunishment(
         self,
@@ -914,6 +914,17 @@ class TriviaGameMachine():
                         self.__timber.log('TriviaGameMachine', f'Encountered unknown Exception when looping through events (queue size: {self.__eventQueue.qsize()}) (event: {event}): {e}', e, traceback.format_exc())
 
             await asyncio.sleep(self.__sleepTimeSeconds)
+
+    def startMachine(self):
+        if self.__isStarted:
+            self.__timber.log('TriviaGameMachine', 'Not starting TriviaGameMachine as it has already been started')
+            return
+
+        self.__isStarted = True
+        self.__timber.log('TriviaGameMachine', 'Starting TriviaGameMachine...')
+
+        self.__backgroundTaskHelper.createTask(self.__startActionLoop())
+        self.__backgroundTaskHelper.createTask(self.__startEventLoop())
 
     def submitAction(self, action: AbsTriviaAction):
         if not isinstance(action, AbsTriviaAction):
