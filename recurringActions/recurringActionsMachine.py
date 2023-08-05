@@ -351,22 +351,22 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
     async def __refreshActions(self):
         users = await self.__fetchViableUsers()
 
-        usersToRecurringAction: Dict[UserInterface, RecurringAction] = dict()
+        userToRecurringAction: Dict[UserInterface, RecurringAction] = dict()
         twitchHandles: List[str] = list()
 
         for user in users:
             action = await self.__findDueRecurringAction(user)
 
             if action is not None:
-                usersToRecurringAction[user] = action
+                userToRecurringAction[user] = action
                 twitchHandles.append(user.getHandle().lower())
 
-        if not utils.hasItems(usersToRecurringAction) or not utils.hasItems(twitchHandles):
+        if not utils.hasItems(userToRecurringAction) or not utils.hasItems(twitchHandles):
             return
 
         usersToLiveStatus = await self.__isLiveOnTwitchRepository.isLive(twitchHandles)
 
-        for user, action in usersToRecurringAction.items():
+        for user, action in userToRecurringAction.items():
             if not usersToLiveStatus.get(user.getHandle().lower(), False):
                 continue
 
