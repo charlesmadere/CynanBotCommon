@@ -416,9 +416,6 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
             await asyncio.sleep(self.__queueSleepTimeSeconds)
 
     def startMachine(self):
-        # TODO FIX THIS CLASS
-        return
-
         if self.__isStarted:
             self.__timber.log('RecurringActionsMachine', 'Not starting RecurringActionsMachine as it has already been started')
             return
