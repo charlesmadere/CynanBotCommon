@@ -211,7 +211,9 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
             else:
                 raise RuntimeError(f'Unknown RecurringActionType: \"{actionType}\"')
 
-            if mostRecentAction is not None and action is not None and action.isEnabled():
+            if action is not None and not action.isEnabled():
+                action = None
+            elif mostRecentAction is not None and action is not None:
                 if now < mostRecentAction.getDateTime() + self.__cooldown:
                     action = None
                 else:
