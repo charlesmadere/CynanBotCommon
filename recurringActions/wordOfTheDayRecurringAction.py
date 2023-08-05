@@ -1,31 +1,49 @@
-from abc import abstractmethod
 from typing import Optional
 
 try:
     from CynanBotCommon.language.languageEntry import LanguageEntry
-    from CynanBotCommon.language.wordOfTheDayResponse import \
-        WordOfTheDayResponse
     from CynanBotCommon.recurringActions.recurringAction import RecurringAction
+    from CynanBotCommon.recurringActions.recurringActionType import \
+        RecurringActionType
 except:
     from language.languageEntry import LanguageEntry
-    from language.wordOfTheDayResponse import WordOfTheDayResponse
     from recurringActions.recurringAction import RecurringAction
+    from recurringActions.recurringActionType import RecurringActionType
 
 
 class WordOfTheDayRecurringAction(RecurringAction):
 
-    @abstractmethod
+    def __init__(
+        self,
+        enabled: bool,
+        twitchChannel: str,
+        minutesBetween: Optional[int] = None,
+        languageEntry: Optional[LanguageEntry] = None
+    ):
+        super().__init__(
+            enabled = enabled,
+            twitchChannel = twitchChannel,
+            minutesBetween = minutesBetween
+        )
+
+        if languageEntry is not None and not isinstance(languageEntry, LanguageEntry):
+            raise ValueError(f'languageEntry argument is malformed: \"{languageEntry}\"')
+
+        self.__languageEntry: Optional[LanguageEntry] = languageEntry
+
     def getLanguageEntry(self) -> Optional[LanguageEntry]:
-        pass
+        return self.__languageEntry
 
-    @abstractmethod
+    def getActionType(self) -> RecurringActionType:
+        return RecurringActionType.WORD_OF_THE_DAY
+
     def hasLanguageEntry(self) -> bool:
-        pass
+        return self.__languageEntry is not None
 
-    @abstractmethod
     def requireLanguageEntry(self) -> LanguageEntry:
-        pass
+        languageEntry = self.__languageEntry
 
-    @abstractmethod
-    def requireWordOfTheDayResponse(self) -> WordOfTheDayResponse:
-        pass
+        if languageEntry is None:
+            raise RuntimeError(f'No languageEntry value has been set!')
+
+        return languageEntry

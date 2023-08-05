@@ -4,12 +4,6 @@ from typing import Any, Dict, Optional
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.language.languagesRepository import LanguagesRepository
-    from CynanBotCommon.recurringActions.immutableSuperTriviaRecurringAction import \
-        ImmutableSuperTriviaRecurringAction
-    from CynanBotCommon.recurringActions.immutableWeatherRecurringAction import \
-        ImmutableWeatherRecurringAction
-    from CynanBotCommon.recurringActions.immutableWordOfTheDayRecurringAction import (
-        ImmutableWordOfTheDayRecurringAction, WordOfTheDayRecurringAction)
     from CynanBotCommon.recurringActions.recurringAction import RecurringAction
     from CynanBotCommon.recurringActions.recurringActionsJsonParserInterface import \
         RecurringActionsJsonParserInterface
@@ -24,10 +18,6 @@ try:
 except:
     import utils
     from language.languagesRepository import LanguagesRepository
-    from recurringActions.immutableSuperTriviaRecurringAction import \
-        ImmutableSuperTriviaRecurringAction
-    from recurringActions.immutableWordOfTheDayRecurringAction import \
-        ImmutableWordOfTheDayRecurringAction
     from recurringActions.recurringAction import RecurringAction
     from recurringActions.recurringActionsJsonParserInterface import \
         RecurringActionsJsonParserInterface
@@ -57,7 +47,7 @@ class RecurringActionsJsonParser(RecurringActionsJsonParserInterface):
         if not utils.isValidStr(jsonString):
             return None
 
-        return ImmutableSuperTriviaRecurringAction(
+        return SuperTriviaRecurringAction(
             twitchChannel = twitchChannel,
             enabled = enabled,
             minutesBetween = minutesBetween
@@ -81,7 +71,7 @@ class RecurringActionsJsonParser(RecurringActionsJsonParserInterface):
             fallback = False
         )
 
-        return ImmutableWeatherRecurringAction(
+        return WeatherRecurringAction(
             twitchChannel = twitchChannel,
             alertsOnly = alertsOnly,
             enabled = enabled,
@@ -111,7 +101,7 @@ class RecurringActionsJsonParser(RecurringActionsJsonParserInterface):
 
         languageEntry = await self.__languagesRepository.requireLanguageForWotdApiCode(wotdApiCode)
 
-        return ImmutableWordOfTheDayRecurringAction(
+        return WordOfTheDayRecurringAction(
             twitchChannel = twitchChannel,
             enabled = enabled,
             minutesBetween = minutesBetween,

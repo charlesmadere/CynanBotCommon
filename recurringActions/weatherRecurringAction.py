@@ -1,19 +1,38 @@
-from abc import abstractmethod
+from typing import Optional
 
 try:
+    import CynanBotCommon.utils as utils
     from CynanBotCommon.recurringActions.recurringAction import RecurringAction
-    from CynanBotCommon.weather.weatherReport import WeatherReport
+    from CynanBotCommon.recurringActions.recurringActionType import \
+        RecurringActionType
 except:
+    import utils
     from recurringActions.recurringAction import RecurringAction
-    from weather.weatherReport import WeatherReport
+    from recurringActions.recurringActionType import RecurringActionType
 
 
 class WeatherRecurringAction(RecurringAction):
 
-    @abstractmethod
-    def isAlertsOnly(self) -> bool:
-        pass
+    def __init__(
+        self,
+        enabled: bool,
+        twitchChannel: str,
+        alertsOnly: bool = False,
+        minutesBetween: Optional[int] = None
+    ):
+        super().__init__(
+            enabled = enabled,
+            twitchChannel = twitchChannel,
+            minutesBetween = minutesBetween
+        )
 
-    @abstractmethod
-    def requireWeatherReport(self) -> WeatherReport:
-        pass
+        if not utils.isValidBool(alertsOnly):
+            raise ValueError(f'alertsOnly argument is malformed: \"{alertsOnly}\"')
+
+        self.__alertsOnly: bool = alertsOnly
+
+    def getActionType(self) -> RecurringActionType:
+        return RecurringActionType.WEATHER
+
+    def isAlertsOnly(self) -> bool:
+        return self.__alertsOnly
