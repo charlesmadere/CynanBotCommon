@@ -188,6 +188,7 @@ class TriviaRepository():
         elif triviaRetrySleepTimeSeconds < 0.25 or triviaRetrySleepTimeSeconds > 3:
             raise ValueError(f'triviaRetrySleepTimeSeconds argument is out of bounds: {triviaRetrySleepTimeSeconds}')
 
+        self.__backgroundTaskHelper: BackgroundTaskHelper = backgroundTaskHelper
         self.__bongoTriviaQuestionRepository: AbsTriviaQuestionRepository = bongoTriviaQuestionRepository
         self.__funtoonTriviaQuestionRepository: AbsTriviaQuestionRepository = funtoonTriviaQuestionRepository
         self.__jokeTriviaQuestionRepository: Optional[AbsTriviaQuestionRepository] = jokeTriviaQuestionRepository
@@ -210,10 +211,10 @@ class TriviaRepository():
         self.__spoolerLoopSleepTimeSeconds: float = spoolerLoopSleepTimeSeconds
         self.__triviaRetrySleepTimeSeconds: float = triviaRetrySleepTimeSeconds
 
+        self.__isSpoolerStarted: bool = False
         self.__triviaSourceToRepositoryMap: Dict[TriviaSource, Optional[AbsTriviaQuestionRepository]] = self.__createTriviaSourceToRepositoryMap()
         self.__superTriviaQuestionSpool: SimpleQueue[QuestionAnswerTriviaQuestion] = SimpleQueue()
         self.__triviaQuestionSpool: SimpleQueue[AbsTriviaQuestion] = SimpleQueue()
-        backgroundTaskHelper.createTask(self.__startTriviaQuestionSpooler())
 
     async def __chooseRandomTriviaSource(self, triviaFetchOptions: TriviaFetchOptions) -> AbsTriviaQuestionRepository:
         if not isinstance(triviaFetchOptions, TriviaFetchOptions):
@@ -499,6 +500,16 @@ class TriviaRepository():
 
         self.__triviaQuestionSpool.put(question)
         self.__timber.log('TriviaRepository', f'Finished spooling up a trivia question (new qsize: {self.__triviaQuestionSpool.qsize()})')
+
+    def startSpooler(self):
+        if self.__isSpoolerStarted:
+            self.__timber.log('TriviaRepository', 'Not starting spooler as it has already been started')
+            return
+
+        self.__isSpoolerStarted = True
+        self.__timber.log('TriviaRepository', 'Starting spooler...')
+
+        self.__backgroundTaskHelper.createTask(self.__startTriviaQuestionSpooler())
 
     async def __startTriviaQuestionSpooler(self):
         while True:
