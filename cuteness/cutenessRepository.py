@@ -5,7 +5,6 @@ try:
     from CynanBotCommon.cuteness.cutenessChampionsResult import \
         CutenessChampionsResult
     from CynanBotCommon.cuteness.cutenessDate import CutenessDate
-    from CynanBotCommon.cuteness.cutenessEntry import CutenessEntry
     from CynanBotCommon.cuteness.cutenessHistoryEntry import \
         CutenessHistoryEntry
     from CynanBotCommon.cuteness.cutenessHistoryResult import \
@@ -20,12 +19,12 @@ try:
     from CynanBotCommon.storage.backingDatabase import BackingDatabase
     from CynanBotCommon.storage.databaseConnection import DatabaseConnection
     from CynanBotCommon.storage.databaseType import DatabaseType
-    from CynanBotCommon.users.userIdsRepository import UserIdsRepository
+    from CynanBotCommon.users.userIdsRepositoryInterface import \
+        UserIdsRepositoryInterface
 except:
     import utils
     from cuteness.cutenessChampionsResult import CutenessChampionsResult
     from cuteness.cutenessDate import CutenessDate
-    from cuteness.cutenessEntry import CutenessEntry
     from cuteness.cutenessHistoryEntry import CutenessHistoryEntry
     from cuteness.cutenessHistoryResult import CutenessHistoryResult
     from cuteness.cutenessLeaderboardEntry import CutenessLeaderboardEntry
@@ -37,7 +36,7 @@ except:
     from storage.databaseConnection import DatabaseConnection
     from storage.databaseType import DatabaseType
 
-    from users.userIdsRepository import UserIdsRepository
+    from users.userIdsRepositoryInterface import UserIdsRepositoryInterface
 
 
 class CutenessRepository():
@@ -45,14 +44,14 @@ class CutenessRepository():
     def __init__(
         self,
         backingDatabase: BackingDatabase,
-        userIdsRepository: UserIdsRepository,
+        userIdsRepository: UserIdsRepositoryInterface,
         historyLeaderboardSize: int = 3,
         historySize: int = 5,
         leaderboardSize: int = 10
     ):
         if not isinstance(backingDatabase, BackingDatabase):
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
-        elif not isinstance(userIdsRepository, UserIdsRepository):
+        elif not isinstance(userIdsRepository, UserIdsRepositoryInterface):
             raise ValueError(f'userIdsRepository argument is malformed: \"{userIdsRepository}\"')
         elif not utils.isValidInt(historyLeaderboardSize):
             raise ValueError(f'historyLeaderboardSize argument is malformed: \"{historyLeaderboardSize}\"')
@@ -68,7 +67,7 @@ class CutenessRepository():
             raise ValueError(f'leaderboardSize argument is out of bounds: {leaderboardSize}')
 
         self.__backingDatabase: BackingDatabase = backingDatabase
-        self.__userIdsRepository: UserIdsRepository = userIdsRepository
+        self.__userIdsRepository: UserIdsRepositoryInterface = userIdsRepository
         self.__historyLeaderboardSize: int = historyLeaderboardSize
         self.__historySize: int = historySize
         self.__leaderboardSize: int = leaderboardSize
@@ -128,7 +127,7 @@ class CutenessRepository():
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
-        twitchChannelUserId = await self.__userIdsRepository.fetchUserId(userName = twitchChannel)
+        twitchChannelUserId = await self.__userIdsRepository.requireUserId(userName = twitchChannel)
 
         connection = await self.__getDatabaseConnection()
         records = await connection.fetchRows(
@@ -376,17 +375,9 @@ class CutenessRepository():
         specificLookupCutenessResult: Optional[CutenessResult] = None
         if not specificLookupAlreadyInResults and (utils.isValidStr(specificLookupUserId) or utils.isValidStr(specificLookupUserName)):
             if not utils.isValidStr(specificLookupUserId):
-                try:
-                    specificLookupUserId = await self.__userIdsRepository.fetchUserId(userName = specificLookupUserName)
-                except ValueError:
-                    # this exception can be safely ignored
-                    pass
+                specificLookupUserId = await self.__userIdsRepository.fetchUserId(userName = specificLookupUserName)
             else:
-                try:
-                    specificLookupUserName = await self.__userIdsRepository.fetchUserName(specificLookupUserId)
-                except (RuntimeError, ValueError):
-                    # this exception can be safely ignored
-                    pass
+                specificLookupUserName = await self.__userIdsRepository.fetchUserName(specificLookupUserId)
 
             if utils.isValidStr(specificLookupUserId) and utils.isValidStr(specificLookupUserName):
                 specificLookupCutenessResult = await self.fetchCuteness(
@@ -405,7 +396,7 @@ class CutenessRepository():
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
-        twitchChannelUserId = await self.__userIdsRepository.fetchUserId(userName = twitchChannel)
+        twitchChannelUserId = await self.__userIdsRepository.requireUserId(userName = twitchChannel)
 
         connection = await self.__getDatabaseConnection()
         records = await connection.fetchRows(

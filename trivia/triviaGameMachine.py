@@ -85,7 +85,8 @@ try:
         WrongUserCheckAnswerTriviaEvent
     from CynanBotCommon.twitch.twitchTokensRepositoryInterface import \
         TwitchTokensRepositoryInterface
-    from CynanBotCommon.users.userIdsRepository import UserIdsRepository
+    from CynanBotCommon.users.userIdsRepositoryInterface import \
+        UserIdsRepositoryInterface
 except:
     import utils
     from backgroundTaskHelper import BackgroundTaskHelper
@@ -155,7 +156,7 @@ except:
 
     from twitch.twitchTokensRepositoryInterface import \
         TwitchTokensRepositoryInterface
-    from users.userIdsRepository import UserIdsRepository
+    from users.userIdsRepositoryInterface import UserIdsRepositoryInterface
 
 
 class TriviaGameMachine():
@@ -174,8 +175,8 @@ class TriviaGameMachine():
         triviaGameStore: TriviaGameStore,
         triviaRepository: TriviaRepository,
         triviaScoreRepository: TriviaScoreRepository,
-        twitchTokensRepositoryInterface: TwitchTokensRepositoryInterface,
-        userIdsRepository: UserIdsRepository,
+        twitchTokensRepository: TwitchTokensRepositoryInterface,
+        userIdsRepository: UserIdsRepositoryInterface,
         sleepTimeSeconds: float = 0.5,
         queueTimeoutSeconds: int = 3,
         timeZone: timezone = timezone.utc
@@ -204,9 +205,9 @@ class TriviaGameMachine():
             raise ValueError(f'triviaRepository argument is malformed: \"{triviaRepository}\"')
         elif not isinstance(triviaScoreRepository, TriviaScoreRepository):
             raise ValueError(f'triviaScoreRepository argument is malformed: \"{triviaScoreRepository}\"')
-        elif not isinstance(twitchTokensRepositoryInterface, TwitchTokensRepositoryInterface):
-            raise ValueError(f'twitchTokensRepositoryInterface argument is malformed: \"{twitchTokensRepositoryInterface}\"')
-        elif not isinstance(userIdsRepository, UserIdsRepository):
+        elif not isinstance(twitchTokensRepository, TwitchTokensRepositoryInterface):
+            raise ValueError(f'twitchTokensRepositoryInterface argument is malformed: \"{twitchTokensRepository}\"')
+        elif not isinstance(userIdsRepository, UserIdsRepositoryInterface):
             raise ValueError(f'userIdsRepository argument is malformed: \"{userIdsRepository}\"')
         elif not utils.isValidNum(sleepTimeSeconds):
             raise ValueError(f'sleepTimeSeconds argument is malformed: \"{sleepTimeSeconds}\"')
@@ -231,8 +232,8 @@ class TriviaGameMachine():
         self.__triviaGameStore: TriviaGameStore = triviaGameStore
         self.__triviaRepository: TriviaRepository = triviaRepository
         self.__triviaScoreRepository: TriviaScoreRepository = triviaScoreRepository
-        self.__twitchTokensRepositoryInterface: TwitchTokensRepositoryInterface = twitchTokensRepositoryInterface
-        self.__userIdsRepository: UserIdsRepository = userIdsRepository
+        self.__twitchTokensRepositoryInterface: TwitchTokensRepositoryInterface = twitchTokensRepository
+        self.__userIdsRepository: UserIdsRepositoryInterface = userIdsRepository
         self.__sleepTimeSeconds: float = sleepTimeSeconds
         self.__queueTimeoutSeconds: int = queueTimeoutSeconds
         self.__timeZone: timezone = timeZone
@@ -267,13 +268,13 @@ class TriviaGameMachine():
 
         twitchAccessToken = await self.__twitchTokensRepositoryInterface.getAccessToken(state.getTwitchChannel())
         toxicTriviaPunishments: List[ToxicTriviaPunishment] = list()
-        totalPointsStolen: int = 0
+        totalPointsStolen = 0
 
         for userId, answerCount in answeredUserIds.items():
-            punishedByPoints: int = -1 * answerCount * toxicTriviaPunishmentMultiplier * state.getRegularTriviaPointsForWinning()
+            punishedByPoints = -1 * answerCount * toxicTriviaPunishmentMultiplier * state.getRegularTriviaPointsForWinning()
             totalPointsStolen = totalPointsStolen + abs(punishedByPoints)
 
-            userName = await self.__userIdsRepository.fetchUserName(
+            userName = await self.__userIdsRepository.requireUserName(
                 userId = userId,
                 twitchAccessToken = twitchAccessToken
             )

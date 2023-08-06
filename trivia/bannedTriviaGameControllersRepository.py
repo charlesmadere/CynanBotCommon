@@ -17,7 +17,8 @@ try:
         RemoveBannedTriviaGameControllerResult
     from CynanBotCommon.twitch.twitchTokensRepositoryInterface import \
         TwitchTokensRepositoryInterface
-    from CynanBotCommon.users.userIdsRepository import UserIdsRepository
+    from CynanBotCommon.users.userIdsRepositoryInterface import \
+        UserIdsRepositoryInterface
 except:
     import utils
     from administratorProviderInterface import AdministratorProviderInterface
@@ -33,35 +34,35 @@ except:
 
     from twitch.twitchTokensRepositoryInterface import \
         TwitchTokensRepositoryInterface
-    from users.userIdsRepository import UserIdsRepository
+    from users.userIdsRepositoryInterface import UserIdsRepositoryInterface
 
 
 class BannedTriviaGameControllersRepository():
 
     def __init__(
         self,
-        administratorProviderInterface: AdministratorProviderInterface,
+        administratorProvider: AdministratorProviderInterface,
         backingDatabase: BackingDatabase,
         timber: TimberInterface,
-        twitchTokensRepositoryInterface: TwitchTokensRepositoryInterface,
-        userIdsRepository: UserIdsRepository
+        twitchTokensRepository: TwitchTokensRepositoryInterface,
+        userIdsRepository: UserIdsRepositoryInterface
     ):
-        if not isinstance(administratorProviderInterface, AdministratorProviderInterface):
-            raise ValueError(f'administratorProviderInterface argument is malformed: \"{administratorProviderInterface}\"')
+        if not isinstance(administratorProvider, AdministratorProviderInterface):
+            raise ValueError(f'administratorProviderInterface argument is malformed: \"{administratorProvider}\"')
         elif not isinstance(backingDatabase, BackingDatabase):
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
         elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif not isinstance(twitchTokensRepositoryInterface, TwitchTokensRepositoryInterface):
-            raise ValueError(f'twitchTokensRepositoryInterface argument is malformed: \"{twitchTokensRepositoryInterface}\"')
-        elif not isinstance(userIdsRepository, UserIdsRepository):
+        elif not isinstance(twitchTokensRepository, TwitchTokensRepositoryInterface):
+            raise ValueError(f'twitchTokensRepositoryInterface argument is malformed: \"{twitchTokensRepository}\"')
+        elif not isinstance(userIdsRepository, UserIdsRepositoryInterface):
             raise ValueError(f'userIdsRepository argument is malformed: \"{userIdsRepository}\"')
 
-        self.__administratorProviderInterface: AdministratorProviderInterface = administratorProviderInterface
+        self.__administratorProvider: AdministratorProviderInterface = administratorProvider
         self.__backingDatabase: BackingDatabase = backingDatabase
         self.__timber: TimberInterface = timber
-        self.__twitchTokensRepositoryInterface: TwitchTokensRepositoryInterface = twitchTokensRepositoryInterface
-        self.__userIdsRepository: UserIdsRepository = userIdsRepository
+        self.__twitchTokensRepositoryInterface: TwitchTokensRepositoryInterface = twitchTokensRepository
+        self.__userIdsRepository: UserIdsRepositoryInterface = userIdsRepository
 
         self.__isDatabaseReady: bool = False
 
@@ -69,18 +70,13 @@ class BannedTriviaGameControllersRepository():
         if not utils.isValidStr(userName):
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
 
-        administrator = await self.__administratorProviderInterface.getAdministratorUserName()
+        administrator = await self.__administratorProvider.getAdministratorUserName()
         twitchAccessToken = await self.__twitchTokensRepositoryInterface.getAccessToken(administrator)
-        userId: Optional[str] = None
 
-        try:
-            userId = await self.__userIdsRepository.fetchUserId(
-                userName = userName,
-                twitchAccessToken = twitchAccessToken
-            )
-        except (RuntimeError, ValueError) as e:
-            self.__timber.log('BannedTriviaGameControllersRepository', f'Encountered exception when trying to add \"{userName}\" as a banned trivia game controller: {e}', e, traceback.format_exc())
-            return AddBannedTriviaGameControllerResult.ERROR
+        userId = await self.__userIdsRepository.fetchUserId(
+            userName = userName,
+            twitchAccessToken = twitchAccessToken
+        )
 
         if not utils.isValidStr(userId):
             self.__timber.log('BannedTriviaGameControllersRepository', f'Retrieved no userId from UserIdsRepository when trying to add \"{userName}\" as a banned trivia game controller: \"{userId}\"')
@@ -182,13 +178,7 @@ class BannedTriviaGameControllersRepository():
         if not utils.isValidStr(userName):
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
 
-        userId: Optional[str] = None
-
-        try:
-            userId = await self.__userIdsRepository.fetchUserId(userName)
-        except (RuntimeError, ValueError) as e:
-            self.__timber.log('BannedTriviaGameControllersRepository', f'Encountered exception when trying to remove \"{userName}\" as a banned trivia game controller: {e}', e, traceback.format_exc())
-            return RemoveBannedTriviaGameControllerResult.ERROR
+        userId = await self.__userIdsRepository.fetchUserId(userName = userName)
 
         if not utils.isValidStr(userId):
             self.__timber.log('BannedTriviaGameControllersRepository', f'Retrieved no userId from UserIdsRepository when trying to remove \"{userName}\" as a banned trivia game controller')
