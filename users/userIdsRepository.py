@@ -242,6 +242,21 @@ class UserIdsRepository(UserIdsRepositoryInterface):
 
         return userIdInt
 
+    async def requireUserName(
+        self,
+        userId: str,
+        twitchAccessToken: Optional[str] = None
+    ) -> str:
+        userName = await self.fetchUserName(
+            userId = userId,
+            twitchAccessToken = twitchAccessToken
+        )
+
+        if not utils.isValidStr(userName):
+            raise NoSuchUserException(f'Unable to fetch Twitch user name for user ID \"{userId}\"')
+
+        return userName
+
     async def setUser(self, userId: str, userName: str):
         if not utils.isValidStr(userId):
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
