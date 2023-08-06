@@ -583,6 +583,58 @@ class TestUtils():
         assert result[0] == 'Hello, World! This is an example sentence. This'
         assert result[1] == 'should be broken up into smaller strings.'
 
+    def test_strContainsAlphanumericCharacters_withAtJrp2234(self):
+        result = utils.strContainsAlphanumericCharacters('@JRP2234')
+        assert result is True
+
+    def test_strContainsAlphanumericCharacters_withAtNumbers(self):
+        result = utils.strContainsAlphanumericCharacters('@9876')
+        assert result is True
+
+    def test_strContainsAlphanumericCharacters_withDot(self):
+        result = utils.strContainsAlphanumericCharacters('.')
+        assert result is False
+
+    def test_strContainsAlphanumericCharacters_withEmptyString(self):
+        result = utils.strContainsAlphanumericCharacters('')
+        assert result is False
+
+    def test_strContainsAlphanumericCharacters_withHelloWorld(self):
+        result = utils.strContainsAlphanumericCharacters('Hello, World!')
+        assert result is True
+
+    def test_strContainsAlphanumericCharacters_withImyt(self):
+        result = utils.strContainsAlphanumericCharacters('imyt')
+        assert result is True
+
+    def test_strContainsAlphanumericCharacters_withNone(self):
+        result = utils.strContainsAlphanumericCharacters(None)
+        assert result is False
+
+    def test_strContainsAlphanumericCharacters_withNumbers(self):
+        result = utils.strContainsAlphanumericCharacters('01234')
+        assert result is True
+
+    def test_strContainsAlphanumericCharacters_withQuotationMarks(self):
+        result = utils.strContainsAlphanumericCharacters('""')
+        assert result is False
+
+    def test_strContainsAlphanumericCharacters_withSingleAlphabetCharacter(self):
+        result = utils.strContainsAlphanumericCharacters('a')
+        assert result is True
+
+    def test_strContainsAlphanumericCharacters_withSingleNumberCharacter(self):
+        result = utils.strContainsAlphanumericCharacters('1')
+        assert result is True
+
+    def test_strContainsAlphanumericCharacters_withUnderscore(self):
+        result = utils.strContainsAlphanumericCharacters('_')
+        assert result is False
+
+    def test_strContainsAlphanumericCharacters_withWhitespace(self):
+        result = utils.strContainsAlphanumericCharacters(' ')
+        assert result is False
+
     def test_strictStrToBool_withEmptyString(self):
         result: bool = None
         exception: Exception = None

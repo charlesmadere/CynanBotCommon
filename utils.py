@@ -413,6 +413,14 @@ def splitLongStringIntoMessages(
 
     return messages
 
+alphanumericRegEx: Pattern = re.compile(r'[A-Za-z0-9]+', re.IGNORECASE)
+
+def strContainsAlphanumericCharacters(s: Optional[str]) -> bool:
+    if not isValidStr(s):
+        return False
+
+    return alphanumericRegEx.match(s) is not None
+
 trueRegEx: Pattern = re.compile(r't(rue)?|y(es)?', re.IGNORECASE)
 falseRegEx: Pattern = re.compile(r'f(alse)?|n(o)?', re.IGNORECASE)
 
