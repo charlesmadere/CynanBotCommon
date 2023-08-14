@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import List, Optional
 
 try:
     from CynanBotCommon.recurringActions.recurringAction import RecurringAction
@@ -19,6 +19,13 @@ except:
 
 
 class RecurringActionsRepositoryInterface(ABC):
+
+    @abstractmethod
+    async def getAllRecurringActions(
+        self,
+        twitchChannel: str
+    ) -> List[RecurringAction]:
+        pass
 
     @abstractmethod
     async def getSuperTriviaRecurringAction(

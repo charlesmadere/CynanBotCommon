@@ -59,6 +59,29 @@ class RecurringActionsRepository(RecurringActionsRepositoryInterface):
 
         self.__isDatabaseReady: bool = False
 
+    async def getAllRecurringActions(
+        self,
+        twitchChannel: str
+    ) -> List[RecurringAction]:
+        if not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+
+        recurringActions: List[RecurringAction] = list()
+
+        superTrivia = await self.getSuperTriviaRecurringAction(twitchChannel)
+        if superTrivia is not None and superTrivia.isEnabled():
+            recurringActions.append(superTrivia)
+
+        weather = await self.getWeatherRecurringAction(twitchChannel)
+        if weather is not None and weather.isEnabled():
+            recurringActions.append(weather)
+
+        wordOfTheDay = await self.getWordOfTheDayRecurringAction(twitchChannel)
+        if wordOfTheDay is not None and wordOfTheDay.isEnabled():
+            recurringActions.append(wordOfTheDay)
+
+        return recurringActions
+
     async def __getDatabaseConnection(self) -> DatabaseConnection:
         await self.__initDatabaseTable()
         return await self.__backingDatabase.getConnection()
