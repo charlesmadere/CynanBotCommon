@@ -48,6 +48,16 @@ class RecurringActionType(Enum):
         else:
             raise RuntimeError(f'unknown RecurringActionType: \"{self}\"')
 
+    def toReadableStr(self) -> str:
+        if self is RecurringActionType.SUPER_TRIVIA:
+            return 'Super Trivia'
+        elif self is RecurringActionType.WEATHER:
+            return 'Weather'
+        elif self is RecurringActionType.WORD_OF_THE_DAY:
+            return 'Word of the Day'
+        else:
+            raise RuntimeError(f'unknown RecurringActionType: \"{self}\"')
+
     def toStr(self) -> str:
         if self is RecurringActionType.SUPER_TRIVIA:
             return 'super_trivia'
