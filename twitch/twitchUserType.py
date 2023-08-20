@@ -29,3 +29,15 @@ class TwitchUserType(Enum):
             return TwitchUserType.STAFF
         else:
             return TwitchUserType.NORMAL
+
+    def __str__(self) -> str:
+        if self is TwitchUserType.ADMIN:
+            return 'admin'
+        elif self is TwitchUserType.GLOBAL_MOD:
+            return 'global_mod'
+        elif self is TwitchUserType.NORMAL:
+            return 'normal'
+        elif self is TwitchUserType.STAFF:
+            return 'staff'
+        else:
+            raise RuntimeError(f'unknown TwitchUserType: \"{self}\"')

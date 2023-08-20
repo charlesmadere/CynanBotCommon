@@ -26,3 +26,13 @@ class TwitchBroadcasterType(Enum):
             return TwitchBroadcasterType.PARTNER
         else:
             return TwitchBroadcasterType.NORMAL
+
+    def __str__(self) -> str:
+        if self is TwitchBroadcasterType.AFFILIATE:
+            return 'affiliate'
+        elif self is TwitchBroadcasterType.NORMAL:
+            return 'normal'
+        elif self is TwitchBroadcasterType.PARTNER:
+            return 'partner'
+        else:
+            raise RuntimeError(f'unknown TwitchBroadcasterType: \"{self}\"')
