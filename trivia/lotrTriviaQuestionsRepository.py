@@ -10,8 +10,8 @@ try:
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.absTriviaQuestionRepository import \
         AbsTriviaQuestionRepository
-    from CynanBotCommon.trivia.additionalTriviaAnswersRepository import \
-        AdditionalTriviaAnswersRepository
+    from CynanBotCommon.trivia.additionalTriviaAnswersRepositoryInterface import \
+        AdditionalTriviaAnswersRepositoryInterface
     from CynanBotCommon.trivia.questionAnswerTriviaQuestion import \
         QuestionAnswerTriviaQuestion
     from CynanBotCommon.trivia.triviaAnswerCompiler import TriviaAnswerCompiler
@@ -27,8 +27,8 @@ except:
     from timber.timberInterface import TimberInterface
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.absTriviaQuestionRepository import AbsTriviaQuestionRepository
-    from trivia.additionalTriviaAnswersRepository import \
-        AdditionalTriviaAnswersRepository
+    from trivia.additionalTriviaAnswersRepositoryInterface import \
+        AdditionalTriviaAnswersRepositoryInterface
     from trivia.questionAnswerTriviaQuestion import \
         QuestionAnswerTriviaQuestion
     from trivia.triviaAnswerCompiler import TriviaAnswerCompiler
@@ -43,7 +43,7 @@ class LotrTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
     def __init__(
         self,
-        additionalTriviaAnswersRepository: AdditionalTriviaAnswersRepository,
+        additionalTriviaAnswersRepository: AdditionalTriviaAnswersRepositoryInterface,
         timber: TimberInterface,
         triviaAnswerCompiler: TriviaAnswerCompiler,
         triviaQuestionCompiler: TriviaQuestionCompiler,
@@ -52,7 +52,7 @@ class LotrTriviaQuestionRepository(AbsTriviaQuestionRepository):
     ):
         super().__init__(triviaSettingsRepository)
 
-        if not isinstance(additionalTriviaAnswersRepository, AdditionalTriviaAnswersRepository):
+        if not isinstance(additionalTriviaAnswersRepository, AdditionalTriviaAnswersRepositoryInterface):
             raise ValueError(f'additionalTriviaAnswersRepository argument is malformed: \"{additionalTriviaAnswersRepository}\"')
         elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
@@ -63,7 +63,7 @@ class LotrTriviaQuestionRepository(AbsTriviaQuestionRepository):
         elif not utils.isValidStr(triviaDatabaseFile):
             raise ValueError(f'triviaDatabaseFile argument is malformed: \"{triviaDatabaseFile}\"')
 
-        self.__additionalTriviaAnswersRepository: AdditionalTriviaAnswersRepository = additionalTriviaAnswersRepository
+        self.__additionalTriviaAnswersRepository: AdditionalTriviaAnswersRepositoryInterface = additionalTriviaAnswersRepository
         self.__timber: TimberInterface = timber
         self.__triviaAnswerCompiler: TriviaAnswerCompiler = triviaAnswerCompiler
         self.__triviaQuestionCompiler: TriviaQuestionCompiler = triviaQuestionCompiler

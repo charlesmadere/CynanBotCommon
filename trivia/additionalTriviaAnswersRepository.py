@@ -9,6 +9,8 @@ try:
     from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.trivia.additionalTriviaAnswers import \
         AdditionalTriviaAnswers
+    from CynanBotCommon.trivia.additionalTriviaAnswersRepositoryInterface import \
+        AdditionalTriviaAnswersRepositoryInterface
     from CynanBotCommon.trivia.triviaExceptions import (
         AdditionalTriviaAnswerAlreadyExistsException,
         AdditionalTriviaAnswerIsMalformedException,
@@ -25,6 +27,8 @@ except:
     from storage.databaseType import DatabaseType
     from timber.timberInterface import TimberInterface
     from trivia.additionalTriviaAnswers import AdditionalTriviaAnswers
+    from trivia.additionalTriviaAnswersRepositoryInterface import \
+        AdditionalTriviaAnswersRepositoryInterface
     from trivia.triviaExceptions import (
         AdditionalTriviaAnswerAlreadyExistsException,
         AdditionalTriviaAnswerIsMalformedException,
@@ -35,7 +39,7 @@ except:
     from trivia.triviaType import TriviaType
 
 
-class AdditionalTriviaAnswersRepository():
+class AdditionalTriviaAnswersRepository(AdditionalTriviaAnswersRepositoryInterface):
 
     def __init__(
         self,
