@@ -561,6 +561,10 @@ class TriviaAnswerChecker():
             yield 'southwest'
         if word in ('se', 'southeast', 'southeastern'):
             yield 'southeast'
+        if word in ('l', 'left'):
+            yield 'left'
+        if word in ('r', 'right'):
+            yield 'right'
 
         # corporation things
         if word == 'asst':
@@ -774,6 +778,8 @@ class TriviaAnswerChecker():
             yield 'air conditioner'
             yield 'air conditioning'
             yield 'alternating current'
+        if word == 'alright':
+            yield 'all right'
         if word == 'aluminium':
             yield 'aluminum'
         if word == 'bday':
