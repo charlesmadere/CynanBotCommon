@@ -44,18 +44,27 @@ class BannedTriviaIdsRepository(BannedTriviaIdsRepositoryInterface):
 
         self.__isDatabaseReady: bool = False
 
-    async def ban(self, triviaId: str, triviaSource: TriviaSource):
+    async def ban(self, triviaId: str, userId: str, triviaSource: TriviaSource):
         if not utils.isValidStr(triviaId):
             raise ValueError(f'triviaId argument is malformed: \"{triviaId}\"')
+        elif not utils.isValidStr(userId):
+            raise ValueError(f'userId argument is malformed: \"{userId}\"')
         elif not isinstance(triviaSource, TriviaSource):
             raise ValueError(f'triviaSource argument is malformed: \"{triviaSource}\"')
 
-        self.__timber.log('BannedTriviaIdsRepository', f'Banning trivia question (triviaId=\"{triviaId}\", triviaSource=\"{triviaSource}\")...')
-        await self.__banQuestion(triviaId, triviaSource)
+        self.__timber.log('BannedTriviaIdsRepository', f'Banning trivia question (triviaId=\"{triviaId}\", userId=\"{userId}\", triviaSource=\"{triviaSource}\")...')
 
-    async def __banQuestion(self, triviaId: str, triviaSource: TriviaSource):
+        await self.__banQuestion(
+            triviaId = triviaId,
+            userId = userId,
+            triviaSource = triviaSource
+        )
+
+    async def __banQuestion(self, triviaId: str, userId: str, triviaSource: TriviaSource):
         if not utils.isValidStr(triviaId):
             raise ValueError(f'triviaId argument is malformed: \"{triviaId}\"')
+        elif not utils.isValidStr(userId):
+            raise ValueError(f'userId argument is malformed: \"{userId}\"')
         elif not isinstance(triviaSource, TriviaSource):
             raise ValueError(f'triviaSource argument is malformed: \"{triviaSource}\"')
 

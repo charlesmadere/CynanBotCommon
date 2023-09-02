@@ -27,16 +27,18 @@ class TriviaBanHelper():
         self.__bannedTriviaIdsRepository: BannedTriviaIdsRepositoryInterface = bannedTriviaIdsRepository
         self.__funtoonRepository: FuntoonRepository = funtoonRepository
 
-    async def ban(self, triviaId: str, triviaSource: TriviaSource):
+    async def ban(self, triviaId: str, userId: str, triviaSource: TriviaSource):
         if not utils.isValidStr(triviaId):
             raise ValueError(f'triviaId argument is malformed: \"{triviaId}\"')
+        elif not utils.isValidStr(userId):
+            raise ValueError(f'userId argument is malformed: \"{userId}\"')
         elif not isinstance(triviaSource, TriviaSource):
             raise ValueError(f'triviaSource argument is malformed: \"{triviaSource}\"')
 
         if triviaSource is TriviaSource.FUNTOON:
             await self.__funtoonRepository.banTriviaQuestion(triviaId)
         else:
-            await self.__bannedTriviaIdsRepository.ban(triviaId, triviaSource)
+            await self.__bannedTriviaIdsRepository.ban(triviaId, userId, triviaSource)
 
     async def unban(self, triviaId: str, triviaSource: TriviaSource):
         if not utils.isValidStr(triviaId):

@@ -9,7 +9,7 @@ except:
 class BannedTriviaIdsRepositoryInterface(ABC):
 
     @abstractmethod
-    async def ban(self, triviaId: str, triviaSource: TriviaSource):
+    async def ban(self, triviaId: str, userId: str, triviaSource: TriviaSource):
         pass
 
     @abstractmethod
