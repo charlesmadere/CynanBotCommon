@@ -6,6 +6,8 @@ try:
     from CynanBotCommon.storage.databaseConnection import DatabaseConnection
     from CynanBotCommon.storage.databaseType import DatabaseType
     from CynanBotCommon.timber.timberInterface import TimberInterface
+    from CynanBotCommon.trivia.bannedTriviaIdsRepositoryInterface import \
+        BannedTriviaIdsRepositoryInterface
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
     from CynanBotCommon.trivia.triviaSource import TriviaSource
@@ -15,11 +17,13 @@ except:
     from storage.databaseConnection import DatabaseConnection
     from storage.databaseType import DatabaseType
     from timber.timberInterface import TimberInterface
+    from trivia.bannedTriviaIdsRepositoryInterface import \
+        BannedTriviaIdsRepositoryInterface
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
 
 
-class BannedTriviaIdsRepository():
+class BannedTriviaIdsRepository(BannedTriviaIdsRepositoryInterface):
 
     def __init__(
         self,

@@ -4,8 +4,8 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
-    from CynanBotCommon.trivia.bannedTriviaIdsRepository import \
-        BannedTriviaIdsRepository
+    from CynanBotCommon.trivia.bannedTriviaIdsRepositoryInterface import \
+        BannedTriviaIdsRepositoryInterface
     from CynanBotCommon.trivia.triviaContentCode import TriviaContentCode
     from CynanBotCommon.trivia.triviaContentScanner import TriviaContentScanner
     from CynanBotCommon.trivia.triviaFetchOptions import TriviaFetchOptions
@@ -16,7 +16,8 @@ except:
     import utils
     from timber.timberInterface import TimberInterface
     from trivia.absTriviaQuestion import AbsTriviaQuestion
-    from trivia.bannedTriviaIdsRepository import BannedTriviaIdsRepository
+    from trivia.bannedTriviaIdsRepositoryInterface import \
+        BannedTriviaIdsRepositoryInterface
     from trivia.triviaContentCode import TriviaContentCode
     from trivia.triviaContentScanner import TriviaContentScanner
     from trivia.triviaFetchOptions import TriviaFetchOptions
@@ -28,12 +29,12 @@ class TriviaVerifier():
 
     def __init__(
         self,
-        bannedTriviaIdsRepository: BannedTriviaIdsRepository,
+        bannedTriviaIdsRepository: BannedTriviaIdsRepositoryInterface,
         timber: TimberInterface,
         triviaContentScanner: TriviaContentScanner,
         triviaHistoryRepository: TriviaHistoryRepository
     ):
-        if not isinstance(bannedTriviaIdsRepository, BannedTriviaIdsRepository):
+        if not isinstance(bannedTriviaIdsRepository, BannedTriviaIdsRepositoryInterface):
             raise ValueError(f'bannedTriviaIdsRepository argument is malformed: \"bannedTriviaIdsRepository\"')
         elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
@@ -42,7 +43,7 @@ class TriviaVerifier():
         elif not isinstance(triviaHistoryRepository, TriviaHistoryRepository):
             raise ValueError(f'triviaHistoryRepository argument is malformed: \"{triviaHistoryRepository}\"')
 
-        self.__bannedTriviaIdsRepository: BannedTriviaIdsRepository = bannedTriviaIdsRepository
+        self.__bannedTriviaIdsRepository: BannedTriviaIdsRepositoryInterface = bannedTriviaIdsRepository
         self.__timber: TimberInterface = timber
         self.__triviaContentScanner: TriviaContentScanner = triviaContentScanner
         self.__triviaHistoryRepository: TriviaHistoryRepository = triviaHistoryRepository
