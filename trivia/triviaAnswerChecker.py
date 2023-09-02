@@ -299,19 +299,27 @@ class TriviaAnswerChecker():
             yield 'saint'
 
         # common names
+        if word in ('aron', 'aaron', 'aaryn', 'eryn'):
+            yield 'erin'
         if word == 'bob':
             yield 'bobby'
-        if word in ('charlie', 'chuck'):
+        if word in ('charlie', 'charly', 'chuck'):
             yield 'charles'
         if word in ('chris', 'christ'):
             yield 'christopher'
-        if word == 'dick':
+        if word == 'delanor':
+            yield 'delano'
+        if word in ('dick', 'rick'):
             yield 'richard'
+        if word == 'goerge':
+            yield 'george'
+        if word == 'jakob':
+            yield 'jacob'
         if word in ('jon', 'jhon'):
             yield 'john'
         if word in ('micheal', 'mike'):
             yield 'michael'
-        if word == 'rob':
+        if word in ('rob', 'robbie'):
             yield 'robert'
 
         # geographical features/streets
@@ -436,15 +444,15 @@ class TriviaAnswerChecker():
             yield 'cabo verde'
         if word == 'car':
             yield 'central african republic'
-        if word == 'czech republic':
+        if word in ('czechia republic', 'czech republic'):
             yield 'czechia'
-        if word == 'czechia':
-            yield 'czech republic'
         if word == 'dr':
             yield 'dominican republic'
         if word == 'drc':
             yield 'democratic republic of congo'
             yield 'democratic republic of the congo'
+        if word in ('en', 'eng'):
+            yield 'english'
         if word == 'eu':
             yield 'european union'
         if word == 'gb':
@@ -454,11 +462,11 @@ class TriviaAnswerChecker():
         if word == 'ivory coast':
             yield 'cote d ivoire'
             yield 'cote divoire'
-        if word in ('jp', 'jpn'):
+        if word in ('ja', 'jp', 'jpn'):
             yield 'japan'
         if word == 'kr':
             yield 'korea'
-        if word == 'macedonia':
+        if word in ('macedonia', 'n macedonia'):
             yield 'north macedonia'
         if word == 'mx':
             yield 'mexico'
@@ -466,27 +474,20 @@ class TriviaAnswerChecker():
             yield 'burma'
         if word == 'new guinea':
             yield 'papua new guinea'
-        if word == 'nyc':
-            yield 'new york city'
-        if word in ('palestine', 'palestine state'):
-            yield 'palestinian'
-            yield 'palestinian state'
-            yield 'west bank'
-        if word in ('palestinian'):
+        if word in ('ny', 'new york city', 'nyc'):
+            yield 'new york'
+        if word in ('palestine state', 'palestinian', 'palestinian state', 'west bank'):
             yield 'palestine'
-            yield 'palestine state'
-            yield 'west bank'
-        if word == 'palestinian state':
-            yield 'palestine'
-            yield 'west bank'
         if word == 'pr':
             yield 'puerto rico'
+        if word in ('rep', 'repr'):
+            yield 'representative'
+        if word == 'sen':
+            yield 'senator'
         if word == 'swaziland':
             yield 'eswatini'
         if word in ('timor', 'east timor'):
             yield 'timor leste'
-        if word == 'turkey':
-            yield 'turkiye'
         if word == 'turkiye':
             yield 'turkey'
         if word == 'uae':
@@ -502,8 +503,14 @@ class TriviaAnswerChecker():
         # government organizations
         if word == 'cia':
             yield 'central intelligence agency'
+        if word == 'dem':
+            yield 'democrats'
         if word == 'fbi':
             yield 'federal bureau of investigation'
+        if word == 'gop':
+            yield 'conservatives'
+            yield 'grand old party'
+            yield 'republicans'
         if word == 'irs':
             yield 'internal revenue service'
         if word == 'mi6':
@@ -664,6 +671,8 @@ class TriviaAnswerChecker():
         # measurements (imperial and metric)
         if word == 'atm':
             yield 'atmospheres'
+        if word == 'bin':
+            yield 'binary'
         if word == 'bps':
             yield 'bits per second'
         if word == 'c':
@@ -704,6 +713,7 @@ class TriviaAnswerChecker():
             yield 'hour'
         if word == 'in':
             yield 'inch'
+            yield 'inches'
         if word == 'k':
             yield 'kelvin'
         if word == 'kb':
@@ -712,8 +722,10 @@ class TriviaAnswerChecker():
             yield 'kilogram'
         if word == 'kl':
             yield 'kiloliter'
+            yield 'kiloliters'
         if word == 'km':
             yield 'kilometer'
+            yield 'kilometers'
         if word == 'kph':
             yield 'kilometers per hour'
         if word == 'kw':
@@ -728,6 +740,7 @@ class TriviaAnswerChecker():
             yield 'pounds'
         if word == 'm':
             yield 'meter'
+            yield 'minute'
         if word == 'mb':
             yield 'megabyte'
             yield 'megabytes'
@@ -758,6 +771,8 @@ class TriviaAnswerChecker():
         if word == 'pb':
             yield 'petabyte'
             yield 'petabytes'
+        if word == 's':
+            yield 'second'
         if word == 'tb':
             yield 'terabyte'
             yield 'terabytes'
@@ -773,6 +788,40 @@ class TriviaAnswerChecker():
         if word in ('yd', 'yds', 'yrd', 'yrds'):
             yield 'yard'
 
+        # british english vs american english spellings
+        if word == 'aluminium':
+            yield 'aluminum'
+        if word == 'analogue':
+            yield 'analog'
+        if word == 'analyse':
+            yield 'analyze'
+        if word == 'armour':
+            yield 'armor'
+        if word == 'catalogue':
+            yield 'catalog'
+        if word == 'colour':
+            yield 'color'
+        if word == 'defence':
+            yield 'defense'
+        if word == 'dialogue':
+            yield 'dialog'
+        if word == 'flavour':
+            yield 'flavor'
+        if word == 'labour':
+            yield 'labor'
+        if word == 'licence':
+            yield 'license'
+        if word == 'neighbour':
+            yield 'neighbor'
+        if word == 'offence':
+            yield 'offense'
+        if word == 'travelled':
+            yield 'traveled'
+        if word == 'traveller':
+            yield 'traveler'
+        if word == 'travelling':
+            yield 'traveling'
+
         # other
         if word == 'ac':
             yield 'air conditioner'
@@ -780,20 +829,29 @@ class TriviaAnswerChecker():
             yield 'alternating current'
         if word == 'alright':
             yield 'all right'
-        if word == 'aluminium':
-            yield 'aluminum'
         if word == 'bday':
             yield 'birthday'
-        if word == 'colour':
-            yield 'color'
+        if word == 'bunny':
+            yield 'rabbit'
+        if word == 'est':
+            yield 'establish'
+            yield 'established'
+            yield 'estimate'
+        if word == 'capital':
+            yield 'capitol'
         if word == 'dc':
             yield 'direct current'
-        if word == 'dept':
+        if word in ('dpt', 'dept'):
             yield 'department'
         if word == 'espn':
             yield 'entertainment and sports programming network'
         if word == 'eta':
             yield 'estimated time of arrival'
+        if word == 'fridge':
+            yield 'refrigerator'
+        if word == 'ft':
+            yield 'feature'
+            yield 'featuring'
         if word == 'fyi':
             yield 'for your information'
         if word == 'grey':
@@ -802,12 +860,14 @@ class TriviaAnswerChecker():
             yield 'number'
         if word == 'ocd':
             yield 'obsessive compulsive disorder'
-        if word == 'fridge':
-            yield 'refrigerator'
         if word in ('phone', 'tel'):
             yield 'telephone'
+        if word == 'precedent':
+            yield 'president'
         if word in ('temp', 'tmp'):
             yield 'temporary'
+        if word == 'tv':
+            yield 'television'
         if word == 'vs':
             yield 'versus'
         if word == 'wr':
