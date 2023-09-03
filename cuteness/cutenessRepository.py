@@ -133,7 +133,8 @@ class CutenessRepository():
         records = await connection.fetchRows(
             '''
                 SELECT cuteness.userid, userids.username, SUM(cuteness.cuteness) AS totalcuteness FROM cuteness
-                INNER JOIN userids ON cuteness.userid = userids.userid where cuteness.twitchchannel = $1 AND cuteness.userid != $2
+                INNER JOIN userids ON cuteness.userid = userids.userid
+                WHERE cuteness.twitchchannel = $1 AND cuteness.userid != $2
                 GROUP BY cuteness.userid, userids.username
                 ORDER BY totalcuteness DESC
                 LIMIT $3
