@@ -8,9 +8,12 @@ try:
     from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.trivia.bannedTriviaIdsRepositoryInterface import \
         BannedTriviaIdsRepositoryInterface
+    from CynanBotCommon.trivia.bannedTriviaQuestion import BannedTriviaQuestion
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
     from CynanBotCommon.trivia.triviaSource import TriviaSource
+    from CynanBotCommon.users.userIdsRepositoryInterface import \
+        UserIdsRepositoryInterface
 except:
     import utils
     from storage.backingDatabase import BackingDatabase
@@ -19,8 +22,11 @@ except:
     from timber.timberInterface import TimberInterface
     from trivia.bannedTriviaIdsRepositoryInterface import \
         BannedTriviaIdsRepositoryInterface
+    from trivia.bannedTriviaQuestion import BannedTriviaQuestion
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
+
+    from users.userIdsRepositoryInterface import UserIdsRepositoryInterface
 
 
 class BannedTriviaIdsRepository(BannedTriviaIdsRepositoryInterface):
@@ -29,7 +35,8 @@ class BannedTriviaIdsRepository(BannedTriviaIdsRepositoryInterface):
         self,
         backingDatabase: BackingDatabase,
         timber: TimberInterface,
-        triviaSettingsRepository: TriviaSettingsRepository
+        triviaSettingsRepository: TriviaSettingsRepository,
+        userIdsRepository: UserIdsRepositoryInterface
     ):
         if not isinstance(backingDatabase, BackingDatabase):
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
@@ -37,10 +44,13 @@ class BannedTriviaIdsRepository(BannedTriviaIdsRepositoryInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(triviaSettingsRepository, TriviaSettingsRepository):
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
+        elif not isinstance(userIdsRepository, UserIdsRepositoryInterface):
+            raise ValueError(f'userIdsRepository argument is malformed: \"{userIdsRepository}\"')
 
         self.__backingDatabase: BackingDatabase = backingDatabase
         self.__timber: TimberInterface = timber
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
+        self.__userIdsRepository: UserIdsRepositoryInterface = userIdsRepository
 
         self.__isDatabaseReady: bool = False
 
@@ -83,6 +93,14 @@ class BannedTriviaIdsRepository(BannedTriviaIdsRepositoryInterface):
     async def __getDatabaseConnection(self) -> DatabaseConnection:
         await self.__initDatabaseTable()
         return await self.__backingDatabase.getConnection()
+
+    async def getInfo(self, triviaId: str, triviaSource: TriviaSource) -> Optional[BannedTriviaQuestion]:
+        if not utils.isValidStr(triviaId):
+            raise ValueError(f'triviaId argument is malformed: \"{triviaId}\"')
+        elif not isinstance(triviaSource, TriviaSource):
+            raise ValueError(f'triviaSource argument is malformed: \"{triviaSource}\"')
+
+        return None
 
     async def __initDatabaseTable(self):
         if self.__isDatabaseReady:

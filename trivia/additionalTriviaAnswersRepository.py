@@ -7,6 +7,8 @@ try:
     from CynanBotCommon.storage.databaseConnection import DatabaseConnection
     from CynanBotCommon.storage.databaseType import DatabaseType
     from CynanBotCommon.timber.timberInterface import TimberInterface
+    from CynanBotCommon.trivia.additionalTriviaAnswer import \
+        AdditionalTriviaAnswer
     from CynanBotCommon.trivia.additionalTriviaAnswers import \
         AdditionalTriviaAnswers
     from CynanBotCommon.trivia.additionalTriviaAnswersRepositoryInterface import \
@@ -20,12 +22,15 @@ try:
         TriviaSettingsRepository
     from CynanBotCommon.trivia.triviaSource import TriviaSource
     from CynanBotCommon.trivia.triviaType import TriviaType
+    from CynanBotCommon.users.userIdsRepositoryInterface import \
+        UserIdsRepositoryInterface
 except:
     import utils
     from storage.backingDatabase import BackingDatabase
     from storage.databaseConnection import DatabaseConnection
     from storage.databaseType import DatabaseType
     from timber.timberInterface import TimberInterface
+    from trivia.additionalTriviaAnswer import AdditionalTriviaAnswer
     from trivia.additionalTriviaAnswers import AdditionalTriviaAnswers
     from trivia.additionalTriviaAnswersRepositoryInterface import \
         AdditionalTriviaAnswersRepositoryInterface
@@ -38,6 +43,8 @@ except:
     from trivia.triviaSource import TriviaSource
     from trivia.triviaType import TriviaType
 
+    from users.userIdsRepositoryInterface import UserIdsRepositoryInterface
+
 
 class AdditionalTriviaAnswersRepository(AdditionalTriviaAnswersRepositoryInterface):
 
@@ -45,7 +52,8 @@ class AdditionalTriviaAnswersRepository(AdditionalTriviaAnswersRepositoryInterfa
         self,
         backingDatabase: BackingDatabase,
         timber: TimberInterface,
-        triviaSettingsRepository: TriviaSettingsRepository
+        triviaSettingsRepository: TriviaSettingsRepository,
+        userIdsRepository: UserIdsRepositoryInterface
     ):
         if not isinstance(backingDatabase, BackingDatabase):
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
@@ -53,10 +61,13 @@ class AdditionalTriviaAnswersRepository(AdditionalTriviaAnswersRepositoryInterfa
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(triviaSettingsRepository, TriviaSettingsRepository):
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
+        elif not isinstance(userIdsRepository, UserIdsRepositoryInterface):
+            raise ValueError(f'userIdsRepository argument is malformed: \"{userIdsRepository}\"')
 
         self.__backingDatabase: BackingDatabase = backingDatabase
         self.__timber: TimberInterface = timber
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
+        self.__userIdsRepository: UserIdsRepositoryInterface = userIdsRepository
 
         self.__isDatabaseReady: bool = False
 
