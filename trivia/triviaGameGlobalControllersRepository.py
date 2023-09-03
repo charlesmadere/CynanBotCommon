@@ -111,7 +111,6 @@ class TriviaGameGlobalControllersRepository():
 
         await connection.close()
         self.__timber.log('TriviaGameGlobalControllersRepository', f'Added userName=\"{userName}\" userId=\"{userId}\" as a trivia game global controller')
-
         return AddTriviaGameControllerResult.ADDED
 
     async def getControllers(self) -> List[TriviaGameGlobalController]:
@@ -124,10 +123,10 @@ class TriviaGameGlobalControllersRepository():
             '''
         )
 
+        await connection.close()
         controllers: List[TriviaGameGlobalController] = list()
 
         if not utils.hasItems(records):
-            await connection.close()
             return controllers
 
         for record in records:
@@ -136,7 +135,6 @@ class TriviaGameGlobalControllersRepository():
                 userName = record[1]
             ))
 
-        await connection.close()
         controllers.sort(key = lambda controller: controller.getUserName().lower())
 
         return controllers
