@@ -104,8 +104,9 @@ class CutenessRepository():
             twitchChannel, userId, cutenessDate.getStr()
         )
 
+        await connection.close()
+
         if not utils.hasItems(record):
-            await connection.close()
             return CutenessResult(
                 cutenessDate = cutenessDate,
                 cuteness = 0,
@@ -114,7 +115,6 @@ class CutenessRepository():
             )
 
         cuteness: int = record[0]
-        await connection.close()
 
         return CutenessResult(
             cutenessDate = cutenessDate,

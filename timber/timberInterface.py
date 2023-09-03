@@ -1,8 +1,8 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from typing import Optional
 
 
-class TimberInterface():
+class TimberInterface(ABC):
 
     @abstractmethod
     def log(
