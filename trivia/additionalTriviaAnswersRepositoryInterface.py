@@ -19,6 +19,7 @@ class AdditionalTriviaAnswersRepositoryInterface(ABC):
         self,
         additionalAnswer: str,
         triviaId: str,
+        userId: str,
         triviaSource: TriviaSource,
         triviaType: TriviaType
     ) -> AdditionalTriviaAnswers:
