@@ -42,4 +42,4 @@ class BannedTriviaQuestion():
         return self.__userName
 
     def __str__(self) -> str:
-        return f'triviaId=\"{self.__triviaId}\", userId=\"{self.__userId}\", userName=\"{self.__userName}\", triviaSource=\"{self.__triviaSource}\"'
+        return f'triviaId=\"{self.__triviaId}\", triviaSource=\"{self.__triviaSource}\", userId=\"{self.__userId}\", userName=\"{self.__userName}\"'
