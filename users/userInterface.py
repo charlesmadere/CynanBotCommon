@@ -21,6 +21,10 @@ class UserInterface(ABC):
         pass
 
     @abstractmethod
+    def getSuperTriviaGameRewardId(self) -> Optional[str]:
+        pass
+
+    @abstractmethod
     def getSuperTriviaGameShinyMultiplier(self) -> Optional[int]:
         pass
 
