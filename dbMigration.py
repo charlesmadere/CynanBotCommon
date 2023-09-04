@@ -20,7 +20,7 @@ async def main():
     connection = await backingPsqlDatabase.getConnection()
     records = await connection.fetchRows(
         '''
-            SELECT additionalanswers, triviaid, triviasource FROM additionaltriviaanswers
+            SELECT additionalanswers, triviaid, triviasource, triviatype, userid FROM old_additionaltriviaanswers
         '''
     )
 
@@ -31,6 +31,8 @@ async def main():
             rawJsonString: Optional[str] = record[0]
             triviaId: Optional[str] = record[1]
             triviaSource: Optional[str] = record[2]
+            triviaType: Optional[str] = record[3]
+            userId: Optional[str] = record[4]
 
             if not isinstance(rawJsonString, str) or len(rawJsonString) == 0 or rawJsonString.isspace():
                 continue
@@ -50,11 +52,10 @@ async def main():
 
                 await connection.execute(
                     '''
-                        UPDATE additionaltriviaanswers
-                        SET additionalanswer = $1
-                        WHERE triviaid = $2 AND triviasource = $3
+                        INSERT INTO additionaltriviaanswers (additionalanswer, triviaid, triviasource, triviatype, userid)
+                        VALUES ($1, $2, $3, $4, $5)
                     ''',
-                    answerString, triviaId, triviaSource
+                    answerString, triviaId, triviaSource, triviaType, userId
                 )
 
             print(f'Finished record #{index}')
