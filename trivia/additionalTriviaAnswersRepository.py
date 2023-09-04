@@ -278,7 +278,7 @@ class AdditionalTriviaAnswersRepository(AdditionalTriviaAnswersRepositoryInterfa
             await connection.createTableIfNotExists(
                 '''
                     CREATE TABLE IF NOT EXISTS additionaltriviaanswers (
-                        additionalanswer text,
+                        additionalanswer text NOT NULL,
                         triviaid public.citext NOT NULL,
                         triviasource public.citext NOT NULL,
                         triviatype public.citext NOT NULL,
@@ -290,7 +290,7 @@ class AdditionalTriviaAnswersRepository(AdditionalTriviaAnswersRepositoryInterfa
             await connection.createTableIfNotExists(
                 '''
                     CREATE TABLE IF NOT EXISTS additionaltriviaanswers (
-                        additionalanswer TEXT,
+                        additionalanswer TEXT NOT NULL,
                         triviaid TEXT NOT NULL COLLATE NOCASE,
                         triviasource TEXT NOT NULL COLLATE NOCASE,
                         triviatype TEXT NOT NULL COLLATE NOCASE,
