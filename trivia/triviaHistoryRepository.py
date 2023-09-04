@@ -79,19 +79,18 @@ class TriviaHistoryRepository():
             emote, twitchChannel
         )
 
-        triviaQuestionReference: Optional[TriviaQuestionReference] = None
-
-        if utils.hasItems(record):
-            triviaQuestionReference = TriviaQuestionReference(
-                emote = record[0],
-                triviaId = record[1],
-                twitchChannel = twitchChannel,
-                triviaSource = TriviaSource.fromStr(record[2]),
-                triviaType = TriviaType.fromStr(record[3])
-            )
-
         await connection.close()
-        return triviaQuestionReference
+
+        if not utils.hasItems(record):
+            return None
+
+        return TriviaQuestionReference(
+            emote = record[0],
+            triviaId = record[1],
+            twitchChannel = twitchChannel,
+            triviaSource = TriviaSource.fromStr(record[2]),
+            triviaType = TriviaType.fromStr(record[3])
+        )
 
     async def __initDatabaseTable(self):
         if self.__isDatabaseReady:
@@ -182,7 +181,6 @@ class TriviaHistoryRepository():
         if questionDateTime + minimumTimeDelta >= nowDateTime:
             await connection.close()
             self.__timber.log('TriviaHistoryRepository', f'Encountered duplicate triviaHistory entry that is within the window of being a repeat (now=\"{nowDateTimeStr}\" db=\"{questionDateTimeStr}\" triviaId=\"{triviaId}\" triviaSource=\"{triviaSource}\" twitchChannel=\"{twitchChannel}\"')
-
             return TriviaContentCode.REPEAT
 
         await connection.execute(

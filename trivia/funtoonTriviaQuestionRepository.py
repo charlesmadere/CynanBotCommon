@@ -89,7 +89,7 @@ class FuntoonTriviaQuestionRepository(AbsTriviaQuestionRepository):
             return
 
         self.__timber.log('FuntoonTriviaQuestionRepository', f'Adding additional answers to question (triviaId=\"{triviaId}\"): {reference.getAdditionalAnswers()}')
-        correctAnswers.extend(reference.getAdditionalAnswers())
+        correctAnswers.extend(reference.getAdditionalAnswersStrs())
 
     async def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
         if not utils.isValidStr(twitchChannel):

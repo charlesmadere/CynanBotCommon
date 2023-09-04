@@ -1,5 +1,4 @@
-import json
-from typing import List, Optional, Set
+from typing import List, Optional
 
 try:
     import CynanBotCommon.utils as utils
@@ -22,6 +21,10 @@ try:
         TriviaSettingsRepository
     from CynanBotCommon.trivia.triviaSource import TriviaSource
     from CynanBotCommon.trivia.triviaType import TriviaType
+    from CynanBotCommon.twitch.twitchHandleProviderInterface import \
+        TwitchHandleProviderInterface
+    from CynanBotCommon.twitch.twitchTokensRepositoryInterface import \
+        TwitchTokensRepositoryInterface
     from CynanBotCommon.users.userIdsRepositoryInterface import \
         UserIdsRepositoryInterface
 except:
@@ -43,6 +46,10 @@ except:
     from trivia.triviaSource import TriviaSource
     from trivia.triviaType import TriviaType
 
+    from twitch.twitchHandleProviderInterface import \
+        TwitchHandleProviderInterface
+    from twitch.twitchTokensRepositoryInterface import \
+        TwitchTokensRepositoryInterface
     from users.userIdsRepositoryInterface import UserIdsRepositoryInterface
 
 
@@ -53,6 +60,8 @@ class AdditionalTriviaAnswersRepository(AdditionalTriviaAnswersRepositoryInterfa
         backingDatabase: BackingDatabase,
         timber: TimberInterface,
         triviaSettingsRepository: TriviaSettingsRepository,
+        twitchHandleProvider: TwitchHandleProviderInterface,
+        twitchTokensRepository: TwitchTokensRepositoryInterface,
         userIdsRepository: UserIdsRepositoryInterface
     ):
         if not isinstance(backingDatabase, BackingDatabase):
@@ -61,12 +70,18 @@ class AdditionalTriviaAnswersRepository(AdditionalTriviaAnswersRepositoryInterfa
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(triviaSettingsRepository, TriviaSettingsRepository):
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
+        elif not isinstance(twitchHandleProvider, TwitchHandleProviderInterface):
+            raise ValueError(f'twitchHandleProvider argument is malformed: \"{twitchHandleProvider}\"')
+        elif not isinstance(twitchTokensRepository, TwitchTokensRepositoryInterface):
+            raise ValueError(f'twitchTokensRepository argument is malformed: \"{twitchTokensRepository}\"')
         elif not isinstance(userIdsRepository, UserIdsRepositoryInterface):
             raise ValueError(f'userIdsRepository argument is malformed: \"{userIdsRepository}\"')
 
         self.__backingDatabase: BackingDatabase = backingDatabase
         self.__timber: TimberInterface = timber
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
+        self.__twitchHandleProvider: TwitchHandleProviderInterface = twitchHandleProvider
+        self.__twitchTokensRepository: TwitchTokensRepositoryInterface = twitchTokensRepository
         self.__userIdsRepository: UserIdsRepositoryInterface = userIdsRepository
 
         self.__isDatabaseReady: bool = False
@@ -103,54 +118,58 @@ class AdditionalTriviaAnswersRepository(AdditionalTriviaAnswersRepositoryInterfa
                 triviaType = triviaType
             )
 
-        additionalAnswersSet: Set[str] = set()
-        additionalAnswersSet.add(additionalAnswer)
-
         reference = await self.getAdditionalTriviaAnswers(
             triviaId = triviaId,
             triviaSource = triviaSource,
             triviaType = triviaType
         )
 
+        additionalAnswersList: List[AdditionalTriviaAnswer] = list()
+
         if reference is not None:
-            for existingAdditionalAnswer in reference.getAdditionalAnswers():
+            additionalAnswersList.extend(reference.getAdditionalAnswers())
+
+            for existingAdditionalAnswer in reference.getAdditionalAnswersStrs():
                 if existingAdditionalAnswer.lower() == additionalAnswer.lower():
-                    raise AdditionalTriviaAnswerAlreadyExistsException(f'Attempted to add additional answer \"{additionalAnswer}\" for {triviaSource.toStr()}:{triviaId}, but it already exists')
+                    raise AdditionalTriviaAnswerAlreadyExistsException(
+                        message = f'Attempted to add additional answer \"{additionalAnswer}\" for {triviaSource.toStr()}:{triviaId}, but it already exists',
+                        triviaId = triviaId,
+                        triviaSource = triviaSource,
+                        triviaType = triviaType
+                    )
 
-            additionalAnswersSet.update(reference.getAdditionalAnswers())
+        twitchHandle = await self.__twitchHandleProvider.getTwitchHandle()
+        twitchAccessToken = await self.__twitchTokensRepository.getAccessToken(twitchHandle)
+        userName = await self.__userIdsRepository.requireUserName(
+            userId = userId,
+            twitchAccessToken = twitchAccessToken
+        )
 
-        additionalAnswersList: List[str] = list(additionalAnswersSet)
-        additionalAnswersList.sort(key = lambda answer: answer.lower())
+        additionalAnswersList.append(AdditionalTriviaAnswer(
+            additionalAnswer = additionalAnswer,
+            userId = userId,
+            userName = userName
+        ))
 
         if len(additionalAnswersList) > await self.__triviaSettingsRepository.getMaxAdditionalTriviaAnswers():
             raise TooManyAdditionalTriviaAnswersException(
-                answers = additionalAnswersList,
-                answerCount = len(additionalAnswersList)
+                answerCount = len(additionalAnswersList),
+                triviaId = triviaId,
+                triviaSource = triviaSource,
+                triviaType = triviaType
             )
 
-        additionalAnswersJson: str = json.dumps(additionalAnswersList)
         connection = await self.__getDatabaseConnection()
-
-        if reference is None:
-            await connection.execute(
-                '''
-                    INSERT INTO additionaltriviaanswers (additionalanswers, triviaid, triviasource, triviatype)
-                    VALUES ($1, $2, $3, $4)
-                ''',
-                additionalAnswersJson, triviaId, triviaSource.toStr(), triviaType.toStr()
-            )
-        else:
-            await connection.execute(
-                '''
-                    UPDATE additionaltriviaanswers
-                    SET additionalanswers = $1
-                    WHERE triviaid = $2 AND triviasource = $3 AND triviatype = $4
-                ''',
-                additionalAnswersJson, triviaId, triviaSource.toStr(), triviaType.toStr()
-            )
+        await connection.execute(
+            '''
+                INSERT INTO additionaltriviaanswers (additionalanswer, triviaid, triviasource, triviatype, userid)
+                VALUES ($1, $2, $3, $4, $5)
+            ''',
+            additionalAnswer, triviaId, triviaSource.toStr(), triviaType.toStr(), userId
+        )
 
         await connection.close()
-        self.__timber.log('AdditionalTriviaAnswersRepository', f'Added additional answer (\"{additionalAnswer}\") for {triviaSource.toStr()}:{triviaId} (all answers: {additionalAnswersList})')
+        self.__timber.log('AdditionalTriviaAnswersRepository', f'Added additional answer (\"{additionalAnswer}\") for {triviaSource.toStr()}:{triviaId}, all answers: {additionalAnswersList}')
 
         return AdditionalTriviaAnswers(
             additionalAnswers = additionalAnswersList,
@@ -190,7 +209,6 @@ class AdditionalTriviaAnswersRepository(AdditionalTriviaAnswersRepositoryInterfa
         )
 
         await connection.close()
-
         self.__timber.log('AdditionalTriviaAnswersRepository', f'Deleted additional answers for {triviaSource.toStr()}:{triviaId} (existing additional answers were {reference.getAdditionalAnswers()})')
 
         return reference
@@ -212,30 +230,34 @@ class AdditionalTriviaAnswersRepository(AdditionalTriviaAnswersRepositoryInterfa
             return None
 
         connection = await self.__getDatabaseConnection()
-        record = await connection.fetchRow(
+        records = await connection.fetchRows(
             '''
-                SELECT additionalanswers FROM additionaltriviaanswers
-                WHERE triviaid = $1 AND triviasource = $2 AND triviatype = $3
-                LIMIT 1
+                SELECT additionaltriviaanswers.additionalanswer, additionaltriviaanswers.userid, userids.username FROM additionaltriviaanswers
+                INNER JOIN userids ON additionaltriviaanswers.userid = userids.userid
+                WHERE additionaltriviaanswers.triviaid = $1 AND additionaltriviaanswers.triviasource = $2 AND additionaltriviaanswers.triviatype = $3
+                ORDER BY additionaltriviaanswers.additionalanswer ASC
             ''',
             triviaId, triviaSource.toStr(), triviaType.toStr()
         )
 
         await connection.close()
 
-        if not utils.hasItems(record):
+        if not utils.hasItems(records):
             return None
 
-        additionalAnswersJson: Optional[str] = record[0]
+        additionalAnswers: List[AdditionalTriviaAnswer] = list()
 
-        if not utils.isValidStr(additionalAnswersJson):
-            return None
+        for record in records:
+            additionalAnswers.append(AdditionalTriviaAnswer(
+                additionalAnswer = record[0],
+                userId = record[1],
+                userName = record[2]
+            ))
 
-        additionalAnswersList: List[str] = json.loads(additionalAnswersJson)
-        additionalAnswersList.sort(key = lambda answer: answer.lower())
+        additionalAnswers.sort(key = lambda additionalAnswer: (additionalAnswer.getAdditionalAnswer().lower(), additionalAnswer.getUserId().lower()))
 
         return AdditionalTriviaAnswers(
-            additionalAnswers = additionalAnswersList,
+            additionalAnswers = additionalAnswers,
             triviaId = triviaId,
             triviaSource = triviaSource,
             triviaType = triviaType
@@ -256,11 +278,11 @@ class AdditionalTriviaAnswersRepository(AdditionalTriviaAnswersRepositoryInterfa
             await connection.createTableIfNotExists(
                 '''
                     CREATE TABLE IF NOT EXISTS additionaltriviaanswers (
-                        additionalanswers text,
+                        additionalanswer text,
                         triviaid public.citext NOT NULL,
                         triviasource public.citext NOT NULL,
                         triviatype public.citext NOT NULL,
-                        PRIMARY KEY (triviaid, triviasource, triviatype)
+                        userid public.citext NOT NULL
                     )
                 '''
             )
@@ -268,11 +290,11 @@ class AdditionalTriviaAnswersRepository(AdditionalTriviaAnswersRepositoryInterfa
             await connection.createTableIfNotExists(
                 '''
                     CREATE TABLE IF NOT EXISTS additionaltriviaanswers (
-                        additionalanswers TEXT,
+                        additionalanswer TEXT,
                         triviaid TEXT NOT NULL COLLATE NOCASE,
                         triviasource TEXT NOT NULL COLLATE NOCASE,
                         triviatype TEXT NOT NULL COLLATE NOCASE,
-                        PRIMARY KEY (triviaid, triviasource, triviatype)
+                        userid TEXT NOT NULL COLLATE NOCASE
                     )
                 '''
             )

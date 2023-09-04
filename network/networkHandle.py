@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from typing import Any, Dict, Optional
 
 try:
@@ -8,8 +9,9 @@ except:
     from network.networkResponse import NetworkResponse
 
 
-class NetworkHandle():
+class NetworkHandle(ABC):
 
+    @abstractmethod
     async def get(
         self,
         url: str,
@@ -17,9 +19,11 @@ class NetworkHandle():
     ) -> NetworkResponse:
         pass
 
+    @abstractmethod
     def getNetworkClientType(self) -> NetworkClientType:
         pass
 
+    @abstractmethod
     async def post(
         self,
         url: str,

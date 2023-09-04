@@ -10,8 +10,14 @@ except:
 
 class AdditionalTriviaAnswerAlreadyExistsException(Exception):
 
-    def __init__(self, message: str):
-        super().__init__(message)
+    def __init__(
+        self,
+        message: str,
+        triviaId: str,
+        triviaSource: TriviaSource,
+        triviaType: TriviaType
+    ):
+        super().__init__(message, triviaId, triviaSource, triviaType)
 
 
 class AdditionalTriviaAnswerIsMalformedException(Exception):
@@ -98,8 +104,14 @@ class NoTriviaQuestionException(Exception):
 
 class TooManyAdditionalTriviaAnswersException(Exception):
 
-    def __init__(self, answers: List[str], answerCount: int):
-        super().__init__(answers, answerCount)
+    def __init__(
+        self,
+        answerCount: int,
+        triviaId: str,
+        triviaSource: TriviaSource,
+        triviaType: TriviaType
+    ):
+        super().__init__(answerCount, triviaId, triviaSource, triviaType)
 
 
 class TooManyTriviaFetchAttemptsException(Exception):

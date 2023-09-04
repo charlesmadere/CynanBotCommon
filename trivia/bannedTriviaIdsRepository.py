@@ -12,8 +12,6 @@ try:
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
     from CynanBotCommon.trivia.triviaSource import TriviaSource
-    from CynanBotCommon.users.userIdsRepositoryInterface import \
-        UserIdsRepositoryInterface
 except:
     import utils
     from storage.backingDatabase import BackingDatabase
@@ -26,8 +24,6 @@ except:
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
 
-    from users.userIdsRepositoryInterface import UserIdsRepositoryInterface
-
 
 class BannedTriviaIdsRepository(BannedTriviaIdsRepositoryInterface):
 
@@ -35,8 +31,7 @@ class BannedTriviaIdsRepository(BannedTriviaIdsRepositoryInterface):
         self,
         backingDatabase: BackingDatabase,
         timber: TimberInterface,
-        triviaSettingsRepository: TriviaSettingsRepository,
-        userIdsRepository: UserIdsRepositoryInterface
+        triviaSettingsRepository: TriviaSettingsRepository
     ):
         if not isinstance(backingDatabase, BackingDatabase):
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
@@ -44,13 +39,10 @@ class BannedTriviaIdsRepository(BannedTriviaIdsRepositoryInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(triviaSettingsRepository, TriviaSettingsRepository):
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
-        elif not isinstance(userIdsRepository, UserIdsRepositoryInterface):
-            raise ValueError(f'userIdsRepository argument is malformed: \"{userIdsRepository}\"')
 
         self.__backingDatabase: BackingDatabase = backingDatabase
         self.__timber: TimberInterface = timber
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
-        self.__userIdsRepository: UserIdsRepositoryInterface = userIdsRepository
 
         self.__isDatabaseReady: bool = False
 
@@ -64,31 +56,18 @@ class BannedTriviaIdsRepository(BannedTriviaIdsRepositoryInterface):
 
         self.__timber.log('BannedTriviaIdsRepository', f'Banning trivia question (triviaId=\"{triviaId}\", userId=\"{userId}\", triviaSource=\"{triviaSource}\")...')
 
-        await self.__banQuestion(
-            triviaId = triviaId,
-            userId = userId,
-            triviaSource = triviaSource
-        )
-
-    async def __banQuestion(self, triviaId: str, userId: str, triviaSource: TriviaSource):
-        if not utils.isValidStr(triviaId):
-            raise ValueError(f'triviaId argument is malformed: \"{triviaId}\"')
-        elif not utils.isValidStr(userId):
-            raise ValueError(f'userId argument is malformed: \"{userId}\"')
-        elif not isinstance(triviaSource, TriviaSource):
-            raise ValueError(f'triviaSource argument is malformed: \"{triviaSource}\"')
-
         connection = await self.__getDatabaseConnection()
         await connection.execute(
             '''
-                INSERT INTO bannedtriviaids (triviaid, triviasource)
-                VALUES ($1, $2)
+                INSERT INTO bannedtriviaids (triviaid, triviasource, userid)
+                VALUES ($1, $2, $3)
                 ON CONFLICT (triviaid, triviasource) DO NOTHING
             ''',
-            triviaId, triviaSource.toStr()
+            triviaId, triviaSource.toStr(), userId
         )
 
         await connection.close()
+        self.__timber.log('BannedTriviaIdsRepository', f'Banned trivia question (triviaId=\"{triviaId}\", userId=\"{userId}\", triviaSource=\"{triviaSource}\")')
 
     async def __getDatabaseConnection(self) -> DatabaseConnection:
         await self.__initDatabaseTable()
@@ -100,7 +79,28 @@ class BannedTriviaIdsRepository(BannedTriviaIdsRepositoryInterface):
         elif not isinstance(triviaSource, TriviaSource):
             raise ValueError(f'triviaSource argument is malformed: \"{triviaSource}\"')
 
-        return None
+        connection = await self.__getDatabaseConnection()
+        record = await connection.fetchRow(
+            '''
+                SELECT bannedtriviaids.triviaid, bannedtriviaids.triviasource, bannedtriviaids.userid, userids.username FROM bannedtriviaids
+                INNER JOIN userids ON bannedtriviaids.userid = userids.userid
+                WHERE bannedtriviaids.triviaid = $1 AND bannedtriviaids.triviasource = $2
+                LIMIT 1
+            ''',
+            triviaId, triviaSource.toStr()
+        )
+
+        await connection.close()
+
+        if not utils.hasItems(record):
+            return None
+
+        return BannedTriviaQuestion(
+            triviaId = record[0],
+            userId = record[2],
+            userName = record[3],
+            triviaSource = TriviaSource.fromStr(record[1])
+        )
 
     async def __initDatabaseTable(self):
         if self.__isDatabaseReady:
@@ -115,6 +115,7 @@ class BannedTriviaIdsRepository(BannedTriviaIdsRepositoryInterface):
                     CREATE TABLE IF NOT EXISTS bannedtriviaids (
                         triviaid public.citext NOT NULL,
                         triviasource public.citext NOT NULL,
+                        userid public.citext NOT NULL,
                         PRIMARY KEY (triviaid, triviasource)
                     )
                 '''
@@ -125,6 +126,7 @@ class BannedTriviaIdsRepository(BannedTriviaIdsRepositoryInterface):
                     CREATE TABLE IF NOT EXISTS bannedtriviaids (
                         triviaid TEXT NOT NULL COLLATE NOCASE,
                         triviasource TEXT NOT NULL COLLATE NOCASE,
+                        userid TEXT NOT NULL COLLATE NOCASE,
                         PRIMARY KEY (triviaid, triviasource)
                     )
                 '''
@@ -143,26 +145,15 @@ class BannedTriviaIdsRepository(BannedTriviaIdsRepositoryInterface):
         if not await self.__triviaSettingsRepository.isBanListEnabled():
             return False
 
-        connection = await self.__getDatabaseConnection()
-        record = await connection.fetchRow(
-            '''
-                SELECT COUNT(1) FROM bannedtriviaids
-                WHERE triviaid = $1 AND triviasource = $2
-                LIMIT 1
-            ''',
-            triviaId, triviaSource.toStr()
+        bannedTriviaQuestion = await self.getInfo(
+            triviaId = triviaId,
+            triviaSource = triviaSource
         )
 
-        count: Optional[int] = None
-        if utils.hasItems(record):
-            count = record[0]
-
-        await connection.close()
-
-        if not utils.isValidInt(count) or count < 1:
+        if bannedTriviaQuestion is None:
             return False
 
-        self.__timber.log('BannedTriviaIdsRepository', f'Encountered banned trivia ID (count=\"{count}\", triviaId=\"{triviaId}\", triviaSource=\"{triviaSource}\")')
+        self.__timber.log('BannedTriviaIdsRepository', f'Encountered banned trivia question ({bannedTriviaQuestion})')
         return True
 
     async def unban(self, triviaId: str, triviaSource: TriviaSource):
@@ -183,3 +174,4 @@ class BannedTriviaIdsRepository(BannedTriviaIdsRepositoryInterface):
         )
 
         await connection.close()
+        self.__timber.log('BannedTriviaIdsRepository', f'Unbanned trivia question (triviaId=\"{triviaId}\", triviaSource=\"{triviaSource}\")')

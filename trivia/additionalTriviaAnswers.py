@@ -2,10 +2,13 @@ from typing import List
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.trivia.additionalTriviaAnswer import \
+        AdditionalTriviaAnswer
     from CynanBotCommon.trivia.triviaSource import TriviaSource
     from CynanBotCommon.trivia.triviaType import TriviaType
 except:
     import utils
+    from trivia.additionalTriviaAnswer import AdditionalTriviaAnswer
     from trivia.triviaSource import TriviaSource
     from trivia.triviaType import TriviaType
 
@@ -14,12 +17,12 @@ class AdditionalTriviaAnswers():
 
     def __init__(
         self,
-        additionalAnswers: List[str],
+        additionalAnswers: List[AdditionalTriviaAnswer],
         triviaId: str,
         triviaSource: TriviaSource,
         triviaType: TriviaType
     ):
-        if not utils.areValidStrs(additionalAnswers):
+        if not utils.hasItems(additionalAnswers):
             raise ValueError(f'additionalAnswers argument is malformed: \"{additionalAnswers}\"')
         elif not utils.isValidStr(triviaId):
             raise ValueError(f'triviaId argument is malformed: \"{triviaId}\"')
@@ -28,16 +31,21 @@ class AdditionalTriviaAnswers():
         elif not isinstance(triviaType, TriviaType):
             raise ValueError(f'triviaType argument is malformed: \"{triviaType}\"')
 
-        self.__additionalAnswers: List[str] = additionalAnswers
+        self.__additionalAnswers: List[AdditionalTriviaAnswer] = additionalAnswers
         self.__triviaId: str = triviaId
         self.__triviaSource: TriviaSource = triviaSource
         self.__triviaType: TriviaType = triviaType
 
-    def getAdditionalAnswers(self) -> List[str]:
+    def getAdditionalAnswers(self) -> List[AdditionalTriviaAnswer]:
         return self.__additionalAnswers
 
-    def getAdditionalAnswersLen(self) -> int:
-        return len(self.__additionalAnswers)
+    def getAdditionalAnswersStrs(self) -> List[str]:
+        additionalAnswersStrs: List[str] = list()
+
+        for additionalAnswer in self.__additionalAnswers:
+            additionalAnswersStrs.append(additionalAnswer.getAdditionalAnswer())
+
+        return additionalAnswersStrs
 
     def getTriviaId(self) -> str:
         return self.__triviaId
