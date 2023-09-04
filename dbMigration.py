@@ -20,7 +20,7 @@ async def main():
     connection = await backingPsqlDatabase.getConnection()
     records = await connection.fetchRows(
         '''
-            SELECT additionalanswers, triviaid, triviasource, triviatype, userid FROM old_additionaltriviaanswers
+            SELECT additionalanswers, triviaid, triviasource, triviatype FROM old_additionaltriviaanswers
         '''
     )
 
@@ -32,7 +32,7 @@ async def main():
             triviaId: Optional[str] = record[1]
             triviaSource: Optional[str] = record[2]
             triviaType: Optional[str] = record[3]
-            userId: Optional[str] = record[4]
+            userId: str = '546457893'
 
             if not isinstance(rawJsonString, str) or len(rawJsonString) == 0 or rawJsonString.isspace():
                 continue
