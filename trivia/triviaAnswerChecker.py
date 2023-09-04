@@ -311,6 +311,9 @@ class TriviaAnswerChecker():
             yield 'delano'
         if word in ('dick', 'rick'):
             yield 'richard'
+        if word == 'fdr':
+            yield 'franklin roosevelt'
+            yield 'franklin delano roosevelt'
         if word == 'goerge':
             yield 'george'
         if word == 'jakob':
@@ -321,6 +324,8 @@ class TriviaAnswerChecker():
             yield 'michael'
         if word in ('rob', 'robbie'):
             yield 'robert'
+        if word in ('ron', 'ronnie'):
+            yield 'ronald'
 
         # geographical features/streets
         if word in ('aly', 'ally'):
@@ -507,6 +512,8 @@ class TriviaAnswerChecker():
             yield 'democrats'
         if word == 'fbi':
             yield 'federal bureau of investigation'
+        if word == 'fedex':
+            yield 'federal express'
         if word == 'gop':
             yield 'conservatives'
             yield 'grand old party'
@@ -517,8 +524,14 @@ class TriviaAnswerChecker():
             yield 'secret intelligence service'
         if word == 'nsa':
             yield 'natural security agency'
+        if word == 'sec':
+            yield 'securities and exchange commission'
         if word == 'tsa':
             yield 'transportation security administration'
+        if word == 'ups':
+            yield 'united parcel service'
+        if word == 'usps':
+            yield 'united states postal service'
 
         # currencies
         if word == 'eur':
@@ -548,7 +561,7 @@ class TriviaAnswerChecker():
             yield 'national basketball association'
         if word == 'nfl':
             yield 'national football league'
-        if word == 'nhl':
+        if word in ('nhl', 'wnhl'):
             yield 'national hockey league'
 
         # directions
@@ -641,6 +654,8 @@ class TriviaAnswerChecker():
             yield 'internet explorer'
         if word == 'int':
             yield 'integer'
+        if word == 'ip':
+            yield 'internet protocol'
         if word in ('ms', 'msft'):
             yield 'microsoft'
         if word == 'ppi':
@@ -833,6 +848,8 @@ class TriviaAnswerChecker():
             yield 'birthday'
         if word == 'bunny':
             yield 'rabbit'
+        if word == 'cnn':
+            yield 'cable news network'
         if word == 'est':
             yield 'establish'
             yield 'established'
@@ -845,6 +862,10 @@ class TriviaAnswerChecker():
             yield 'department'
         if word == 'espn':
             yield 'entertainment and sports programming network'
+        if word == 'est':
+            yield 'estimate'
+            yield 'estimated'
+            yield 'established'
         if word == 'eta':
             yield 'estimated time of arrival'
         if word == 'fridge':
