@@ -41,7 +41,8 @@ try:
     from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.trivia.triviaGameBuilderInterface import \
         TriviaGameBuilderInterface
-    from CynanBotCommon.trivia.triviaGameMachine import TriviaGameMachine
+    from CynanBotCommon.trivia.triviaGameMachineInterface import \
+        TriviaGameMachineInterface
     from CynanBotCommon.twitch.isLiveOnTwitchRepositoryInterface import \
         IsLiveOnTwitchRepositoryInterface
     from CynanBotCommon.users.userInterface import UserInterface
@@ -78,7 +79,7 @@ except:
         WordOfTheDayRecurringEvent
     from timber.timberInterface import TimberInterface
     from trivia.triviaGameBuilderInterface import TriviaGameBuilderInterface
-    from trivia.triviaGameMachine import TriviaGameMachine
+    from trivia.triviaGameMachineInterface import TriviaGameMachineInterface
     from weather.weatherReport import WeatherReport
     from weather.weatherRepository import WeatherRepository
 
@@ -99,7 +100,7 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
         recurringActionsRepository: RecurringActionsRepositoryInterface,
         timber: TimberInterface,
         triviaGameBuilder: TriviaGameBuilderInterface,
-        triviaGameMachine: TriviaGameMachine,
+        triviaGameMachine: TriviaGameMachineInterface,
         usersRepository: UsersRepositoryInterface,
         weatherRepository: WeatherRepository,
         wordOfTheDayRepository: WordOfTheDayRepository,
@@ -124,7 +125,7 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(triviaGameBuilder, TriviaGameBuilderInterface):
             raise ValueError(f'triviaGameBuilder argument is malformed: \"{triviaGameBuilder}\"')
-        elif not isinstance(triviaGameMachine, TriviaGameMachine):
+        elif not isinstance(triviaGameMachine, TriviaGameMachineInterface):
             raise ValueError(f'triviaGameMachine argument is malformed: \"{triviaGameMachine}\"')
         elif not isinstance(usersRepository, UsersRepositoryInterface):
             raise ValueError(f'usersRepository argument is malformed: \"{usersRepository}\"')
@@ -160,7 +161,7 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
         self.__recurringActionsRepository: RecurringActionsRepositoryInterface = recurringActionsRepository
         self.__timber: TimberInterface = timber
         self.__triviaGameBuilder: TriviaGameBuilderInterface = triviaGameBuilder
-        self.__triviaGameMachine: TriviaGameMachine = triviaGameMachine
+        self.__triviaGameMachine: TriviaGameMachineInterface = triviaGameMachine
         self.__usersRepository: UsersRepositoryInterface = usersRepository
         self.__weatherRepository: WeatherRepository = weatherRepository
         self.__wordOfTheDayRepository: WordOfTheDayRepository = wordOfTheDayRepository

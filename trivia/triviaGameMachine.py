@@ -75,6 +75,8 @@ try:
     from CynanBotCommon.trivia.triviaExceptions import (
         TooManyTriviaFetchAttemptsException, UnknownTriviaActionTypeException,
         UnknownTriviaGameTypeException)
+    from CynanBotCommon.trivia.triviaGameMachineInterface import \
+        TriviaGameMachineInterface
     from CynanBotCommon.trivia.triviaGameState import TriviaGameState
     from CynanBotCommon.trivia.triviaGameStore import TriviaGameStore
     from CynanBotCommon.trivia.triviaGameType import TriviaGameType
@@ -146,6 +148,7 @@ except:
     from trivia.triviaExceptions import (TooManyTriviaFetchAttemptsException,
                                          UnknownTriviaActionTypeException,
                                          UnknownTriviaGameTypeException)
+    from trivia.triviaGameMachineInterface import TriviaGameMachineInterface
     from trivia.triviaGameState import TriviaGameState
     from trivia.triviaGameStore import TriviaGameStore
     from trivia.triviaGameType import TriviaGameType
@@ -159,7 +162,7 @@ except:
     from users.userIdsRepositoryInterface import UserIdsRepositoryInterface
 
 
-class TriviaGameMachine():
+class TriviaGameMachine(TriviaGameMachineInterface):
 
     def __init__(
         self,
