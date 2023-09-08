@@ -3,16 +3,20 @@ from typing import Any, Dict, Optional
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.location.location import Location
+    from CynanBotCommon.location.locationsRepositoryInterface import \
+        LocationsRepositoryInterface
     from CynanBotCommon.storage.jsonReaderInterface import JsonReaderInterface
     from CynanBotCommon.timeZoneRepository import TimeZoneRepository
 except:
     import utils
     from location.location import Location
+    from location.locationsRepositoryInterface import \
+        LocationsRepositoryInterface
     from storage.jsonReaderInterface import JsonReaderInterface
     from timeZoneRepository import TimeZoneRepository
 
 
-class LocationsRepository():
+class LocationsRepository(LocationsRepositoryInterface):
 
     def __init__(
         self,

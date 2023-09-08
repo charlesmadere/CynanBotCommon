@@ -17,7 +17,7 @@ class WeatherRecurringAction(RecurringAction):
         self,
         enabled: bool,
         twitchChannel: str,
-        alertsOnly: bool = False,
+        alertsOnly: bool = True,
         minutesBetween: Optional[int] = None
     ):
         super().__init__(

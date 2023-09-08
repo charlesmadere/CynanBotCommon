@@ -13,7 +13,8 @@ try:
         WordOfTheDayRepository
     from CynanBotCommon.language.wordOfTheDayResponse import \
         WordOfTheDayResponse
-    from CynanBotCommon.location.locationsRepository import LocationsRepository
+    from CynanBotCommon.location.locationsRepositoryInterface import \
+        LocationsRepositoryInterface
     from CynanBotCommon.recurringActions.mostRecentRecurringActionRepositoryInterface import \
         MostRecentRecurringActionRepositoryInterface
     from CynanBotCommon.recurringActions.recurringAction import RecurringAction
@@ -55,7 +56,8 @@ except:
     from backgroundTaskHelper import BackgroundTaskHelper
     from language.wordOfTheDayRepository import WordOfTheDayRepository
     from language.wordOfTheDayResponse import WordOfTheDayResponse
-    from location.locationsRepository import LocationsRepository
+    from location.locationsRepositoryInterface import \
+        LocationsRepositoryInterface
     from recurringActions.mostRecentRecurringActionRepositoryInterface import \
         MostRecentRecurringActionRepositoryInterface
     from recurringActions.recurringAction import RecurringAction
@@ -95,7 +97,7 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
         self,
         backgroundTaskHelper: BackgroundTaskHelper,
         isLiveOnTwitchRepository: IsLiveOnTwitchRepositoryInterface,
-        locationsRepository: LocationsRepository,
+        locationsRepository: LocationsRepositoryInterface,
         mostRecentRecurringActionRepository: MostRecentRecurringActionRepositoryInterface,
         recurringActionsRepository: RecurringActionsRepositoryInterface,
         timber: TimberInterface,
@@ -115,7 +117,7 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
             raise ValueError(f'backgroundTaskHelper argument is malformed: \"{backgroundTaskHelper}\"')
         elif not isinstance(isLiveOnTwitchRepository, IsLiveOnTwitchRepositoryInterface):
             raise ValueError(f'isLiveOnTwitchRepository argument is malformed: \"{isLiveOnTwitchRepository}\"')
-        elif not isinstance(locationsRepository, LocationsRepository):
+        elif not isinstance(locationsRepository, LocationsRepositoryInterface):
             raise ValueError(f'locationsRepository argument is malformed: \"{locationsRepository}\"')
         elif not isinstance(mostRecentRecurringActionRepository, MostRecentRecurringActionRepositoryInterface):
             raise ValueError(f'mostRecentRecurringActionRepository argument is malformed: \"{mostRecentRecurringActionRepository}\"')
@@ -156,7 +158,7 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
 
         self.__backgroundTaskHelper: BackgroundTaskHelper = backgroundTaskHelper
         self.__isLiveOnTwitchRepository: IsLiveOnTwitchRepositoryInterface = isLiveOnTwitchRepository
-        self.__locationsRepository: LocationsRepository = locationsRepository
+        self.__locationsRepository: LocationsRepositoryInterface = locationsRepository
         self.__mostRecentRecurringActionsRepository: MostRecentRecurringActionRepositoryInterface = mostRecentRecurringActionRepository
         self.__recurringActionsRepository: RecurringActionsRepositoryInterface = recurringActionsRepository
         self.__timber: TimberInterface = timber

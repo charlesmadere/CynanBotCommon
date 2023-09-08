@@ -9,6 +9,8 @@ try:
     from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.triviaContentCode import TriviaContentCode
+    from CynanBotCommon.trivia.triviaHistoryRepositoryInterface import \
+        TriviaHistoryRepositoryInterface
     from CynanBotCommon.trivia.triviaQuestionReference import \
         TriviaQuestionReference
     from CynanBotCommon.trivia.triviaSettingsRepository import \
@@ -23,13 +25,15 @@ except:
     from timber.timberInterface import TimberInterface
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.triviaContentCode import TriviaContentCode
+    from trivia.triviaHistoryRepositoryInterface import \
+        TriviaHistoryRepositoryInterface
     from trivia.triviaQuestionReference import TriviaQuestionReference
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
     from trivia.triviaType import TriviaType
 
 
-class TriviaHistoryRepository():
+class TriviaHistoryRepository(TriviaHistoryRepositoryInterface):
 
     def __init__(
         self,

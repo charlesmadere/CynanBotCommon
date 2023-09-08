@@ -10,6 +10,8 @@ try:
     from CynanBotCommon.trivia.bannedWords.bannedWordsRepositoryInterface import \
         BannedWordsRepositoryInterface
     from CynanBotCommon.trivia.triviaContentCode import TriviaContentCode
+    from CynanBotCommon.trivia.triviaContentScannerInterface import \
+        TriviaContentScannerInterface
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
     from CynanBotCommon.trivia.triviaType import TriviaType
@@ -21,11 +23,13 @@ except:
     from trivia.bannedWords.bannedWordsRepositoryInterface import \
         BannedWordsRepositoryInterface
     from trivia.triviaContentCode import TriviaContentCode
+    from trivia.triviaContentScannerInterface import \
+        TriviaContentScannerInterface
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaType import TriviaType
 
 
-class TriviaContentScanner():
+class TriviaContentScanner(TriviaContentScannerInterface):
 
     def __init__(
         self,

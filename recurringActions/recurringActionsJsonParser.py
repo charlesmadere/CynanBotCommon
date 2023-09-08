@@ -68,7 +68,7 @@ class RecurringActionsJsonParser(RecurringActionsJsonParserInterface):
         alertsOnly = utils.getBoolFromDict(
             d = jsonContents,
             key = 'alertsOnly',
-            fallback = False
+            fallback = True
         )
 
         return WeatherRecurringAction(
