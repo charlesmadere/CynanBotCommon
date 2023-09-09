@@ -1,8 +1,13 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+from datetime import tzinfo
+from typing import List, Optional
 
 
 class UserInterface(ABC):
+
+    @abstractmethod
+    def addUser(self, handle: str):
+        pass
 
     @abstractmethod
     def areRecurringActionsEnabled(self) -> bool:
@@ -14,6 +19,10 @@ class UserInterface(ABC):
 
     @abstractmethod
     def getLocationId(self) -> Optional[str]:
+        pass
+
+    @abstractmethod
+    def getSpeedrunProfile(self) -> Optional[str]:
         pass
 
     @abstractmethod
@@ -40,6 +49,9 @@ class UserInterface(ABC):
     def getSuperTriviaPerUserAttempts(self) -> Optional[int]:
         pass
 
+    def getTimeZones(self) -> Optional[List[tzinfo]]:
+        pass
+
     @abstractmethod
     def getTriviaGamePoints(self) -> Optional[int]:
         pass
@@ -57,7 +69,15 @@ class UserInterface(ABC):
         pass
 
     @abstractmethod
+    def hasDiscord(self) -> bool:
+        pass
+
+    @abstractmethod
     def hasLocationId(self) -> bool:
+        pass
+
+    @abstractmethod
+    def hasSpeedrunProfile(self) -> bool:
         pass
 
     @abstractmethod
@@ -81,6 +101,14 @@ class UserInterface(ABC):
         pass
 
     @abstractmethod
+    def hasTimeZones(self) -> bool:
+        pass
+
+    @abstractmethod
+    def hasTwitter(self) -> bool:
+        pass
+
+    @abstractmethod
     def hasTriviaGamePoints(self) -> bool:
         pass
 
@@ -97,11 +125,39 @@ class UserInterface(ABC):
         pass
 
     @abstractmethod
+    def isCutenessEnabled(self) -> bool:
+        pass
+
+    @abstractmethod
+    def isCynanSourceEnabled(self) -> bool:
+        pass
+
+    @abstractmethod
     def isEnabled(self) -> bool:
         pass
 
     @abstractmethod
+    def isGiveCutenessEnabled(self) -> bool:
+        pass
+
+    @abstractmethod
+    def isJishoEnabled(self) -> bool:
+        pass
+
+    @abstractmethod
     def isJokeTriviaRepositoryEnabled(self) -> bool:
+        pass
+
+    @abstractmethod
+    def isLoremIpsumEnabled(self) -> bool:
+        pass
+
+    @abstractmethod
+    def isPokepediaEnabled(self) -> bool:
+        pass
+
+    @abstractmethod
+    def isRaceEnabled(self) -> bool:
         pass
 
     @abstractmethod
@@ -117,5 +173,21 @@ class UserInterface(ABC):
         pass
 
     @abstractmethod
+    def isTranslateEnabled(self) -> bool:
+        pass
+
+    @abstractmethod
     def isTriviaGameEnabled(self) -> bool:
+        pass
+
+    @abstractmethod
+    def isWeatherEnabled(self) -> bool:
+        pass
+
+    @abstractmethod
+    def isWordOfTheDayEnabled(self) -> bool:
+        pass
+
+    @abstractmethod
+    def removeUser(self, handle: str):
         pass
