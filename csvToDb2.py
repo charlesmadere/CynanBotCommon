@@ -35,7 +35,7 @@ except:
 timber: TimberInterface = Timber(eventLoop = asyncio.get_event_loop())
 bannedWordsRepositoryInterface: BannedWordsRepositoryInterface = BannedWordsRepository(timber = timber)
 triviaContentScanner = TriviaContentScanner(
-    bannedWordsRepositoryInterface = bannedWordsRepositoryInterface,
+    bannedWordsRepository = bannedWordsRepositoryInterface,
     timber = timber,
     triviaSettingsRepository = TriviaSettingsRepository(
         settingsJsonReader = JsonFileReader('CynanBotCommon/trivia/triviaSettingsRepository.json')

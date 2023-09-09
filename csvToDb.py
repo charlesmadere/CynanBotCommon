@@ -38,7 +38,7 @@ backgroundTaskHelper = BackgroundTaskHelper(eventLoop = asyncio.get_event_loop()
 timber: TimberInterface = Timber(backgroundTaskHelper = backgroundTaskHelper)
 bannedWordsRepositoryInterface: BannedWordsRepositoryInterface = BannedWordsRepository(timber = timber)
 triviaContentScanner = TriviaContentScanner(
-    bannedWordsRepositoryInterface = bannedWordsRepositoryInterface,
+    bannedWordsRepository = bannedWordsRepositoryInterface,
     timber = timber,
     triviaSettingsRepository = TriviaSettingsRepository(
         settingsJsonReader = JsonFileReader('CynanBotCommon/trivia/triviaSettingsRepository.json')

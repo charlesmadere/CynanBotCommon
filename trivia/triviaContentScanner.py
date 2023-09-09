@@ -33,18 +33,18 @@ class TriviaContentScanner(TriviaContentScannerInterface):
 
     def __init__(
         self,
-        bannedWordsRepositoryInterface: BannedWordsRepositoryInterface,
+        bannedWordsRepository: BannedWordsRepositoryInterface,
         timber: TimberInterface,
         triviaSettingsRepository: TriviaSettingsRepository
     ):
-        if not isinstance(bannedWordsRepositoryInterface, BannedWordsRepositoryInterface):
-            raise ValueError(f'bannedWordsRepositoryInterface argument is malformed: \"{bannedWordsRepositoryInterface}\"')
+        if not isinstance(bannedWordsRepository, BannedWordsRepositoryInterface):
+            raise ValueError(f'bannedWordsRepository argument is malformed: \"{bannedWordsRepository}\"')
         elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(triviaSettingsRepository, TriviaSettingsRepository):
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
 
-        self.__bannedWordsRepositoryInterface: BannedWordsRepositoryInterface = bannedWordsRepositoryInterface
+        self.__bannedWordsRepository: BannedWordsRepositoryInterface = bannedWordsRepository
         self.__timber: TimberInterface = timber
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
 
@@ -134,7 +134,7 @@ class TriviaContentScanner(TriviaContentScannerInterface):
         for response in question.getResponses():
             await self.__updateQuestionStringContent(strings, response)
 
-        bannedWords = await self.__bannedWordsRepositoryInterface.getBannedWordsAsync()
+        bannedWords = await self.__bannedWordsRepository.getBannedWordsAsync()
 
         for string in strings:
             if not utils.isValidStr(string):

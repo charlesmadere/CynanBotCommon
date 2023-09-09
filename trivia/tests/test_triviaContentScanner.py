@@ -63,7 +63,7 @@ class TestTriviaContentScanner():
     )
 
     triviaContentScanner = TriviaContentScanner(
-        bannedWordsRepositoryInterface = bannedWordsRepositoryInterface,
+        bannedWordsRepository = bannedWordsRepositoryInterface,
         timber = timber,
         triviaSettingsRepository = triviaSettingsRepository
     )
