@@ -64,21 +64,21 @@ class TwitchApiService():
         self,
         networkClientProvider: NetworkClientProvider,
         timber: TimberInterface,
-        twitchCredentialsProviderInterface: TwitchCredentialsProviderInterface,
+        twitchCredentialsProvider: TwitchCredentialsProviderInterface,
         timeZone: timezone = timezone.utc
     ):
         if not isinstance(networkClientProvider, NetworkClientProvider):
             raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
         elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif not isinstance(twitchCredentialsProviderInterface, TwitchCredentialsProviderInterface):
-            raise ValueError(f'twitchCredentialsProviderInterface argument is malformed: \"{twitchCredentialsProviderInterface}\"')
+        elif not isinstance(twitchCredentialsProvider, TwitchCredentialsProviderInterface):
+            raise ValueError(f'twitchCredentialsProvider argument is malformed: \"{twitchCredentialsProvider}\"')
         elif not isinstance(timeZone, timezone):
             raise ValueError(f'timeZone argument is malformed: \"{timeZone}\"')
 
         self.__networkClientProvider: NetworkClientProvider = networkClientProvider
         self.__timber: TimberInterface = timber
-        self.__twitchCredentialsProviderInterface: TwitchCredentialsProviderInterface = twitchCredentialsProviderInterface
+        self.__twitchCredentialsProvider: TwitchCredentialsProviderInterface = twitchCredentialsProvider
         self.__timeZone: timezone = timeZone
 
     async def __calculateExpirationTime(self, expiresInSeconds: Optional[int]) -> datetime:
@@ -100,7 +100,7 @@ class TwitchApiService():
             raise ValueError(f'twitchAccessToken argument is malformed: \"{twitchAccessToken}\"')
 
         self.__timber.log('TwitchApiService', f'Fetching emote details... (broadcasterId=\"{broadcasterId}\")')
-        twitchClientId = await self.__twitchCredentialsProviderInterface.getTwitchClientId()
+        twitchClientId = await self.__twitchCredentialsProvider.getTwitchClientId()
         clientSession = await self.__networkClientProvider.get()
 
         try:
@@ -177,7 +177,7 @@ class TwitchApiService():
         self.__timber.log('TwitchApiService', f'Fetching live user details... (userNames=\"{userNames}\")')
 
         userNamesStr = '&user_login='.join(userNames)
-        twitchClientId = await self.__twitchCredentialsProviderInterface.getTwitchClientId()
+        twitchClientId = await self.__twitchCredentialsProvider.getTwitchClientId()
         clientSession = await self.__networkClientProvider.get()
 
         try:
@@ -237,8 +237,8 @@ class TwitchApiService():
 
         self.__timber.log('TwitchApiService', f'Fetching tokens... (code=\"{code}\")')
 
-        twitchClientId = await self.__twitchCredentialsProviderInterface.getTwitchClientId()
-        twitchClientSecret = await self.__twitchCredentialsProviderInterface.getTwitchClientSecret()
+        twitchClientId = await self.__twitchCredentialsProvider.getTwitchClientId()
+        twitchClientSecret = await self.__twitchCredentialsProvider.getTwitchClientSecret()
         clientSession = await self.__networkClientProvider.get()
 
         try:
@@ -296,7 +296,7 @@ class TwitchApiService():
         userName = userName.lower()
         self.__timber.log('TwitchApiService', f'Fetching user details... (userName=\"{userName}\")')
 
-        twitchClientId = await self.__twitchCredentialsProviderInterface.getTwitchClientId()
+        twitchClientId = await self.__twitchCredentialsProvider.getTwitchClientId()
         clientSession = await self.__networkClientProvider.get()
 
         try:
@@ -365,7 +365,7 @@ class TwitchApiService():
 
         self.__timber.log('TwitchApiService', f'Fetching user subscription details... (broadcasterId=\"{broadcasterId}\") (userId=\"{userId}\")')
 
-        twitchClientId = await self.__twitchCredentialsProviderInterface.getTwitchClientId()
+        twitchClientId = await self.__twitchCredentialsProvider.getTwitchClientId()
         clientSession = await self.__networkClientProvider.get()
 
         try:
@@ -424,8 +424,8 @@ class TwitchApiService():
 
         self.__timber.log('TwitchApiService', f'Refreshing tokens... (twitchRefreshToken=\"{twitchRefreshToken}\")')
 
-        twitchClientId = await self.__twitchCredentialsProviderInterface.getTwitchClientId()
-        twitchClientSecret = await self.__twitchCredentialsProviderInterface.getTwitchClientSecret()
+        twitchClientId = await self.__twitchCredentialsProvider.getTwitchClientId()
+        twitchClientSecret = await self.__twitchCredentialsProvider.getTwitchClientSecret()
         clientSession = await self.__networkClientProvider.get()
 
         try:
