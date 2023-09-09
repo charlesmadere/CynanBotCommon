@@ -10,6 +10,10 @@ except:
 class UsersRepositoryInterface(ABC):
 
     @abstractmethod
+    async def addUser(self, handle: str):
+        pass
+
+    @abstractmethod
     async def clearCaches(self):
         pass
 
@@ -35,6 +39,10 @@ class UsersRepositoryInterface(ABC):
 
     @abstractmethod
     async def getUsersAsync(self) -> List[UserInterface]:
+        pass
+
+    @abstractmethod
+    async def removeUser(self, handle: str):
         pass
 
     @abstractmethod

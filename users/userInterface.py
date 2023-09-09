@@ -6,10 +6,6 @@ from typing import List, Optional
 class UserInterface(ABC):
 
     @abstractmethod
-    def addUser(self, handle: str):
-        pass
-
-    @abstractmethod
     def areRecurringActionsEnabled(self) -> bool:
         pass
 
@@ -186,8 +182,4 @@ class UserInterface(ABC):
 
     @abstractmethod
     def isWordOfTheDayEnabled(self) -> bool:
-        pass
-
-    @abstractmethod
-    def removeUser(self, handle: str):
         pass
