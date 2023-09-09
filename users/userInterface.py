@@ -18,6 +18,18 @@ class UserInterface(ABC):
         pass
 
     @abstractmethod
+    def getPkmnBattleRewardId(self) -> Optional[str]:
+        pass
+
+    @abstractmethod
+    def getPkmnEvolveRewardId(self) -> Optional[str]:
+        pass
+
+    @abstractmethod
+    def getPkmnShinyRewardId(self) -> Optional[str]:
+        pass
+
+    @abstractmethod
     def getSpeedrunProfile(self) -> Optional[str]:
         pass
 
