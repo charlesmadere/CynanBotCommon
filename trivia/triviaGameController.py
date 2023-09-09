@@ -26,3 +26,6 @@ class TriviaGameController():
 
     def getUserName(self) -> str:
         return self.__userName
+
+    def __str__(self) -> str:
+        return f'twitchChannel=\"{self.__twitchChannel}\", userId=\"{self.__userId}\", userName=\"{self.__userName}\"'
