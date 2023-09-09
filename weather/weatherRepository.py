@@ -13,6 +13,8 @@ try:
     from CynanBotCommon.weather.airQualityIndex import AirQualityIndex
     from CynanBotCommon.weather.uvIndex import UvIndex
     from CynanBotCommon.weather.weatherReport import WeatherReport
+    from CynanBotCommon.weather.weatherRepositoryInterface import \
+        WeatherRepositoryInterface
 except:
     import utils
     from location.location import Location
@@ -23,9 +25,10 @@ except:
     from weather.airQualityIndex import AirQualityIndex
     from weather.uvIndex import UvIndex
     from weather.weatherReport import WeatherReport
+    from weather.weatherRepositoryInterface import WeatherRepositoryInterface
 
 
-class WeatherRepository():
+class WeatherRepository(WeatherRepositoryInterface):
 
     def __init__(
         self,
