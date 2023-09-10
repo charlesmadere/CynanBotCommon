@@ -6,8 +6,8 @@ try:
     from CynanBotCommon.funtoon.exceptions import NoFuntoonTokenException
     from CynanBotCommon.funtoon.funtoonPkmnCatchType import \
         FuntoonPkmnCatchType
-    from CynanBotCommon.funtoon.funtoonTokensRepository import \
-        FuntoonTokensRepository
+    from CynanBotCommon.funtoon.funtoonTokensRepositoryInterface import \
+        FuntoonTokensRepositoryInterface
     from CynanBotCommon.network.exceptions import GenericNetworkException
     from CynanBotCommon.network.networkClientProvider import \
         NetworkClientProvider
@@ -16,7 +16,8 @@ except:
     import utils
     from funtoon.exceptions import NoFuntoonTokenException
     from funtoon.funtoonPkmnCatchType import FuntoonPkmnCatchType
-    from funtoon.funtoonTokensRepository import FuntoonTokensRepository
+    from funtoon.funtoonTokensRepositoryInterface import \
+        FuntoonTokensRepositoryInterface
     from network.exceptions import GenericNetworkException
     from network.networkClientProvider import NetworkClientProvider
     from timber.timberInterface import TimberInterface
@@ -26,12 +27,12 @@ class FuntoonRepository():
 
     def __init__(
         self,
-        funtoonTokensRepository: FuntoonTokensRepository,
+        funtoonTokensRepository: FuntoonTokensRepositoryInterface,
         networkClientProvider: NetworkClientProvider,
         timber: TimberInterface,
         funtoonApiUrl: str = 'https://funtoon.party/api'
     ):
-        if not isinstance(funtoonTokensRepository, FuntoonTokensRepository):
+        if not isinstance(funtoonTokensRepository, FuntoonTokensRepositoryInterface):
             raise ValueError(f'funtoonTokensRepository argument is malformed: \"{funtoonTokensRepository}\"')
         elif not isinstance(networkClientProvider, NetworkClientProvider):
             raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
@@ -40,7 +41,7 @@ class FuntoonRepository():
         elif not utils.isValidUrl(funtoonApiUrl):
             raise ValueError(f'funtoonApiUrl argument is malformed: \"{funtoonApiUrl}\"')
 
-        self.__funtoonTokensRepository: FuntoonTokensRepository = funtoonTokensRepository
+        self.__funtoonTokensRepository: FuntoonTokensRepositoryInterface = funtoonTokensRepository
         self.__networkClientProvider: NetworkClientProvider = networkClientProvider
         self.__timber: TimberInterface = timber
         self.__funtoonApiUrl: str = funtoonApiUrl

@@ -3,6 +3,8 @@ from typing import Dict, Optional
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.funtoon.exceptions import NoFuntoonTokenException
+    from CynanBotCommon.funtoon.funtoonTokensRepositoryInterface import \
+        FuntoonTokensRepositoryInterface
     from CynanBotCommon.storage.backingDatabase import BackingDatabase
     from CynanBotCommon.storage.databaseConnection import DatabaseConnection
     from CynanBotCommon.storage.databaseType import DatabaseType
@@ -11,6 +13,8 @@ try:
 except:
     import utils
     from funtoon.exceptions import NoFuntoonTokenException
+    from funtoon.funtoonTokensRepositoryInterface import \
+        FuntoonTokensRepositoryInterface
     from storage.backingDatabase import BackingDatabase
     from storage.databaseConnection import DatabaseConnection
     from storage.databaseType import DatabaseType
@@ -18,7 +22,7 @@ except:
     from timber.timberInterface import TimberInterface
 
 
-class FuntoonTokensRepository():
+class FuntoonTokensRepository(FuntoonTokensRepositoryInterface):
 
     def __init__(
         self,
