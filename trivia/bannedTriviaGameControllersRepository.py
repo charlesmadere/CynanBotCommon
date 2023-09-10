@@ -12,6 +12,8 @@ try:
         AddBannedTriviaGameControllerResult
     from CynanBotCommon.trivia.bannedTriviaGameController import \
         BannedTriviaGameController
+    from CynanBotCommon.trivia.bannedTriviaGameControllersRepositoryInterface import \
+        BannedTriviaGameControllersRepositoryInterface
     from CynanBotCommon.trivia.removeBannedTriviaGameControllerResult import \
         RemoveBannedTriviaGameControllerResult
     from CynanBotCommon.twitch.twitchTokensRepositoryInterface import \
@@ -28,6 +30,8 @@ except:
     from trivia.addBannedTriviaGameControllerResult import \
         AddBannedTriviaGameControllerResult
     from trivia.bannedTriviaGameController import BannedTriviaGameController
+    from trivia.bannedTriviaGameControllersRepositoryInterface import \
+        BannedTriviaGameControllersRepositoryInterface
     from trivia.removeBannedTriviaGameControllerResult import \
         RemoveBannedTriviaGameControllerResult
 
@@ -36,7 +40,7 @@ except:
     from users.userIdsRepositoryInterface import UserIdsRepositoryInterface
 
 
-class BannedTriviaGameControllersRepository():
+class BannedTriviaGameControllersRepository(BannedTriviaGameControllersRepositoryInterface):
 
     def __init__(
         self,
