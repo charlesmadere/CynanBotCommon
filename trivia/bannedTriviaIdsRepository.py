@@ -9,6 +9,8 @@ try:
     from CynanBotCommon.trivia.bannedTriviaIdsRepositoryInterface import \
         BannedTriviaIdsRepositoryInterface
     from CynanBotCommon.trivia.bannedTriviaQuestion import BannedTriviaQuestion
+    from CynanBotCommon.trivia.banTriviaQuestionResult import \
+        BanTriviaQuestionResult
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
     from CynanBotCommon.trivia.triviaSource import TriviaSource
@@ -21,6 +23,7 @@ except:
     from trivia.bannedTriviaIdsRepositoryInterface import \
         BannedTriviaIdsRepositoryInterface
     from trivia.bannedTriviaQuestion import BannedTriviaQuestion
+    from trivia.banTriviaQuestionResult import BanTriviaQuestionResult
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
 
@@ -46,13 +49,24 @@ class BannedTriviaIdsRepository(BannedTriviaIdsRepositoryInterface):
 
         self.__isDatabaseReady: bool = False
 
-    async def ban(self, triviaId: str, userId: str, triviaSource: TriviaSource):
+    async def ban(
+        self,
+        triviaId: str,
+        userId: str,
+        triviaSource: TriviaSource
+    ) -> BanTriviaQuestionResult:
         if not utils.isValidStr(triviaId):
             raise ValueError(f'triviaId argument is malformed: \"{triviaId}\"')
         elif not utils.isValidStr(userId):
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
         elif not isinstance(triviaSource, TriviaSource):
             raise ValueError(f'triviaSource argument is malformed: \"{triviaSource}\"')
+
+        info = await self.getInfo(triviaId = triviaId, triviaSource = triviaSource)
+
+        if info is not None:
+            self.__timber.log('BannedTriviaIdsRepository', f'Attempted to ban trivia question but it\'s already been banned: {info}')
+            return BanTriviaQuestionResult.ALREADY_BANNED
 
         self.__timber.log('BannedTriviaIdsRepository', f'Banning trivia question (triviaId=\"{triviaId}\", userId=\"{userId}\", triviaSource=\"{triviaSource}\")...')
 
@@ -61,7 +75,6 @@ class BannedTriviaIdsRepository(BannedTriviaIdsRepositoryInterface):
             '''
                 INSERT INTO bannedtriviaids (triviaid, triviasource, userid)
                 VALUES ($1, $2, $3)
-                ON CONFLICT (triviaid, triviasource) DO NOTHING
             ''',
             triviaId, triviaSource.toStr(), userId
         )
@@ -69,11 +82,17 @@ class BannedTriviaIdsRepository(BannedTriviaIdsRepositoryInterface):
         await connection.close()
         self.__timber.log('BannedTriviaIdsRepository', f'Banned trivia question (triviaId=\"{triviaId}\", userId=\"{userId}\", triviaSource=\"{triviaSource}\")')
 
+        return BanTriviaQuestionResult.BANNED
+
     async def __getDatabaseConnection(self) -> DatabaseConnection:
         await self.__initDatabaseTable()
         return await self.__backingDatabase.getConnection()
 
-    async def getInfo(self, triviaId: str, triviaSource: TriviaSource) -> Optional[BannedTriviaQuestion]:
+    async def getInfo(
+        self,
+        triviaId: str,
+        triviaSource: TriviaSource
+    ) -> Optional[BannedTriviaQuestion]:
         if not utils.isValidStr(triviaId):
             raise ValueError(f'triviaId argument is malformed: \"{triviaId}\"')
         elif not isinstance(triviaSource, TriviaSource):
@@ -156,11 +175,21 @@ class BannedTriviaIdsRepository(BannedTriviaIdsRepositoryInterface):
         self.__timber.log('BannedTriviaIdsRepository', f'Encountered banned trivia question ({bannedTriviaQuestion})')
         return True
 
-    async def unban(self, triviaId: str, triviaSource: TriviaSource):
+    async def unban(
+        self,
+        triviaId: str,
+        triviaSource: TriviaSource
+    ) -> BanTriviaQuestionResult:
         if not utils.isValidStr(triviaId):
             raise ValueError(f'triviaId argument is malformed: \"{triviaId}\"')
         elif not isinstance(triviaSource, TriviaSource):
             raise ValueError(f'triviaSource argument is malformed: \"{triviaSource}\"')
+
+        info = await self.getInfo(triviaId = triviaId, triviaSource = triviaSource)
+
+        if info is None:
+            self.__timber.log('BannedTriviaIdsRepository', f'Attempted to unban trivia question but it wasn\'t banned (triviaId=\"{triviaId}\", triviaSource=\"{triviaSource}\")')
+            return BanTriviaQuestionResult.NOT_BANNED
 
         self.__timber.log('BannedTriviaIdsRepository', f'Unbanning trivia question (triviaId=\"{triviaId}\", triviaSource=\"{triviaSource}\")...')
 
@@ -175,3 +204,5 @@ class BannedTriviaIdsRepository(BannedTriviaIdsRepositoryInterface):
 
         await connection.close()
         self.__timber.log('BannedTriviaIdsRepository', f'Unbanned trivia question (triviaId=\"{triviaId}\", triviaSource=\"{triviaSource}\")')
+
+        return BanTriviaQuestionResult.UNBANNED
