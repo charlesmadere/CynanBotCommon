@@ -90,7 +90,7 @@ class TriviaContentScanner(TriviaContentScannerInterface):
         if lengthsContentCode is not TriviaContentCode.OK:
             return lengthsContentCode
 
-        contentSanityCode = await self.__verifyQuestionContentSanity(question)
+        contentSanityCode = await self.__verifyQuestionContentProfanity(question)
         if contentSanityCode is not TriviaContentCode.OK:
             return contentSanityCode
 
@@ -120,7 +120,7 @@ class TriviaContentScanner(TriviaContentScannerInterface):
 
         return TriviaContentCode.OK
 
-    async def __verifyQuestionContentSanity(self, question: AbsTriviaQuestion) -> TriviaContentCode:
+    async def __verifyQuestionContentProfanity(self, question: AbsTriviaQuestion) -> TriviaContentCode:
         strings: Set[str] = set()
         await self.__updateQuestionStringContent(strings, question.getQuestion())
         await self.__updateQuestionStringContent(strings, question.getPrompt())
