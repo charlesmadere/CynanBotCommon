@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, List
 
 try:
     import CynanBotCommon.utils as utils
@@ -18,6 +18,7 @@ class BannedWord():
             raise ValueError(f'word argument is malformed: \"{word}\"')
 
         self.__checkType: BannedWordCheckType = checkType
+        self.__words: List[str] = word.lower().split()
         self.__word: str = word.lower()
 
     def __eq__(self, other: Any) -> bool:
@@ -32,8 +33,14 @@ class BannedWord():
     def getWord(self) -> str:
         return self.__word
 
+    def getWords(self) -> List[str]:
+        return self.__words
+
     def __hash__(self) -> int:
         return hash((self.__checkType, self.__word))
+
+    def isPhrase(self) -> bool:
+        return len(self.__words) >= 2
 
     def __str__(self) -> str:
         return f'word=\"{self.__word}\", checkType={self.__checkType}'

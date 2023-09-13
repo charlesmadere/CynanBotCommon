@@ -5,6 +5,10 @@ try:
         BannedTriviaIdsRepositoryInterface
     from CynanBotCommon.trivia.banTriviaQuestionResult import \
         BanTriviaQuestionResult
+    from CynanBotCommon.trivia.triviaBanHelperInterface import \
+        TriviaBanHelperInterface
+    from CynanBotCommon.trivia.triviaSettingsRepository import \
+        TriviaSettingsRepository
     from CynanBotCommon.trivia.triviaSource import TriviaSource
 except:
     import utils
@@ -12,23 +16,29 @@ except:
     from trivia.bannedTriviaIdsRepositoryInterface import \
         BannedTriviaIdsRepositoryInterface
     from trivia.banTriviaQuestionResult import BanTriviaQuestionResult
+    from trivia.triviaBanHelperInterface import TriviaBanHelperInterface
+    from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
 
 
-class TriviaBanHelper():
+class TriviaBanHelper(TriviaBanHelperInterface):
 
     def __init__(
         self,
         bannedTriviaIdsRepository: BannedTriviaIdsRepositoryInterface,
-        funtoonRepository: FuntoonRepository
+        funtoonRepository: FuntoonRepository,
+        triviaSettingsRepository: TriviaSettingsRepository
     ):
         if not isinstance(bannedTriviaIdsRepository, BannedTriviaIdsRepositoryInterface):
             raise ValueError(f'bannedTriviaIdsRepository argument is malformed: \"{bannedTriviaIdsRepository}\"')
         elif not isinstance(funtoonRepository, FuntoonRepository):
             raise ValueError(f'funtoonRepository argument is malformed: \"{funtoonRepository}\"')
+        elif not isinstance(triviaSettingsRepository, TriviaSettingsRepository):
+            raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
 
         self.__bannedTriviaIdsRepository: BannedTriviaIdsRepositoryInterface = bannedTriviaIdsRepository
         self.__funtoonRepository: FuntoonRepository = funtoonRepository
+        self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
 
     async def ban(
         self,
@@ -52,6 +62,20 @@ class TriviaBanHelper():
                 userId = userId,
                 triviaSource = triviaSource
             )
+
+    async def isBanned(self, triviaId: str, triviaSource: TriviaSource) -> bool:
+        if not utils.isValidStr(triviaId):
+            raise ValueError(f'triviaId argument is malformed: \"{triviaId}\"')
+        elif not isinstance(triviaSource, TriviaSource):
+            raise ValueError(f'triviaSource argument is malformed: \"{triviaSource}\"')
+
+        if not await self.__triviaSettingsRepository.isBanListEnabled():
+            return False
+
+        return await self.__bannedTriviaIdsRepository.isBanned(
+            triviaId = triviaId,
+            triviaSource = triviaSource
+        )
 
     async def unban(
         self,

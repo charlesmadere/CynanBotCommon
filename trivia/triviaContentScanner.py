@@ -52,11 +52,11 @@ class TriviaContentScanner(TriviaContentScannerInterface):
 
     async def __updateQuestionStringContent(
         self,
-        strings: Set[str],
+        words: Set[Optional[str]],
         string: Optional[str]
     ):
-        if not isinstance(strings, Set):
-            raise ValueError(f'strings argument is malformed: \"{strings}\"')
+        if not isinstance(words, Set):
+            raise ValueError(f'words argument is malformed: \"{words}\"')
 
         if not isinstance(string, str):
             return
@@ -66,14 +66,14 @@ class TriviaContentScanner(TriviaContentScannerInterface):
             return
 
         for split in splits:
-            strings.add(split)
+            words.add(split)
 
             characters = self.__wordRegEx.findall(split)
             if not utils.hasItems(characters):
                 continue
 
             word = ''.join(characters)
-            strings.update(word)
+            words.update(word)
 
     async def verify(self, question: Optional[AbsTriviaQuestion]) -> TriviaContentCode:
         if question is not None and not isinstance(question, AbsTriviaQuestion):
@@ -121,40 +121,44 @@ class TriviaContentScanner(TriviaContentScannerInterface):
         return TriviaContentCode.OK
 
     async def __verifyQuestionContentProfanity(self, question: AbsTriviaQuestion) -> TriviaContentCode:
-        strings: Set[str] = set()
-        await self.__updateQuestionStringContent(strings, question.getQuestion())
-        await self.__updateQuestionStringContent(strings, question.getPrompt())
+        words: Set[Optional[str]] = set()
+        await self.__updateQuestionStringContent(words, question.getQuestion())
+        await self.__updateQuestionStringContent(words, question.getPrompt())
 
         if question.hasCategory():
-            await self.__updateQuestionStringContent(strings, question.getCategory())
+            await self.__updateQuestionStringContent(words, question.getCategory())
 
         for correctAnswer in question.getCorrectAnswers():
-            await self.__updateQuestionStringContent(strings, correctAnswer)
+            await self.__updateQuestionStringContent(words, correctAnswer)
 
         for response in question.getResponses():
-            await self.__updateQuestionStringContent(strings, response)
+            await self.__updateQuestionStringContent(words, response)
 
         bannedWords = await self.__bannedWordsRepository.getBannedWordsAsync()
 
-        for string in strings:
-            if not utils.isValidStr(string):
-                self.__timber.log('TriviaContentScanner', f'Trivia content contains an empty string: \"{string}\"')
+        for word in words:
+            if not utils.isValidStr(word):
+                self.__timber.log('TriviaContentScanner', f'Trivia content contains an empty string: \"{word}\"')
                 return TriviaContentCode.CONTAINS_EMPTY_STR
-            elif utils.containsUrl(string):
-                self.__timber.log('TriviaContentScanner', f'Trivia content contains a URL: \"{string}\"')
+            elif utils.containsUrl(word):
+                self.__timber.log('TriviaContentScanner', f'Trivia content contains a URL: \"{word}\"')
                 return TriviaContentCode.CONTAINS_URL
 
             for bannedWord in bannedWords:
                 if bannedWord.getCheckType() is BannedWordCheckType.ANYWHERE:
-                    if bannedWord.getWord() in string:
-                        self.__timber.log('TriviaContentScanner', f'Trivia content contains a banned word ({bannedWord}): \"{string}\"')
+                    if bannedWord.getWord() in word:
+                        self.__timber.log('TriviaContentScanner', f'Trivia content contains a banned word ({bannedWord}): \"{word}\"')
                         return TriviaContentCode.CONTAINS_BANNED_WORD
                 elif bannedWord.getCheckType() is BannedWordCheckType.EXACT_MATCH:
-                    if bannedWord.getWord() == string:
-                        self.__timber.log('TriviaContentScanner', f'Trivia content contains a banned word ({bannedWord}): \"{string}\"')
+                    if bannedWord.getWord() == word:
+                        self.__timber.log('TriviaContentScanner', f'Trivia content contains a banned word ({bannedWord}): \"{word}\"')
                         return TriviaContentCode.CONTAINS_BANNED_WORD
                 else:
                     raise RuntimeError(f'unknown BannedWordTypeType ({bannedWord}): \"{bannedWord.getCheckType()}\"')
+
+                if bannedWord.isPhrase():
+                    # TODO
+                    pass
 
         return TriviaContentCode.OK
 

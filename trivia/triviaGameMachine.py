@@ -70,7 +70,8 @@ try:
     from CynanBotCommon.trivia.triviaAnswerChecker import TriviaAnswerChecker
     from CynanBotCommon.trivia.triviaAnswerCheckResult import \
         TriviaAnswerCheckResult
-    from CynanBotCommon.trivia.triviaEmoteGenerator import TriviaEmoteGenerator
+    from CynanBotCommon.trivia.triviaEmoteGeneratorInterface import \
+        TriviaEmoteGeneratorInterface
     from CynanBotCommon.trivia.triviaEventListener import TriviaEventListener
     from CynanBotCommon.trivia.triviaExceptions import (
         TooManyTriviaFetchAttemptsException, UnknownTriviaActionTypeException,
@@ -143,7 +144,8 @@ except:
     from trivia.triviaActionType import TriviaActionType
     from trivia.triviaAnswerChecker import TriviaAnswerChecker
     from trivia.triviaAnswerCheckResult import TriviaAnswerCheckResult
-    from trivia.triviaEmoteGenerator import TriviaEmoteGenerator
+    from trivia.triviaEmoteGeneratorInterface import \
+        TriviaEmoteGeneratorInterface
     from trivia.triviaEventListener import TriviaEventListener
     from trivia.triviaExceptions import (TooManyTriviaFetchAttemptsException,
                                          UnknownTriviaActionTypeException,
@@ -174,7 +176,7 @@ class TriviaGameMachine(TriviaGameMachineInterface):
         timber: TimberInterface,
         toxicTriviaHelper: ToxicTriviaHelper,
         triviaAnswerChecker: TriviaAnswerChecker,
-        triviaEmoteGenerator: TriviaEmoteGenerator,
+        triviaEmoteGenerator: TriviaEmoteGeneratorInterface,
         triviaGameStore: TriviaGameStore,
         triviaRepository: TriviaRepository,
         triviaScoreRepository: TriviaScoreRepository,
@@ -200,7 +202,7 @@ class TriviaGameMachine(TriviaGameMachineInterface):
             raise ValueError(f'toxicTriviaHelper argument is malformed: \"{toxicTriviaHelper}\"')
         elif not isinstance(triviaAnswerChecker, TriviaAnswerChecker):
             raise ValueError(f'triviaAnswerChecker argument is malformed: \"{triviaAnswerChecker}\"')
-        elif not isinstance(triviaEmoteGenerator, TriviaEmoteGenerator):
+        elif not isinstance(triviaEmoteGenerator, TriviaEmoteGeneratorInterface):
             raise ValueError(f'triviaEmoteGenerator argument is malformed: \"{triviaEmoteGenerator}\"')
         elif not isinstance(triviaGameStore, TriviaGameStore):
             raise ValueError(f'triviaGameStore argument is malformed: \"{triviaGameStore}\"')
@@ -231,7 +233,7 @@ class TriviaGameMachine(TriviaGameMachineInterface):
         self.__timber: TimberInterface = timber
         self.__toxicTriviaHelper: ToxicTriviaHelper = toxicTriviaHelper
         self.__triviaAnswerChecker: TriviaAnswerChecker = triviaAnswerChecker
-        self.__triviaEmoteGenerator: TriviaEmoteGenerator = triviaEmoteGenerator
+        self.__triviaEmoteGenerator: TriviaEmoteGeneratorInterface = triviaEmoteGenerator
         self.__triviaGameStore: TriviaGameStore = triviaGameStore
         self.__triviaRepository: TriviaRepository = triviaRepository
         self.__triviaScoreRepository: TriviaScoreRepository = triviaScoreRepository

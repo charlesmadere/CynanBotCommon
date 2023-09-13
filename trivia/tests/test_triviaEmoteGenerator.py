@@ -10,6 +10,8 @@ try:
     from ...timber.timberInterface import TimberInterface
     from ...timber.timberStub import TimberStub
     from ...trivia.triviaEmoteGenerator import TriviaEmoteGenerator
+    from ...trivia.triviaEmoteGeneratorInterface import \
+        TriviaEmoteGeneratorInterface
 except:
     from backgroundTaskHelper import BackgroundTaskHelper
     from storage.backingDatabase import BackingDatabase
@@ -17,6 +19,8 @@ except:
     from timber.timberInterface import TimberInterface
     from timber.timberStub import TimberStub
     from trivia.triviaEmoteGenerator import TriviaEmoteGenerator
+    from trivia.triviaEmoteGeneratorInterface import \
+        TriviaEmoteGeneratorInterface
 
 
 class TestTriviaEmoteGenerator():
@@ -25,7 +29,7 @@ class TestTriviaEmoteGenerator():
     backgroundTaskHelper = BackgroundTaskHelper(eventLoop = eventLoop)
     backingDatabase: BackingDatabase = BackingSqliteDatabase(eventLoop = eventLoop)
     timber: TimberInterface = TimberStub()
-    triviaEmoteGenerator: TriviaEmoteGenerator = TriviaEmoteGenerator(
+    triviaEmoteGenerator: TriviaEmoteGeneratorInterface = TriviaEmoteGenerator(
         backingDatabase = backingDatabase,
         timber = timber
     )

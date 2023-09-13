@@ -7,15 +7,19 @@ try:
     from CynanBotCommon.storage.databaseConnection import DatabaseConnection
     from CynanBotCommon.storage.databaseType import DatabaseType
     from CynanBotCommon.timber.timberInterface import TimberInterface
+    from CynanBotCommon.trivia.triviaEmoteGeneratorInterface import \
+        TriviaEmoteGeneratorInterface
 except:
     import utils
     from storage.backingDatabase import BackingDatabase
     from storage.databaseConnection import DatabaseConnection
     from storage.databaseType import DatabaseType
     from timber.timberInterface import TimberInterface
+    from trivia.triviaEmoteGeneratorInterface import \
+        TriviaEmoteGeneratorInterface
 
 
-class TriviaEmoteGenerator():
+class TriviaEmoteGenerator(TriviaEmoteGeneratorInterface):
 
     def __init__(
         self,
