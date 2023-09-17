@@ -4,8 +4,8 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
-    from CynanBotCommon.trivia.bannedTriviaIdsRepositoryInterface import \
-        BannedTriviaIdsRepositoryInterface
+    from CynanBotCommon.trivia.triviaBanHelperInterface import \
+        TriviaBanHelperInterface
     from CynanBotCommon.trivia.triviaContentCode import TriviaContentCode
     from CynanBotCommon.trivia.triviaContentScannerInterface import \
         TriviaContentScannerInterface
@@ -17,8 +17,7 @@ except:
     import utils
     from timber.timberInterface import TimberInterface
     from trivia.absTriviaQuestion import AbsTriviaQuestion
-    from trivia.bannedTriviaIdsRepositoryInterface import \
-        BannedTriviaIdsRepositoryInterface
+    from trivia.triviaBanHelperInterface import TriviaBanHelperInterface
     from trivia.triviaContentCode import TriviaContentCode
     from trivia.triviaContentScannerInterface import \
         TriviaContentScannerInterface
@@ -32,22 +31,22 @@ class TriviaVerifier():
 
     def __init__(
         self,
-        bannedTriviaIdsRepository: BannedTriviaIdsRepositoryInterface,
         timber: TimberInterface,
+        triviaBanHelper: TriviaBanHelperInterface,
         triviaContentScanner: TriviaContentScannerInterface,
         triviaHistoryRepository: TriviaHistoryRepositoryInterface
     ):
-        if not isinstance(bannedTriviaIdsRepository, BannedTriviaIdsRepositoryInterface):
-            raise ValueError(f'bannedTriviaIdsRepository argument is malformed: \"bannedTriviaIdsRepository\"')
-        elif not isinstance(timber, TimberInterface):
+        if not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
+        elif not isinstance(triviaBanHelper, TriviaBanHelperInterface):
+            raise ValueError(f'triviaBanHelper argument is malformed: \"{triviaBanHelper}\"')
         elif not isinstance(triviaContentScanner, TriviaContentScannerInterface):
             raise ValueError(f'triviaContentScanner argument is malformed: \"{triviaContentScanner}\"')
         elif not isinstance(triviaHistoryRepository, TriviaHistoryRepositoryInterface):
             raise ValueError(f'triviaHistoryRepository argument is malformed: \"{triviaHistoryRepository}\"')
 
-        self.__bannedTriviaIdsRepository: BannedTriviaIdsRepositoryInterface = bannedTriviaIdsRepository
         self.__timber: TimberInterface = timber
+        self.__triviaBanHelper: TriviaBanHelperInterface = triviaBanHelper
         self.__triviaContentScanner: TriviaContentScannerInterface = triviaContentScanner
         self.__triviaHistoryRepository: TriviaHistoryRepositoryInterface = triviaHistoryRepository
 
@@ -71,7 +70,7 @@ class TriviaVerifier():
             self.__timber.log('TriviaVerifier', f'The given TriviaType is illegal: {question.getTriviaType()} (triviaFetchOptions: {triviaFetchOptions.toStr()})')
             return TriviaContentCode.ILLEGAL_TRIVIA_TYPE
 
-        if await self.__bannedTriviaIdsRepository.isBanned(
+        if await self.__triviaBanHelper.isBanned(
             triviaId = question.getTriviaId(),
             triviaSource = question.getTriviaSource()
         ):

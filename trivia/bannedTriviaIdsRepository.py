@@ -11,8 +11,6 @@ try:
     from CynanBotCommon.trivia.bannedTriviaQuestion import BannedTriviaQuestion
     from CynanBotCommon.trivia.banTriviaQuestionResult import \
         BanTriviaQuestionResult
-    from CynanBotCommon.trivia.triviaSettingsRepository import \
-        TriviaSettingsRepository
     from CynanBotCommon.trivia.triviaSource import TriviaSource
 except:
     import utils
@@ -24,7 +22,6 @@ except:
         BannedTriviaIdsRepositoryInterface
     from trivia.bannedTriviaQuestion import BannedTriviaQuestion
     from trivia.banTriviaQuestionResult import BanTriviaQuestionResult
-    from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
 
 
@@ -33,19 +30,15 @@ class BannedTriviaIdsRepository(BannedTriviaIdsRepositoryInterface):
     def __init__(
         self,
         backingDatabase: BackingDatabase,
-        timber: TimberInterface,
-        triviaSettingsRepository: TriviaSettingsRepository
+        timber: TimberInterface
     ):
         if not isinstance(backingDatabase, BackingDatabase):
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
         elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif not isinstance(triviaSettingsRepository, TriviaSettingsRepository):
-            raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
 
         self.__backingDatabase: BackingDatabase = backingDatabase
         self.__timber: TimberInterface = timber
-        self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
 
         self.__isDatabaseReady: bool = False
 
@@ -161,18 +154,15 @@ class BannedTriviaIdsRepository(BannedTriviaIdsRepositoryInterface):
         elif not isinstance(triviaSource, TriviaSource):
             raise ValueError(f'triviaSource argument is malformed: \"{triviaSource}\"')
 
-        if not await self.__triviaSettingsRepository.isBanListEnabled():
-            return False
-
-        bannedTriviaQuestion = await self.getInfo(
+        info = await self.getInfo(
             triviaId = triviaId,
             triviaSource = triviaSource
         )
 
-        if bannedTriviaQuestion is None:
+        if info is None:
             return False
 
-        self.__timber.log('BannedTriviaIdsRepository', f'Encountered banned trivia question ({bannedTriviaQuestion})')
+        self.__timber.log('BannedTriviaIdsRepository', f'Encountered banned trivia question ({info})')
         return True
 
     async def unban(
