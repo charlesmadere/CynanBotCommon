@@ -19,8 +19,12 @@ try:
         QuestionAnswerTriviaQuestion
     from ...trivia.triviaContentCode import TriviaContentCode
     from ...trivia.triviaContentScanner import TriviaContentScanner
+    from ...trivia.triviaContentScannerInterface import \
+        TriviaContentScannerInterface
     from ...trivia.triviaDifficulty import TriviaDifficulty
     from ...trivia.triviaSettingsRepository import TriviaSettingsRepository
+    from ...trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
     from ...trivia.triviaSource import TriviaSource
     from ...trivia.trueFalseTriviaQuestion import TrueFalseTriviaQuestion
 except:
@@ -39,15 +43,19 @@ except:
         QuestionAnswerTriviaQuestion
     from trivia.triviaContentCode import TriviaContentCode
     from trivia.triviaContentScanner import TriviaContentScanner
+    from trivia.triviaContentScannerInterface import \
+        TriviaContentScannerInterface
     from trivia.triviaDifficulty import TriviaDifficulty
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
+    from trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
     from trivia.triviaSource import TriviaSource
     from trivia.trueFalseTriviaQuestion import TrueFalseTriviaQuestion
 
 
 class TestTriviaContentScanner():
 
-    triviaSettingsRepository = TriviaSettingsRepository(
+    triviaSettingsRepository: TriviaSettingsRepositoryInterface = TriviaSettingsRepository(
         settingsJsonReader = JsonStaticReader(dict())
     )
 
@@ -62,7 +70,7 @@ class TestTriviaContentScanner():
         timber = timber
     )
 
-    triviaContentScanner = TriviaContentScanner(
+    triviaContentScanner: TriviaContentScannerInterface = TriviaContentScanner(
         bannedWordsRepository = bannedWordsRepositoryInterface,
         timber = timber,
         triviaSettingsRepository = triviaSettingsRepository
