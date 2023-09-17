@@ -12,8 +12,8 @@ try:
     from CynanBotCommon.trivia.triviaContentCode import TriviaContentCode
     from CynanBotCommon.trivia.triviaContentScannerInterface import \
         TriviaContentScannerInterface
-    from CynanBotCommon.trivia.triviaSettingsRepository import \
-        TriviaSettingsRepository
+    from CynanBotCommon.trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
     from CynanBotCommon.trivia.triviaType import TriviaType
 except:
     import utils
@@ -25,7 +25,8 @@ except:
     from trivia.triviaContentCode import TriviaContentCode
     from trivia.triviaContentScannerInterface import \
         TriviaContentScannerInterface
-    from trivia.triviaSettingsRepository import TriviaSettingsRepository
+    from trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
     from trivia.triviaType import TriviaType
 
 
@@ -35,18 +36,18 @@ class TriviaContentScanner(TriviaContentScannerInterface):
         self,
         bannedWordsRepository: BannedWordsRepositoryInterface,
         timber: TimberInterface,
-        triviaSettingsRepository: TriviaSettingsRepository
+        triviaSettingsRepository: TriviaSettingsRepositoryInterface
     ):
         if not isinstance(bannedWordsRepository, BannedWordsRepositoryInterface):
             raise ValueError(f'bannedWordsRepository argument is malformed: \"{bannedWordsRepository}\"')
         elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif not isinstance(triviaSettingsRepository, TriviaSettingsRepository):
+        elif not isinstance(triviaSettingsRepository, TriviaSettingsRepositoryInterface):
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
 
         self.__bannedWordsRepository: BannedWordsRepositoryInterface = bannedWordsRepository
         self.__timber: TimberInterface = timber
-        self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
+        self.__triviaSettingsRepository: TriviaSettingsRepositoryInterface = triviaSettingsRepository
 
         self.__wordRegEx: Pattern = re.compile(r'\w', re.IGNORECASE)
 

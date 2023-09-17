@@ -3,14 +3,18 @@ from typing import Any, Dict, Optional
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.storage.jsonReaderInterface import JsonReaderInterface
+    from CynanBotCommon.trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
     from CynanBotCommon.trivia.triviaSource import TriviaSource
 except:
     import utils
     from storage.jsonReaderInterface import JsonReaderInterface
+    from trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
     from trivia.triviaSource import TriviaSource
 
 
-class TriviaSettingsRepository():
+class TriviaSettingsRepository(TriviaSettingsRepositoryInterface):
 
     def __init__(self, settingsJsonReader: JsonReaderInterface):
         if not isinstance(settingsJsonReader, JsonReaderInterface):
@@ -119,7 +123,7 @@ class TriviaSettingsRepository():
 
         return maxRetryCount
 
-    async def getMaxSuperGameQueueSize(self) -> int:
+    async def getMaxSuperTriviaGameQueueSize(self) -> int:
         jsonContents = await self.__readJson()
         maxSuperGameQueueSize = utils.getIntFromDict(jsonContents, 'max_super_game_queue_size', 50)
 

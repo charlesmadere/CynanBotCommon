@@ -67,9 +67,9 @@ class QueuedTriviaGameStore():
             )
 
         action.consumeQueueAction()
-        maxSuperGameQueueSize = await self.__triviaSettingsRepository.getMaxSuperGameQueueSize()
+        maxSuperTriviaGameQueueSize = await self.__triviaSettingsRepository.getMaxSuperTriviaGameQueueSize()
 
-        if maxSuperGameQueueSize < 1:
+        if maxSuperTriviaGameQueueSize < 1:
             return AddQueuedGamesResult(
                 amountAdded = 0,
                 newQueueSize = oldQueueSize,
@@ -91,7 +91,7 @@ class QueuedTriviaGameStore():
         amountAdded: int = 0
 
         for _ in range(numberOfGames):
-            if queuedSuperGames.qsize() < maxSuperGameQueueSize:
+            if queuedSuperGames.qsize() < maxSuperTriviaGameQueueSize:
                 queuedSuperGames.put(StartNewSuperTriviaGameAction(
                     isQueueActionConsumed = True,
                     isShinyTriviaEnabled = action.isShinyTriviaEnabled(),
