@@ -4,6 +4,7 @@ from enum import Enum, auto
 class TriviaContentCode(Enum):
 
     ANSWER_TOO_LONG = auto()
+    CONTAINS_BANNED_PHRASE = auto()
     CONTAINS_BANNED_WORD = auto()
     CONTAINS_EMPTY_STR = auto()
     CONTAINS_URL = auto()
