@@ -1,13 +1,15 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import Dict
 
 try:
+    from CynanBotCommon.clearable import Clearable
     from CynanBotCommon.trivia.triviaSource import TriviaSource
 except:
+    from clearable import Clearable
     from trivia.triviaSource import TriviaSource
 
 
-class TriviaSettingsRepositoryInterface(ABC):
+class TriviaSettingsRepositoryInterface(Clearable):
 
     @abstractmethod
     async def areAdditionalTriviaAnswersEnabled(self) -> bool:
@@ -19,10 +21,6 @@ class TriviaSettingsRepositoryInterface(ABC):
 
     @abstractmethod
     async def areToxicTriviasEnabled(self) -> bool:
-        pass
-
-    @abstractmethod
-    async def clearCaches(self):
         pass
 
     @abstractmethod

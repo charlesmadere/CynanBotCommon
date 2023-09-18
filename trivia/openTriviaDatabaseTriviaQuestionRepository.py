@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional, Set
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.clearable import Clearable
     from CynanBotCommon.network.exceptions import GenericNetworkException
     from CynanBotCommon.network.networkClientProvider import \
         NetworkClientProvider
@@ -30,6 +31,7 @@ try:
         TrueFalseTriviaQuestion
 except:
     import utils
+    from clearable import Clearable
     from network.exceptions import GenericNetworkException
     from network.networkClientProvider import NetworkClientProvider
     from storage.backingDatabase import BackingDatabase
@@ -53,7 +55,7 @@ except:
     from trivia.trueFalseTriviaQuestion import TrueFalseTriviaQuestion
 
 
-class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
+class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository, Clearable):
 
     def __init__(
         self,

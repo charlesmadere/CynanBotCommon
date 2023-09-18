@@ -1,12 +1,13 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import Optional
 
+try:
+    from CynanBotCommon.clearable import Clearable
+except:
+    from clearable import Clearable
 
-class FuntoonTokensRepositoryInterface(ABC):
 
-    @abstractmethod
-    async def clearCaches(self):
-        pass
+class FuntoonTokensRepositoryInterface(Clearable):
 
     @abstractmethod
     async def getToken(self, twitchChannel: str) -> Optional[str]:
