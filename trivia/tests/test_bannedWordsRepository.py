@@ -5,8 +5,8 @@ try:
     from ...storage.linesStaticReader import LinesStaticReader
     from ...timber.timberInterface import TimberInterface
     from ...timber.timberStub import TimberStub
+    from ...trivia.bannedWords.bannedPhrase import BannedPhrase
     from ...trivia.bannedWords.bannedWord import BannedWord
-    from ...trivia.bannedWords.bannedWordCheckType import BannedWordCheckType
     from ...trivia.bannedWords.bannedWordsRepository import \
         BannedWordsRepository
     from ...trivia.bannedWords.bannedWordsRepositoryInterface import \
@@ -16,8 +16,8 @@ except:
     from storage.linesStaticReader import LinesStaticReader
     from timber.timberInterface import TimberInterface
     from timber.timberStub import TimberStub
+    from trivia.bannedWords.bannedPhrase import BannedPhrase
     from trivia.bannedWords.bannedWord import BannedWord
-    from trivia.bannedWords.bannedWordCheckType import BannedWordCheckType
     from trivia.bannedWords.bannedWordsRepository import BannedWordsRepository
     from trivia.bannedWords.bannedWordsRepositoryInterface import \
         BannedWordsRepositoryInterface
@@ -44,9 +44,9 @@ class TestBannedWordsRepository():
         bannedWords = bannedWordsRepository.getBannedWords()
         assert len(bannedWords) == 3
 
-        assert BannedWord(BannedWordCheckType.ANYWHERE, 'hello') in bannedWords
-        assert BannedWord(BannedWordCheckType.ANYWHERE, 'world') in bannedWords
-        assert BannedWord(BannedWordCheckType.EXACT_MATCH, 'qanon') in bannedWords
+        assert BannedWord('hello') in bannedWords
+        assert BannedWord('world') in bannedWords
+        assert BannedPhrase('qanon') in bannedWords
 
     @pytest.mark.asyncio
     async def test_getBannedWordsAsync(self):
@@ -58,9 +58,9 @@ class TestBannedWordsRepository():
         bannedWords = await bannedWordsRepository.getBannedWordsAsync()
         assert len(bannedWords) == 3
 
-        assert BannedWord(BannedWordCheckType.ANYWHERE, 'hello') in bannedWords
-        assert BannedWord(BannedWordCheckType.ANYWHERE, 'world') in bannedWords
-        assert BannedWord(BannedWordCheckType.EXACT_MATCH, 'qanon') in bannedWords
+        assert BannedWord('hello') in bannedWords
+        assert BannedWord('world') in bannedWords
+        assert BannedPhrase('qanon') in bannedWords
 
     def test_getBannedWords_withEmptyBannedWordsLinesReader(self):
         bannedWordsRepository: BannedWordsRepositoryInterface = BannedWordsRepository(
