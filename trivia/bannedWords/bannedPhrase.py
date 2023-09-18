@@ -37,4 +37,4 @@ class BannedPhrase(AbsBannedWord):
         return hash((self.__phrase, self.getType()))
 
     def __str__(self) -> str:
-        return f'phrase: \"{self.__phrase}\", type:\"{self.getType()}\"'
+        return f'phrase=\"{self.__phrase}\", type=\"{self.getType()}\"'

@@ -7,17 +7,18 @@ try:
     from CynanBotCommon.storage.linesReaderInterface import \
         LinesReaderInterface
     from CynanBotCommon.timber.timberInterface import TimberInterface
+    from CynanBotCommon.trivia.bannedWords.absBannedWord import AbsBannedWord
+    from CynanBotCommon.trivia.bannedWords.bannedPhrase import BannedPhrase
     from CynanBotCommon.trivia.bannedWords.bannedWord import BannedWord
-    from CynanBotCommon.trivia.bannedWords.bannedWordCheckType import \
-        BannedWordCheckType
     from CynanBotCommon.trivia.bannedWords.bannedWordsRepositoryInterface import \
         BannedWordsRepositoryInterface
 except:
     import utils
     from storage.linesReaderInterface import LinesReaderInterface
     from timber.timberInterface import TimberInterface
+    from trivia.bannedWords.absBannedWord import AbsBannedWord
+    from trivia.bannedWords.bannedPhrase import BannedPhrase
     from trivia.bannedWords.bannedWord import BannedWord
-    from trivia.bannedWords.bannedWordCheckType import BannedWordCheckType
     from trivia.bannedWords.bannedWordsRepositoryInterface import \
         BannedWordsRepositoryInterface
 
@@ -46,8 +47,8 @@ class BannedWordsRepository(BannedWordsRepositoryInterface):
     def __createCleanedBannedWordsSetFromLines(
         self,
         lines: Optional[List[Optional[str]]]
-    ) -> Set[BannedWord]:
-        cleanedBannedWords: Set[str] = set()
+    ) -> Set[AbsBannedWord]:
+        cleanedBannedWords: Set[AbsBannedWord] = set()
 
         if not utils.hasItems(lines):
             return cleanedBannedWords
@@ -60,7 +61,7 @@ class BannedWordsRepository(BannedWordsRepositoryInterface):
 
         return cleanedBannedWords
 
-    def __fetchBannedWords(self) -> Set[BannedWord]:
+    def __fetchBannedWords(self) -> Set[AbsBannedWord]:
         lines: Optional[List[Optional[str]]] = None
 
         try:
@@ -71,7 +72,7 @@ class BannedWordsRepository(BannedWordsRepositoryInterface):
 
         return self.__createCleanedBannedWordsSetFromLines(lines)
 
-    async def __fetchBannedWordsAsync(self) -> Set[BannedWord]:
+    async def __fetchBannedWordsAsync(self) -> Set[AbsBannedWord]:
         lines: Optional[List[Optional[str]]] = None
 
         try:
@@ -82,7 +83,7 @@ class BannedWordsRepository(BannedWordsRepositoryInterface):
 
         return self.__createCleanedBannedWordsSetFromLines(lines)
 
-    def getBannedWords(self) -> Set[BannedWord]:
+    def getBannedWords(self) -> Set[AbsBannedWord]:
         if self.__cache is not None:
             return self.__cache
 
@@ -92,7 +93,7 @@ class BannedWordsRepository(BannedWordsRepositoryInterface):
 
         return bannedWords
 
-    async def getBannedWordsAsync(self) -> Set[BannedWord]:
+    async def getBannedWordsAsync(self) -> Set[AbsBannedWord]:
         if self.__cache is not None:
             return self.__cache
 
@@ -102,23 +103,18 @@ class BannedWordsRepository(BannedWordsRepositoryInterface):
 
         return bannedWords
 
-    def __processLine(self, line: Optional[str]) -> Optional[BannedWord]:
+    def __processLine(self, line: Optional[str]) -> Optional[AbsBannedWord]:
         if not utils.isValidStr(line):
             return None
 
-        word = line.strip().lower()
+        line = line.strip().lower()
 
-        if not utils.isValidStr(word):
+        if not utils.isValidStr(line):
             return None
 
-        quoteRegExMatch = self.__quoteRegEx.fullmatch(word)
-        checkType = BannedWordCheckType.ANYWHERE
+        quoteRegExMatch = self.__quoteRegEx.fullmatch(line)
+        if quoteRegExMatch is None:
+            return BannedWord(line)
 
-        if quoteRegExMatch is not None:
-            word = quoteRegExMatch.group(1).strip()
-            checkType = BannedWordCheckType.EXACT_MATCH
-
-        return BannedWord(
-            checkType = checkType,
-            word = word
-        )
+        group = quoteRegExMatch.group(1)
+        return BannedPhrase(group)
