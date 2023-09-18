@@ -6,6 +6,8 @@ try:
     from CynanBotCommon.funtoon.exceptions import NoFuntoonTokenException
     from CynanBotCommon.funtoon.funtoonPkmnCatchType import \
         FuntoonPkmnCatchType
+    from CynanBotCommon.funtoon.funtoonRepositoryInterface import \
+        FuntoonRepositoryInterface
     from CynanBotCommon.funtoon.funtoonTokensRepositoryInterface import \
         FuntoonTokensRepositoryInterface
     from CynanBotCommon.network.exceptions import GenericNetworkException
@@ -16,6 +18,7 @@ except:
     import utils
     from funtoon.exceptions import NoFuntoonTokenException
     from funtoon.funtoonPkmnCatchType import FuntoonPkmnCatchType
+    from funtoon.funtoonRepositoryInterface import FuntoonRepositoryInterface
     from funtoon.funtoonTokensRepositoryInterface import \
         FuntoonTokensRepositoryInterface
     from network.exceptions import GenericNetworkException
@@ -23,7 +26,7 @@ except:
     from timber.timberInterface import TimberInterface
 
 
-class FuntoonRepository():
+class FuntoonRepository(FuntoonRepositoryInterface):
 
     def __init__(
         self,

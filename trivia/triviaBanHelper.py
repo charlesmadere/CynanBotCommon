@@ -1,6 +1,7 @@
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.funtoon.funtoonRepository import FuntoonRepository
+    from CynanBotCommon.funtoon.funtoonRepositoryInterface import \
+        FuntoonRepositoryInterface
     from CynanBotCommon.trivia.bannedTriviaIdsRepositoryInterface import \
         BannedTriviaIdsRepositoryInterface
     from CynanBotCommon.trivia.banTriviaQuestionResult import \
@@ -12,7 +13,7 @@ try:
     from CynanBotCommon.trivia.triviaSource import TriviaSource
 except:
     import utils
-    from funtoon.funtoonRepository import FuntoonRepository
+    from funtoon.funtoonRepositoryInterface import FuntoonRepositoryInterface
     from trivia.bannedTriviaIdsRepositoryInterface import \
         BannedTriviaIdsRepositoryInterface
     from trivia.banTriviaQuestionResult import BanTriviaQuestionResult
@@ -26,18 +27,18 @@ class TriviaBanHelper(TriviaBanHelperInterface):
     def __init__(
         self,
         bannedTriviaIdsRepository: BannedTriviaIdsRepositoryInterface,
-        funtoonRepository: FuntoonRepository,
+        funtoonRepository: FuntoonRepositoryInterface,
         triviaSettingsRepository: TriviaSettingsRepository
     ):
         if not isinstance(bannedTriviaIdsRepository, BannedTriviaIdsRepositoryInterface):
             raise ValueError(f'bannedTriviaIdsRepository argument is malformed: \"{bannedTriviaIdsRepository}\"')
-        elif not isinstance(funtoonRepository, FuntoonRepository):
+        elif not isinstance(funtoonRepository, FuntoonRepositoryInterface):
             raise ValueError(f'funtoonRepository argument is malformed: \"{funtoonRepository}\"')
         elif not isinstance(triviaSettingsRepository, TriviaSettingsRepository):
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
 
         self.__bannedTriviaIdsRepository: BannedTriviaIdsRepositoryInterface = bannedTriviaIdsRepository
-        self.__funtoonRepository: FuntoonRepository = funtoonRepository
+        self.__funtoonRepository: FuntoonRepositoryInterface = funtoonRepository
         self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
 
     async def ban(
