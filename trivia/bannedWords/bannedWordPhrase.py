@@ -19,8 +19,11 @@ class BannedPhrase(AbsBannedWord):
         self.__phrase: str = phrase.lower()
 
     def __eq__(self, other: Any) -> bool:
-        if isinstance(other, BannedPhrase):
-            return self.__phrase == other.__phrase
+        if isinstance(other, AbsBannedWord):
+            if isinstance(other, BannedPhrase):
+                return self.__phrase == other.__phrase
+            else:
+                return False
         else:
             raise ValueError(f'`other` is an unsupported type: \"{other}\"')
 
