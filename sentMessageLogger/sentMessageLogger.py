@@ -15,7 +15,7 @@ try:
 except:
     import utils
     from backgroundTaskHelper import BackgroundTaskHelper
-    from sentMessage import SentMessage
+    from sentMessageLogger.sentMessage import SentMessage
 
 
 class SentMessageLogger():
