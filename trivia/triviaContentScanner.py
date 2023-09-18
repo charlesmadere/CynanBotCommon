@@ -212,13 +212,13 @@ class TriviaContentScanner(TriviaContentScannerInterface):
                 for phrase in phrases:
                     if bannedPhrase.getPhrase() in phrase:
                         self.__timber.log('TriviaContentScanner', f'Trivia content contains a banned phrase ({absBannedWord}): \"{phrase}\"')
-                        return TriviaContentCode.CONTAINS_BANNED_PHRASE
+                        return TriviaContentCode.CONTAINS_BANNED_CONTENT
             elif absBannedWord.getType() is BannedWordType.WORD:
                 bannedWord: BannedWord = absBannedWord
 
                 if bannedWord.getWord() in words:
                     self.__timber.log('TriviaContentScanner', f'Trivia content contains a banned word ({absBannedWord}): \"{bannedWord.getWord()}\"')
-                    return TriviaContentCode.CONTAINS_BANNED_WORD
+                    return TriviaContentCode.CONTAINS_BANNED_CONTENT
             else:
                 raise RuntimeError(f'unknown BannedWordType ({absBannedWord}): \"{absBannedWord.getType()}\"')
 

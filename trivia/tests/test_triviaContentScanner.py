@@ -92,7 +92,7 @@ class TestTriviaContentScanner():
         )
 
         result = await self.triviaContentScanner.verify(question)
-        assert result is TriviaContentCode.CONTAINS_BANNED_WORD
+        assert result is TriviaContentCode.CONTAINS_BANNED_CONTENT
 
     @pytest.mark.asyncio
     async def test_verify_withGnarlyTriviaQuestion2(self):
@@ -109,16 +109,16 @@ class TestTriviaContentScanner():
             multipleChoiceResponses = multipleChoiceResponses,
             category = None,
             categoryId = None,
-            question = 'bitching', # the banned word is actually "bitch", but
-                                   # that word is hidden within "bitching", so
-                                   # this question should end up banned
+            question = 'bitching', # The banned word is actually "bitch", but
+                                   # that word is contained within "bitching",
+                                   # so this question should end up banned.
             triviaId = 'asdfasdfasdf',
             triviaDifficulty = TriviaDifficulty.UNKNOWN,
             triviaSource = TriviaSource.J_SERVICE
         )
 
         result = await self.triviaContentScanner.verify(question)
-        assert result is TriviaContentCode.CONTAINS_BANNED_WORD
+        assert result is TriviaContentCode.CONTAINS_BANNED_CONTENT
 
     @pytest.mark.asyncio
     async def test_verify_withTriviaQuestionThatAlmostContainsBannedWord(self):
