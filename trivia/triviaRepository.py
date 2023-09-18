@@ -47,8 +47,8 @@ try:
     from CynanBotCommon.trivia.triviaFetchOptions import TriviaFetchOptions
     from CynanBotCommon.trivia.triviaQuestionCompanyTriviaQuestionRepository import \
         TriviaQuestionCompanyTriviaQuestionRepository
-    from CynanBotCommon.trivia.triviaSettingsRepository import \
-        TriviaSettingsRepository
+    from CynanBotCommon.trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
     from CynanBotCommon.trivia.triviaSource import TriviaSource
     from CynanBotCommon.trivia.triviaSourceInstabilityHelper import \
         TriviaSourceInstabilityHelper
@@ -99,7 +99,8 @@ except:
     from trivia.triviaFetchOptions import TriviaFetchOptions
     from trivia.triviaQuestionCompanyTriviaQuestionRepository import \
         TriviaQuestionCompanyTriviaQuestionRepository
-    from trivia.triviaSettingsRepository import TriviaSettingsRepository
+    from trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
     from trivia.triviaSource import TriviaSource
     from trivia.triviaSourceInstabilityHelper import \
         TriviaSourceInstabilityHelper
@@ -130,10 +131,10 @@ class TriviaRepository():
         timber: TimberInterface,
         triviaDatabaseTriviaQuestionRepository: TriviaDatabaseTriviaQuestionRepository,
         triviaQuestionCompanyTriviaQuestionRepository: TriviaQuestionCompanyTriviaQuestionRepository,
-        triviaSettingsRepository: TriviaSettingsRepository,
+        triviaSettingsRepository: TriviaSettingsRepositoryInterface,
         triviaSourceInstabilityHelper: TriviaSourceInstabilityHelper,
         triviaVerifier: TriviaVerifier,
-        twitchHandleProviderInterface: TwitchHandleProviderInterface,
+        twitchHandleProvider: TwitchHandleProviderInterface,
         willFryTriviaQuestionRepository: WillFryTriviaQuestionRepository,
         wwtbamTriviaQuestionRepository: WwtbamTriviaQuestionRepository,
         spoolerLoopSleepTimeSeconds: float = 120,
@@ -167,14 +168,14 @@ class TriviaRepository():
             raise ValueError(f'triviaDatabaseTriviaQuestionRepository argument is malformed: \"{triviaDatabaseTriviaQuestionRepository}\"')
         elif not isinstance(triviaQuestionCompanyTriviaQuestionRepository, TriviaQuestionCompanyTriviaQuestionRepository):
             raise ValueError(f'triviaQuestionCompanyTriviaQuestionRepository argument is malformed: \"{triviaQuestionCompanyTriviaQuestionRepository}\"')
-        elif not isinstance(triviaSettingsRepository, TriviaSettingsRepository):
+        elif not isinstance(triviaSettingsRepository, TriviaSettingsRepositoryInterface):
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
         elif not isinstance(triviaSourceInstabilityHelper, TriviaSourceInstabilityHelper):
             raise ValueError(f'triviaSourceInstabilityHelper argument is malformed: \"{triviaSourceInstabilityHelper}\"')
         elif not isinstance(triviaVerifier, TriviaVerifier):
             raise ValueError(f'triviaVerifier argument is malformed: \"{triviaVerifier}\"')
-        elif not isinstance(twitchHandleProviderInterface, TwitchHandleProviderInterface):
-            raise ValueError(f'twitchHandleProviderInterface argument is malformed: \"{twitchHandleProviderInterface}\"')
+        elif not isinstance(twitchHandleProvider, TwitchHandleProviderInterface):
+            raise ValueError(f'twitchHandleProvider argument is malformed: \"{twitchHandleProvider}\"')
         elif not isinstance(willFryTriviaQuestionRepository, WillFryTriviaQuestionRepository):
             raise ValueError(f'willFryTriviaQuestionRepository argument is malformed: \"{willFryTriviaQuestionRepository}\"')
         elif not isinstance(wwtbamTriviaQuestionRepository, WwtbamTriviaQuestionRepository):
@@ -202,10 +203,10 @@ class TriviaRepository():
         self.__timber: TimberInterface = timber
         self.__triviaDatabaseTriviaQuestionRepository: AbsTriviaQuestionRepository = triviaDatabaseTriviaQuestionRepository
         self.__triviaQuestionCompanyTriviaQuestionRepository: AbsTriviaQuestionRepository = triviaQuestionCompanyTriviaQuestionRepository
-        self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
+        self.__triviaSettingsRepository: TriviaSettingsRepositoryInterface = triviaSettingsRepository
         self.__triviaSourceInstabilityHelper: TriviaSourceInstabilityHelper = triviaSourceInstabilityHelper
         self.__triviaVerifier: TriviaVerifier = triviaVerifier
-        self.__twitchHandleProviderInterfae: TwitchHandleProviderInterface = twitchHandleProviderInterface
+        self.__twitchHandleProvider: TwitchHandleProviderInterface = twitchHandleProvider
         self.__willFryTriviaQuestionRepository: AbsTriviaQuestionRepository = willFryTriviaQuestionRepository
         self.__wwtbamTriviaQuestionRepository: AbsTriviaQuestionRepository = wwtbamTriviaQuestionRepository
         self.__spoolerLoopSleepTimeSeconds: float = spoolerLoopSleepTimeSeconds
@@ -416,7 +417,7 @@ class TriviaRepository():
             return
 
         triviaFetchOptions = TriviaFetchOptions(
-            twitchChannel = await self.__twitchHandleProviderInterfae.getTwitchHandle(),
+            twitchChannel = await self.__twitchHandleProvider.getTwitchHandle(),
             isJokeTriviaRepositoryEnabled = False,
             questionAnswerTriviaConditions = QuestionAnswerTriviaConditions.REQUIRED
         )
@@ -461,7 +462,7 @@ class TriviaRepository():
             return
 
         triviaFetchOptions = TriviaFetchOptions(
-            twitchChannel = await self.__twitchHandleProviderInterfae.getTwitchHandle(),
+            twitchChannel = await self.__twitchHandleProvider.getTwitchHandle(),
             isJokeTriviaRepositoryEnabled = False,
             questionAnswerTriviaConditions = QuestionAnswerTriviaConditions.NOT_ALLOWED
         )
