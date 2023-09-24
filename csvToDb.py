@@ -8,13 +8,19 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.backgroundTaskHelper import BackgroundTaskHelper
     from CynanBotCommon.storage.jsonFileReader import JsonFileReader
-    from CynanBotCommon.timber.timber import Timber
+    from CynanBotCommon.storage.linesFileReader import LinesFileReader
     from CynanBotCommon.timber.timberInterface import TimberInterface
+    from CynanBotCommon.timber.timberStub import TimberStub
+    from CynanBotCommon.trivia.bannedWords.bannedPhrase import BannedPhrase
+    from CynanBotCommon.trivia.bannedWords.bannedWord import BannedWord
     from CynanBotCommon.trivia.bannedWords.bannedWordsRepository import \
         BannedWordsRepository
     from CynanBotCommon.trivia.bannedWords.bannedWordsRepositoryInterface import \
         BannedWordsRepositoryInterface
+    from CynanBotCommon.trivia.bannedWords.bannedWordType import BannedWordType
     from CynanBotCommon.trivia.triviaContentScanner import TriviaContentScanner
+    from CynanBotCommon.trivia.triviaContentScannerInterface import \
+        TriviaContentScannerInterface
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
@@ -23,21 +29,30 @@ except:
     import utils
     from backgroundTaskHelper import BackgroundTaskHelper
     from storage.jsonFileReader import JsonFileReader
-    from timber.timber import Timber
+    from storage.linesFileReader import LinesFileReader
     from timber.timberInterface import TimberInterface
+    from timber.timberStub import TimberStub
+    from trivia.bannedWords.bannedPhrase import BannedPhrase
+    from trivia.bannedWords.bannedWord import BannedWord
     from trivia.bannedWords.bannedWordsRepository import BannedWordsRepository
     from trivia.bannedWords.bannedWordsRepositoryInterface import \
         BannedWordsRepositoryInterface
+    from trivia.bannedWords.bannedWordType import BannedWordType
     from trivia.triviaContentScanner import TriviaContentScanner
+    from trivia.triviaContentScannerInterface import \
+        TriviaContentScannerInterface
     from trivia.triviaDifficulty import TriviaDifficulty
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaType import TriviaType
 
 
 backgroundTaskHelper = BackgroundTaskHelper(eventLoop = asyncio.get_event_loop())
-timber: TimberInterface = Timber(backgroundTaskHelper = backgroundTaskHelper)
-bannedWordsRepositoryInterface: BannedWordsRepositoryInterface = BannedWordsRepository(timber = timber)
-triviaContentScanner = TriviaContentScanner(
+timber: TimberInterface = TimberStub()
+bannedWordsRepositoryInterface: BannedWordsRepositoryInterface = BannedWordsRepository(
+    bannedWordsLinesReader = LinesFileReader('CynanBotCommon/trivia/bannedWords/bannedWords.txt'),
+    timber = timber
+)
+triviaContentScanner: TriviaContentScannerInterface = TriviaContentScanner(
     bannedWordsRepository = bannedWordsRepositoryInterface,
     timber = timber,
     triviaSettingsRepository = TriviaSettingsRepository(
@@ -66,10 +81,17 @@ def readInCsvRows(fileName: str) -> List[List[str]]:
             encounteredBannedWord = False
 
             for r in row:
-                for bannedWord in bannedWords:
-                    if bannedWord.getWord() in r.lower():
-                        encounteredBannedWord = True
-                        break
+                for absBannedWord in bannedWords:
+                    if absBannedWord.getType() is BannedWordType.WORD:
+                        bannedWord: BannedWord = absBannedWord
+                        if bannedWord.getWord() in r.lower():
+                            encounteredBannedWord = True
+                            break
+                    elif absBannedWord.getType() is BannedWordType.PHRASE:
+                        bannedPhrase: BannedPhrase = absBannedWord
+                        if bannedPhrase.getPhrase() in r.lower():
+                            encounteredBannedWord = True
+                            break
 
                 if encounteredBannedWord:
                     break
@@ -180,8 +202,8 @@ def writeRowsToSqlite(databaseName: str, rows: List[List[str]]):
     print(f'Wrote {rowNumber} rows into \"{databaseName}\" database')
 
 
-trueFalse = readInCsvRows('CynanBotCommon/trivia/Delivery_500_TrueFalse_523A.csv')
-writeRowsToSqlite('CynanBotCommon/trivia/triviaDatabaseTriviaQuestionRepository.sqlite', trueFalse)
+questions = readInCsvRows('CynanBotCommon/trivia.csv')
+writeRowsToSqlite('CynanBotCommon/triviaDatabaseTriviaQuestionRepository.sqlite', questions)
 
-multipleChoice = readInCsvRows('CynanBotCommon/trivia/Delivery_2KMC_523A.csv')
-writeRowsToSqlite('CynanBotCommon/trivia/triviaDatabaseTriviaQuestionRepository.sqlite', multipleChoice)
+# multipleChoice = readInCsvRows('CynanBotCommon/trivia/Delivery_2KMC_523A.csv')
+# writeRowsToSqlite('CynanBotCommon/trivia/triviaDatabaseTriviaQuestionRepository.sqlite', multipleChoice)
