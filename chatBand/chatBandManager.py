@@ -4,6 +4,8 @@ from typing import Any, Dict, Optional
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.chatBand.chatBandInstrument import ChatBandInstrument
+    from CynanBotCommon.chatBand.chatBandManagerInterface import \
+        ChatBandManagerInterface
     from CynanBotCommon.chatBand.chatBandMember import ChatBandMember
     from CynanBotCommon.storage.jsonReaderInterface import JsonReaderInterface
     from CynanBotCommon.timber.timberInterface import TimberInterface
@@ -13,6 +15,7 @@ try:
 except:
     import utils
     from chatBand.chatBandInstrument import ChatBandInstrument
+    from chatBand.chatBandManagerInterface import ChatBandManagerInterface
     from chatBand.chatBandMember import ChatBandMember
     from storage.jsonReaderInterface import JsonReaderInterface
     from timber.timberInterface import TimberInterface
@@ -21,7 +24,7 @@ except:
         WebsocketConnectionServer
 
 
-class ChatBandManager():
+class ChatBandManager(ChatBandManagerInterface):
 
     def __init__(
         self,
