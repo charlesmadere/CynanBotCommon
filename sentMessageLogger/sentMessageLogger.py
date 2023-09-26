@@ -12,13 +12,17 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.backgroundTaskHelper import BackgroundTaskHelper
     from CynanBotCommon.sentMessageLogger.sentMessage import SentMessage
+    from CynanBotCommon.sentMessageLogger.sentMessageLoggerInterface import \
+        SentMessageLoggerInterface
 except:
     import utils
     from backgroundTaskHelper import BackgroundTaskHelper
     from sentMessageLogger.sentMessage import SentMessage
+    from sentMessageLogger.sentMessageLoggerInterface import \
+        SentMessageLoggerInterface
 
 
-class SentMessageLogger():
+class SentMessageLogger(SentMessageLoggerInterface):
 
     def __init__(
         self,
