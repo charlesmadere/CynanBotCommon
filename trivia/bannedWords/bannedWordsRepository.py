@@ -38,7 +38,7 @@ class BannedWordsRepository(BannedWordsRepositoryInterface):
         self.__bannedWordsLinesReader: LinesReaderInterface = bannedWordsLinesReader
         self.__timber: TimberInterface = timber
 
-        self.__exactWordRegEx: Pattern = re.compile(r'^\".+\"$', re.IGNORECASE)
+        self.__exactWordRegEx: Pattern = re.compile(r'^\"(.+)\"$', re.IGNORECASE)
         self.__cache: Optional[Set[BannedWord]] = None
 
     async def clearCaches(self):
@@ -114,7 +114,7 @@ class BannedWordsRepository(BannedWordsRepositoryInterface):
 
         exactWordMatch = self.__exactWordRegEx.fullmatch(line)
 
-        if exactWordMatch is None:
-            return BannedPhrase(line)
+        if exactWordMatch is not None and utils.isValidStr(exactWordMatch.group(1)):
+            return BannedWord(exactWordMatch.group(1))
         else:
-            return BannedWord(line)
+            return BannedPhrase(line)
