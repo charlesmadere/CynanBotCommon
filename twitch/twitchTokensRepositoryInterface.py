@@ -1,17 +1,20 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import List, Optional
 
 try:
+    from CynanBotCommon.clearable import Clearable
     from CynanBotCommon.twitch.twitchTokensDetails import TwitchTokensDetails
     from CynanBotCommon.twitch.twitchTokensRepositoryListener import \
         TwitchTokensRepositoryListener
 except:
+    from clearable import Clearable
+
     from twitch.twitchTokensDetails import TwitchTokensDetails
     from twitch.twitchTokensRepositoryListener import \
         TwitchTokensRepositoryListener
 
 
-class TwitchTokensRepositoryInterface(ABC):
+class TwitchTokensRepositoryInterface(Clearable):
 
     @abstractmethod
     async def addUser(self, code: str, twitchChannel: str):
