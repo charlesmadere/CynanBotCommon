@@ -222,6 +222,7 @@ class TriviaContentScanner(TriviaContentScannerInterface):
             else:
                 raise RuntimeError(f'unknown BannedWordType ({absBannedWord}): \"{absBannedWord.getType()}\"')
 
+        print(f'question: {question}, phrases: {phrases}, words: {words}, absBannedWords: {absBannedWord}')
         return TriviaContentCode.OK
 
     async def __verifyQuestionEmptyStringsOrUrls(self, words: Set[Optional[str]]):
