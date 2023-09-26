@@ -82,7 +82,7 @@ def readInCsvRows(fileName: str) -> List[List[str]]:
 
             for r in row:
                 for absBannedWord in bannedWords:
-                    if absBannedWord.getType() is BannedWordType.WORD:
+                    if absBannedWord.getType() is BannedWordType.EXACT_WORD:
                         bannedWord: BannedWord = absBannedWord
                         if bannedWord.getWord() in r.lower():
                             encounteredBannedWord = True

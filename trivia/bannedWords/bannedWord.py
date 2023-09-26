@@ -28,7 +28,7 @@ class BannedWord(AbsBannedWord):
             raise ValueError(f'`other` is an unsupported type: \"{other}\"')
 
     def getType(self) -> BannedWordType:
-        return BannedWordType.WORD
+        return BannedWordType.EXACT_WORD
 
     def getWord(self) -> str:
         return self.__word

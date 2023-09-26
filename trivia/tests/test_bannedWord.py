@@ -1,7 +1,9 @@
 try:
     from ...trivia.bannedWords.bannedWord import BannedWord
+    from ...trivia.bannedWords.bannedWordType import BannedWordType
 except:
     from trivia.bannedWords.bannedWord import BannedWord
+    from trivia.bannedWords.bannedWordType import BannedWordType
 
 
 class TestBannedWord():
@@ -25,3 +27,7 @@ class TestBannedWord():
         one = BannedWord('hello')
         two = BannedWord('hello')
         assert hash(one) == hash(two)
+
+    def test_getType(self):
+        word = BannedWord('hello')
+        assert word.getType() is BannedWordType.EXACT_WORD

@@ -28,7 +28,7 @@ class TestBannedWordsRepository():
     timber: TimberInterface = TimberStub()
 
     bannedWordsLinesReader: LinesReaderInterface = LinesStaticReader(
-        lines = [ 'Hello', 'WORLD', '"QAnon"' ]
+        lines = [ 'Hello', 'WORLD', '"QAnon"', 'world' ]
     )
 
     emptyBannedWordsLinesReader: LinesReaderInterface = LinesStaticReader(
@@ -44,9 +44,9 @@ class TestBannedWordsRepository():
         bannedWords = bannedWordsRepository.getBannedWords()
         assert len(bannedWords) == 3
 
-        assert BannedWord('hello') in bannedWords
-        assert BannedWord('world') in bannedWords
-        assert BannedPhrase('qanon') in bannedWords
+        assert BannedPhrase('hello') in bannedWords
+        assert BannedPhrase('world') in bannedWords
+        assert BannedWord('qanon') in bannedWords
 
     @pytest.mark.asyncio
     async def test_getBannedWordsAsync(self):
@@ -58,9 +58,9 @@ class TestBannedWordsRepository():
         bannedWords = await bannedWordsRepository.getBannedWordsAsync()
         assert len(bannedWords) == 3
 
-        assert BannedWord('hello') in bannedWords
-        assert BannedWord('world') in bannedWords
-        assert BannedPhrase('qanon') in bannedWords
+        assert BannedPhrase('hello') in bannedWords
+        assert BannedPhrase('world') in bannedWords
+        assert BannedWord('qanon') in bannedWords
 
     def test_getBannedWords_withEmptyBannedWordsLinesReader(self):
         bannedWordsRepository: BannedWordsRepositoryInterface = BannedWordsRepository(
