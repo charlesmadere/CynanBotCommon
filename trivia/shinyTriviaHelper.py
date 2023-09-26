@@ -8,15 +8,16 @@ try:
     from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.trivia.shinyTriviaOccurencesRepository import \
         ShinyTriviaOccurencesRepository
-    from CynanBotCommon.trivia.triviaSettingsRepository import \
-        TriviaSettingsRepository
+    from CynanBotCommon.trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
 except:
     import utils
     from cuteness.cutenessRepository import CutenessRepository
     from timber.timberInterface import TimberInterface
     from trivia.shinyTriviaOccurencesRepository import \
         ShinyTriviaOccurencesRepository
-    from trivia.triviaSettingsRepository import TriviaSettingsRepository
+    from trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
 
 
 class ShinyTriviaHelper():
@@ -26,8 +27,8 @@ class ShinyTriviaHelper():
         cutenessRepository: CutenessRepository,
         shinyTriviaOccurencesRepository: ShinyTriviaOccurencesRepository,
         timber: TimberInterface,
-        triviaSettingsRepository: TriviaSettingsRepository,
-        cooldown: timedelta = timedelta(hours = 2),
+        triviaSettingsRepository: TriviaSettingsRepositoryInterface,
+        cooldown: timedelta = timedelta(hours = 3),
         timeZone: timezone = timezone.utc
     ):
         if not isinstance(cutenessRepository, CutenessRepository):
@@ -36,7 +37,7 @@ class ShinyTriviaHelper():
             raise ValueError(f'shinyTriviaOccurencesRepository argument is malformed: \"{shinyTriviaOccurencesRepository}\"')
         elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif not isinstance(triviaSettingsRepository, TriviaSettingsRepository):
+        elif not isinstance(triviaSettingsRepository, TriviaSettingsRepositoryInterface):
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
         elif not isinstance(cooldown, timedelta):
             raise ValueError(f'cooldown argument is malformed: \"{cooldown}\"')
@@ -46,7 +47,7 @@ class ShinyTriviaHelper():
         self.__cutenessRepository: CutenessRepository = cutenessRepository
         self.__shinyTriviaOccurencesRepository: ShinyTriviaOccurencesRepository = shinyTriviaOccurencesRepository
         self.__timber: TimberInterface = timber
-        self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
+        self.__triviaSettingsRepository: TriviaSettingsRepositoryInterface = triviaSettingsRepository
         self.__cooldown: timedelta = cooldown
         self.__timeZone: timezone = timeZone
 
@@ -150,7 +151,13 @@ class ShinyTriviaHelper():
             return False
 
         probability = await self.__triviaSettingsRepository.getShinyProbability()
-        return random.uniform(0, 1) <= probability
+        randomNumber = random.uniform(0, 1)
+
+        if randomNumber > probability:
+            return False
+
+        self.__timber.log('ShinyTriviaHelper', f'A shiny super trivia question was encountered in {twitchChannel}!')
+        return True
 
     async def shinyTriviaWin(
         self,

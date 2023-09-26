@@ -5,14 +5,15 @@ try:
     from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.trivia.toxicTriviaOccurencesRepository import \
         ToxicTriviaOccurencesRepository
-    from CynanBotCommon.trivia.triviaSettingsRepository import \
-        TriviaSettingsRepository
+    from CynanBotCommon.trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
 except:
     import utils
     from timber.timberInterface import TimberInterface
     from trivia.toxicTriviaOccurencesRepository import \
         ToxicTriviaOccurencesRepository
-    from trivia.triviaSettingsRepository import TriviaSettingsRepository
+    from trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
 
 
 class ToxicTriviaHelper():
@@ -21,18 +22,18 @@ class ToxicTriviaHelper():
         self,
         toxicTriviaOccurencesRepository: ToxicTriviaOccurencesRepository,
         timber: TimberInterface,
-        triviaSettingsRepository: TriviaSettingsRepository
+        triviaSettingsRepository: TriviaSettingsRepositoryInterface
     ):
         if not isinstance(toxicTriviaOccurencesRepository, ToxicTriviaOccurencesRepository):
             raise ValueError(f'toxicTriviaOccurencesRepository argument is malformed: \"{toxicTriviaOccurencesRepository}\"')
         elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif not isinstance(triviaSettingsRepository, TriviaSettingsRepository):
+        elif not isinstance(triviaSettingsRepository, TriviaSettingsRepositoryInterface):
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
 
         self.__toxicTriviaOccurencesRepository: ToxicTriviaOccurencesRepository = toxicTriviaOccurencesRepository
         self.__timber: TimberInterface = timber
-        self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
+        self.__triviaSettingsRepository: TriviaSettingsRepositoryInterface = triviaSettingsRepository
 
     async def isToxicSuperTriviaQuestion(self, twitchChannel: str) -> bool:
         if not utils.isValidStr(twitchChannel):
@@ -42,7 +43,13 @@ class ToxicTriviaHelper():
             return False        
 
         probability = await self.__triviaSettingsRepository.getToxicProbability()
-        return random.uniform(0, 1) <= probability
+        randomNumber = random.uniform(0, 1)
+
+        if randomNumber > probability:
+            return False
+
+        self.__timber.log('ToxicTriviaHelper', f'A toxic super trivia question was encountered in {twitchChannel}!')
+        return True
 
     async def toxicTriviaWin(
         self,
