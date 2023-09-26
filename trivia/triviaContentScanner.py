@@ -111,7 +111,7 @@ class TriviaContentScanner(TriviaContentScannerInterface):
             return
 
         phrase = ' '.join(words)
-        phrases.update(phrase)
+        phrases.add(phrase)
 
     async def __updateQuestionWordsContent(
         self,
@@ -131,13 +131,13 @@ class TriviaContentScanner(TriviaContentScannerInterface):
 
         for split in splits:
             words.add(split)
-
             characters = self.__wordRegEx.findall(split)
+
             if not utils.hasItems(characters):
                 continue
 
             word = ''.join(characters)
-            words.update(word)
+            words.add(word)
 
     async def verify(self, question: Optional[AbsTriviaQuestion]) -> TriviaContentCode:
         if question is not None and not isinstance(question, AbsTriviaQuestion):
