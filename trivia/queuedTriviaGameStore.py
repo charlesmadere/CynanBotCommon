@@ -11,8 +11,8 @@ try:
         ClearQueuedGamesResult
     from CynanBotCommon.trivia.startNewSuperTriviaGameAction import \
         StartNewSuperTriviaGameAction
-    from CynanBotCommon.trivia.triviaSettingsRepository import \
-        TriviaSettingsRepository
+    from CynanBotCommon.trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
 except:
     import utils
     from timber.timberInterface import TimberInterface
@@ -20,7 +20,8 @@ except:
     from trivia.clearQueuedGamesResult import ClearQueuedGamesResult
     from trivia.startNewSuperTriviaGameAction import \
         StartNewSuperTriviaGameAction
-    from trivia.triviaSettingsRepository import TriviaSettingsRepository
+    from trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
 
 
 class QueuedTriviaGameStore():
@@ -28,12 +29,12 @@ class QueuedTriviaGameStore():
     def __init__(
         self,
         timber: TimberInterface,
-        triviaSettingsRepository: TriviaSettingsRepository,
+        triviaSettingsRepository: TriviaSettingsRepositoryInterface,
         queueTimeoutSeconds: int = 3
     ):
         if not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif not isinstance(triviaSettingsRepository, TriviaSettingsRepository):
+        elif not isinstance(triviaSettingsRepository, TriviaSettingsRepositoryInterface):
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
         elif not utils.isValidNum(queueTimeoutSeconds):
             raise ValueError(f'queueTimeoutSeconds argument is malformed: \"{queueTimeoutSeconds}\"')
@@ -41,7 +42,7 @@ class QueuedTriviaGameStore():
             raise ValueError(f'queueTimeoutSeconds argument is out of bounds: {queueTimeoutSeconds}')
 
         self.__timber: TimberInterface = timber
-        self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
+        self.__triviaSettingsRepository: TriviaSettingsRepositoryInterface = triviaSettingsRepository
         self.__queueTimeoutSeconds: int = queueTimeoutSeconds
 
         self.__queuedSuperGames: Dict[str, SimpleQueue[StartNewSuperTriviaGameAction]] = defaultdict(lambda: SimpleQueue())

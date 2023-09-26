@@ -11,6 +11,8 @@ try:
         StartNewSuperTriviaGameAction
     from ...trivia.triviaFetchOptions import TriviaFetchOptions
     from ...trivia.triviaSettingsRepository import TriviaSettingsRepository
+    from ...trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
 except:
     from storage.jsonStaticReader import JsonStaticReader
     from timber.timberInterface import TimberInterface
@@ -22,13 +24,15 @@ except:
         StartNewSuperTriviaGameAction
     from trivia.triviaFetchOptions import TriviaFetchOptions
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
+    from trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
 
 
 class TestQueuedTriviaGameStore1():
 
     timber: TimberInterface = TimberStub()
 
-    triviaSettingsRepository = TriviaSettingsRepository(
+    triviaSettingsRepository: TriviaSettingsRepositoryInterface = TriviaSettingsRepository(
         settingsJsonReader = JsonStaticReader(dict())
     )
 
@@ -175,7 +179,7 @@ class TestQueuedTriviaGameStore2():
 
     timber: TimberInterface = TimberStub()
 
-    triviaSettingsRepository = TriviaSettingsRepository(
+    triviaSettingsRepository: TriviaSettingsRepositoryInterface = TriviaSettingsRepository(
         settingsJsonReader = JsonStaticReader(dict())
     )
 
@@ -198,7 +202,7 @@ class TestQueuedTriviaGameStore3():
 
     timber: TimberInterface = TimberStub()
 
-    triviaSettingsRepository = TriviaSettingsRepository(
+    triviaSettingsRepository: TriviaSettingsRepositoryInterface = TriviaSettingsRepository(
         settingsJsonReader = JsonStaticReader(dict())
     )
 
@@ -222,7 +226,7 @@ class TestQueuedTriviaGameStore4():
 
     timber: TimberInterface = TimberStub()
 
-    triviaSettingsRepository = TriviaSettingsRepository(
+    triviaSettingsRepository: TriviaSettingsRepositoryInterface = TriviaSettingsRepository(
         settingsJsonReader = JsonStaticReader(dict())
     )
 
@@ -274,7 +278,7 @@ class TestQueuedTriviaGameStore5():
 
     timber: TimberInterface = TimberStub()
 
-    triviaSettingsRepository = TriviaSettingsRepository(
+    triviaSettingsRepository: TriviaSettingsRepositoryInterface = TriviaSettingsRepository(
         settingsJsonReader = JsonStaticReader(dict())
     )
 
@@ -326,7 +330,7 @@ class TestQueuedTriviaGameStore6():
 
     timber: TimberInterface = TimberStub()
 
-    triviaSettingsRepository = TriviaSettingsRepository(
+    triviaSettingsRepository: TriviaSettingsRepositoryInterface = TriviaSettingsRepository(
         settingsJsonReader = JsonStaticReader(dict())
     )
 
@@ -399,7 +403,7 @@ class TestQueuedTriviaGameStore7():
 
     timber: TimberInterface = TimberStub()
 
-    triviaSettingsRepository = TriviaSettingsRepository(
+    triviaSettingsRepository: TriviaSettingsRepositoryInterface = TriviaSettingsRepository(
         settingsJsonReader = JsonStaticReader(dict())
     )
 
