@@ -13,6 +13,8 @@ try:
     from CynanBotCommon.backgroundTaskHelper import BackgroundTaskHelper
     from CynanBotCommon.chatLogger.absChatMessage import AbsChatMessage
     from CynanBotCommon.chatLogger.chatEventType import ChatEventType
+    from CynanBotCommon.chatLogger.chatLoggerInterface import \
+        ChatLoggerInterface
     from CynanBotCommon.chatLogger.chatMessage import ChatMessage
     from CynanBotCommon.chatLogger.raidMessage import RaidMessage
 except:
@@ -20,11 +22,12 @@ except:
     from backgroundTaskHelper import BackgroundTaskHelper
     from chatLogger.absChatMessage import AbsChatMessage
     from chatLogger.chatEventType import ChatEventType
+    from chatLogger.chatLoggerInterface import ChatLoggerInterface
     from chatLogger.chatMessage import ChatMessage
     from chatLogger.raidMessage import RaidMessage
 
 
-class ChatLogger():
+class ChatLogger(ChatLoggerInterface):
 
     def __init__(
         self,
