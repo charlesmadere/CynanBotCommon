@@ -121,10 +121,11 @@ class TriviaContentScanner(TriviaContentScannerInterface):
         if not isinstance(words, Set):
             raise ValueError(f'words argument is malformed: \"{words}\"')
 
-        if not isinstance(string, str):
+        if not utils.isValidStr(string):
             return
 
         splits = string.lower().split()
+
         if not utils.hasItems(splits):
             return
 
