@@ -14,16 +14,20 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.backgroundTaskHelper import BackgroundTaskHelper
     from CynanBotCommon.timber.timberInterface import TimberInterface
+    from CynanBotCommon.websocketConnection.websocketConnectionServerInterface import \
+        WebsocketConnectionServerInterface
     from CynanBotCommon.websocketConnection.websocketEvent import \
         WebsocketEvent
 except:
     import utils
     from backgroundTaskHelper import BackgroundTaskHelper
     from timber.timberInterface import TimberInterface
+    from websocketConnection.websocketConnectionServerInterface import \
+        WebsocketConnectionServerInterface
     from websocketConnection.websocketEvent import WebsocketEvent
 
 
-class WebsocketConnectionServer():
+class WebsocketConnectionServer(WebsocketConnectionServerInterface):
 
     def __init__(
         self,
