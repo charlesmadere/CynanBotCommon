@@ -3,11 +3,14 @@ from typing import Optional
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.trivia.triviaIdGeneratorInterface import \
+        TriviaIdGeneratorInterface
 except:
     import utils
+    from trivia.triviaIdGeneratorInterface import TriviaIdGeneratorInterface
 
 
-class TriviaIdGenerator():
+class TriviaIdGenerator(TriviaIdGeneratorInterface):
 
     def __init__(self):
         pass

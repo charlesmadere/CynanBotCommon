@@ -25,7 +25,8 @@ try:
     from CynanBotCommon.trivia.triviaExceptions import (
         GenericTriviaNetworkException, MalformedTriviaJsonException,
         UnsupportedTriviaTypeException)
-    from CynanBotCommon.trivia.triviaIdGenerator import TriviaIdGenerator
+    from CynanBotCommon.trivia.triviaIdGeneratorInterface import \
+        TriviaIdGeneratorInterface
     from CynanBotCommon.trivia.triviaSettingsRepository import \
         TriviaSettingsRepository
     from CynanBotCommon.trivia.triviaSource import TriviaSource
@@ -44,7 +45,7 @@ except:
     from trivia.triviaExceptions import (GenericTriviaNetworkException,
                                          MalformedTriviaJsonException,
                                          UnsupportedTriviaTypeException)
-    from trivia.triviaIdGenerator import TriviaIdGenerator
+    from trivia.triviaIdGeneratorInterface import TriviaIdGeneratorInterface
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
     from trivia.triviaSource import TriviaSource
     from trivia.triviaType import TriviaType
@@ -68,7 +69,7 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self,
         pokepediaRepository: PokepediaRepository,
         timber: TimberInterface,
-        triviaIdGenerator: TriviaIdGenerator,
+        triviaIdGenerator: TriviaIdGeneratorInterface,
         triviaSettingsRepository: TriviaSettingsRepository,
         maxGeneration: PokepediaGeneration = PokepediaGeneration.GENERATION_3
     ):
@@ -78,14 +79,14 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
             raise ValueError(f'pokepediaRepository argument is malformed: \"{pokepediaRepository}\"')
         elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif not isinstance(triviaIdGenerator, TriviaIdGenerator):
+        elif not isinstance(triviaIdGenerator, TriviaIdGeneratorInterface):
             raise ValueError(f'triviaIdGenerator argument is malformed: \"{triviaIdGenerator}\"')
         elif not isinstance(maxGeneration, PokepediaGeneration):
             raise ValueError(f'maxGeneration argument is malformed: \"{maxGeneration}\"')
 
         self.__pokepediaRepository: PokepediaRepository = pokepediaRepository
         self.__timber: TimberInterface = timber
-        self.__triviaIdGenerator: TriviaIdGenerator = triviaIdGenerator
+        self.__triviaIdGenerator: TriviaIdGeneratorInterface = triviaIdGenerator
         self.__maxGeneration: PokepediaGeneration = maxGeneration
 
     async def __createMoveContestTypeQuestion(self, move: PokepediaMove) -> Optional[Dict[str, Any]]:

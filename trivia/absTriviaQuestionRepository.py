@@ -1,37 +1,35 @@
-from abc import ABC, abstractmethod
-from typing import List, Set
+from typing import List
 
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.triviaExceptions import (
         NoTriviaCorrectAnswersException,
         NoTriviaMultipleChoiceResponsesException)
-    from CynanBotCommon.trivia.triviaSettingsRepository import \
-        TriviaSettingsRepository
-    from CynanBotCommon.trivia.triviaSource import TriviaSource
-    from CynanBotCommon.trivia.triviaType import TriviaType
+    from CynanBotCommon.trivia.triviaQuestionRepositoryInterface import \
+        TriviaQuestionRepositoryInterface
+    from CynanBotCommon.trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
 except:
     import utils
-    from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.triviaExceptions import (
         NoTriviaCorrectAnswersException,
         NoTriviaMultipleChoiceResponsesException)
-    from trivia.triviaSettingsRepository import TriviaSettingsRepository
-    from trivia.triviaSource import TriviaSource
-    from trivia.triviaType import TriviaType
+    from trivia.triviaQuestionRepositoryInterface import \
+        TriviaQuestionRepositoryInterface
+    from trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
 
 
-class AbsTriviaQuestionRepository(ABC):
+class AbsTriviaQuestionRepository(TriviaQuestionRepositoryInterface):
 
     def __init__(
         self,
-        triviaSettingsRepository: TriviaSettingsRepository
+        triviaSettingsRepository: TriviaSettingsRepositoryInterface
     ):
-        if not isinstance(triviaSettingsRepository, TriviaSettingsRepository):
+        if not isinstance(triviaSettingsRepository, TriviaSettingsRepositoryInterface):
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
 
-        self._triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
+        self._triviaSettingsRepository: TriviaSettingsRepositoryInterface = triviaSettingsRepository
 
     async def _buildMultipleChoiceResponsesList(
         self,
@@ -79,22 +77,6 @@ class AbsTriviaQuestionRepository(ABC):
             filteredMultipleChoiceResponses.sort(key = lambda response: response.lower())
 
         return filteredMultipleChoiceResponses
-
-    @abstractmethod
-    async def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
-        pass
-
-    @abstractmethod
-    def getSupportedTriviaTypes(self) -> Set[TriviaType]:
-        pass
-
-    @abstractmethod
-    def getTriviaSource(self) -> TriviaSource:
-        pass
-
-    @abstractmethod
-    async def hasQuestionSetAvailable(self) -> bool:
-        pass
 
     async def _verifyIsActuallyMultipleChoiceQuestion(
         self,
