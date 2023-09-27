@@ -4,7 +4,8 @@ from typing import Dict, Optional
 
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.cuteness.cutenessRepository import CutenessRepository
+    from CynanBotCommon.cuteness.cutenessRepositoryInterface import \
+        CutenessRepositoryInterface
     from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.trivia.shinyTriviaOccurencesRepository import \
         ShinyTriviaOccurencesRepository
@@ -12,7 +13,8 @@ try:
         TriviaSettingsRepositoryInterface
 except:
     import utils
-    from cuteness.cutenessRepository import CutenessRepository
+    from cuteness.cutenessRepositoryInterface import \
+        CutenessRepositoryInterface
     from timber.timberInterface import TimberInterface
     from trivia.shinyTriviaOccurencesRepository import \
         ShinyTriviaOccurencesRepository
@@ -24,14 +26,14 @@ class ShinyTriviaHelper():
 
     def __init__(
         self,
-        cutenessRepository: CutenessRepository,
+        cutenessRepository: CutenessRepositoryInterface,
         shinyTriviaOccurencesRepository: ShinyTriviaOccurencesRepository,
         timber: TimberInterface,
         triviaSettingsRepository: TriviaSettingsRepositoryInterface,
         cooldown: timedelta = timedelta(hours = 3),
         timeZone: timezone = timezone.utc
     ):
-        if not isinstance(cutenessRepository, CutenessRepository):
+        if not isinstance(cutenessRepository, CutenessRepositoryInterface):
             raise ValueError(f'cutenessRepository argument is malformed: \"{cutenessRepository}\"')
         elif not isinstance(shinyTriviaOccurencesRepository, ShinyTriviaOccurencesRepository):
             raise ValueError(f'shinyTriviaOccurencesRepository argument is malformed: \"{shinyTriviaOccurencesRepository}\"')
@@ -44,7 +46,7 @@ class ShinyTriviaHelper():
         elif not isinstance(timeZone, timezone):
             raise ValueError(f'timeZone argument is malformed: \"{timeZone}\"')
 
-        self.__cutenessRepository: CutenessRepository = cutenessRepository
+        self.__cutenessRepository: CutenessRepositoryInterface = cutenessRepository
         self.__shinyTriviaOccurencesRepository: ShinyTriviaOccurencesRepository = shinyTriviaOccurencesRepository
         self.__timber: TimberInterface = timber
         self.__triviaSettingsRepository: TriviaSettingsRepositoryInterface = triviaSettingsRepository

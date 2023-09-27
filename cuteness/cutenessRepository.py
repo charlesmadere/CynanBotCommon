@@ -15,6 +15,8 @@ try:
         CutenessLeaderboardHistoryResult
     from CynanBotCommon.cuteness.cutenessLeaderboardResult import \
         CutenessLeaderboardResult
+    from CynanBotCommon.cuteness.cutenessRepositoryInterface import \
+        CutenessRepositoryInterface
     from CynanBotCommon.cuteness.cutenessResult import CutenessResult
     from CynanBotCommon.storage.backingDatabase import BackingDatabase
     from CynanBotCommon.storage.databaseConnection import DatabaseConnection
@@ -31,6 +33,8 @@ except:
     from cuteness.cutenessLeaderboardHistoryResult import \
         CutenessLeaderboardHistoryResult
     from cuteness.cutenessLeaderboardResult import CutenessLeaderboardResult
+    from cuteness.cutenessRepositoryInterface import \
+        CutenessRepositoryInterface
     from cuteness.cutenessResult import CutenessResult
     from storage.backingDatabase import BackingDatabase
     from storage.databaseConnection import DatabaseConnection
@@ -39,7 +43,7 @@ except:
     from users.userIdsRepositoryInterface import UserIdsRepositoryInterface
 
 
-class CutenessRepository():
+class CutenessRepository(CutenessRepositoryInterface):
 
     def __init__(
         self,
