@@ -21,10 +21,6 @@ class TwitchTokensRepositoryInterface(Clearable):
         pass
 
     @abstractmethod
-    async def clearCaches(self):
-        pass
-
-    @abstractmethod
     async def getAccessToken(self, twitchChannel: str) -> Optional[str]:
         pass
 
