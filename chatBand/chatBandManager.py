@@ -10,8 +10,8 @@ try:
     from CynanBotCommon.storage.jsonReaderInterface import JsonReaderInterface
     from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.timedDict import TimedDict
-    from CynanBotCommon.websocketConnection.websocketConnectionServer import \
-        WebsocketConnectionServer
+    from CynanBotCommon.websocketConnection.websocketConnectionServerInterface import \
+        WebsocketConnectionServerInterface
 except:
     import utils
     from chatBand.chatBandInstrument import ChatBandInstrument
@@ -20,8 +20,8 @@ except:
     from storage.jsonReaderInterface import JsonReaderInterface
     from timber.timberInterface import TimberInterface
     from timedDict import TimedDict
-    from websocketConnection.websocketConnectionServer import \
-        WebsocketConnectionServer
+    from websocketConnection.websocketConnectionServerInterface import \
+        WebsocketConnectionServerInterface
 
 
 class ChatBandManager(ChatBandManagerInterface):
@@ -30,7 +30,7 @@ class ChatBandManager(ChatBandManagerInterface):
         self,
         settingsJsonReader: JsonReaderInterface,
         timber: TimberInterface,
-        websocketConnectionServer: WebsocketConnectionServer,
+        websocketConnectionServer: WebsocketConnectionServerInterface,
         eventType: str = 'chatBand',
         eventCooldown: timedelta = timedelta(minutes = 5),
         memberCacheTimeToLive: timedelta = timedelta(minutes = 15)
@@ -39,7 +39,7 @@ class ChatBandManager(ChatBandManagerInterface):
             raise ValueError(f'settingsJsonReader argument is malformed: \"{settingsJsonReader}\"')
         elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif not isinstance(websocketConnectionServer, WebsocketConnectionServer):
+        elif not isinstance(websocketConnectionServer, WebsocketConnectionServerInterface):
             raise ValueError(f'websocketConnectionServer argument is malformed: \"{websocketConnectionServer}\"')
         elif not utils.isValidStr(eventType):
             raise ValueError(f'eventType argument is malformed: \"{eventType}\"')
@@ -50,7 +50,7 @@ class ChatBandManager(ChatBandManagerInterface):
 
         self.__settingsJsonReader: JsonReaderInterface = settingsJsonReader
         self.__timber: TimberInterface = timber
-        self.__websocketConnectionServer: WebsocketConnectionServer = websocketConnectionServer
+        self.__websocketConnectionServer: WebsocketConnectionServerInterface = websocketConnectionServer
         self.__eventType: str = eventType
 
         self.__stubChatBandMember: ChatBandMember = ChatBandMember(
