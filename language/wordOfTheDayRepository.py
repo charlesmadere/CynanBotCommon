@@ -7,6 +7,8 @@ import xmltodict
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.language.languageEntry import LanguageEntry
+    from CynanBotCommon.language.wordOfTheDayRepositoryInterface import \
+        WordOfTheDayRepositoryInterface
     from CynanBotCommon.language.wordOfTheDayResponse import \
         WordOfTheDayResponse
     from CynanBotCommon.network.exceptions import GenericNetworkException
@@ -17,6 +19,8 @@ try:
 except:
     import utils
     from language.languageEntry import LanguageEntry
+    from language.wordOfTheDayRepositoryInterface import \
+        WordOfTheDayRepositoryInterface
     from language.wordOfTheDayResponse import WordOfTheDayResponse
     from network.exceptions import GenericNetworkException
     from network.networkClientProvider import NetworkClientProvider
@@ -24,7 +28,7 @@ except:
     from timedDict import TimedDict
 
 
-class WordOfTheDayRepository():
+class WordOfTheDayRepository(WordOfTheDayRepositoryInterface):
 
     def __init__(
         self,
