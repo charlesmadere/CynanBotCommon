@@ -9,6 +9,8 @@ try:
     from CynanBotCommon.trivia.addQueuedGamesResult import AddQueuedGamesResult
     from CynanBotCommon.trivia.clearQueuedGamesResult import \
         ClearQueuedGamesResult
+    from CynanBotCommon.trivia.queuedTriviaGameStoreInterface import \
+        QueuedTriviaGameStoreInterface
     from CynanBotCommon.trivia.startNewSuperTriviaGameAction import \
         StartNewSuperTriviaGameAction
     from CynanBotCommon.trivia.triviaSettingsRepositoryInterface import \
@@ -18,13 +20,15 @@ except:
     from timber.timberInterface import TimberInterface
     from trivia.addQueuedGamesResult import AddQueuedGamesResult
     from trivia.clearQueuedGamesResult import ClearQueuedGamesResult
+    from trivia.queuedTriviaGameStoreInterface import \
+        QueuedTriviaGameStoreInterface
     from trivia.startNewSuperTriviaGameAction import \
         StartNewSuperTriviaGameAction
     from trivia.triviaSettingsRepositoryInterface import \
         TriviaSettingsRepositoryInterface
 
 
-class QueuedTriviaGameStore():
+class QueuedTriviaGameStore(QueuedTriviaGameStoreInterface):
 
     def __init__(
         self,

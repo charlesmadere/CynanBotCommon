@@ -7,6 +7,8 @@ try:
     from ...trivia.questionAnswerTriviaConditions import \
         QuestionAnswerTriviaConditions
     from ...trivia.queuedTriviaGameStore import QueuedTriviaGameStore
+    from ...trivia.queuedTriviaGameStoreInterface import \
+        QueuedTriviaGameStoreInterface
     from ...trivia.startNewSuperTriviaGameAction import \
         StartNewSuperTriviaGameAction
     from ...trivia.triviaFetchOptions import TriviaFetchOptions
@@ -20,6 +22,8 @@ except:
     from trivia.questionAnswerTriviaConditions import \
         QuestionAnswerTriviaConditions
     from trivia.queuedTriviaGameStore import QueuedTriviaGameStore
+    from trivia.queuedTriviaGameStoreInterface import \
+        QueuedTriviaGameStoreInterface
     from trivia.startNewSuperTriviaGameAction import \
         StartNewSuperTriviaGameAction
     from trivia.triviaFetchOptions import TriviaFetchOptions
@@ -36,7 +40,7 @@ class TestQueuedTriviaGameStore1():
         settingsJsonReader = JsonStaticReader(dict())
     )
 
-    queuedTriviaGameStore = QueuedTriviaGameStore(
+    queuedTriviaGameStore: QueuedTriviaGameStoreInterface = QueuedTriviaGameStore(
         timber = timber,
         triviaSettingsRepository = triviaSettingsRepository
     )
@@ -183,7 +187,7 @@ class TestQueuedTriviaGameStore2():
         settingsJsonReader = JsonStaticReader(dict())
     )
 
-    queuedTriviaGameStore = QueuedTriviaGameStore(
+    queuedTriviaGameStore: QueuedTriviaGameStoreInterface = QueuedTriviaGameStore(
         timber = timber,
         triviaSettingsRepository = triviaSettingsRepository
     )
@@ -206,7 +210,7 @@ class TestQueuedTriviaGameStore3():
         settingsJsonReader = JsonStaticReader(dict())
     )
 
-    queuedTriviaGameStore = QueuedTriviaGameStore(
+    queuedTriviaGameStore: QueuedTriviaGameStoreInterface = QueuedTriviaGameStore(
         timber = timber,
         triviaSettingsRepository = triviaSettingsRepository
     )
@@ -230,7 +234,7 @@ class TestQueuedTriviaGameStore4():
         settingsJsonReader = JsonStaticReader(dict())
     )
 
-    queuedTriviaGameStore = QueuedTriviaGameStore(
+    queuedTriviaGameStore: QueuedTriviaGameStoreInterface = QueuedTriviaGameStore(
         timber = timber,
         triviaSettingsRepository = triviaSettingsRepository
     )
@@ -282,7 +286,7 @@ class TestQueuedTriviaGameStore5():
         settingsJsonReader = JsonStaticReader(dict())
     )
 
-    queuedTriviaGameStore = QueuedTriviaGameStore(
+    queuedTriviaGameStore: QueuedTriviaGameStoreInterface = QueuedTriviaGameStore(
         timber = timber,
         triviaSettingsRepository = triviaSettingsRepository
     )
@@ -334,7 +338,7 @@ class TestQueuedTriviaGameStore6():
         settingsJsonReader = JsonStaticReader(dict())
     )
 
-    queuedTriviaGameStore = QueuedTriviaGameStore(
+    queuedTriviaGameStore: QueuedTriviaGameStoreInterface = QueuedTriviaGameStore(
         timber = timber,
         triviaSettingsRepository = triviaSettingsRepository
     )
@@ -407,7 +411,7 @@ class TestQueuedTriviaGameStore7():
         settingsJsonReader = JsonStaticReader(dict())
     )
 
-    queuedTriviaGameStore = QueuedTriviaGameStore(
+    queuedTriviaGameStore: QueuedTriviaGameStoreInterface = QueuedTriviaGameStore(
         timber = timber,
         triviaSettingsRepository = triviaSettingsRepository
     )
@@ -463,4 +467,4 @@ class TestQueuedTriviaGameStore7():
 
     def test_sanity(self):
         assert self.queuedTriviaGameStore is not None
-        assert isinstance(self.queuedTriviaGameStore, QueuedTriviaGameStore)
+        assert isinstance(self.queuedTriviaGameStore, QueuedTriviaGameStoreInterface)
