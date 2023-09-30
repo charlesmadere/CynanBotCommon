@@ -10,8 +10,6 @@ try:
     from CynanBotCommon.backgroundTaskHelper import BackgroundTaskHelper
     from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
-    from CynanBotCommon.trivia.absTriviaQuestionRepository import \
-        AbsTriviaQuestionRepository
     from CynanBotCommon.trivia.bongoTriviaQuestionRepository import \
         BongoTriviaQuestionRepository
     from CynanBotCommon.trivia.funtoonTriviaQuestionRepository import \
@@ -47,6 +45,8 @@ try:
     from CynanBotCommon.trivia.triviaFetchOptions import TriviaFetchOptions
     from CynanBotCommon.trivia.triviaQuestionCompanyTriviaQuestionRepository import \
         TriviaQuestionCompanyTriviaQuestionRepository
+    from CynanBotCommon.trivia.triviaQuestionRepositoryInterface import \
+        TriviaQuestionRepositoryInterface
     from CynanBotCommon.trivia.triviaRepositoryInterface import \
         TriviaRepositoryInterface
     from CynanBotCommon.trivia.triviaSettingsRepositoryInterface import \
@@ -68,7 +68,6 @@ except:
     from backgroundTaskHelper import BackgroundTaskHelper
     from timber.timberInterface import TimberInterface
     from trivia.absTriviaQuestion import AbsTriviaQuestion
-    from trivia.absTriviaQuestionRepository import AbsTriviaQuestionRepository
     from trivia.funtoonTriviaQuestionRepository import \
         FuntoonTriviaQuestionRepository
     from trivia.jokeTriviaQuestionRepository import \
@@ -102,6 +101,8 @@ except:
     from trivia.triviaFetchOptions import TriviaFetchOptions
     from trivia.triviaQuestionCompanyTriviaQuestionRepository import \
         TriviaQuestionCompanyTriviaQuestionRepository
+    from trivia.triviaQuestionRepositoryInterface import \
+        TriviaQuestionRepositoryInterface
     from trivia.triviaRepositoryInterface import TriviaRepositoryInterface
     from trivia.triviaSettingsRepositoryInterface import \
         TriviaSettingsRepositoryInterface
@@ -194,34 +195,34 @@ class TriviaRepository(TriviaRepositoryInterface):
             raise ValueError(f'triviaRetrySleepTimeSeconds argument is out of bounds: {triviaRetrySleepTimeSeconds}')
 
         self.__backgroundTaskHelper: BackgroundTaskHelper = backgroundTaskHelper
-        self.__bongoTriviaQuestionRepository: AbsTriviaQuestionRepository = bongoTriviaQuestionRepository
-        self.__funtoonTriviaQuestionRepository: AbsTriviaQuestionRepository = funtoonTriviaQuestionRepository
-        self.__jokeTriviaQuestionRepository: Optional[AbsTriviaQuestionRepository] = jokeTriviaQuestionRepository
-        self.__jServiceTriviaQuestionRepository: Optional[AbsTriviaQuestionRepository] = jServiceTriviaQuestionRepository
-        self.__lotrTriviaQuestionRepository: Optional[AbsTriviaQuestionRepository] = lotrTriviaQuestionRepository
-        self.__millionaireTriviaQuestionRepository: AbsTriviaQuestionRepository = millionaireTriviaQuestionRepository
-        self.__openTriviaDatabaseTriviaQuestionRepository: AbsTriviaQuestionRepository = openTriviaDatabaseTriviaQuestionRepository
-        self.__openTriviaQaTriviaQuestionRepository: AbsTriviaQuestionRepository = openTriviaQaTriviaQuestionRepository
-        self.__pkmnTriviaQuestionRepository: AbsTriviaQuestionRepository = pkmnTriviaQuestionRepository
-        self.__quizApiTriviaQuestionRepository: Optional[AbsTriviaQuestionRepository] = quizApiTriviaQuestionRepository
+        self.__bongoTriviaQuestionRepository: TriviaQuestionRepositoryInterface = bongoTriviaQuestionRepository
+        self.__funtoonTriviaQuestionRepository: TriviaQuestionRepositoryInterface = funtoonTriviaQuestionRepository
+        self.__jokeTriviaQuestionRepository: Optional[TriviaQuestionRepositoryInterface] = jokeTriviaQuestionRepository
+        self.__jServiceTriviaQuestionRepository: Optional[TriviaQuestionRepositoryInterface] = jServiceTriviaQuestionRepository
+        self.__lotrTriviaQuestionRepository: Optional[TriviaQuestionRepositoryInterface] = lotrTriviaQuestionRepository
+        self.__millionaireTriviaQuestionRepository: TriviaQuestionRepositoryInterface = millionaireTriviaQuestionRepository
+        self.__openTriviaDatabaseTriviaQuestionRepository: TriviaQuestionRepositoryInterface = openTriviaDatabaseTriviaQuestionRepository
+        self.__openTriviaQaTriviaQuestionRepository: TriviaQuestionRepositoryInterface = openTriviaQaTriviaQuestionRepository
+        self.__pkmnTriviaQuestionRepository: TriviaQuestionRepositoryInterface = pkmnTriviaQuestionRepository
+        self.__quizApiTriviaQuestionRepository: Optional[TriviaQuestionRepositoryInterface] = quizApiTriviaQuestionRepository
         self.__timber: TimberInterface = timber
-        self.__triviaDatabaseTriviaQuestionRepository: AbsTriviaQuestionRepository = triviaDatabaseTriviaQuestionRepository
-        self.__triviaQuestionCompanyTriviaQuestionRepository: AbsTriviaQuestionRepository = triviaQuestionCompanyTriviaQuestionRepository
+        self.__triviaDatabaseTriviaQuestionRepository: TriviaQuestionRepositoryInterface = triviaDatabaseTriviaQuestionRepository
+        self.__triviaQuestionCompanyTriviaQuestionRepository: TriviaQuestionRepositoryInterface = triviaQuestionCompanyTriviaQuestionRepository
         self.__triviaSettingsRepository: TriviaSettingsRepositoryInterface = triviaSettingsRepository
         self.__triviaSourceInstabilityHelper: TriviaSourceInstabilityHelper = triviaSourceInstabilityHelper
         self.__triviaVerifier: TriviaVerifierInterface = triviaVerifier
         self.__twitchHandleProvider: TwitchHandleProviderInterface = twitchHandleProvider
-        self.__willFryTriviaQuestionRepository: AbsTriviaQuestionRepository = willFryTriviaQuestionRepository
-        self.__wwtbamTriviaQuestionRepository: AbsTriviaQuestionRepository = wwtbamTriviaQuestionRepository
+        self.__willFryTriviaQuestionRepository: TriviaQuestionRepositoryInterface = willFryTriviaQuestionRepository
+        self.__wwtbamTriviaQuestionRepository: TriviaQuestionRepositoryInterface = wwtbamTriviaQuestionRepository
         self.__spoolerLoopSleepTimeSeconds: float = spoolerLoopSleepTimeSeconds
         self.__triviaRetrySleepTimeSeconds: float = triviaRetrySleepTimeSeconds
 
         self.__isSpoolerStarted: bool = False
-        self.__triviaSourceToRepositoryMap: Dict[TriviaSource, Optional[AbsTriviaQuestionRepository]] = self.__createTriviaSourceToRepositoryMap()
+        self.__triviaSourceToRepositoryMap: Dict[TriviaSource, Optional[TriviaQuestionRepositoryInterface]] = self.__createTriviaSourceToRepositoryMap()
         self.__superTriviaQuestionSpool: SimpleQueue[QuestionAnswerTriviaQuestion] = SimpleQueue()
         self.__triviaQuestionSpool: SimpleQueue[AbsTriviaQuestion] = SimpleQueue()
 
-    async def __chooseRandomTriviaSource(self, triviaFetchOptions: TriviaFetchOptions) -> AbsTriviaQuestionRepository:
+    async def __chooseRandomTriviaSource(self, triviaFetchOptions: TriviaFetchOptions) -> TriviaQuestionRepositoryInterface:
         if not isinstance(triviaFetchOptions, TriviaFetchOptions):
             raise ValueError(f'triviaFetchOptions argument is malformed: \"{triviaFetchOptions}\"')
 
@@ -253,8 +254,8 @@ class TriviaRepository(TriviaRepositoryInterface):
         randomlyChosenTriviaSource = randomChoices[0]
         return self.__triviaSourceToRepositoryMap[randomlyChosenTriviaSource]
 
-    def __createTriviaSourceToRepositoryMap(self) -> Dict[TriviaSource, Optional[AbsTriviaQuestionRepository]]:
-        triviaSourceToRepositoryMap: Dict[TriviaSource, Optional[AbsTriviaQuestionRepository]] = {
+    def __createTriviaSourceToRepositoryMap(self) -> Dict[TriviaSource, Optional[TriviaQuestionRepositoryInterface]]:
+        triviaSourceToRepositoryMap: Dict[TriviaSource, Optional[TriviaQuestionRepositoryInterface]] = {
             TriviaSource.BONGO: self.__bongoTriviaQuestionRepository,
             TriviaSource.FUNTOON: self.__funtoonTriviaQuestionRepository,
             TriviaSource.JOKE_TRIVIA_REPOSITORY: self.__jokeTriviaQuestionRepository,
@@ -333,7 +334,7 @@ class TriviaRepository(TriviaRepositoryInterface):
         if not isinstance(triviaFetchOptions, TriviaFetchOptions):
             raise ValueError(f'triviaFetchOptions argument is malformed: \"{triviaFetchOptions}\"')
 
-        availableTriviaSourcesMap: Dict[TriviaSource, AbsTriviaQuestionRepository] = dict()
+        availableTriviaSourcesMap: Dict[TriviaSource, TriviaQuestionRepositoryInterface] = dict()
         for triviaSource, triviaQuestionRepository in self.__triviaSourceToRepositoryMap.items():
             if triviaQuestionRepository is not None and await triviaQuestionRepository.hasQuestionSetAvailable():
                 availableTriviaSourcesMap[triviaSource] = triviaQuestionRepository
