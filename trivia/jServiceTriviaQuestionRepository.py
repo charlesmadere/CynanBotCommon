@@ -21,8 +21,8 @@ try:
     from CynanBotCommon.trivia.triviaIdGenerator import TriviaIdGenerator
     from CynanBotCommon.trivia.triviaQuestionCompiler import \
         TriviaQuestionCompiler
-    from CynanBotCommon.trivia.triviaSettingsRepository import \
-        TriviaSettingsRepository
+    from CynanBotCommon.trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
     from CynanBotCommon.trivia.triviaSource import TriviaSource
     from CynanBotCommon.trivia.triviaType import TriviaType
 except:
@@ -42,7 +42,8 @@ except:
                                          MalformedTriviaJsonException)
     from trivia.triviaIdGenerator import TriviaIdGenerator
     from trivia.triviaQuestionCompiler import TriviaQuestionCompiler
-    from trivia.triviaSettingsRepository import TriviaSettingsRepository
+    from trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
     from trivia.triviaSource import TriviaSource
     from trivia.triviaType import TriviaType
 
@@ -57,7 +58,7 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
         triviaAnswerCompiler: TriviaAnswerCompiler,
         triviaIdGenerator: TriviaIdGenerator,
         triviaQuestionCompiler: TriviaQuestionCompiler,
-        triviaSettingsRepository: TriviaSettingsRepository
+        triviaSettingsRepository: TriviaSettingsRepositoryInterface
     ):
         super().__init__(triviaSettingsRepository)
 

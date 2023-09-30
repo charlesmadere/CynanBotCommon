@@ -17,8 +17,8 @@ try:
         UnsupportedTriviaTypeException
     from CynanBotCommon.trivia.triviaQuestionCompiler import \
         TriviaQuestionCompiler
-    from CynanBotCommon.trivia.triviaSettingsRepository import \
-        TriviaSettingsRepository
+    from CynanBotCommon.trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
     from CynanBotCommon.trivia.triviaSource import TriviaSource
     from CynanBotCommon.trivia.triviaType import TriviaType
     from CynanBotCommon.trivia.trueFalseTriviaQuestion import \
@@ -31,7 +31,8 @@ except:
     from trivia.triviaDifficulty import TriviaDifficulty
     from trivia.triviaExceptions import UnsupportedTriviaTypeException
     from trivia.triviaQuestionCompiler import TriviaQuestionCompiler
-    from trivia.triviaSettingsRepository import TriviaSettingsRepository
+    from trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
     from trivia.triviaSource import TriviaSource
     from trivia.triviaType import TriviaType
     from trivia.trueFalseTriviaQuestion import TrueFalseTriviaQuestion
@@ -43,7 +44,7 @@ class TriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self,
         timber: TimberInterface,
         triviaQuestionCompiler: TriviaQuestionCompiler,
-        triviaSettingsRepository: TriviaSettingsRepository,
+        triviaSettingsRepository: TriviaSettingsRepositoryInterface,
         triviaDatabaseFile: str = 'CynanBotCommon/trivia/questionSources/triviaDatabaseTriviaQuestionRepository.sqlite'
     ):
         super().__init__(triviaSettingsRepository)

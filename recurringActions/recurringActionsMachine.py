@@ -9,8 +9,8 @@ from typing import Dict, List, Optional
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.backgroundTaskHelper import BackgroundTaskHelper
-    from CynanBotCommon.language.wordOfTheDayRepository import \
-        WordOfTheDayRepository
+    from CynanBotCommon.language.wordOfTheDayRepositoryInterface import \
+        WordOfTheDayRepositoryInterface
     from CynanBotCommon.language.wordOfTheDayResponse import \
         WordOfTheDayResponse
     from CynanBotCommon.location.locationsRepositoryInterface import \
@@ -55,7 +55,8 @@ try:
 except:
     import utils
     from backgroundTaskHelper import BackgroundTaskHelper
-    from language.wordOfTheDayRepository import WordOfTheDayRepository
+    from language.wordOfTheDayRepositoryInterface import \
+        WordOfTheDayRepositoryInterface
     from language.wordOfTheDayResponse import WordOfTheDayResponse
     from location.locationsRepositoryInterface import \
         LocationsRepositoryInterface
@@ -106,7 +107,7 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
         triviaGameMachine: TriviaGameMachineInterface,
         usersRepository: UsersRepositoryInterface,
         weatherRepository: WeatherRepositoryInterface,
-        wordOfTheDayRepository: WordOfTheDayRepository,
+        wordOfTheDayRepository: WordOfTheDayRepositoryInterface,
         queueSleepTimeSeconds: float = 3,
         refreshSleepTimeSeconds: float = 90,
         queueTimeoutSeconds: int = 3,
@@ -134,7 +135,7 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
             raise ValueError(f'usersRepository argument is malformed: \"{usersRepository}\"')
         elif not isinstance(weatherRepository, WeatherRepositoryInterface):
             raise ValueError(f'weatherRepository argument is malformed: \"{weatherRepository}\"')
-        elif not isinstance(wordOfTheDayRepository, WordOfTheDayRepository):
+        elif not isinstance(wordOfTheDayRepository, WordOfTheDayRepositoryInterface):
             raise ValueError(f'wordOfTheDayRepository argument is malformed: \"{wordOfTheDayRepository}\"')
         elif not utils.isValidNum(queueSleepTimeSeconds):
             raise ValueError(f'queueSleepTimeSeconds argument is malformed: \"{queueSleepTimeSeconds}\"')
@@ -167,7 +168,7 @@ class RecurringActionsMachine(RecurringActionsMachineInterface):
         self.__triviaGameMachine: TriviaGameMachineInterface = triviaGameMachine
         self.__usersRepository: UsersRepositoryInterface = usersRepository
         self.__weatherRepository: WeatherRepositoryInterface = weatherRepository
-        self.__wordOfTheDayRepository: WordOfTheDayRepository = wordOfTheDayRepository
+        self.__wordOfTheDayRepository: WordOfTheDayRepositoryInterface = wordOfTheDayRepository
         self.__queueSleepTimeSeconds: float = queueSleepTimeSeconds
         self.__refreshSleepTimeSeconds: float = refreshSleepTimeSeconds
         self.__queueTimeoutSeconds: int = queueTimeoutSeconds

@@ -18,8 +18,8 @@ try:
     from CynanBotCommon.trivia.triviaAnswerCompiler import TriviaAnswerCompiler
     from CynanBotCommon.trivia.triviaExceptions import (
         BadTriviaAnswerException, UnsupportedTriviaTypeException)
-    from CynanBotCommon.trivia.triviaSettingsRepository import \
-        TriviaSettingsRepository
+    from CynanBotCommon.trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
     from CynanBotCommon.trivia.triviaType import TriviaType
     from CynanBotCommon.trivia.trueFalseTriviaQuestion import \
         TrueFalseTriviaQuestion
@@ -35,7 +35,8 @@ except:
     from trivia.triviaAnswerCompiler import TriviaAnswerCompiler
     from trivia.triviaExceptions import (BadTriviaAnswerException,
                                          UnsupportedTriviaTypeException)
-    from trivia.triviaSettingsRepository import TriviaSettingsRepository
+    from trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
     from trivia.triviaType import TriviaType
     from trivia.trueFalseTriviaQuestion import TrueFalseTriviaQuestion
 
@@ -46,18 +47,18 @@ class TriviaAnswerChecker():
         self,
         timber: TimberInterface,
         triviaAnswerCompiler: TriviaAnswerCompiler,
-        triviaSettingsRepository: TriviaSettingsRepository,
+        triviaSettingsRepository: TriviaSettingsRepositoryInterface,
     ):
         if not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(triviaAnswerCompiler, TriviaAnswerCompiler):
             raise ValueError(f'triviaAnswerCompiler argument is malformed: \"{triviaAnswerCompiler}\"')
-        elif not isinstance(triviaSettingsRepository, TriviaSettingsRepository):
+        elif not isinstance(triviaSettingsRepository, TriviaSettingsRepositoryInterface):
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
 
         self.__timber: TimberInterface = timber
         self.__triviaAnswerCompiler: TriviaAnswerCompiler = triviaAnswerCompiler
-        self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
+        self.__triviaSettingsRepository: TriviaSettingsRepositoryInterface = triviaSettingsRepository
 
         self.__whitespacePattern: Pattern = re.compile(r'\s\s+')
 
@@ -895,9 +896,9 @@ class TriviaAnswerChecker():
             yield 'world record'
         if word == 'ww':
             yield 'world war'
-        if word in ('wwi', 'ww1'):
+        if word in ('wwi', 'ww1', 'first world war'):
             yield 'world war 1'
-        if word in ('wwii', 'ww2'):
+        if word in ('wwii', 'ww2', 'second world war'):
             yield 'world war 2'
         if word == 'xmas':
             yield 'christmas'

@@ -20,8 +20,8 @@ try:
         GenericTriviaNetworkException, MalformedTriviaJsonException)
     from CynanBotCommon.trivia.triviaQuestionCompiler import \
         TriviaQuestionCompiler
-    from CynanBotCommon.trivia.triviaSettingsRepository import \
-        TriviaSettingsRepository
+    from CynanBotCommon.trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
     from CynanBotCommon.trivia.triviaSource import TriviaSource
     from CynanBotCommon.trivia.triviaType import TriviaType
 except:
@@ -40,7 +40,8 @@ except:
     from trivia.triviaExceptions import (GenericTriviaNetworkException,
                                          MalformedTriviaJsonException)
     from trivia.triviaQuestionCompiler import TriviaQuestionCompiler
-    from trivia.triviaSettingsRepository import TriviaSettingsRepository
+    from trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
     from trivia.triviaSource import TriviaSource
     from trivia.triviaType import TriviaType
 
@@ -54,7 +55,7 @@ class FuntoonTriviaQuestionRepository(AbsTriviaQuestionRepository):
         timber: TimberInterface,
         triviaAnswerCompiler: TriviaAnswerCompiler,
         triviaQuestionCompiler: TriviaQuestionCompiler,
-        triviaSettingsRepository: TriviaSettingsRepository
+        triviaSettingsRepository: TriviaSettingsRepositoryInterface
     ):
         super().__init__(triviaSettingsRepository)
 

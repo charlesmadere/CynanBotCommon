@@ -17,8 +17,8 @@ try:
         GenericTriviaNetworkException, MalformedTriviaJsonException,
         NoTriviaCorrectAnswersException, UnsupportedTriviaTypeException)
     from CynanBotCommon.trivia.triviaIdGenerator import TriviaIdGenerator
-    from CynanBotCommon.trivia.triviaSettingsRepository import \
-        TriviaSettingsRepository
+    from CynanBotCommon.trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
     from CynanBotCommon.trivia.triviaSource import TriviaSource
     from CynanBotCommon.trivia.triviaType import TriviaType
     from CynanBotCommon.trivia.trueFalseTriviaQuestion import \
@@ -38,7 +38,8 @@ except:
                                          NoTriviaCorrectAnswersException,
                                          UnsupportedTriviaTypeException)
     from trivia.triviaIdGenerator import TriviaIdGenerator
-    from trivia.triviaSettingsRepository import TriviaSettingsRepository
+    from trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
     from trivia.triviaSource import TriviaSource
     from trivia.triviaType import TriviaType
     from trivia.trueFalseTriviaQuestion import TrueFalseTriviaQuestion
@@ -52,7 +53,7 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
         quizApiKey: str,
         timber: TimberInterface,
         triviaIdGenerator: TriviaIdGenerator,
-        triviaSettingsRepository: TriviaSettingsRepository
+        triviaSettingsRepository: TriviaSettingsRepositoryInterface
     ):
         super().__init__(triviaSettingsRepository)
 

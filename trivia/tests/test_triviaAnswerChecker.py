@@ -17,6 +17,8 @@ try:
     from ...trivia.triviaDifficulty import TriviaDifficulty
     from ...trivia.triviaQuestionCompiler import TriviaQuestionCompiler
     from ...trivia.triviaSettingsRepository import TriviaSettingsRepository
+    from ...trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
     from ...trivia.triviaSource import TriviaSource
     from ...trivia.trueFalseTriviaQuestion import TrueFalseTriviaQuestion
 except:
@@ -34,6 +36,8 @@ except:
     from trivia.triviaDifficulty import TriviaDifficulty
     from trivia.triviaQuestionCompiler import TriviaQuestionCompiler
     from trivia.triviaSettingsRepository import TriviaSettingsRepository
+    from trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
     from trivia.triviaSource import TriviaSource
     from trivia.trueFalseTriviaQuestion import TrueFalseTriviaQuestion
 
@@ -43,7 +47,7 @@ class TestTriviaAnswerChecker():
     timber: TimberInterface = TimberStub()
     triviaAnswerCompiler = TriviaAnswerCompiler(timber = timber)
     triviaQuestionCompiler = TriviaQuestionCompiler()
-    triviaSettingsRepository = TriviaSettingsRepository(
+    triviaSettingsRepository: TriviaSettingsRepositoryInterface = TriviaSettingsRepository(
         settingsJsonReader = JsonStaticReader(dict())
     )
     triviaAnswerChecker = TriviaAnswerChecker(

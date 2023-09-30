@@ -169,6 +169,9 @@ class TriviaContentScanner(TriviaContentScannerInterface):
         return TriviaContentCode.OK
 
     async def __verifyQuestionContentLengths(self, question: AbsTriviaQuestion) -> TriviaContentCode:
+        if not isinstance(question, AbsTriviaQuestion):
+            raise ValueError(f'question argument is malformed: \"{question}\"')
+
         maxQuestionLength = await self.__triviaSettingsRepository.getMaxQuestionLength()
 
         if len(question.getQuestion()) >= maxQuestionLength:
@@ -241,6 +244,9 @@ class TriviaContentScanner(TriviaContentScannerInterface):
         return TriviaContentCode.OK
 
     async def __verifyQuestionResponseCount(self, question: AbsTriviaQuestion) -> TriviaContentCode:
+        if not isinstance(question, AbsTriviaQuestion):
+            raise ValueError(f'question argument is malformed: \"{question}\"')
+
         if question.getTriviaType() is not TriviaType.MULTIPLE_CHOICE:
             return TriviaContentCode.OK
 

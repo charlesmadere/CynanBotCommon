@@ -27,8 +27,8 @@ try:
         UnsupportedTriviaTypeException)
     from CynanBotCommon.trivia.triviaIdGeneratorInterface import \
         TriviaIdGeneratorInterface
-    from CynanBotCommon.trivia.triviaSettingsRepository import \
-        TriviaSettingsRepository
+    from CynanBotCommon.trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
     from CynanBotCommon.trivia.triviaSource import TriviaSource
     from CynanBotCommon.trivia.triviaType import TriviaType
     from CynanBotCommon.trivia.trueFalseTriviaQuestion import \
@@ -46,7 +46,8 @@ except:
                                          MalformedTriviaJsonException,
                                          UnsupportedTriviaTypeException)
     from trivia.triviaIdGeneratorInterface import TriviaIdGeneratorInterface
-    from trivia.triviaSettingsRepository import TriviaSettingsRepository
+    from trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
     from trivia.triviaSource import TriviaSource
     from trivia.triviaType import TriviaType
     from trivia.trueFalseTriviaQuestion import TrueFalseTriviaQuestion
@@ -70,7 +71,7 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
         pokepediaRepository: PokepediaRepository,
         timber: TimberInterface,
         triviaIdGenerator: TriviaIdGeneratorInterface,
-        triviaSettingsRepository: TriviaSettingsRepository,
+        triviaSettingsRepository: TriviaSettingsRepositoryInterface,
         maxGeneration: PokepediaGeneration = PokepediaGeneration.GENERATION_3
     ):
         super().__init__(triviaSettingsRepository)

@@ -4,26 +4,27 @@ from typing import Dict, List, Set
 
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.trivia.triviaSettingsRepository import \
-        TriviaSettingsRepository
+    from CynanBotCommon.trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
 except:
     import utils
-    from trivia.triviaSettingsRepository import TriviaSettingsRepository
+    from trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
 
 
 class SuperTriviaCooldownHelper():
 
     def __init__(
         self,
-        triviaSettingsRepository: TriviaSettingsRepository,
+        triviaSettingsRepository: TriviaSettingsRepositoryInterface,
         timeZone: timezone = timezone.utc
     ):
-        if not isinstance(triviaSettingsRepository, TriviaSettingsRepository):
+        if not isinstance(triviaSettingsRepository, TriviaSettingsRepositoryInterface):
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
         elif not isinstance(timeZone, timezone):
             raise ValueError(f'timeZone argument is malformed: \"{timeZone}\"')
 
-        self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
+        self.__triviaSettingsRepository: TriviaSettingsRepositoryInterface = triviaSettingsRepository
         self.__timeZone: timezone = timeZone
 
         self.__values: Dict[str, datetime] = defaultdict(lambda: datetime.now(timeZone) - timedelta(days = 1))

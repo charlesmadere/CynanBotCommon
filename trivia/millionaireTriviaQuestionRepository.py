@@ -15,8 +15,8 @@ try:
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
     from CynanBotCommon.trivia.triviaQuestionCompiler import \
         TriviaQuestionCompiler
-    from CynanBotCommon.trivia.triviaSettingsRepository import \
-        TriviaSettingsRepository
+    from CynanBotCommon.trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
     from CynanBotCommon.trivia.triviaSource import TriviaSource
     from CynanBotCommon.trivia.triviaType import TriviaType
 except:
@@ -28,7 +28,8 @@ except:
         MultipleChoiceTriviaQuestion
     from trivia.triviaDifficulty import TriviaDifficulty
     from trivia.triviaQuestionCompiler import TriviaQuestionCompiler
-    from trivia.triviaSettingsRepository import TriviaSettingsRepository
+    from trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
     from trivia.triviaSource import TriviaSource
     from trivia.triviaType import TriviaType
 
@@ -39,7 +40,7 @@ class MillionaireTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self,
         timber: TimberInterface,
         triviaQuestionCompiler: TriviaQuestionCompiler,
-        triviaSettingsRepository: TriviaSettingsRepository,
+        triviaSettingsRepository: TriviaSettingsRepositoryInterface,
         triviaDatabaseFile: str = 'CynanBotCommon/trivia/questionSources/millionaireTriviaQuestionsDatabase.sqlite'
     ):
         super().__init__(triviaSettingsRepository)

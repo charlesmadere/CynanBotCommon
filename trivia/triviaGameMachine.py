@@ -82,7 +82,8 @@ try:
     from CynanBotCommon.trivia.triviaGameState import TriviaGameState
     from CynanBotCommon.trivia.triviaGameStore import TriviaGameStore
     from CynanBotCommon.trivia.triviaGameType import TriviaGameType
-    from CynanBotCommon.trivia.triviaRepository import TriviaRepository
+    from CynanBotCommon.trivia.triviaRepositoryInterface import \
+        TriviaRepositoryInterface
     from CynanBotCommon.trivia.triviaScoreRepository import \
         TriviaScoreRepository
     from CynanBotCommon.trivia.wrongUserCheckAnswerTriviaEvent import \
@@ -157,7 +158,7 @@ except:
     from trivia.triviaGameState import TriviaGameState
     from trivia.triviaGameStore import TriviaGameStore
     from trivia.triviaGameType import TriviaGameType
-    from trivia.triviaRepository import TriviaRepository
+    from trivia.triviaRepositoryInterface import TriviaRepositoryInterface
     from trivia.triviaScoreRepository import TriviaScoreRepository
     from trivia.wrongUserCheckAnswerTriviaEvent import \
         WrongUserCheckAnswerTriviaEvent
@@ -181,7 +182,7 @@ class TriviaGameMachine(TriviaGameMachineInterface):
         triviaAnswerChecker: TriviaAnswerChecker,
         triviaEmoteGenerator: TriviaEmoteGeneratorInterface,
         triviaGameStore: TriviaGameStore,
-        triviaRepository: TriviaRepository,
+        triviaRepository: TriviaRepositoryInterface,
         triviaScoreRepository: TriviaScoreRepository,
         twitchTokensRepository: TwitchTokensRepositoryInterface,
         userIdsRepository: UserIdsRepositoryInterface,
@@ -209,7 +210,7 @@ class TriviaGameMachine(TriviaGameMachineInterface):
             raise ValueError(f'triviaEmoteGenerator argument is malformed: \"{triviaEmoteGenerator}\"')
         elif not isinstance(triviaGameStore, TriviaGameStore):
             raise ValueError(f'triviaGameStore argument is malformed: \"{triviaGameStore}\"')
-        elif not isinstance(triviaRepository, TriviaRepository):
+        elif not isinstance(triviaRepository, TriviaRepositoryInterface):
             raise ValueError(f'triviaRepository argument is malformed: \"{triviaRepository}\"')
         elif not isinstance(triviaScoreRepository, TriviaScoreRepository):
             raise ValueError(f'triviaScoreRepository argument is malformed: \"{triviaScoreRepository}\"')
@@ -238,7 +239,7 @@ class TriviaGameMachine(TriviaGameMachineInterface):
         self.__triviaAnswerChecker: TriviaAnswerChecker = triviaAnswerChecker
         self.__triviaEmoteGenerator: TriviaEmoteGeneratorInterface = triviaEmoteGenerator
         self.__triviaGameStore: TriviaGameStore = triviaGameStore
-        self.__triviaRepository: TriviaRepository = triviaRepository
+        self.__triviaRepository: TriviaRepositoryInterface = triviaRepository
         self.__triviaScoreRepository: TriviaScoreRepository = triviaScoreRepository
         self.__twitchTokensRepositoryInterface: TwitchTokensRepositoryInterface = twitchTokensRepository
         self.__userIdsRepository: UserIdsRepositoryInterface = userIdsRepository

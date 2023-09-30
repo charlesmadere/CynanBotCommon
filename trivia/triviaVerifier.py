@@ -13,6 +13,8 @@ try:
     from CynanBotCommon.trivia.triviaHistoryRepositoryInterface import \
         TriviaHistoryRepositoryInterface
     from CynanBotCommon.trivia.triviaType import TriviaType
+    from CynanBotCommon.trivia.triviaVerifierInterface import \
+        TriviaVerifierInterface
 except:
     import utils
     from timber.timberInterface import TimberInterface
@@ -25,9 +27,10 @@ except:
     from trivia.triviaHistoryRepositoryInterface import \
         TriviaHistoryRepositoryInterface
     from trivia.triviaType import TriviaType
+    from trivia.triviaVerifierInterface import TriviaVerifierInterface
 
 
-class TriviaVerifier():
+class TriviaVerifier(TriviaVerifierInterface):
 
     def __init__(
         self,

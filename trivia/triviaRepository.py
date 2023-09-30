@@ -47,13 +47,16 @@ try:
     from CynanBotCommon.trivia.triviaFetchOptions import TriviaFetchOptions
     from CynanBotCommon.trivia.triviaQuestionCompanyTriviaQuestionRepository import \
         TriviaQuestionCompanyTriviaQuestionRepository
+    from CynanBotCommon.trivia.triviaRepositoryInterface import \
+        TriviaRepositoryInterface
     from CynanBotCommon.trivia.triviaSettingsRepositoryInterface import \
         TriviaSettingsRepositoryInterface
     from CynanBotCommon.trivia.triviaSource import TriviaSource
     from CynanBotCommon.trivia.triviaSourceInstabilityHelper import \
         TriviaSourceInstabilityHelper
     from CynanBotCommon.trivia.triviaType import TriviaType
-    from CynanBotCommon.trivia.triviaVerifier import TriviaVerifier
+    from CynanBotCommon.trivia.triviaVerifierInterface import \
+        TriviaVerifierInterface
     from CynanBotCommon.trivia.willFryTriviaQuestionRepository import \
         WillFryTriviaQuestionRepository
     from CynanBotCommon.trivia.wwtbamTriviaQuestionRepository import \
@@ -99,13 +102,14 @@ except:
     from trivia.triviaFetchOptions import TriviaFetchOptions
     from trivia.triviaQuestionCompanyTriviaQuestionRepository import \
         TriviaQuestionCompanyTriviaQuestionRepository
+    from trivia.triviaRepositoryInterface import TriviaRepositoryInterface
     from trivia.triviaSettingsRepositoryInterface import \
         TriviaSettingsRepositoryInterface
     from trivia.triviaSource import TriviaSource
     from trivia.triviaSourceInstabilityHelper import \
         TriviaSourceInstabilityHelper
     from trivia.triviaType import TriviaType
-    from trivia.triviaVerifier import TriviaVerifier
+    from trivia.triviaVerifierInterface import TriviaVerifierInterface
     from trivia.wwtbamTriviaQuestionRepository import \
         WwtbamTriviaQuestionRepository
 
@@ -113,7 +117,7 @@ except:
         TwitchHandleProviderInterface
 
 
-class TriviaRepository():
+class TriviaRepository(TriviaRepositoryInterface):
 
     def __init__(
         self,
@@ -133,7 +137,7 @@ class TriviaRepository():
         triviaQuestionCompanyTriviaQuestionRepository: TriviaQuestionCompanyTriviaQuestionRepository,
         triviaSettingsRepository: TriviaSettingsRepositoryInterface,
         triviaSourceInstabilityHelper: TriviaSourceInstabilityHelper,
-        triviaVerifier: TriviaVerifier,
+        triviaVerifier: TriviaVerifierInterface,
         twitchHandleProvider: TwitchHandleProviderInterface,
         willFryTriviaQuestionRepository: WillFryTriviaQuestionRepository,
         wwtbamTriviaQuestionRepository: WwtbamTriviaQuestionRepository,
@@ -172,7 +176,7 @@ class TriviaRepository():
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
         elif not isinstance(triviaSourceInstabilityHelper, TriviaSourceInstabilityHelper):
             raise ValueError(f'triviaSourceInstabilityHelper argument is malformed: \"{triviaSourceInstabilityHelper}\"')
-        elif not isinstance(triviaVerifier, TriviaVerifier):
+        elif not isinstance(triviaVerifier, TriviaVerifierInterface):
             raise ValueError(f'triviaVerifier argument is malformed: \"{triviaVerifier}\"')
         elif not isinstance(twitchHandleProvider, TwitchHandleProviderInterface):
             raise ValueError(f'twitchHandleProvider argument is malformed: \"{twitchHandleProvider}\"')
@@ -205,7 +209,7 @@ class TriviaRepository():
         self.__triviaQuestionCompanyTriviaQuestionRepository: AbsTriviaQuestionRepository = triviaQuestionCompanyTriviaQuestionRepository
         self.__triviaSettingsRepository: TriviaSettingsRepositoryInterface = triviaSettingsRepository
         self.__triviaSourceInstabilityHelper: TriviaSourceInstabilityHelper = triviaSourceInstabilityHelper
-        self.__triviaVerifier: TriviaVerifier = triviaVerifier
+        self.__triviaVerifier: TriviaVerifierInterface = triviaVerifier
         self.__twitchHandleProvider: TwitchHandleProviderInterface = twitchHandleProvider
         self.__willFryTriviaQuestionRepository: AbsTriviaQuestionRepository = willFryTriviaQuestionRepository
         self.__wwtbamTriviaQuestionRepository: AbsTriviaQuestionRepository = wwtbamTriviaQuestionRepository

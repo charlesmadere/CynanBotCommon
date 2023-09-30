@@ -16,8 +16,8 @@ try:
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
     from CynanBotCommon.trivia.triviaExceptions import \
         UnsupportedTriviaTypeException
-    from CynanBotCommon.trivia.triviaSettingsRepository import \
-        TriviaSettingsRepository
+    from CynanBotCommon.trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
     from CynanBotCommon.trivia.triviaSource import TriviaSource
     from CynanBotCommon.trivia.triviaType import TriviaType
     from CynanBotCommon.trivia.trueFalseTriviaQuestion import \
@@ -29,7 +29,8 @@ except:
     from trivia.absTriviaQuestionRepository import AbsTriviaQuestionRepository
     from trivia.triviaDifficulty import TriviaDifficulty
     from trivia.triviaExceptions import UnsupportedTriviaTypeException
-    from trivia.triviaSettingsRepository import TriviaSettingsRepository
+    from trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
     from trivia.triviaSource import TriviaSource
     from trivia.triviaType import TriviaType
     from trivia.trueFalseTriviaQuestion import TrueFalseTriviaQuestion
@@ -40,7 +41,7 @@ class JokeTriviaQuestionRepository(AbsTriviaQuestionRepository):
     def __init__(
         self,
         timber: TimberInterface,
-        triviaSettingsRepository: TriviaSettingsRepository,
+        triviaSettingsRepository: TriviaSettingsRepositoryInterface,
         jokeTriviaQuestionFile: str = 'CynanBotCommon/trivia/questionSources/jokeTriviaQuestionRepository.json'
     ):
         super().__init__(triviaSettingsRepository)

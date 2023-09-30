@@ -17,8 +17,8 @@ try:
         AdditionalTriviaAnswerIsMalformedException,
         AdditionalTriviaAnswerIsUnsupportedTriviaTypeException,
         TooManyAdditionalTriviaAnswersException)
-    from CynanBotCommon.trivia.triviaSettingsRepository import \
-        TriviaSettingsRepository
+    from CynanBotCommon.trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
     from CynanBotCommon.trivia.triviaSource import TriviaSource
     from CynanBotCommon.trivia.triviaType import TriviaType
     from CynanBotCommon.twitch.twitchHandleProviderInterface import \
@@ -42,7 +42,8 @@ except:
         AdditionalTriviaAnswerIsMalformedException,
         AdditionalTriviaAnswerIsUnsupportedTriviaTypeException,
         TooManyAdditionalTriviaAnswersException)
-    from trivia.triviaSettingsRepository import TriviaSettingsRepository
+    from trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
     from trivia.triviaSource import TriviaSource
     from trivia.triviaType import TriviaType
 
@@ -59,7 +60,7 @@ class AdditionalTriviaAnswersRepository(AdditionalTriviaAnswersRepositoryInterfa
         self,
         backingDatabase: BackingDatabase,
         timber: TimberInterface,
-        triviaSettingsRepository: TriviaSettingsRepository,
+        triviaSettingsRepository: TriviaSettingsRepositoryInterface,
         twitchHandleProvider: TwitchHandleProviderInterface,
         twitchTokensRepository: TwitchTokensRepositoryInterface,
         userIdsRepository: UserIdsRepositoryInterface
@@ -68,7 +69,7 @@ class AdditionalTriviaAnswersRepository(AdditionalTriviaAnswersRepositoryInterfa
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
         elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif not isinstance(triviaSettingsRepository, TriviaSettingsRepository):
+        elif not isinstance(triviaSettingsRepository, TriviaSettingsRepositoryInterface):
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
         elif not isinstance(twitchHandleProvider, TwitchHandleProviderInterface):
             raise ValueError(f'twitchHandleProvider argument is malformed: \"{twitchHandleProvider}\"')
@@ -79,7 +80,7 @@ class AdditionalTriviaAnswersRepository(AdditionalTriviaAnswersRepositoryInterfa
 
         self.__backingDatabase: BackingDatabase = backingDatabase
         self.__timber: TimberInterface = timber
-        self.__triviaSettingsRepository: TriviaSettingsRepository = triviaSettingsRepository
+        self.__triviaSettingsRepository: TriviaSettingsRepositoryInterface = triviaSettingsRepository
         self.__twitchHandleProvider: TwitchHandleProviderInterface = twitchHandleProvider
         self.__twitchTokensRepository: TwitchTokensRepositoryInterface = twitchTokensRepository
         self.__userIdsRepository: UserIdsRepositoryInterface = userIdsRepository
