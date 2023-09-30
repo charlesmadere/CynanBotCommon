@@ -146,6 +146,10 @@ class TriviaContentScanner(TriviaContentScannerInterface):
         if question is None:
             return TriviaContentCode.IS_NONE
 
+        coreContentCode = await self.__verifyQuestionCoreContent(question)
+        if coreContentCode is not TriviaContentCode.OK:
+            return coreContentCode
+
         responsesContentCode = await self.__verifyQuestionResponseCount(question)
         if responsesContentCode is not TriviaContentCode.OK:
             return responsesContentCode
@@ -154,15 +158,11 @@ class TriviaContentScanner(TriviaContentScannerInterface):
         if lengthsContentCode is not TriviaContentCode.OK:
             return lengthsContentCode
 
-        words = await self.__getAllWordsFromQuestion(question)
+        urlContentCode = await self.__verifyQuestionDoesNotContainUrl(question)
+        if urlContentCode is not TriviaContentCode.OK:
+            return urlContentCode
 
-        emptyStringsOrUrlsContentCode = await self.__verifyQuestionEmptyStringsOrUrls(words)
-        if emptyStringsOrUrlsContentCode is not TriviaContentCode.OK:
-            return emptyStringsOrUrlsContentCode
-
-        phrases = await self.__getAllPhrasesFromQuestion(question)
-
-        contentSanityCode = await self.__verifyQuestionContentProfanity(question, phrases, words)
+        contentSanityCode = await self.__verifyQuestionContentProfanity(question)
         if contentSanityCode is not TriviaContentCode.OK:
             return contentSanityCode
 
@@ -195,18 +195,12 @@ class TriviaContentScanner(TriviaContentScannerInterface):
 
         return TriviaContentCode.OK
 
-    async def __verifyQuestionContentProfanity(self,
-        question: AbsTriviaQuestion,
-        phrases: Set[str],
-        words: Set[str]
-    ) -> TriviaContentCode:
+    async def __verifyQuestionContentProfanity(self, question: AbsTriviaQuestion) -> TriviaContentCode:
         if not isinstance(question, AbsTriviaQuestion):
             raise ValueError(f'question argument is malformed: \"{question}\"')
-        elif not isinstance(phrases, Set):
-            raise ValueError(f'phrases argument is malformed: \"{phrases}\"')
-        elif not isinstance(words, Set):
-            raise ValueError(f'words argument is malformed: \"{words}\"')
 
+        phrases = await self.__getAllPhrasesFromQuestion(question)
+        words = await self.__getAllWordsFromQuestion(question)
         absBannedWords = await self.__bannedWordsRepository.getBannedWordsAsync()
 
         for absBannedWord in absBannedWords:
@@ -226,19 +220,44 @@ class TriviaContentScanner(TriviaContentScannerInterface):
             else:
                 raise RuntimeError(f'unknown BannedWordType ({absBannedWord}): \"{absBannedWord.getType()}\"')
 
-        print(f'question: {question}, phrases: {phrases}, words: {words}, absBannedWords: {absBannedWord}')
         return TriviaContentCode.OK
 
-    async def __verifyQuestionEmptyStringsOrUrls(self, words: Set[Optional[str]]):
-        if not isinstance(words, Set):
-            raise ValueError(f'words argument is malformed: \"{words}\"')
+    async def __verifyQuestionCoreContent(self, question: AbsTriviaQuestion) -> TriviaContentCode:
+        if not isinstance(question, AbsTriviaQuestion):
+            raise ValueError(f'question argument is malformed: \"{question}\"')
 
-        for word in words:
-            if not utils.isValidStr(word):
-                self.__timber.log('TriviaContentScanner', f'Trivia content contains an empty string: \"{word}\"')
+        if not utils.isValidStr(question.getQuestion()):
+            self.__timber.log('TriviaContentScanner', f'Trivia question ({question}) contains an empty question: \"{question.getQuestion()}\"')
+            return TriviaContentCode.CONTAINS_EMPTY_STR
+
+        if question.getTriviaType() is TriviaType.QUESTION_ANSWER and not question.hasCategory():
+            # This means that we are requiring "question-answer" style trivia questions to have
+            # a category, which I think is probably fine? (this is an opinion situation)
+            self.__timber.log('TriviaContentScanner', f'Trivia question ({question}) contains an empty category: \"{question.getCategory()}\"')
+            return TriviaContentCode.CONTAINS_EMPTY_STR
+
+        for response in question.getResponses():
+            if not utils.isValidStr(response):
+                self.__timber.log('TriviaContentScanner', f'Trivia question ({question}) contains an empty response: \"{response}\"')
                 return TriviaContentCode.CONTAINS_EMPTY_STR
-            elif utils.containsUrl(word):
-                self.__timber.log('TriviaContentScanner', f'Trivia content contains a URL: \"{word}\"')
+
+        return TriviaContentCode.OK
+
+    async def __verifyQuestionDoesNotContainUrl(self, question: AbsTriviaQuestion):
+        if not isinstance(question, AbsTriviaQuestion):
+            raise ValueError(f'question argument is malformed: \"{question}\"')
+
+        if utils.containsUrl(question.getQuestion()):
+            self.__timber.log('TriviaContentScanner', f'Trivia question\'s ({question}) question contains a URL: \"{question.getQuestion()}\"')
+            return TriviaContentCode.CONTAINS_URL
+
+        if utils.containsUrl(question.getCategory()):
+            self.__timber.log('TriviaContentScanner', f'Trivia question\'s ({question}) category contains a URL: \"{question.getCategory()}\"')
+            return TriviaContentCode.CONTAINS_URL
+
+        for response in question.getResponses():
+            if utils.containsUrl(response):
+                self.__timber.log('TriviaContentScanner', f'Trivia question\'s ({question}) response contains a URL: \"{response}\"')
                 return TriviaContentCode.CONTAINS_URL
 
         return TriviaContentCode.OK
