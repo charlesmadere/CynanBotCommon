@@ -132,7 +132,7 @@ class TestTriviaContentScanner():
         question: AbsTriviaQuestion = QuestionAnswerTriviaQuestion(
             correctAnswers = correctAnswers,
             cleanedCorrectAnswers = cleanedCorrectAnswers,
-            category = None,
+            category = 'Politics',
             categoryId = None,
             question = 'This instrument is made from brass.', 
             triviaId = 'asdfasdfasdf',
@@ -219,7 +219,7 @@ class TestTriviaContentScanner():
         question: AbsTriviaQuestion = QuestionAnswerTriviaQuestion(
             correctAnswers = correctAnswers,
             cleanedCorrectAnswers = cleanedCorrectAnswers,
-            category = None,
+            category = 'The Dark Ages',
             categoryId = None,
             question = 'Who was a king from way back?',
             triviaId = 'azerty',
