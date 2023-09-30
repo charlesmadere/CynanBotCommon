@@ -301,7 +301,7 @@ class TriviaRepository(TriviaRepositoryInterface):
                 attemptedTriviaSources.append(triviaSource)
 
                 try:
-                    question = await triviaQuestionRepository.fetchTriviaQuestion(triviaFetchOptions.getTwitchChannel())
+                    question = await triviaQuestionRepository.fetchTriviaQuestion(triviaFetchOptions)
                 except (NoTriviaCorrectAnswersException, NoTriviaMultipleChoiceResponsesException, NoTriviaQuestionException) as e:
                     self.__timber.log('TriviaRepository', f'Failed to fetch trivia question due to malformed data (trivia source was \"{triviaSource}\"): {e}', e, traceback.format_exc())
                 except GenericTriviaNetworkException as e:
@@ -433,7 +433,7 @@ class TriviaRepository(TriviaRepositoryInterface):
         question: Optional[AbsTriviaQuestion] = None
 
         try:
-            question = await triviaQuestionRepository.fetchTriviaQuestion(triviaFetchOptions.getTwitchChannel())
+            question = await triviaQuestionRepository.fetchTriviaQuestion(triviaFetchOptions)
         except (NoTriviaCorrectAnswersException, NoTriviaMultipleChoiceResponsesException, NoTriviaQuestionException) as e:
             self.__timber.log('TriviaRepository', f'Failed to fetch trivia question for spool due to malformed data (trivia source was \"{triviaSource}\"): {e}', e, traceback.format_exc())
         except GenericTriviaNetworkException as e:
@@ -478,7 +478,7 @@ class TriviaRepository(TriviaRepositoryInterface):
         question: Optional[AbsTriviaQuestion] = None
 
         try:
-            question = await triviaQuestionRepository.fetchTriviaQuestion(triviaFetchOptions.getTwitchChannel())
+            question = await triviaQuestionRepository.fetchTriviaQuestion(triviaFetchOptions)
         except (NoTriviaCorrectAnswersException, NoTriviaMultipleChoiceResponsesException, NoTriviaQuestionException) as e:
             self.__timber.log('TriviaRepository', f'Failed to fetch trivia question for spool due to malformed data (trivia source was \"{triviaSource}\"): {e}', e, traceback.format_exc())
         except GenericTriviaNetworkException as e:

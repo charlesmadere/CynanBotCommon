@@ -67,10 +67,10 @@ class TriviaVerifier(TriviaVerifierInterface):
             raise ValueError(f'triviaFetchOptions argument is malformed: \"{triviaFetchOptions}\"')
 
         if not triviaFetchOptions.areQuestionAnswerTriviaQuestionsEnabled() and question.getTriviaType() is TriviaType.QUESTION_ANSWER:
-            self.__timber.log('TriviaVerifier', f'The given TriviaType is illegal: {question.getTriviaType()} (triviaFetchOptions: {triviaFetchOptions.toStr()})')
+            self.__timber.log('TriviaVerifier', f'The given TriviaType is illegal: {question.getTriviaType()} (triviaFetchOptions: {triviaFetchOptions})')
             return TriviaContentCode.ILLEGAL_TRIVIA_TYPE
         elif triviaFetchOptions.requireQuestionAnswerTriviaQuestion() and question.getTriviaType() is not TriviaType.QUESTION_ANSWER:
-            self.__timber.log('TriviaVerifier', f'The given TriviaType is illegal: {question.getTriviaType()} (triviaFetchOptions: {triviaFetchOptions.toStr()})')
+            self.__timber.log('TriviaVerifier', f'The given TriviaType is illegal: {question.getTriviaType()} (triviaFetchOptions: {triviaFetchOptions})')
             return TriviaContentCode.ILLEGAL_TRIVIA_TYPE
 
         if await self.__triviaBanHelper.isBanned(

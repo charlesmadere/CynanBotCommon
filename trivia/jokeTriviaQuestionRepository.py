@@ -16,6 +16,7 @@ try:
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
     from CynanBotCommon.trivia.triviaExceptions import \
         UnsupportedTriviaTypeException
+    from CynanBotCommon.trivia.triviaFetchOptions import TriviaFetchOptions
     from CynanBotCommon.trivia.triviaSettingsRepositoryInterface import \
         TriviaSettingsRepositoryInterface
     from CynanBotCommon.trivia.triviaSource import TriviaSource
@@ -29,6 +30,7 @@ except:
     from trivia.absTriviaQuestionRepository import AbsTriviaQuestionRepository
     from trivia.triviaDifficulty import TriviaDifficulty
     from trivia.triviaExceptions import UnsupportedTriviaTypeException
+    from trivia.triviaFetchOptions import TriviaFetchOptions
     from trivia.triviaSettingsRepositoryInterface import \
         TriviaSettingsRepositoryInterface
     from trivia.triviaSource import TriviaSource
@@ -56,13 +58,13 @@ class JokeTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         self.__hasQuestionSetAvailable: Optional[bool] = None
 
-    async def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
-        if not utils.isValidStr(twitchChannel):
-            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+    async def fetchTriviaQuestion(self, fetchOptions: TriviaFetchOptions) -> AbsTriviaQuestion:
+        if not isinstance(fetchOptions, TriviaFetchOptions):
+            raise ValueError(f'fetchOptions argument is malformed: \"{fetchOptions}\"')
 
-        self.__timber.log('JokeTriviaQuestionRepository', f'Fetching trivia question... (twitchChannel={twitchChannel})')
+        self.__timber.log('JokeTriviaQuestionRepository', f'Fetching trivia question... (fetchOptions={fetchOptions})')
 
-        triviaJson: Optional[Dict[str, Any]] = await self.__fetchTriviaQuestionJson(twitchChannel)
+        triviaJson = await self.__fetchTriviaQuestionJson(fetchOptions.getTwitchChannel())
 
         if not utils.hasItems(triviaJson):
             return None

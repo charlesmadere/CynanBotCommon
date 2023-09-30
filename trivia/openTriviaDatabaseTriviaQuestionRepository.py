@@ -20,6 +20,7 @@ try:
     from CynanBotCommon.trivia.triviaExceptions import (
         BadTriviaSessionTokenException, GenericTriviaNetworkException,
         MalformedTriviaJsonException, UnsupportedTriviaTypeException)
+    from CynanBotCommon.trivia.triviaFetchOptions import TriviaFetchOptions
     from CynanBotCommon.trivia.triviaIdGenerator import TriviaIdGenerator
     from CynanBotCommon.trivia.triviaQuestionCompiler import \
         TriviaQuestionCompiler
@@ -47,6 +48,7 @@ except:
                                          GenericTriviaNetworkException,
                                          MalformedTriviaJsonException,
                                          UnsupportedTriviaTypeException)
+    from trivia.triviaFetchOptions import TriviaFetchOptions
     from trivia.triviaIdGenerator import TriviaIdGenerator
     from trivia.triviaQuestionCompiler import TriviaQuestionCompiler
     from trivia.triviaSettingsRepositoryInterface import \
@@ -128,13 +130,13 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository, Cl
 
         return utils.getStrFromDict(jsonResponse, 'token')
 
-    async def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
-        if not utils.isValidStr(twitchChannel):
-            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+    async def fetchTriviaQuestion(self, fetchOptions: TriviaFetchOptions) -> AbsTriviaQuestion:
+        if not isinstance(fetchOptions, TriviaFetchOptions):
+            raise ValueError(f'fetchOptions argument is malformed: \"{fetchOptions}\"')
 
-        self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Fetching trivia question... (twitchChannel={twitchChannel})')
+        self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', f'Fetching trivia question... (fetchOptions={fetchOptions})')
 
-        sessionToken = await self.__getOrFetchNewSessionToken(twitchChannel)
+        sessionToken = await self.__getOrFetchNewSessionToken(fetchOptions.getTwitchChannel())
         clientSession = await self.__networkClientProvider.get()
 
         try:

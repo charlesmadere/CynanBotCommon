@@ -140,11 +140,11 @@ class TriviaContentScanner(TriviaContentScannerInterface):
             words.add(word)
 
     async def verify(self, question: Optional[AbsTriviaQuestion]) -> TriviaContentCode:
-        if question is not None and not isinstance(question, AbsTriviaQuestion):
-            raise ValueError(f'question argument is malformed: \"{question}\"')
-
         if question is None:
             return TriviaContentCode.IS_NONE
+
+        if not isinstance(question, AbsTriviaQuestion):
+            raise ValueError(f'question argument is malformed: \"{question}\"')
 
         coreContentCode = await self.__verifyQuestionCoreContent(question)
         if coreContentCode is not TriviaContentCode.OK:

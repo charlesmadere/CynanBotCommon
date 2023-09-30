@@ -16,6 +16,7 @@ try:
         QuestionAnswerTriviaQuestion
     from CynanBotCommon.trivia.triviaAnswerCompiler import TriviaAnswerCompiler
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
+    from CynanBotCommon.trivia.triviaFetchOptions import TriviaFetchOptions
     from CynanBotCommon.trivia.triviaQuestionCompiler import \
         TriviaQuestionCompiler
     from CynanBotCommon.trivia.triviaSettingsRepositoryInterface import \
@@ -33,6 +34,7 @@ except:
         QuestionAnswerTriviaQuestion
     from trivia.triviaAnswerCompiler import TriviaAnswerCompiler
     from trivia.triviaDifficulty import TriviaDifficulty
+    from trivia.triviaFetchOptions import TriviaFetchOptions
     from trivia.triviaQuestionCompiler import TriviaQuestionCompiler
     from trivia.triviaSettingsRepositoryInterface import \
         TriviaSettingsRepositoryInterface
@@ -88,11 +90,11 @@ class LotrTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self.__timber.log('LotrTriviaQuestionRepository', f'Adding additional answers to question (triviaId=\"{triviaId}\"): {reference.getAdditionalAnswers()}')
         correctAnswers.extend(reference.getAdditionalAnswersStrs())
 
-    async def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
-        if not utils.isValidStr(twitchChannel):
-            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+    async def fetchTriviaQuestion(self, fetchOptions: TriviaFetchOptions) -> AbsTriviaQuestion:
+        if not isinstance(fetchOptions, TriviaFetchOptions):
+            raise ValueError(f'fetchOptions argument is malformed: \"{fetchOptions}\"')
 
-        self.__timber.log('LotrTriviaQuestionRepository', f'Fetching trivia question... (twitchChannel={twitchChannel})')
+        self.__timber.log('LotrTriviaQuestionRepository', f'Fetching trivia question... (fetchOptions={fetchOptions})')
 
         triviaDict = await self.__fetchTriviaQuestionDict()
 

@@ -16,6 +16,7 @@ try:
     from CynanBotCommon.trivia.triviaExceptions import (
         GenericTriviaNetworkException, MalformedTriviaJsonException,
         NoTriviaCorrectAnswersException, UnsupportedTriviaTypeException)
+    from CynanBotCommon.trivia.triviaFetchOptions import TriviaFetchOptions
     from CynanBotCommon.trivia.triviaIdGenerator import TriviaIdGenerator
     from CynanBotCommon.trivia.triviaSettingsRepositoryInterface import \
         TriviaSettingsRepositoryInterface
@@ -37,6 +38,7 @@ except:
                                          MalformedTriviaJsonException,
                                          NoTriviaCorrectAnswersException,
                                          UnsupportedTriviaTypeException)
+    from trivia.triviaFetchOptions import TriviaFetchOptions
     from trivia.triviaIdGenerator import TriviaIdGenerator
     from trivia.triviaSettingsRepositoryInterface import \
         TriviaSettingsRepositoryInterface
@@ -71,11 +73,11 @@ class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self.__timber: TimberInterface = timber
         self.__triviaIdGenerator: TriviaIdGenerator = triviaIdGenerator
 
-    async def fetchTriviaQuestion(self, twitchChannel: str) -> AbsTriviaQuestion:
-        if not utils.isValidStr(twitchChannel):
-            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+    async def fetchTriviaQuestion(self, fetchOptions: TriviaFetchOptions) -> AbsTriviaQuestion:
+        if not isinstance(fetchOptions, TriviaFetchOptions):
+            raise ValueError(f'fetchOptions argument is malformed: \"{fetchOptions}\"')
 
-        self.__timber.log('QuizApiTriviaQuestionRepository', f'Fetching trivia question... (twitchChannel={twitchChannel})')
+        self.__timber.log('QuizApiTriviaQuestionRepository', f'Fetching trivia question... (fetchOptions={fetchOptions})')
 
         clientSession = await self.__networkClientProvider.get()
 
