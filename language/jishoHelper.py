@@ -4,6 +4,8 @@ from urllib.parse import quote
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.language.jishoHelperInterface import \
+        JishoHelperInterface
     from CynanBotCommon.language.jishoResult import JishoResult
     from CynanBotCommon.language.jishoVariant import JishoVariant
     from CynanBotCommon.network.exceptions import GenericNetworkException
@@ -12,6 +14,7 @@ try:
     from CynanBotCommon.timber.timberInterface import TimberInterface
 except:
     import utils
+    from language.jishoHelperInterface import JishoHelperInterface
     from language.jishoResult import JishoResult
     from language.jishoVariant import JishoVariant
     from network.exceptions import GenericNetworkException
@@ -19,7 +22,7 @@ except:
     from timber.timberInterface import TimberInterface
 
 
-class JishoHelper():
+class JishoHelper(JishoHelperInterface):
 
     def __init__(
         self,
