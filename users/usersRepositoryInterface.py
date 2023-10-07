@@ -1,20 +1,19 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import List
 
 try:
+    from CynanBotCommon.clearable import Clearable
     from CynanBotCommon.users.userInterface import UserInterface
 except:
+    from clearable import Clearable
+
     from users.userInterface import UserInterface
 
 
-class UsersRepositoryInterface(ABC):
+class UsersRepositoryInterface(Clearable):
 
     @abstractmethod
     async def addUser(self, handle: str):
-        pass
-
-    @abstractmethod
-    async def clearCaches(self):
         pass
 
     @abstractmethod

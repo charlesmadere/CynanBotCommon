@@ -6,11 +6,13 @@ import aiofiles.ospath
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.clearable import Clearable
 except:
     import utils
+    from clearable import Clearable
 
 
-class PsqlCredentialsProvider():
+class PsqlCredentialsProvider(Clearable):
 
     def __init__(self, credentialsFile: str = 'CynanBotCommon/storage/psqlCredentials.json'):
         if not utils.isValidStr(credentialsFile):
