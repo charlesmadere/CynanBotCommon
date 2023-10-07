@@ -1,24 +1,23 @@
-import json
 from typing import Any, Dict, Optional
-
-import aiofiles
-import aiofiles.ospath
 
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.clearable import Clearable
+    from CynanBotCommon.storage.jsonReaderInterface import JsonReaderInterface
 except:
     import utils
     from clearable import Clearable
+    from storage.jsonReaderInterface import JsonReaderInterface
 
 
 class PsqlCredentialsProvider(Clearable):
 
-    def __init__(self, credentialsFile: str = 'CynanBotCommon/storage/psqlCredentials.json'):
-        if not utils.isValidStr(credentialsFile):
-            raise ValueError(f'credentialsFile argument is malformed: \"{credentialsFile}\"')
+    def __init__(self, credentialsJsonReader: JsonReaderInterface):
+        if not isinstance(credentialsJsonReader, JsonReaderInterface):
+            raise ValueError(f'credentialsJsonReader argument is malformed: \"{credentialsJsonReader}\"')
 
-        self.__credentialsFile: str = credentialsFile
+        self.__credentialsJsonReader: JsonReaderInterface = credentialsJsonReader
+
         self.__jsonCache: Optional[Dict[str, Any]] = None
 
     async def clearCaches(self):
@@ -28,20 +27,10 @@ class PsqlCredentialsProvider(Clearable):
         if self.__jsonCache is not None:
             return self.__jsonCache
 
-        if not await aiofiles.ospath.exists(self.__credentialsFile):
-            raise FileNotFoundError(f'Credentials file not found: \"{self.__credentialsFile}\"')
+        jsonCache = await self.__credentialsJsonReader.readJsonAsync()
+        self.__jsonCache = jsonCache
 
-        async with aiofiles.open(self.__credentialsFile, mode = 'r') as file:
-            data = await file.read()
-            jsonContents = json.loads(data)
-
-        if jsonContents is None:
-            raise IOError(f'Error reading from credentials file: \"{self.__credentialsFile}\"')
-        elif len(jsonContents) == 0:
-            raise ValueError(f'JSON contents of credentials file \"{self.__credentialsFile}\" is empty')
-
-        self.__jsonCache = jsonContents
-        return jsonContents
+        return jsonCache
 
     async def requireDatabaseName(self) -> str:
         jsonContents = await self.__readJsonAsync()
