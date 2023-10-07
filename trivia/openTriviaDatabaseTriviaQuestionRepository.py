@@ -93,6 +93,7 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository, Cl
 
     async def clearCaches(self):
         self.__cache.clear()
+        self.__timber.log('OpenTriviaDatabaseTriviaQuestionRepository', 'Caches cleared')
 
     async def __fetchNewSessionToken(self, twitchChannel: str) -> str:
         if not utils.isValidStr(twitchChannel):
