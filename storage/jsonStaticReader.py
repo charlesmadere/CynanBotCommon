@@ -15,7 +15,7 @@ class JsonStaticReader(JsonReaderInterface):
     def deleteFile(self):
         self.__isDeleted = True
 
-    async def deleteFile(self):
+    async def deleteFileAsync(self):
         self.deleteFile()
 
     def fileExists(self) -> bool:
