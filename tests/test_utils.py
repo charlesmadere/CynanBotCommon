@@ -443,6 +443,10 @@ class TestUtils():
         result = utils.isValidUrl('rpt\\\'%TmN$lx!T.Gg2le)QVO4\\_UqMA8dA{=\\\'\\\"')
         assert result is False
 
+    def test_isValidUrl_withWebsocketUrl(self):
+        result = utils.isValidUrl('wss://eventsub.wss.twitch.tv/ws')
+        assert result is True
+
     def test_isValidUrl_withWhitespaceString(self):
         result = utils.isValidUrl(' ')
         assert result is False
