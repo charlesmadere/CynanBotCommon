@@ -17,3 +17,7 @@ class WebsocketConnectionServerInterface(Clearable):
         eventData: Dict[Any, Any]
     ):
         pass
+
+    @abstractmethod
+    def start(self):
+        pass

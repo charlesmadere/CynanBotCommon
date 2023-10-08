@@ -58,6 +58,7 @@ class WebsocketConnectionServer(WebsocketConnectionServerInterface):
         elif not isinstance(eventTimeToLive, timedelta):
             raise ValueError(f'eventTimeToLive argument is malformed: \"{eventTimeToLive}\"')
 
+        self.__backgroundTaskHelper: BackgroundTaskHelper = backgroundTaskHelper
         self.__timber: TimberInterface = timber
         self.__port: int = port
         self.__sleepTimeSeconds: int = sleepTimeSeconds
@@ -65,9 +66,9 @@ class WebsocketConnectionServer(WebsocketConnectionServerInterface):
         self.__websocketSettingsFile: str = websocketSettingsFile
         self.__eventTimeToLive: timedelta = eventTimeToLive
 
+        self.__isStarted: bool = False
         self.__cache: Optional[Dict[str, Any]] = None
         self.__eventQueue: SimpleQueue[WebsocketEvent] = SimpleQueue()
-        backgroundTaskHelper.createTask(self.__startEventLoop())
 
     async def clearCaches(self):
         self.__cache = None
@@ -119,6 +120,16 @@ class WebsocketConnectionServer(WebsocketConnectionServerInterface):
             self.__timber.log('WebsocketConnectionServer', f'Adding event to queue (current qsize is {currentSize}): {event}')
 
         self.__eventQueue.put(WebsocketEvent(eventData = event))
+
+    def start(self):
+        if self.__isStarted:
+            self.__timber.log('WebsocketConnectionServer', 'Not starting WebsocketConnectionServer as it has already been started')
+            return
+
+        self.__isStarted = True
+        self.__timber.log('WebsocketConnectionServer', 'Starting WebsocketConnectionServer...')
+
+        self.__backgroundTaskHelper.createTask(self.__startEventLoop())
 
     async def __startEventLoop(self):
         while True:
