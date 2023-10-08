@@ -8,8 +8,8 @@ except:
 
 class TestTwitchEmoteType():
 
-    def test_fromStr_withBitsString(self):
-        result = TwitchEmoteType.fromStr('bits')
+    def test_fromStr_withBitstierString(self):
+        result = TwitchEmoteType.fromStr('bitstier')
         assert result is TwitchEmoteType.BITS
 
     def test_fromStr_withEmptyString(self):
