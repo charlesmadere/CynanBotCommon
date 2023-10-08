@@ -1,8 +1,10 @@
 from abc import ABC, abstractmethod
 
 try:
-    from CynanBotCommon.twitch.websocket.websocketMessageType import WebsocketMessageType
-    from CynanBotCommon.twitch.websocket.websocketMetadata import WebsocketMetadata
+    from CynanBotCommon.twitch.websocket.websocketMessageType import \
+        WebsocketMessageType
+    from CynanBotCommon.twitch.websocket.websocketMetadata import \
+        WebsocketMetadata
 except:
     from twitch.websocket.websocketMessageType import WebsocketMessageType
     from twitch.websocket.websocketMetadata import WebsocketMetadata

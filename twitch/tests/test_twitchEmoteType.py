@@ -1,0 +1,57 @@
+from typing import Optional
+
+try:
+    from ..twitchEmoteType import TwitchEmoteType
+except:
+    from twitch.twitchEmoteType import TwitchEmoteType
+
+
+class TestTwitchEmoteType():
+
+    def test_fromStr_withBitsString(self):
+        result = TwitchEmoteType.fromStr('bits')
+        assert result is TwitchEmoteType.BITS
+
+    def test_fromStr_withEmptyString(self):
+        result: Optional[TwitchEmoteType] = None
+        exception: Optional[Exception] = None
+
+        try:
+            result = TwitchEmoteType.fromStr('')
+        except Exception as e:
+            exception = e
+
+        assert result is None
+        assert isinstance(exception, Exception)
+
+    def test_fromStr_withFollowerString(self):
+        result = TwitchEmoteType.fromStr('follower')
+        assert result is TwitchEmoteType.FOLLOWER
+
+    def test_fromStr_withNone(self):
+        result: Optional[TwitchEmoteType] = None
+        exception: Optional[Exception] = None
+
+        try:
+            result = TwitchEmoteType.fromStr(None)
+        except Exception as e:
+            exception = e
+
+        assert result is None
+        assert isinstance(exception, Exception)
+
+    def test_fromStr_withWhitespaceString(self):
+        result: Optional[TwitchEmoteType] = None
+        exception: Optional[Exception] = None
+
+        try:
+            result = TwitchEmoteType.fromStr(' ')
+        except Exception as e:
+            exception = e
+
+        assert result is None
+        assert isinstance(exception, Exception)
+
+    def test_fromStr_withSubscriptionsString(self):
+        result = TwitchEmoteType.fromStr('subscriptions')
+        assert result is TwitchEmoteType.SUBSCRIPTIONS

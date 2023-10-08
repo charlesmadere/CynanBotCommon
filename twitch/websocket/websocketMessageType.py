@@ -18,7 +18,7 @@ class WebsocketMessageType(Enum):
     @classmethod
     def fromStr(text: Optional[str]):
         if not utils.isValidStr(text):
-            raise ValueError(f'text argument is malformed: \"{text}\"')
+            return None
 
         text = text.lower()
 
