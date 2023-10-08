@@ -1,3 +1,5 @@
+from typing import Optional
+
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.simpleDateTime import SimpleDateTime
@@ -18,28 +20,28 @@ class WebsocketMetadata():
 
     def __init__(
         self,
-        subscriptionVersion: int,
         messageTimestamp: SimpleDateTime,
         messageId: str,
+        subscriptionVersion: Optional[str],
         messageType: WebsocketMessageType,
-        subscriptionType: WebsocketSubscriptionType
+        subscriptionType: Optional[WebsocketSubscriptionType]
     ):
-        if not utils.isValidInt(subscriptionVersion):
-            raise ValueError(f'subscriptionVersion argument is malformed: \"{subscriptionVersion}\"')
+        if not isinstance(messageTimestamp, SimpleDateTime):
+            raise ValueError(f'messageTimestamp argument is malformed: \"{messageTimestamp}\"')
         elif not utils.isValidStr(messageId):
             raise ValueError(f'messageId argument is malformed: \"{messageId}\"')
-        elif not isinstance(messageTimestamp, SimpleDateTime):
-            raise ValueError(f'messageTimestamp argument is malformed: \"{messageTimestamp}\"')
+        elif subscriptionVersion is not None and not utils.isValidStr(subscriptionVersion):
+            raise ValueError(f'subscriptionVersion argument is malformed: \"{subscriptionVersion}\"')
         elif not isinstance(messageType, WebsocketMessageType):
             raise ValueError(f'messageType argument is malformed: \"{messageType}\"')
-        elif not isinstance(subscriptionType, WebsocketSubscriptionType):
+        elif subscriptionType is not None and not isinstance(subscriptionType, WebsocketSubscriptionType):
             raise ValueError(f'subscriptionType argument is malformed: \"{subscriptionType}\"')
 
-        self.__subscriptionVersion: int = subscriptionVersion
         self.__messageTimestamp: SimpleDateTime = messageTimestamp
         self.__messageId: str = messageId
+        self.__subscriptionVersion: Optional[str] = subscriptionVersion
         self.__messageType: WebsocketMessageType = messageType
-        self.__subscriptionType: WebsocketSubscriptionType = subscriptionType
+        self.__subscriptionType: Optional[WebsocketSubscriptionType] = subscriptionType
 
     def getMessageId(self) -> str:
         return self.__messageId
@@ -50,8 +52,8 @@ class WebsocketMetadata():
     def getMessageType(self) -> WebsocketMessageType:
         return self.__messageType
 
-    def getSubscriptionType(self) -> WebsocketSubscriptionType:
+    def getSubscriptionType(self) -> Optional[WebsocketSubscriptionType]:
         return self.__subscriptionType
 
-    def getSubscriptionVersion(self) -> int:
+    def getSubscriptionVersion(self) -> Optional[str]:
         return self.__subscriptionVersion
