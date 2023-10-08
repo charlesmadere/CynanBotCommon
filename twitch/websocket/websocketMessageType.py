@@ -16,7 +16,7 @@ class WebsocketMessageType(Enum):
     WELCOME = auto()
 
     @classmethod
-    def fromStr(text: Optional[str]):
+    def fromStr(cls, text: Optional[str]):
         if not utils.isValidStr(text):
             return None
 
