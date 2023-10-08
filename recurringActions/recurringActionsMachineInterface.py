@@ -1,4 +1,4 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from typing import Optional
 
 try:
@@ -9,10 +9,7 @@ except:
         RecurringActionEventListener
 
 
-class RecurringActionsMachineInterface():
-
-    def __init__(self):
-        pass
+class RecurringActionsMachineInterface(ABC):
 
     @abstractmethod
     def setEventListener(self, listener: Optional[RecurringActionEventListener]):
