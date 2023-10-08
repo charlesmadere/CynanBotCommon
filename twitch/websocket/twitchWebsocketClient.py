@@ -3,9 +3,6 @@ import queue
 from queue import SimpleQueue
 from typing import Optional
 
-from CynanBotCommon.twitch.websocket.twitchWebsocketClientListener import \
-    TwitchWebsocketClientListener
-
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.backgroundTaskHelper import BackgroundTaskHelper
