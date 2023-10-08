@@ -4,7 +4,7 @@ except:
     import utils
 
 
-class WebsocketSubscriptionCondition():
+class WebsocketCondition():
 
     def __init__(
         self,

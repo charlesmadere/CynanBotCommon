@@ -1,8 +1,8 @@
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.simpleDateTime import SimpleDateTime
-    from CynanBotCommon.twitch.websocket.websocketSubscriptionCondition import \
-        WebsocketSubscriptionCondition
+    from CynanBotCommon.twitch.websocket.websocketCondition import \
+        WebsocketCondition
     from CynanBotCommon.twitch.websocket.websocketSubscriptionStatus import \
         WebsocketSubscriptionStatus
     from CynanBotCommon.twitch.websocket.websocketSubscriptionType import \
@@ -11,8 +11,8 @@ except:
     import utils
     from simpleDateTime import SimpleDateTime
 
-    from twitch.websocket.websocketSubscriptionCondition import \
-        WebsocketSubscriptionCondition
+    from CynanBotCommon.twitch.websocket.websocketCondition import \
+        WebsocketCondition
     from twitch.websocket.websocketSubscriptionStatus import \
         WebsocketSubscriptionStatus
     from twitch.websocket.websocketSubscriptionType import \
@@ -25,7 +25,7 @@ class WebsocketSubscription():
         self,
         createdAt: SimpleDateTime,
         subscriptionId: str,
-        condition: WebsocketSubscriptionCondition,
+        condition: WebsocketCondition,
         status: WebsocketSubscriptionStatus,
         type: WebsocketSubscriptionType
     ):
@@ -33,7 +33,7 @@ class WebsocketSubscription():
             raise ValueError(f'createdAt argument is malformed: \"{createdAt}\"')
         elif not utils.isValidStr(subscriptionId):
             raise ValueError(f'subscriptionId argument is malformed: \"{subscriptionId}\"')
-        elif not isinstance(condition, WebsocketSubscriptionCondition):
+        elif not isinstance(condition, WebsocketCondition):
             raise ValueError(f'condition argument is malformed: \"{condition}\"')
         elif not isinstance(status, WebsocketSubscriptionStatus):
             raise ValueError(f'status argument is malformed: \"{status}\"')
@@ -42,11 +42,11 @@ class WebsocketSubscription():
 
         self.__createdAt: SimpleDateTime = createdAt
         self.__subscriptionId: str = subscriptionId
-        self.__condition: WebsocketSubscriptionCondition = condition
+        self.__condition: WebsocketCondition = condition
         self.__status: WebsocketSubscriptionStatus = status
         self.__type: WebsocketSubscriptionType = type
 
-    def getCondition(self) -> WebsocketSubscriptionCondition:
+    def getCondition(self) -> WebsocketCondition:
         return self.__condition
 
     def getCreatedAt(self) -> SimpleDateTime:
