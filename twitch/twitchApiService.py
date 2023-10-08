@@ -12,6 +12,8 @@ try:
         TwitchAccessTokenMissingException, TwitchErrorException,
         TwitchJsonException, TwitchPasswordChangedException,
         TwitchRefreshTokenMissingException, TwitchTokenIsExpiredException)
+    from CynanBotCommon.twitch.twitchApiServiceInterface import \
+        TwitchApiServiceInterface
     from CynanBotCommon.twitch.twitchBroadcasterType import \
         TwitchBroadcasterType
     from CynanBotCommon.twitch.twitchCredentialsProviderInterface import \
@@ -41,6 +43,7 @@ except:
                                    TwitchPasswordChangedException,
                                    TwitchRefreshTokenMissingException,
                                    TwitchTokenIsExpiredException)
+    from twitch.twitchApiServiceInterface import TwitchApiServiceInterface
     from twitch.twitchBroadcasterType import TwitchBroadcasterType
     from twitch.twitchCredentialsProviderInterface import \
         TwitchCredentialsProviderInterface
@@ -58,7 +61,7 @@ except:
     from twitch.twitchUserType import TwitchUserType
 
 
-class TwitchApiService():
+class TwitchApiService(TwitchApiServiceInterface):
 
     def __init__(
         self,

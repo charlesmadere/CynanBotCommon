@@ -8,7 +8,8 @@ try:
     from CynanBotCommon.storage.databaseConnection import DatabaseConnection
     from CynanBotCommon.storage.databaseType import DatabaseType
     from CynanBotCommon.timber.timberInterface import TimberInterface
-    from CynanBotCommon.twitch.twitchApiService import TwitchApiService
+    from CynanBotCommon.twitch.twitchApiServiceInterface import \
+        TwitchApiServiceInterface
     from CynanBotCommon.twitch.twitchUserDetails import TwitchUserDetails
     from CynanBotCommon.users.exceptions import NoSuchUserException
     from CynanBotCommon.users.userIdsRepositoryInterface import \
@@ -21,7 +22,7 @@ except:
     from storage.databaseType import DatabaseType
     from timber.timberInterface import TimberInterface
 
-    from twitch.twitchApiService import TwitchApiService
+    from twitch.twitchApiServiceInterface import TwitchApiServiceInterface
     from twitch.twitchUserDetails import TwitchUserDetails
     from users.exceptions import NoSuchUserException
     from users.userIdsRepositoryInterface import UserIdsRepositoryInterface
@@ -33,18 +34,18 @@ class UserIdsRepository(UserIdsRepositoryInterface):
         self,
         backingDatabase: BackingDatabase,
         timber: TimberInterface,
-        twitchApiService: TwitchApiService
+        twitchApiService: TwitchApiServiceInterface
     ):
         if not isinstance(backingDatabase, BackingDatabase):
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
         elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif not isinstance(twitchApiService, TwitchApiService):
+        elif not isinstance(twitchApiService, TwitchApiServiceInterface):
             raise ValueError(f'twitchApiService argument is malformed: \"{twitchApiService}\"')
 
         self.__backingDatabase: BackingDatabase = backingDatabase
         self.__timber: TimberInterface = timber
-        self.__twitchApiService: TwitchApiService = twitchApiService
+        self.__twitchApiService: TwitchApiServiceInterface = twitchApiService
 
         self.__isDatabaseReady: bool = False
 

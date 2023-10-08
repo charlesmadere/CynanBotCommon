@@ -12,7 +12,8 @@ try:
     from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.twitch.exceptions import (
         NoTwitchTokenDetailsException, TwitchPasswordChangedException)
-    from CynanBotCommon.twitch.twitchApiService import TwitchApiService
+    from CynanBotCommon.twitch.twitchApiServiceInterface import \
+        TwitchApiServiceInterface
     from CynanBotCommon.twitch.twitchTokensDetails import TwitchTokensDetails
     from CynanBotCommon.twitch.twitchTokensRepositoryInterface import \
         TwitchTokensRepositoryInterface
@@ -29,7 +30,7 @@ except:
 
     from twitch.exceptions import (NoTwitchTokenDetailsException,
                                    TwitchPasswordChangedException)
-    from twitch.twitchApiService import TwitchApiService
+    from twitch.twitchApiServiceInterface import TwitchApiServiceInterface
     from twitch.twitchTokensDetails import TwitchTokensDetails
     from twitch.twitchTokensRepositoryInterface import \
         TwitchTokensRepositoryInterface
@@ -43,7 +44,7 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
         self,
         backingDatabase: BackingDatabase,
         timber: TimberInterface,
-        twitchApiService: TwitchApiService,
+        twitchApiService: TwitchApiServiceInterface,
         seedFileReader: Optional[JsonReaderInterface] = None,
         tokensExpirationBuffer: timedelta = timedelta(minutes = 10),
         timeZone: timezone = timezone.utc
@@ -52,7 +53,7 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
         elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif not isinstance(twitchApiService, TwitchApiService):
+        elif not isinstance(twitchApiService, TwitchApiServiceInterface):
             raise ValueError(f'twitchApiService argument is malformed: \"{twitchApiService}\"')
         elif seedFileReader is not None and not isinstance(seedFileReader, JsonReaderInterface):
             raise ValueError(f'seedFileReader argument is malformed: \"{seedFileReader}\"')
@@ -63,7 +64,7 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
 
         self.__backingDatabase: BackingDatabase = backingDatabase
         self.__timber: TimberInterface = timber
-        self.__twitchApiService: TwitchApiService = twitchApiService
+        self.__twitchApiService: TwitchApiServiceInterface = twitchApiService
         self.__seedFileReader: Optional[JsonReaderInterface] = seedFileReader
         self.__tokensExpirationBuffer: timedelta = tokensExpirationBuffer
         self.__timeZone: timezone = timeZone
