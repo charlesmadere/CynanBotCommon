@@ -11,6 +11,7 @@ class WebsocketSubscriptionType(Enum):
 
     CHANNEL_UPDATE = auto()
     FOLLOW = auto()
+    STREAMS_ONLINE = auto()
     SUBSCRIBE = auto()
     SUB_GIFT = auto()
 
@@ -25,9 +26,11 @@ class WebsocketSubscriptionType(Enum):
             return WebsocketSubscriptionType.CHANNEL_UPDATE
         elif text == 'channel.follow':
             return WebsocketSubscriptionType.FOLLOW
+        elif text == 'streams.online':
+            return WebsocketSubscriptionType.STREAMS_ONLINE
         elif text == 'channel.subscribe':
             return WebsocketSubscriptionType.SUBSCRIBE
         elif text == 'channel.subscription.gift':
-            yield WebsocketSubscriptionType.SUB_GIFT
+            return WebsocketSubscriptionType.SUB_GIFT
         else:
             return None
