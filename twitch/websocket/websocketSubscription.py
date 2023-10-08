@@ -23,16 +23,22 @@ class WebsocketSubscription():
 
     def __init__(
         self,
+        cost: int,
         createdAt: SimpleDateTime,
         subscriptionId: str,
+        version: str,
         condition: WebsocketCondition,
         status: WebsocketSubscriptionStatus,
         type: WebsocketSubscriptionType
     ):
-        if not isinstance(createdAt, SimpleDateTime):
+        if not utils.isValidInt(cost):
+            raise ValueError(f'cost argument is malformed: \"{cost}\"')
+        elif not isinstance(createdAt, SimpleDateTime):
             raise ValueError(f'createdAt argument is malformed: \"{createdAt}\"')
         elif not utils.isValidStr(subscriptionId):
             raise ValueError(f'subscriptionId argument is malformed: \"{subscriptionId}\"')
+        elif not utils.isValidStr(version):
+            raise ValueError(f'version argument is malformed: \"{version}\"')
         elif not isinstance(condition, WebsocketCondition):
             raise ValueError(f'condition argument is malformed: \"{condition}\"')
         elif not isinstance(status, WebsocketSubscriptionStatus):
@@ -40,14 +46,19 @@ class WebsocketSubscription():
         elif not isinstance(type, WebsocketSubscriptionType):
             raise ValueError(f'type argument is malformed: \"{type}\"')
 
+        self.__cost: int = cost
         self.__createdAt: SimpleDateTime = createdAt
         self.__subscriptionId: str = subscriptionId
+        self.__version: str = version
         self.__condition: WebsocketCondition = condition
         self.__status: WebsocketSubscriptionStatus = status
         self.__type: WebsocketSubscriptionType = type
 
     def getCondition(self) -> WebsocketCondition:
         return self.__condition
+
+    def getCost(self) -> int:
+        return self.__cost
 
     def getCreatedAt(self) -> SimpleDateTime:
         return self.__createdAt
@@ -60,3 +71,6 @@ class WebsocketSubscription():
 
     def getType(self) -> WebsocketSubscriptionType:
         return self.__type
+
+    def getVersion(self) -> str:
+        return self.__version
