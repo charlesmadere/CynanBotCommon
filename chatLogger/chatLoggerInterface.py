@@ -10,3 +10,7 @@ class ChatLoggerInterface(ABC):
     @abstractmethod
     def logRaid(self, raidSize: int, fromWho: str, twitchChannel: str):
         pass
+
+    @abstractmethod
+    def start(self):
+        pass

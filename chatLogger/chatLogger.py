@@ -17,6 +17,7 @@ try:
         ChatLoggerInterface
     from CynanBotCommon.chatLogger.chatMessage import ChatMessage
     from CynanBotCommon.chatLogger.raidMessage import RaidMessage
+    from CynanBotCommon.timber.timberInterface import TimberInterface
 except:
     import utils
     from backgroundTaskHelper import BackgroundTaskHelper
@@ -25,6 +26,7 @@ except:
     from chatLogger.chatLoggerInterface import ChatLoggerInterface
     from chatLogger.chatMessage import ChatMessage
     from chatLogger.raidMessage import RaidMessage
+    from timber.timberInterface import TimberInterface
 
 
 class ChatLogger(ChatLoggerInterface):
@@ -32,11 +34,14 @@ class ChatLogger(ChatLoggerInterface):
     def __init__(
         self,
         backgroundTaskHelper: BackgroundTaskHelper,
+        timber: TimberInterface,
         sleepTimeSeconds: float = 15,
         logRootDirectory: str = 'CynanBotCommon/chatLogger'
     ):
         if not isinstance(backgroundTaskHelper, BackgroundTaskHelper):
             raise ValueError(f'backgroundTaskHelper argument is malformed: \"{backgroundTaskHelper}\"')
+        elif not isinstance(timber, TimberInterface):
+            raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not utils.isValidNum(sleepTimeSeconds):
             raise ValueError(f'sleepTimeSeconds argument is malformed: \"{sleepTimeSeconds}\"')
         elif sleepTimeSeconds < 1 or sleepTimeSeconds > 60:
@@ -44,11 +49,13 @@ class ChatLogger(ChatLoggerInterface):
         elif not utils.isValidStr(logRootDirectory):
             raise ValueError(f'logRootDirectory argument is malformed: \"{logRootDirectory}\"')
 
+        self.__backgroundTaskHelper: BackgroundTaskHelper = backgroundTaskHelper
+        self.__timber: TimberInterface = timber
         self.__sleepTimeSeconds: float = sleepTimeSeconds
         self.__logRootDirectory: str = logRootDirectory
 
+        self.__isStarted: bool = False
         self.__messageQueue: SimpleQueue[AbsChatMessage] = SimpleQueue()
-        backgroundTaskHelper.createTask(self.__startMessageLoop())
 
     def __getLogStatement(self, message: AbsChatMessage) -> str:
         if not isinstance(message, AbsChatMessage):
@@ -103,6 +110,16 @@ class ChatLogger(ChatLoggerInterface):
         )
 
         self.__messageQueue.put(raidMessage)
+
+    def start(self):
+        if self.__isStarted:
+            self.__timber.log('ChatLogger', 'Not starting ChatLogger as it has already been started')
+            return
+
+        self.__isStarted = True
+        self.__timber.log('ChatLogger', 'Starting ChatLogger...')
+
+        self.__backgroundTaskHelper.createTask(self.__startMessageLoop())
 
     async def __startMessageLoop(self):
         while True:
