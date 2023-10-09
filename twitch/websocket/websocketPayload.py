@@ -40,3 +40,6 @@ class WebsocketPayload():
 
     def getSubscription(self) -> Optional[WebsocketSubscription]:
         return self.__subscription
+
+    def isEmpty(self) -> bool:
+        return self.__followEvent is None and self.__session is None and self.__subscription is None
