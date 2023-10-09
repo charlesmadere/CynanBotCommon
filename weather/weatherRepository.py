@@ -56,7 +56,7 @@ class WeatherRepository(WeatherRepositoryInterface):
         self.__timber: TimberInterface = timber
         self.__maxAlerts: int = maxAlerts
 
-        self.__cache = TimedDict(timeDelta = cacheTimeDelta)
+        self.__cache: TimedDict = TimedDict(timeDelta = cacheTimeDelta)
         self.__conditionIcons: Dict[str, str] = self.__createConditionIconsDict()
 
     async def __chooseTomorrowFromForecast(self, jsonResponse: Dict[str, Any]) -> Dict[str, Any]:
