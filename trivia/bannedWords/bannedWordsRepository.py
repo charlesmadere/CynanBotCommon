@@ -43,6 +43,7 @@ class BannedWordsRepository(BannedWordsRepositoryInterface):
 
     async def clearCaches(self):
         self.__cache = None
+        self.__timber.log('BannedWordsRepository', 'Caches cleared')
 
     def __createCleanedBannedWordsSetFromLines(
         self,

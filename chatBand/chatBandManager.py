@@ -68,6 +68,7 @@ class ChatBandManager(ChatBandManagerInterface):
         self.__lastChatBandMessageTimes.clear()
         self.__chatBandMemberCache.clear()
         self.__jsonCache = None
+        self.__timber.log('ChatBandManager', 'Caches cleared')
 
     async def __findChatBandMember(
         self,

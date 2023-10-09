@@ -72,6 +72,7 @@ class WebsocketConnectionServer(WebsocketConnectionServerInterface):
 
     async def clearCaches(self):
         self.__cache = None
+        self.__timber.log('WebsocketConnectionServer', 'Caches cleared')
 
     async def __isDebugLoggingEnabled(self) -> bool:
         jsonContents = await self.__readJson()

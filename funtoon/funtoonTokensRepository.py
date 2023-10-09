@@ -46,6 +46,7 @@ class FuntoonTokensRepository(FuntoonTokensRepositoryInterface):
 
     async def clearCaches(self):
         self.__cache.clear()
+        self.__timber.log('FuntoonTokensRepository', 'Caches cleared')
 
     async def __consumeSeedFile(self):
         seedFileReader = self.__seedFileReader

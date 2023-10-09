@@ -108,6 +108,7 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
 
     async def clearCaches(self):
         self.__cache.clear()
+        self.__timber.log('TwitchTokensRepository', 'Caches cleared')
 
     async def __consumeSeedFile(self):
         seedFileReader = self.__seedFileReader

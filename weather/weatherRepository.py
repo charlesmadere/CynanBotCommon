@@ -71,6 +71,7 @@ class WeatherRepository(WeatherRepositoryInterface):
 
     async def clearCaches(self):
         self.__cache.clear()
+        self.__timber.log('WeatherRepository', 'Caches cleared')
 
     def __createConditionIconsDict(self) -> Dict[str, str]:
         # This dictionary is built from the Weather Condition Codes listed here:

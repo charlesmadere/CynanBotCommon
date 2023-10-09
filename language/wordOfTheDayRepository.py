@@ -49,6 +49,7 @@ class WordOfTheDayRepository(WordOfTheDayRepositoryInterface):
 
     async def clearCaches(self):
         self.__cache.clear()
+        self.__timber.log('WordOfTheDayRepository', 'Caches cleared')
 
     async def fetchWotd(self, languageEntry: LanguageEntry) -> WordOfTheDayResponse:
         if not isinstance(languageEntry, LanguageEntry):
