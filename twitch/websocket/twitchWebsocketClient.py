@@ -101,8 +101,11 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
         except JSONDecodeError as e:
             exception = e
 
-        if not utils.hasItems(messageJson) or exception is not None:
-            self.__timber.log('TwitchWebsocketClient', f'Websocket message wasn\'t parsed into a viable dictionary: \"{message}\"', e, traceback.format_exc())
+        if exception is not None:
+            self.__timber.log('TwitchWebsocketClient', f'Exception occurred when attempting to parse Websocket into a viable dictionary (message=\"{message}\") (exception=\"{e}\")', exception, traceback.format_exc())
+            return
+        elif not utils.hasItems(messageJson):
+            self.__timber.log('TwitchWebsocketClient', f'Failed to parse Websocket message into a viable dictionary: \"{message}\"')
             return
 
         metadata = await self.__processWebsocketMessageMetadata(messageJson.get('metadata'))
