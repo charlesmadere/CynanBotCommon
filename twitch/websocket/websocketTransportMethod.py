@@ -9,6 +9,7 @@ except:
 
 class WebsocketTransportMethod(Enum):
 
+    WEBHOOK = auto()
     WEBSOCKET = auto()
 
     @classmethod
@@ -18,7 +19,9 @@ class WebsocketTransportMethod(Enum):
 
         text = text.lower()
 
-        if text == 'websocket':
+        if text == 'webhook':
+            return WebsocketTransportMethod.WEBHOOK
+        elif text == 'websocket':
             return WebsocketTransportMethod.WEBSOCKET
         else:
             raise ValueError(f'unknown WebsocketTransportMethod: \"{text}\"')

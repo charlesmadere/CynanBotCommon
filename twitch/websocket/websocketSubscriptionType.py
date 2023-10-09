@@ -14,7 +14,8 @@ class WebsocketSubscriptionType(Enum):
     CHEER = auto()
     FOLLOW = auto()
     RAID = auto()
-    STREAMS_ONLINE = auto()
+    STREAM_OFFLINE = auto()
+    STREAM_ONLINE = auto()
     SUBSCRIBE = auto()
     SUBSCRIPTION_GIFT = auto()
     SUBSCRIPTION_MESSAGE = auto()
@@ -36,8 +37,10 @@ class WebsocketSubscriptionType(Enum):
             return WebsocketSubscriptionType.FOLLOW
         elif text == 'channel.raid':
             return WebsocketSubscriptionType.RAID
-        elif text == 'streams.online':
-            return WebsocketSubscriptionType.STREAMS_ONLINE
+        elif text == 'stream.offline':
+            return WebsocketSubscriptionType.STREAM_OFFLINE
+        elif text == 'stream.online':
+            return WebsocketSubscriptionType.STREAM_ONLINE
         elif text == 'channel.subscribe':
             return WebsocketSubscriptionType.SUBSCRIBE
         elif text == 'channel.subscription.message':

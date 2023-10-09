@@ -9,10 +9,6 @@ except:
 
 class TestTwitchWebsocketTransportMethod():
 
-    def test_fromStr_withChannelUpdateString(self):
-        result = WebsocketTransportMethod.fromStr('websocket')
-        assert result is WebsocketTransportMethod.WEBSOCKET
-
     def test_fromStr_withEmptyString(self):
         result: Optional[WebsocketTransportMethod] = None
         exception: Optional[Exception] = None
@@ -24,6 +20,14 @@ class TestTwitchWebsocketTransportMethod():
 
         assert result is None
         assert isinstance(exception, Exception)
+
+    def test_fromStr_withWebhookString(self):
+        result = WebsocketTransportMethod.fromStr('webhook')
+        assert result is WebsocketTransportMethod.WEBHOOK
+
+    def test_fromStr_withWebsocketString(self):
+        result = WebsocketTransportMethod.fromStr('websocket')
+        assert result is WebsocketTransportMethod.WEBSOCKET
 
     def test_fromStr_withNone(self):
         result: Optional[WebsocketTransportMethod] = None

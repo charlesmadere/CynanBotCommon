@@ -47,9 +47,13 @@ class TestTwitchWebsocketSubscriptionType():
         result = WebsocketSubscriptionType.fromStr(None)
         assert result is None
 
+    def test_fromStr_withStreamsOfflineString(self):
+        result = WebsocketSubscriptionType.fromStr('stream.offline')
+        assert result is WebsocketSubscriptionType.STREAM_OFFLINE
+
     def test_fromStr_withStreamsOnlineString(self):
-        result = WebsocketSubscriptionType.fromStr('streams.online')
-        assert result is WebsocketSubscriptionType.STREAMS_ONLINE
+        result = WebsocketSubscriptionType.fromStr('stream.online')
+        assert result is WebsocketSubscriptionType.STREAM_ONLINE
 
     def test_fromStr_withWhitespaceString(self):
         result = WebsocketSubscriptionType.fromStr(' ')
