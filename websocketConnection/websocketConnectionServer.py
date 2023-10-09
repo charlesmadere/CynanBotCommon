@@ -45,12 +45,12 @@ class WebsocketConnectionServer(WebsocketConnectionServerInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not utils.isValidNum(sleepTimeSeconds):
             raise ValueError(f'sleepTimeSeconds argument is malformed: \"{sleepTimeSeconds}\"')
-        elif sleepTimeSeconds < 3:
-            raise ValueError(f'sleepTimeSeconds argument is too aggressive: {sleepTimeSeconds}')
+        elif sleepTimeSeconds < 3 or sleepTimeSeconds > 10:
+            raise ValueError(f'sleepTimeSeconds argument is out of bounds: {sleepTimeSeconds}')
         elif not utils.isValidInt(port):
             raise ValueError(f'port argument is malformed: \"{port}\"')
         elif port <= 1000:
-            raise ValueError(f'port argument is out of bounds: \"{port}\"')
+            raise ValueError(f'port argument is out of bounds: {port}')
         elif not utils.isValidStr(host):
             raise ValueError(f'host argument is malformed: \"{host}\"')
         elif not utils.isValidStr(websocketSettingsFile):
