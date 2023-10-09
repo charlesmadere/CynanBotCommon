@@ -12,7 +12,7 @@ except:
 class TwitchWebsocketClientInterface(ABC):
 
     @abstractmethod
-    def setListener(self, listener: Optional[TwitchWebsocketClientListener]):
+    def setEventListener(self, listener: Optional[TwitchWebsocketClientListener]):
         pass
 
     @abstractmethod
