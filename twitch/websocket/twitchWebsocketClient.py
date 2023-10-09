@@ -11,6 +11,7 @@ import websockets
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.backgroundTaskHelper import BackgroundTaskHelper
+    from CynanBotCommon.simpleDateTime import SimpleDateTime
     from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.twitch.websocket.twitchWebsocketClientInterface import \
         TwitchWebsocketClientInterface
@@ -18,16 +19,27 @@ try:
         TwitchWebsocketClientListener
     from CynanBotCommon.twitch.websocket.websocketDataBundle import \
         WebsocketDataBundle
+    from CynanBotCommon.twitch.websocket.websocketMessageType import \
+        WebsocketMessageType
+    from CynanBotCommon.twitch.websocket.websocketMetadata import \
+        WebsocketMetadata
+    from CynanBotCommon.twitch.websocket.websocketSubscriptionType import \
+        WebsocketSubscriptionType
 except:
     import utils
     from backgroundTaskHelper import BackgroundTaskHelper
+    from simpleDateTime import SimpleDateTime
     from timber.timberInterface import TimberInterface
 
-    from CynanBotCommon.twitch.websocket.twitchWebsocketClientInterface import \
+    from twitch.websocket.twitchWebsocketClientInterface import \
         TwitchWebsocketClientInterface
     from twitch.websocket.twitchWebsocketClientListener import \
         TwitchWebsocketClientListener
     from twitch.websocket.websocketDataBundle import WebsocketDataBundle
+    from twitch.websocket.websocketMessageType import WebsocketMessageType
+    from twitch.websocket.websocketMetadata import WebsocketMetadata
+    from twitch.websocket.websocketSubscriptionType import \
+        WebsocketSubscriptionType
 
 
 class TwitchWebsocketClient(TwitchWebsocketClientInterface):
@@ -87,7 +99,37 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
             self.__timber.log('TwitchWebsocketClient', f'Websocket message wasn\'t parsed into a viable dictionary: \"{message}\"', e, traceback.format_exc())
             return
 
+        metadata = await self.__processWebsocketMessageMetadata(messageJson.get('metadata'))
+
+        if metadata is None:
+            self.__timber.log('TwitchWebsocketClient', f'Websocket message has no \"metadata\" information: \"{message}\"')
+            return
+
         # TODO process JSON
+
+    async def __processWebsocketMessageMetadata(
+        self,
+        metadataJson: Optional[Dict[str, Any]]
+    ) -> Optional[WebsocketMetadata]:
+        if not isinstance(metadataJson, Dict) or not utils.hasItems(metadataJson):
+            return None
+
+        messageTimestamp = SimpleDateTime(utils.getDateTimeFromStr(utils.getStrFromDict(metadataJson, 'message_timestamp')))
+        messageId = utils.getStrFromDict(metadataJson, 'message_id')
+        messageType = WebsocketMessageType.fromStr(utils.getStrFromDict(metadataJson, 'message_type'))
+        subscriptionType = WebsocketSubscriptionType.fromStr(utils.getStrFromDict(metadataJson, 'subscription_type', fallback = ''))
+        subscriptionVersion: Optional[str] = None
+
+        if utils.isValidStr(metadataJson.get('subscription_version')):
+            subscriptionVersion = utils.getStrFromDict(metadataJson, 'subscription_version')
+
+        return WebsocketMetadata(
+            messageTimestamp = messageTimestamp,
+            messageId = messageId,
+            subscriptionVersion = subscriptionVersion,
+            messageType = messageType,
+            subscriptionType = subscriptionType
+        )
 
     def setEventListener(self, listener: Optional[TwitchWebsocketClientListener]):
         if listener is not None and not isinstance(listener, TwitchWebsocketClientListener):
