@@ -32,6 +32,14 @@ class TestTwitchWebsocketSubscriptionStatus():
         result = WebsocketSubscriptionStatus.fromStr('reconnecting')
         assert result is WebsocketSubscriptionStatus.RECONNECTING
 
+    def test_fromStr_withUserRemovedString(self):
+        result = WebsocketSubscriptionStatus.fromStr('user_removed')
+        assert result is WebsocketSubscriptionStatus.USER_REMOVED
+
+    def test_fromStr_withVersionRemovedString(self):
+        result = WebsocketSubscriptionStatus.fromStr('version_removed')
+        assert result is WebsocketSubscriptionStatus.VERSION_REMOVED
+
     def test_fromStr_withWhitespaceString(self):
         result = WebsocketSubscriptionStatus.fromStr(' ')
         assert result is None

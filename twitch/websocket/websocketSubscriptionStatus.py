@@ -13,6 +13,8 @@ class WebsocketSubscriptionStatus(Enum):
     ENABLED = auto()
     RECONNECTING = auto()
     REVOKED = auto()
+    USER_REMOVED = auto()
+    VERSION_REMOVED = auto()
 
     @classmethod
     def fromStr(cls, text: Optional[str]):
@@ -29,5 +31,9 @@ class WebsocketSubscriptionStatus(Enum):
             return WebsocketSubscriptionStatus.RECONNECTING
         elif text == 'authorization_revoked':
             return WebsocketSubscriptionStatus.REVOKED
+        elif text == 'user_removed':
+            return WebsocketSubscriptionStatus.USER_REMOVED
+        elif text == 'version_removed':
+            return WebsocketSubscriptionStatus.VERSION_REMOVED
         else:
             return None
