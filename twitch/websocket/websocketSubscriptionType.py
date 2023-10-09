@@ -9,11 +9,15 @@ except:
 
 class WebsocketSubscriptionType(Enum):
 
+    CHANNEL_POINTS_REDEMPTION = auto()
     CHANNEL_UPDATE = auto()
+    CHEER = auto()
     FOLLOW = auto()
+    RAID = auto()
     STREAMS_ONLINE = auto()
     SUBSCRIBE = auto()
-    SUB_GIFT = auto()
+    SUBSCRIPTION_GIFT = auto()
+    SUBSCRIPTION_MESSAGE = auto()
 
     @classmethod
     def fromStr(cls, text: Optional[str]):
@@ -22,15 +26,23 @@ class WebsocketSubscriptionType(Enum):
 
         text = text.lower()
 
-        if text == 'channel.update':
+        if text == 'channel.cheer':
+            return WebsocketSubscriptionType.CHEER
+        elif text == 'channel.channel_points_custom_reward_redemption.add':
+            return WebsocketSubscriptionType.CHANNEL_POINTS_REDEMPTION
+        elif text == 'channel.update':
             return WebsocketSubscriptionType.CHANNEL_UPDATE
         elif text == 'channel.follow':
             return WebsocketSubscriptionType.FOLLOW
+        elif text == 'channel.raid':
+            return WebsocketSubscriptionType.RAID
         elif text == 'streams.online':
             return WebsocketSubscriptionType.STREAMS_ONLINE
         elif text == 'channel.subscribe':
             return WebsocketSubscriptionType.SUBSCRIBE
+        elif text == 'channel.subscription.message':
+            return WebsocketSubscriptionType.SUBSCRIPTION_MESSAGE
         elif text == 'channel.subscription.gift':
-            return WebsocketSubscriptionType.SUB_GIFT
+            return WebsocketSubscriptionType.SUBSCRIPTION_GIFT
         else:
             return None
