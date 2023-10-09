@@ -23,6 +23,10 @@ try:
         WebsocketMessageType
     from CynanBotCommon.twitch.websocket.websocketMetadata import \
         WebsocketMetadata
+    from CynanBotCommon.twitch.websocket.websocketPayload import \
+        WebsocketPayload
+    from CynanBotCommon.twitch.websocket.websocketSubscription import \
+        WebsocketSubscription
     from CynanBotCommon.twitch.websocket.websocketSubscriptionType import \
         WebsocketSubscriptionType
 except:
@@ -38,6 +42,8 @@ except:
     from twitch.websocket.websocketDataBundle import WebsocketDataBundle
     from twitch.websocket.websocketMessageType import WebsocketMessageType
     from twitch.websocket.websocketMetadata import WebsocketMetadata
+    from twitch.websocket.websocketPayload import WebsocketPayload
+    from twitch.websocket.websocketSubscription import WebsocketSubscription
     from twitch.websocket.websocketSubscriptionType import \
         WebsocketSubscriptionType
 
@@ -130,6 +136,17 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
             messageType = messageType,
             subscriptionType = subscriptionType
         )
+
+    async def __processWebsocketMessagePayload(
+        self,
+        payloadJson: Optional[Dict[str, Any]]
+    ) -> Optional[WebsocketPayload]:
+        if not isinstance(payloadJson, Dict) or not utils.hasItems(payloadJson):
+            return None
+
+        # TODO
+
+        return None
 
     def setEventListener(self, listener: Optional[TwitchWebsocketClientListener]):
         if listener is not None and not isinstance(listener, TwitchWebsocketClientListener):
