@@ -20,7 +20,7 @@ class TestTwitchWebsocketSubscriptionStatus():
         result = WebsocketSubscriptionStatus.fromStr('')
         assert result is None
 
-    def test_fromStr_withGlobalModString(self):
+    def test_fromStr_withEnabledString(self):
         result = WebsocketSubscriptionStatus.fromStr('enabled')
         assert result is WebsocketSubscriptionStatus.ENABLED
 
@@ -28,7 +28,7 @@ class TestTwitchWebsocketSubscriptionStatus():
         result = WebsocketSubscriptionStatus.fromStr(None)
         assert result is None
 
-    def test_fromStr_withStaffString(self):
+    def test_fromStr_withReconnectingString(self):
         result = WebsocketSubscriptionStatus.fromStr('reconnecting')
         assert result is WebsocketSubscriptionStatus.RECONNECTING
 
