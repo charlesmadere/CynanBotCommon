@@ -17,6 +17,8 @@ try:
         WebsocketMetadata
     from CynanBotCommon.twitch.websocket.websocketPayload import \
         WebsocketPayload
+    from CynanBotCommon.twitch.websocket.websocketSession import \
+        WebsocketSession
     from CynanBotCommon.twitch.websocket.websocketSubscription import \
         WebsocketSubscription
     from CynanBotCommon.twitch.websocket.websocketSubscriptionType import \
@@ -32,6 +34,7 @@ except:
     from twitch.websocket.websocketMessageType import WebsocketMessageType
     from twitch.websocket.websocketMetadata import WebsocketMetadata
     from twitch.websocket.websocketPayload import WebsocketPayload
+    from twitch.websocket.websocketSession import WebsocketSession
     from twitch.websocket.websocketSubscription import WebsocketSubscription
     from twitch.websocket.websocketSubscriptionType import \
         WebsocketSubscriptionType
@@ -68,6 +71,26 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
 
     async def __parsePayload(self, payloadJson: Optional[Dict[str, Any]]) -> Optional[WebsocketPayload]:
         if not isinstance(payloadJson, Dict) or not utils.hasItems(payloadJson):
+            return None
+
+        session = await self.__parseSession(payloadJson.get('session'))
+        subscription = await self.__parseSubscription(payloadJson.get('subscription'))
+
+        return WebsocketPayload(
+            session = session,
+            subscription  = subscription
+        )
+
+    async def __parseSession(self, sessionJson: Optional[Dict[str, Any]]) -> Optional[WebsocketSession]:
+        if not isinstance(sessionJson, Dict) or not utils.hasItems(sessionJson):
+            return None
+
+        # TODO
+
+        return None
+
+    async def __parseSubscription(self, subscriptionJson: Optional[Dict[str, Any]]) -> Optional[WebsocketSubscription]:
+        if not isinstance(subscriptionJson, Dict) or not utils.hasItems(subscriptionJson):
             return None
 
         # TODO
