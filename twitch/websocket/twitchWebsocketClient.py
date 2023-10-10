@@ -1,51 +1,35 @@
 import asyncio
-import json
 import queue
 import traceback
-from json.decoder import JSONDecodeError
 from queue import SimpleQueue
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional
 
 import websockets
 
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.backgroundTaskHelper import BackgroundTaskHelper
-    from CynanBotCommon.simpleDateTime import SimpleDateTime
     from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.twitch.websocket.twitchWebsocketClientInterface import \
         TwitchWebsocketClientInterface
     from CynanBotCommon.twitch.websocket.twitchWebsocketClientListener import \
         TwitchWebsocketClientListener
+    from CynanBotCommon.twitch.websocket.twitchWebsocketJsonMapperInterface import \
+        TwitchWebsocketJsonMapperInterface
     from CynanBotCommon.twitch.websocket.websocketDataBundle import \
         WebsocketDataBundle
-    from CynanBotCommon.twitch.websocket.websocketMessageType import \
-        WebsocketMessageType
-    from CynanBotCommon.twitch.websocket.websocketMetadata import \
-        WebsocketMetadata
-    from CynanBotCommon.twitch.websocket.websocketPayload import \
-        WebsocketPayload
-    from CynanBotCommon.twitch.websocket.websocketSubscription import \
-        WebsocketSubscription
-    from CynanBotCommon.twitch.websocket.websocketSubscriptionType import \
-        WebsocketSubscriptionType
 except:
     import utils
     from backgroundTaskHelper import BackgroundTaskHelper
-    from simpleDateTime import SimpleDateTime
     from timber.timberInterface import TimberInterface
 
     from twitch.websocket.twitchWebsocketClientInterface import \
         TwitchWebsocketClientInterface
     from twitch.websocket.twitchWebsocketClientListener import \
         TwitchWebsocketClientListener
+    from twitch.websocket.twitchWebsocketJsonMapperInterface import \
+        TwitchWebsocketJsonMapperInterface
     from twitch.websocket.websocketDataBundle import WebsocketDataBundle
-    from twitch.websocket.websocketMessageType import WebsocketMessageType
-    from twitch.websocket.websocketMetadata import WebsocketMetadata
-    from twitch.websocket.websocketPayload import WebsocketPayload
-    from twitch.websocket.websocketSubscription import WebsocketSubscription
-    from twitch.websocket.websocketSubscriptionType import \
-        WebsocketSubscriptionType
 
 
 class TwitchWebsocketClient(TwitchWebsocketClientInterface):
@@ -54,6 +38,7 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
         self,
         backgroundTaskHelper: BackgroundTaskHelper,
         timber: TimberInterface,
+        twitchWebsocketJsonMapper: TwitchWebsocketJsonMapperInterface,
         queueSleepTimeSeconds: float = 1,
         queueTimeoutSeconds: int = 3,
         sleepTimeSeconds: float = 3,
@@ -63,6 +48,8 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
             raise ValueError(f'backgroundTaskHelper argument is malformed: \"{backgroundTaskHelper}\"')
         elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
+        elif not isinstance(twitchWebsocketJsonMapper, TwitchWebsocketClientInterface):
+            raise ValueError(f'twitchWebsocketJsonMapper argument is malformed: \"{twitchWebsocketJsonMapper}\"')
         elif not utils.isValidNum(queueSleepTimeSeconds):
             raise ValueError(f'queueSleepTimeSeconds argument is malformed: \"{queueSleepTimeSeconds}\"')
         elif queueSleepTimeSeconds < 1 or queueSleepTimeSeconds > 15:
@@ -80,6 +67,7 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
 
         self.__backgroundTaskHelper: BackgroundTaskHelper = backgroundTaskHelper
         self.__timber: TimberInterface = timber
+        self.__twitchWebsocketJsonMapper: TwitchWebsocketJsonMapperInterface = twitchWebsocketJsonMapper
         self.__queueSleepTimeSeconds: float = queueSleepTimeSeconds
         self.__queueTimeoutSeconds: int = queueTimeoutSeconds
         self.__sleepTimeSeconds: float = sleepTimeSeconds
@@ -89,67 +77,21 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
         self.__eventQueue: SimpleQueue[WebsocketDataBundle] = SimpleQueue()
         self.__eventListener: Optional[TwitchWebsocketClientListener] = None
 
-    async def __processWebsocketMessageString(self, message: str):
-        if not utils.isValidStr(message):
-            raise ValueError(f'message argument is malformed: \"{message}\"')
-
-        messageJson: Optional[Dict[str, Any]] = None
-        exception: Optional[JSONDecodeError] = None
-
-        try:
-            json.loads(message)
-        except JSONDecodeError as e:
-            exception = e
-
-        if exception is not None:
-            self.__timber.log('TwitchWebsocketClient', f'Exception occurred when attempting to parse Websocket into a viable dictionary (message=\"{message}\") (exception=\"{exception}\")', exception, traceback.format_exc())
+    async def __processMessage(self, message: Optional[Any]):
+        if message is None:
+            self.__timber.log('TwitchWebsocketClient', f'Received message object that is None: \"{message}\"')
             return
-        elif not utils.hasItems(messageJson):
-            self.__timber.log('TwitchWebsocketClient', f'Failed to parse Websocket message into a viable dictionary (message=\"{message}\")')
+        if not isinstance(message, str):
+            self.__timber.log('TwitchWebsocketClient', f'Received message object that is of an unexpected type: \"{message}\"')
             return
 
-        metadata = await self.__processWebsocketMessageMetadata(messageJson.get('metadata'))
+        dataBundle = await self.__twitchWebsocketJsonMapper.toWebsocketDataBundle(message)
 
-        if metadata is None:
-            self.__timber.log('TwitchWebsocketClient', f'Websocket message has no \"metadata\" information: \"{message}\"')
+        if dataBundle is None:
+            self.__timber.log('TwitchWebsocketClient', f'Received message string that failed to be parsed: \"{message}\"')
             return
 
-        # TODO process JSON
-
-    async def __processWebsocketMessageMetadata(
-        self,
-        metadataJson: Optional[Dict[str, Any]]
-    ) -> Optional[WebsocketMetadata]:
-        if not isinstance(metadataJson, Dict) or not utils.hasItems(metadataJson):
-            return None
-
-        messageTimestamp = SimpleDateTime(utils.getDateTimeFromStr(utils.getStrFromDict(metadataJson, 'message_timestamp')))
-        messageId = utils.getStrFromDict(metadataJson, 'message_id')
-        messageType = WebsocketMessageType.fromStr(utils.getStrFromDict(metadataJson, 'message_type'))
-        subscriptionType = WebsocketSubscriptionType.fromStr(utils.getStrFromDict(metadataJson, 'subscription_type', fallback = ''))
-        subscriptionVersion: Optional[str] = None
-
-        if utils.isValidStr(metadataJson.get('subscription_version')):
-            subscriptionVersion = utils.getStrFromDict(metadataJson, 'subscription_version')
-
-        return WebsocketMetadata(
-            messageTimestamp = messageTimestamp,
-            messageId = messageId,
-            subscriptionVersion = subscriptionVersion,
-            messageType = messageType,
-            subscriptionType = subscriptionType
-        )
-
-    async def __processWebsocketMessagePayload(
-        self,
-        payloadJson: Optional[Dict[str, Any]]
-    ) -> Optional[WebsocketPayload]:
-        if not isinstance(payloadJson, Dict) or not utils.hasItems(payloadJson):
-            return None
-
-        # TODO
-
-        return None
+        await self.__submitEvent(dataBundle)
 
     def setEventListener(self, listener: Optional[TwitchWebsocketClientListener]):
         if listener is not None and not isinstance(listener, TwitchWebsocketClientListener):
@@ -195,10 +137,7 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
                 async with websockets.connect(self.__twitchWebsocketUrl) as websocket:
                     try:
                         async for message in websocket:
-                            if utils.isValidStr(message):
-                                await self.__processWebsocketMessageString(message)
-                            else:
-                                self.__timber.log('TwitchWebsocketClient', f'Received unknown message: \"{message}\"')
+                            await self.__processMessage(message)
                     except Exception as e:
                         self.__timber.log('TwitchWebsocketClient', f'Encountered exception when processing websocket message: {message}', e, traceback.format_exc())
             except Exception as e:
@@ -206,11 +145,11 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
 
             await asyncio.sleep(self.__sleepTimeSeconds)
 
-    async def __submitEvent(self, event: WebsocketDataBundle):
-        if not isinstance(event, WebsocketDataBundle):
-            raise ValueError(f'event argument is malformed: \"{event}\"')
+    async def __submitEvent(self, dataBundle: WebsocketDataBundle):
+        if not isinstance(dataBundle, WebsocketDataBundle):
+            raise ValueError(f'event argument is malformed: \"{dataBundle}\"')
 
         try:
-            self.__eventQueue.put(event, block = True, timeout = self.__queueTimeoutSeconds)
+            self.__eventQueue.put(dataBundle, block = True, timeout = self.__queueTimeoutSeconds)
         except queue.Full as e:
-            self.__timber.log('TwitchWebsocketClient', f'Encountered queue.Full when submitting a new event ({event}) into the event queue (queue size: {self.__eventQueue.qsize()})', e, traceback.format_exc())
+            self.__timber.log('TwitchWebsocketClient', f'Encountered queue.Full when submitting a new event ({dataBundle}) into the event queue (queue size: {self.__eventQueue.qsize()})', e, traceback.format_exc())
