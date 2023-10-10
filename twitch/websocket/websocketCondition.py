@@ -13,32 +13,41 @@ class WebsocketCondition():
 
     def __init__(
         self,
-        isAnonymous: Optional[bool],
-        isGift: Optional[bool],
-        bits: Optional[int],
-        viewers: Optional[int],
-        broadcasterUserId: Optional[str],
-        broadcasterUserLogin: Optional[str],
-        broadcasterUserName: Optional[str],
-        clientId: Optional[str],
-        fromBroadcasterUserId: Optional[str],
-        fromBroadcasterUserLogin: Optional[str],
-        fromBroadcasterUserName: Optional[str],
-        message: Optional[str],
-        moderatorUserId: Optional[str],
-        rewardId: Optional[str],
-        toBroadcasterUserId: Optional[str],
-        toBroadcasterUserLogin: Optional[str],
-        toBroadcasterUserName: Optional[str],
-        userId: Optional[str],
-        userLogin: Optional[str],
-        userName: Optional[str],
-        tier: Optional[TwitchSubscriberTier]
+        isAnonymous: Optional[bool] = None,
+        isGift: Optional[bool] = None,
+        isPermanent: Optional[bool] = None,
+        bits: Optional[int] = None,
+        viewers: Optional[int] = None,
+        broadcasterUserId: Optional[str] = None,
+        broadcasterUserLogin: Optional[str] = None,
+        broadcasterUserName: Optional[str] = None,
+        categoryId: Optional[str] = None,
+        categoryName: Optional[str] = None,
+        clientId: Optional[str] = None,
+        fromBroadcasterUserId: Optional[str] = None,
+        fromBroadcasterUserLogin: Optional[str] = None,
+        fromBroadcasterUserName: Optional[str] = None,
+        message: Optional[str] = None,
+        moderatorUserId: Optional[str] = None,
+        moderatorUserLogin: Optional[str] = None,
+        moderatorUserName: Optional[str] = None,
+        reason: Optional[str] = None,
+        rewardId: Optional[str] = None,
+        title: Optional[str] = None,
+        toBroadcasterUserId: Optional[str] = None,
+        toBroadcasterUserLogin: Optional[str] = None,
+        toBroadcasterUserName: Optional[str] = None,
+        userId: Optional[str] = None,
+        userLogin: Optional[str] = None,
+        userName: Optional[str] = None,
+        tier: Optional[TwitchSubscriberTier] = None
     ):
         if isAnonymous is not None and not utils.isValidBool(isAnonymous):
             raise ValueError(f'isAnonymous argument is malformed: \"{isAnonymous}\"')
         elif isGift is not None and not utils.isValidBool(isGift):
             raise ValueError(f'isGift argument is malformed: \"{isGift}\"')
+        elif isPermanent is not None and not utils.isValidBool(isPermanent):
+            raise ValueError(f'isPermanent argument is malformed: \"{isPermanent}\"')
         elif bits is not None and not utils.isValidInt(bits):
             raise ValueError(f'bits argument is malformed: \"{bits}\"')
         elif viewers is not None and not utils.isValidInt(viewers):
@@ -49,6 +58,10 @@ class WebsocketCondition():
             raise ValueError(f'broadcasterUserLogin argument is malformed: \"{broadcasterUserLogin}\"')
         if broadcasterUserName is not None and not utils.isValidStr(broadcasterUserName):
             raise ValueError(f'broadcasterUserName argument is malformed: \"{broadcasterUserName}\"')
+        elif categoryId is not None and not utils.isValidStr(categoryId):
+            raise ValueError(f'categoryId argument is malformed: \"{categoryId}\"')
+        elif categoryName is not None and not utils.isValidStr(categoryName):
+            raise ValueError(f'categoryName argument is malformed: \"{categoryName}\"')
         elif clientId is not None and not utils.isValidStr(clientId):
             raise ValueError(f'clientId argument is malformed: \"{clientId}\"')
         elif fromBroadcasterUserId is not None and not utils.isValidStr(fromBroadcasterUserId):
@@ -61,8 +74,16 @@ class WebsocketCondition():
             raise ValueError(f'message argument is malformed: \"{message}\"')
         elif moderatorUserId is not None and not utils.isValidStr(moderatorUserId):
             raise ValueError(f'moderatorUserId argument is malformed: \"{moderatorUserId}\"')
+        elif moderatorUserLogin is not None and not utils.isValidStr(moderatorUserLogin):
+            raise ValueError(f'moderatorUserLogin argument is malformed: \"{moderatorUserLogin}\"')
+        elif moderatorUserName is not None and not utils.isValidStr(moderatorUserName):
+            raise ValueError(f'moderatorUserName argument is malformed: \"{moderatorUserName}\"')
+        elif reason is not None and not utils.isValidStr(reason):
+            raise ValueError(f'reason argument is malformed: \"{reason}\"')
         elif rewardId is not None and not utils.isValidStr(rewardId):
             raise ValueError(f'rewardId argument is malformed: \"{rewardId}\"')
+        elif title is not None and not utils.isValidStr(title):
+            raise ValueError(f'title argument is malformed: \"{title}\"')
         elif toBroadcasterUserId is not None and not utils.isValidStr(toBroadcasterUserId):
             raise ValueError(f'toBroadcasterUserId argument is malformed: \"{toBroadcasterUserId}\"')
         elif toBroadcasterUserLogin is not None and not utils.isValidStr(toBroadcasterUserLogin):
@@ -80,18 +101,25 @@ class WebsocketCondition():
 
         self.__isAnonymous: Optional[bool] = isAnonymous
         self.__isGift: Optional[bool] = isGift
+        self.__isPermanent: Optional[bool] = isPermanent
         self.__bits: Optional[int] = bits
         self.__viewers: Optional[int] = viewers
         self.__broadcasterUserId: Optional[str] = broadcasterUserId
         self.__broadcasterUserLogin: Optional[str] = broadcasterUserLogin
         self.__broadcasterUserName: Optional[str] = broadcasterUserName
+        self.__categoryId: Optional[str] = categoryId
+        self.__categoryName: Optional[str] = categoryName
         self.__clientId: Optional[str] = clientId
         self.__fromBroadcasterUserId: Optional[str] = fromBroadcasterUserId
         self.__fromBroadcasterUserLogin: Optional[str] = fromBroadcasterUserLogin
         self.__fromBroadcasterUserName: Optional[str] = fromBroadcasterUserName
         self.__message: Optional[str] = message
         self.__moderatorUserId: Optional[str] = moderatorUserId
+        self.__moderatorUserLogin: Optional[str] = moderatorUserLogin
+        self.__moderatorUserName: Optional[str] = moderatorUserName
+        self.__reason: Optional[str] = reason
         self.__rewardId: Optional[str] = rewardId
+        self.__title: Optional[str] = title
         self.__toBroadcasterUserId: Optional[str] = toBroadcasterUserId
         self.__toBroadcasterUserLogin: Optional[str] = toBroadcasterUserLogin
         self.__toBroadcasterUserName: Optional[str] = toBroadcasterUserName
@@ -112,6 +140,12 @@ class WebsocketCondition():
     def getBroadcasterUserName(self) -> Optional[str]:
         return self.__broadcasterUserName
 
+    def getCategoryId(self) -> Optional[str]:
+        return self.__categoryId
+
+    def getCategoryName(self) -> Optional[str]:
+        return self.__categoryName
+
     def getClientId(self) -> Optional[str]:
         return self.__clientId
 
@@ -130,11 +164,23 @@ class WebsocketCondition():
     def getModeratorUserId(self) -> Optional[str]:
         return self.__moderatorUserId
 
+    def getModeratorUserLogin(self) -> Optional[str]:
+        return self.__moderatorUserLogin
+
+    def getModeratorUserName(self) -> Optional[str]:
+        return self.__moderatorUserName
+
+    def getReason(self) -> Optional[str]:
+        return self.__reason
+
     def getRewardId(self) -> Optional[str]:
         return self.__rewardId
 
     def getTier(self) -> Optional[TwitchSubscriberTier]:
         return self.__tier
+
+    def getTitle(self) -> Optional[str]:
+        return self.__title
 
     def getToBroadcasterUserId(self) -> Optional[str]:
         return self.__toBroadcasterUserId
@@ -162,3 +208,6 @@ class WebsocketCondition():
 
     def isGift(self) -> Optional[bool]:
         return self.__isGift
+
+    def isPermanent(self) -> Optional[bool]:
+        return self.__isPermanent

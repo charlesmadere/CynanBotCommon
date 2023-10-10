@@ -11,8 +11,7 @@ except:
     import utils
     from simpleDateTime import SimpleDateTime
 
-    from CynanBotCommon.twitch.websocket.websocketCondition import \
-        WebsocketCondition
+    from twitch.websocket.websocketCondition import WebsocketCondition
     from twitch.websocket.websocketSubscriptionStatus import \
         WebsocketSubscriptionStatus
     from twitch.websocket.websocketSubscriptionType import \
@@ -29,7 +28,7 @@ class WebsocketSubscription():
         version: str,
         condition: WebsocketCondition,
         status: WebsocketSubscriptionStatus,
-        type: WebsocketSubscriptionType
+        subscriptionType: WebsocketSubscriptionType
     ):
         if not utils.isValidInt(cost):
             raise ValueError(f'cost argument is malformed: \"{cost}\"')
@@ -43,8 +42,8 @@ class WebsocketSubscription():
             raise ValueError(f'condition argument is malformed: \"{condition}\"')
         elif not isinstance(status, WebsocketSubscriptionStatus):
             raise ValueError(f'status argument is malformed: \"{status}\"')
-        elif not isinstance(type, WebsocketSubscriptionType):
-            raise ValueError(f'type argument is malformed: \"{type}\"')
+        elif not isinstance(subscriptionType, WebsocketSubscriptionType):
+            raise ValueError(f'subscriptionType argument is malformed: \"{subscriptionType}\"')
 
         self.__cost: int = cost
         self.__createdAt: SimpleDateTime = createdAt
@@ -52,7 +51,7 @@ class WebsocketSubscription():
         self.__version: str = version
         self.__condition: WebsocketCondition = condition
         self.__status: WebsocketSubscriptionStatus = status
-        self.__type: WebsocketSubscriptionType = type
+        self.__subscriptionType: WebsocketSubscriptionType = subscriptionType
 
     def getCondition(self) -> WebsocketCondition:
         return self.__condition
@@ -69,8 +68,8 @@ class WebsocketSubscription():
     def getSubscriptionId(self) -> str:
         return self.__subscriptionId
 
-    def getType(self) -> WebsocketSubscriptionType:
-        return self.__type
+    def getSubscriptionType(self) -> WebsocketSubscriptionType:
+        return self.__subscriptionType
 
     def getVersion(self) -> str:
         return self.__version
