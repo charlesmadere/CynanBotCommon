@@ -84,6 +84,14 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
         if 'bits' in conditionJson and utils.isValidInt(conditionJson.get('bits')):
             bits = utils.getIntFromDict(conditionJson, 'bits')
 
+        cumulativeTotal: Optional[int] = None
+        if 'cumulative_total' in conditionJson and utils.isValidInt(conditionJson.get('cumulative_total')):
+            cumulativeTotal = utils.getIntFromDict(conditionJson, 'cumulative_total')
+
+        total: Optional[int] = None
+        if 'total' in conditionJson and utils.isValidInt(conditionJson.get('total')):
+            total = utils.getIntFromDict(conditionJson, 'total')
+
         viewers: Optional[int] = None
         if 'viewers' in conditionJson and utils.isValidInt(conditionJson.get('viewers')):
             viewers = utils.getIntFromDict(conditionJson, 'viewers')
@@ -185,6 +193,8 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
             isGift = isGift,
             isPermanent = isPermanent,
             bits = bits,
+            cumulativeTotal = cumulativeTotal,
+            total = total,
             viewers = viewers,
             broadcasterUserId = broadcasterUserId,
             broadcasterUserLogin = broadcasterUserLogin,

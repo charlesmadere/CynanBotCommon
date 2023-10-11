@@ -17,6 +17,8 @@ class WebsocketCondition():
         isGift: Optional[bool] = None,
         isPermanent: Optional[bool] = None,
         bits: Optional[int] = None,
+        cumulativeTotal: Optional[int] = None,
+        total: Optional[int] = None,
         viewers: Optional[int] = None,
         broadcasterUserId: Optional[str] = None,
         broadcasterUserLogin: Optional[str] = None,
@@ -50,6 +52,10 @@ class WebsocketCondition():
             raise ValueError(f'isPermanent argument is malformed: \"{isPermanent}\"')
         elif bits is not None and not utils.isValidInt(bits):
             raise ValueError(f'bits argument is malformed: \"{bits}\"')
+        elif cumulativeTotal is not None and not utils.isValidInt(cumulativeTotal):
+            raise ValueError(f'cumulativeTotal argument is malformed: \"{cumulativeTotal}\"')
+        elif total is not None and not utils.isValidInt(total):
+            raise ValueError(f'total argument is malformed: \"{total}\"')
         elif viewers is not None and not utils.isValidInt(viewers):
             raise ValueError(f'viewers argument is malformed: \"{viewers}\"')
         if broadcasterUserId is not None and not utils.isValidStr(broadcasterUserId):
@@ -103,6 +109,8 @@ class WebsocketCondition():
         self.__isGift: Optional[bool] = isGift
         self.__isPermanent: Optional[bool] = isPermanent
         self.__bits: Optional[int] = bits
+        self.__cumulativeTotal: Optional[int] = cumulativeTotal
+        self.__total: Optional[int] = total
         self.__viewers: Optional[int] = viewers
         self.__broadcasterUserId: Optional[str] = broadcasterUserId
         self.__broadcasterUserLogin: Optional[str] = broadcasterUserLogin
@@ -149,6 +157,9 @@ class WebsocketCondition():
     def getClientId(self) -> Optional[str]:
         return self.__clientId
 
+    def getCumulativeTotal(self) -> Optional[int]:
+        return self.__cumulativeTotal
+
     def getFromBroadcasterUserId(self) -> Optional[str]:
         return self.__fromBroadcasterUserId
 
@@ -190,6 +201,9 @@ class WebsocketCondition():
 
     def getToBroadcasterUserName(self) -> Optional[str]:
         return self.__toBroadcasterUserName
+
+    def getTotal(self) -> Optional[int]:
+        return self.__total
 
     def getUserId(self) -> Optional[str]:
         return self.__userId
