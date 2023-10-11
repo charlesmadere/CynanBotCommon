@@ -54,9 +54,9 @@ class TestTwitchWebsocketTransportMethod():
         assert isinstance(exception, Exception)
 
     def test_toStr_withWebhook(self):
-        string = f'{WebsocketTransportMethod.WEBHOOK}'
+        string = WebsocketTransportMethod.WEBHOOK.toStr()
         assert string == 'webhook'
 
     def test_toStr_withWebsocket(self):
-        string = f'{WebsocketTransportMethod.WEBSOCKET}'
+        string = WebsocketTransportMethod.WEBSOCKET.toStr()
         assert string == 'websocket'

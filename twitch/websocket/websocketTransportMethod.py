@@ -26,7 +26,7 @@ class WebsocketTransportMethod(Enum):
         else:
             raise ValueError(f'unknown WebsocketTransportMethod: \"{text}\"')
 
-    def __str__(self) -> str:
+    def toStr(self) -> str:
         if self is WebsocketTransportMethod.WEBHOOK:
             return 'webhook'
         elif self is WebsocketTransportMethod.WEBSOCKET:
