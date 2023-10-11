@@ -52,3 +52,11 @@ class TestTwitchWebsocketTransportMethod():
 
         assert result is None
         assert isinstance(exception, Exception)
+
+    def test_toStr_withWebhook(self):
+        string = f'{WebsocketTransportMethod.WEBHOOK}'
+        assert string == 'webhook'
+
+    def test_toStr_withWebsocket(self):
+        string = f'{WebsocketTransportMethod.WEBSOCKET}'
+        assert string == 'websocket'

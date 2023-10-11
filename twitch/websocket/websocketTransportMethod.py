@@ -25,3 +25,11 @@ class WebsocketTransportMethod(Enum):
             return WebsocketTransportMethod.WEBSOCKET
         else:
             raise ValueError(f'unknown WebsocketTransportMethod: \"{text}\"')
+
+    def __str__(self) -> str:
+        if self is WebsocketTransportMethod.WEBHOOK:
+            return 'webhook'
+        elif self is WebsocketTransportMethod.WEBSOCKET:
+            return 'websocket'
+        else:
+            raise RuntimeError(f'unknown WebsocketTransportMethod: \"{self}\"')
