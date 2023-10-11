@@ -15,7 +15,7 @@ class TwitchEmoteImageFormat(Enum):
     @classmethod
     def fromStr(cls, text: str):
         if not utils.isValidStr(text):
-            raise ValueError(f'text argument is malformed: \"{text}\"')
+            return TwitchEmoteImageFormat.DEFAULT
 
         text = text.lower()
 
@@ -24,4 +24,4 @@ class TwitchEmoteImageFormat(Enum):
         elif text == 'static':
             return TwitchEmoteImageFormat.STATIC
         else:
-            raise RuntimeError(f'unknown TwitchEmoteImageFormat: \"{text}\"')
+            return TwitchEmoteImageFormat.DEFAULT
