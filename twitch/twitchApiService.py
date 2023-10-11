@@ -23,6 +23,8 @@ try:
     from CynanBotCommon.twitch.twitchEmoteImageScale import \
         TwitchEmoteImageScale
     from CynanBotCommon.twitch.twitchEmoteType import TwitchEmoteType
+    from CynanBotCommon.twitch.twitchEventSubRequest import \
+        TwitchEventSubRequest
     from CynanBotCommon.twitch.twitchLiveUserDetails import \
         TwitchLiveUserDetails
     from CynanBotCommon.twitch.twitchStreamType import TwitchStreamType
@@ -51,6 +53,7 @@ except:
     from twitch.twitchEmoteImage import TwitchEmoteImage
     from twitch.twitchEmoteImageScale import TwitchEmoteImageScale
     from twitch.twitchEmoteType import TwitchEmoteType
+    from twitch.twitchEventSubRequest import TwitchEventSubRequest
     from twitch.twitchLiveUserDetails import TwitchLiveUserDetails
     from twitch.twitchStreamType import TwitchStreamType
     from twitch.twitchSubscriberTier import TwitchSubscriberTier
@@ -91,6 +94,13 @@ class TwitchApiService(TwitchApiServiceInterface):
             return nowDateTime + timedelta(seconds = expiresInSeconds)
         else:
             return nowDateTime - timedelta(weeks = 1)
+
+    async def createEventSubSubscription(self, eventSubRequest: TwitchEventSubRequest):
+        if not isinstance(eventSubRequest, TwitchEventSubRequest):
+            raise ValueError(f'eventSubRequest argument is malformed: \"{eventSubRequest}\"')
+
+        # TODO
+        pass
 
     async def fetchEmoteDetails(
         self,

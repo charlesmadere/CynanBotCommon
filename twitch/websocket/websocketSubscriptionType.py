@@ -14,8 +14,6 @@ class WebsocketSubscriptionType(Enum):
     CHEER = auto()
     FOLLOW = auto()
     RAID = auto()
-    STREAM_OFFLINE = auto()
-    STREAM_ONLINE = auto()
     SUBSCRIBE = auto()
     SUBSCRIPTION_GIFT = auto()
     SUBSCRIPTION_MESSAGE = auto()
@@ -37,15 +35,31 @@ class WebsocketSubscriptionType(Enum):
             return WebsocketSubscriptionType.FOLLOW
         elif text == 'channel.raid':
             return WebsocketSubscriptionType.RAID
-        elif text == 'stream.offline':
-            return WebsocketSubscriptionType.STREAM_OFFLINE
-        elif text == 'stream.online':
-            return WebsocketSubscriptionType.STREAM_ONLINE
         elif text == 'channel.subscribe':
             return WebsocketSubscriptionType.SUBSCRIBE
-        elif text == 'channel.subscription.message':
-            return WebsocketSubscriptionType.SUBSCRIPTION_MESSAGE
         elif text == 'channel.subscription.gift':
             return WebsocketSubscriptionType.SUBSCRIPTION_GIFT
+        elif text == 'channel.subscription.message':
+            return WebsocketSubscriptionType.SUBSCRIPTION_MESSAGE
         else:
             return None
+
+    def toStr(self) -> str:
+        if self is WebsocketSubscriptionType.CHEER:
+            return 'channel.cheer'
+        elif self is WebsocketSubscriptionType.CHANNEL_POINTS_REDEMPTION:
+            return 'channel.channel_points_custom_reward_redemption.add'
+        elif self is WebsocketSubscriptionType.CHANNEL_UPDATE:
+            return 'channel.update'
+        elif self is WebsocketSubscriptionType.FOLLOW:
+            return 'channel.follow'
+        elif self is WebsocketSubscriptionType.RAID:
+            return 'channel.raid'
+        elif self is WebsocketSubscriptionType.SUBSCRIBE:
+            return 'channel.subscribe'
+        elif self is WebsocketSubscriptionType.SUBSCRIPTION_GIFT:
+            return 'channel.subscription.gift'
+        elif self is WebsocketSubscriptionType.SUBSCRIPTION_MESSAGE:
+            return 'channel.subscription.message'
+        else:
+            raise RuntimeError(f'unknown WebsocketSubscriptionType: \"{self}\"')

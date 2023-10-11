@@ -47,14 +47,34 @@ class TestTwitchWebsocketSubscriptionType():
         result = WebsocketSubscriptionType.fromStr(None)
         assert result is None
 
-    def test_fromStr_withStreamOfflineString(self):
-        result = WebsocketSubscriptionType.fromStr('stream.offline')
-        assert result is WebsocketSubscriptionType.STREAM_OFFLINE
-
-    def test_fromStr_withStreamOnlineString(self):
-        result = WebsocketSubscriptionType.fromStr('stream.online')
-        assert result is WebsocketSubscriptionType.STREAM_ONLINE
-
     def test_fromStr_withWhitespaceString(self):
         result = WebsocketSubscriptionType.fromStr(' ')
         assert result is None
+
+    def test_toStr_withChannelPointsRedemption(self):
+        string = WebsocketSubscriptionType.CHANNEL_POINTS_REDEMPTION.toStr()
+        assert string == 'channel.channel_points_custom_reward_redemption.add'
+
+    def test_toStr_withCheer(self):
+        string = WebsocketSubscriptionType.CHEER.toStr()
+        assert string == 'channel.cheer'
+
+    def test_toStr_withFollow(self):
+        string = WebsocketSubscriptionType.FOLLOW.toStr()
+        assert string == 'channel.follow'
+
+    def test_toStr_withRaid(self):
+        string = WebsocketSubscriptionType.RAID.toStr()
+        assert string == 'channel.raid'
+
+    def  test_toStr_withSubscribe(self):
+        string = WebsocketSubscriptionType.SUBSCRIBE.toStr()
+        assert string == 'channel.subscribe'
+
+    def test_toStr_withSubscriptionGift(self):
+        string = WebsocketSubscriptionType.SUBSCRIPTION_GIFT.toStr()
+        assert string == 'channel.subscription.gift'
+
+    def test_toStr_withSubscriptionMessage(self):
+        string = WebsocketSubscriptionType.SUBSCRIPTION_MESSAGE.toStr()
+        assert string == 'channel.subscription.message'

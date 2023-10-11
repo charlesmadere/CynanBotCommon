@@ -4,6 +4,8 @@ from typing import List, Optional
 
 try:
     from CynanBotCommon.twitch.twitchEmoteDetails import TwitchEmoteDetails
+    from CynanBotCommon.twitch.twitchEventSubRequest import \
+        TwitchEventSubRequest
     from CynanBotCommon.twitch.twitchLiveUserDetails import \
         TwitchLiveUserDetails
     from CynanBotCommon.twitch.twitchTokensDetails import TwitchTokensDetails
@@ -12,6 +14,7 @@ try:
         TwitchUserSubscriptionDetails
 except:
     from twitch.twitchEmoteDetails import TwitchEmoteDetails
+    from twitch.twitchEventSubRequest import TwitchEventSubRequest
     from twitch.twitchLiveUserDetails import TwitchLiveUserDetails
     from twitch.twitchTokensDetails import TwitchTokensDetails
     from twitch.twitchUserDetails import TwitchUserDetails
@@ -20,6 +23,13 @@ except:
 
 
 class TwitchApiServiceInterface(ABC):
+
+    @abstractmethod
+    async def createEventSubSubscription(
+        self,
+        eventSubRequest: TwitchEventSubRequest
+    ):
+        pass
 
     @abstractmethod
     async def fetchEmoteDetails(
