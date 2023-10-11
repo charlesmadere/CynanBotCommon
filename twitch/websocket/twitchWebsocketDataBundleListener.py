@@ -7,8 +7,8 @@ except:
     from twitch.websocket.websocketDataBundle import WebsocketDataBundle
 
 
-class TwitchWebsocketClientListener(ABC):
+class TwitchWebsocketDataBundleListener(ABC):
 
     @abstractmethod
-    async def onTwitchWebsocketClientEvent(self, dataBundle: WebsocketDataBundle):
+    async def onNewWebsocketDataBundle(self, dataBundle: WebsocketDataBundle):
         pass

@@ -2,17 +2,17 @@ from abc import ABC, abstractmethod
 from typing import Optional
 
 try:
-    from CynanBotCommon.twitch.websocket.twitchWebsocketClientListener import \
-        TwitchWebsocketClientListener
+    from CynanBotCommon.twitch.websocket.twitchWebsocketDataBundleListener import \
+        TwitchWebsocketDataBundleListener
 except:
-    from twitch.websocket.twitchWebsocketClientListener import \
-        TwitchWebsocketClientListener
+    from CynanBotCommon.twitch.websocket.twitchWebsocketDataBundleListener import \
+        TwitchWebsocketDataBundleListener
 
 
 class TwitchWebsocketClientInterface(ABC):
 
     @abstractmethod
-    def setEventListener(self, listener: Optional[TwitchWebsocketClientListener]):
+    def setDataBundleListener(self, listener: Optional[TwitchWebsocketDataBundleListener]):
         pass
 
     @abstractmethod

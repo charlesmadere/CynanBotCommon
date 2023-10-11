@@ -7,13 +7,13 @@ except:
 
 class TestTwitchWebsocketSubscriptionType():
 
-    def test_fromStr_withChannelCheerString(self):
-        result = WebsocketSubscriptionType.fromStr('channel.cheer')
-        assert result is WebsocketSubscriptionType.CHEER
-
     def test_fromStr_withChannelChannelPointsCustomRewardRedemptionString(self):
         result = WebsocketSubscriptionType.fromStr('channel.channel_points_custom_reward_redemption.add')
         assert result is WebsocketSubscriptionType.CHANNEL_POINTS_REDEMPTION
+
+    def test_fromStr_withChannelCheerString(self):
+        result = WebsocketSubscriptionType.fromStr('channel.cheer')
+        assert result is WebsocketSubscriptionType.CHEER
 
     def test_fromStr_withChannelFollowString(self):
         result = WebsocketSubscriptionType.fromStr('channel.follow')
@@ -47,11 +47,11 @@ class TestTwitchWebsocketSubscriptionType():
         result = WebsocketSubscriptionType.fromStr(None)
         assert result is None
 
-    def test_fromStr_withStreamsOfflineString(self):
+    def test_fromStr_withStreamOfflineString(self):
         result = WebsocketSubscriptionType.fromStr('stream.offline')
         assert result is WebsocketSubscriptionType.STREAM_OFFLINE
 
-    def test_fromStr_withStreamsOnlineString(self):
+    def test_fromStr_withStreamOnlineString(self):
         result = WebsocketSubscriptionType.fromStr('stream.online')
         assert result is WebsocketSubscriptionType.STREAM_ONLINE
 

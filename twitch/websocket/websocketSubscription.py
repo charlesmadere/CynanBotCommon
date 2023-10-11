@@ -7,6 +7,8 @@ try:
         WebsocketSubscriptionStatus
     from CynanBotCommon.twitch.websocket.websocketSubscriptionType import \
         WebsocketSubscriptionType
+    from CynanBotCommon.twitch.websocket.websocketTransport import \
+        WebsocketTransport
 except:
     import utils
     from simpleDateTime import SimpleDateTime
@@ -16,6 +18,7 @@ except:
         WebsocketSubscriptionStatus
     from twitch.websocket.websocketSubscriptionType import \
         WebsocketSubscriptionType
+    from twitch.websocket.websocketTransport import WebsocketTransport
 
 
 class WebsocketSubscription():
@@ -28,7 +31,8 @@ class WebsocketSubscription():
         version: str,
         condition: WebsocketCondition,
         status: WebsocketSubscriptionStatus,
-        subscriptionType: WebsocketSubscriptionType
+        subscriptionType: WebsocketSubscriptionType,
+        transport: WebsocketTransport
     ):
         if not utils.isValidInt(cost):
             raise ValueError(f'cost argument is malformed: \"{cost}\"')
@@ -44,6 +48,8 @@ class WebsocketSubscription():
             raise ValueError(f'status argument is malformed: \"{status}\"')
         elif not isinstance(subscriptionType, WebsocketSubscriptionType):
             raise ValueError(f'subscriptionType argument is malformed: \"{subscriptionType}\"')
+        elif not isinstance(transport, WebsocketTransport):
+            raise ValueError(f'transport argument is malformed: \"{transport}\"')
 
         self.__cost: int = cost
         self.__createdAt: SimpleDateTime = createdAt
@@ -52,6 +58,7 @@ class WebsocketSubscription():
         self.__condition: WebsocketCondition = condition
         self.__status: WebsocketSubscriptionStatus = status
         self.__subscriptionType: WebsocketSubscriptionType = subscriptionType
+        self.__transport: WebsocketTransport = transport
 
     def getCondition(self) -> WebsocketCondition:
         return self.__condition
@@ -70,6 +77,9 @@ class WebsocketSubscription():
 
     def getSubscriptionType(self) -> WebsocketSubscriptionType:
         return self.__subscriptionType
+
+    def getTransport(self) -> WebsocketTransport:
+        return self.__transport
 
     def getVersion(self) -> str:
         return self.__version
