@@ -23,4 +23,4 @@ class TwitchThemeMode(Enum):
         elif text == 'light':
             return TwitchThemeMode.LIGHT
         else:
-            raise RuntimeError(f'unknown TwitchThemeMode: \"{text}\"')
+            raise ValueError(f'unknown TwitchThemeMode: \"{text}\"')
