@@ -51,6 +51,38 @@ class TestTwitchWebsocketSubscriptionType():
         result = WebsocketSubscriptionType.fromStr(' ')
         assert result is None
 
+    def test_getVersion_withChannelPointsRedemption(self):
+        version = WebsocketSubscriptionType.CHANNEL_POINTS_REDEMPTION.getVersion()
+        assert version == '1'
+
+    def test_getVersion_withChannelUpdate(self):
+        version = WebsocketSubscriptionType.CHANNEL_UPDATE.getVersion()
+        assert version == '2'
+
+    def test_getVersion_withCheer(self):
+        version = WebsocketSubscriptionType.CHEER.getVersion()
+        assert version == '1'
+
+    def test_getVersion_withFollow(self):
+        version = WebsocketSubscriptionType.FOLLOW.getVersion()
+        assert version == '2'
+
+    def test_getVersion_withRaid(self):
+        version = WebsocketSubscriptionType.RAID.getVersion()
+        assert version == '1'
+
+    def test_getVersion_withSubscribe(self):
+        version = WebsocketSubscriptionType.SUBSCRIBE.getVersion()
+        assert version == '1'
+
+    def test_getVersion_withSubscriptionGift(self):
+        version = WebsocketSubscriptionType.SUBSCRIPTION_GIFT.getVersion()
+        assert version == '1'
+
+    def test_getVersion_withSubscriptionMessage(self):
+        version = WebsocketSubscriptionType.SUBSCRIPTION_MESSAGE.getVersion()
+        assert version == '1'
+
     def test_toStr_withChannelPointsRedemption(self):
         string = WebsocketSubscriptionType.CHANNEL_POINTS_REDEMPTION.toStr()
         assert string == 'channel.channel_points_custom_reward_redemption.add'

@@ -44,6 +44,26 @@ class WebsocketSubscriptionType(Enum):
         else:
             return None
 
+    def getVersion(self) -> str:
+        if self is WebsocketSubscriptionType.CHANNEL_POINTS_REDEMPTION:
+            return '1'
+        elif self is WebsocketSubscriptionType.CHANNEL_UPDATE:
+            return '2'
+        elif self is WebsocketSubscriptionType.CHEER:
+            return '1'
+        elif self is WebsocketSubscriptionType.FOLLOW:
+            return '2'
+        elif self is WebsocketSubscriptionType.RAID:
+            return '1'
+        elif self is WebsocketSubscriptionType.SUBSCRIBE:
+            return '1'
+        elif self is WebsocketSubscriptionType.SUBSCRIPTION_GIFT:
+            return '1'
+        elif self is WebsocketSubscriptionType.SUBSCRIPTION_MESSAGE:
+            return '1'
+        else:
+            raise RuntimeError(f'unknown subscriptionType: \"{self}\"')
+
     def toStr(self) -> str:
         if self is WebsocketSubscriptionType.CHEER:
             return 'channel.cheer'
