@@ -19,7 +19,7 @@ class AddQueuedGamesResult():
             raise ValueError(f'newQueueSize argument is out of bounds: {newQueueSize}')
         elif not utils.isValidInt(oldQueueSize):
             raise ValueError(f'oldQueueSize argument is malformed: \"{oldQueueSize}\"')
-        elif oldQueueSize < 0 or oldQueueSize > utils.getIntMaxSafeSize:
+        elif oldQueueSize < 0 or oldQueueSize > utils.getIntMaxSafeSize():
             raise ValueError(f'oldQueueSize argument is out of bounds: {oldQueueSize}')
 
         self.__amountAdded: int = amountAdded
