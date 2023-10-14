@@ -38,6 +38,7 @@ class WebsocketTransport():
         self.__disconnectedAt: Optional[SimpleDateTime] = disconnectedAt
         self.__secret: Optional[str] = secret
         self.__sessionId: Optional[str] = sessionId
+        self.__method: WebsocketTransportMethod = method
 
     def getConnectedAt(self) -> Optional[SimpleDateTime]:
         return self.__connectedAt

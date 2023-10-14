@@ -52,8 +52,8 @@ class TestTwitchWebsocketTransport():
 
     def test_requireSessionId_withWhitespaceString(self):
         transport = WebsocketTransport(
+            sessionId = ' ',
             method = WebsocketTransportMethod.WEBSOCKET
-            sessionId = ' '
         )
 
         sessionId: Optional[str] = None
