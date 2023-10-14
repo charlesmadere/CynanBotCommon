@@ -12,7 +12,7 @@ try:
     from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.twitch.twitchApiServiceInterface import \
         TwitchApiServiceInterface
-    from CynanBotCommon.twitch.twitchWebsocketAllowedUserIdsRepositoryInterface import \
+    from CynanBotCommon.twitch.websocket.twitchWebsocketAllowedUserIdsRepositoryInterface import \
         TwitchWebsocketAllowedUserIdsRepositoryInterface
     from CynanBotCommon.twitch.websocket.twitchWebsocketClientInterface import \
         TwitchWebsocketClientInterface
@@ -28,7 +28,7 @@ except:
     from timber.timberInterface import TimberInterface
 
     from twitch.twitchApiServiceInterface import TwitchApiServiceInterface
-    from twitch.twitchWebsocketAllowedUserIdsRepositoryInterface import \
+    from twitch.websocket.twitchWebsocketAllowedUserIdsRepositoryInterface import \
         TwitchWebsocketAllowedUserIdsRepositoryInterface
     from twitch.websocket.twitchWebsocketClientInterface import \
         TwitchWebsocketClientInterface

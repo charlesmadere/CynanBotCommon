@@ -5,7 +5,7 @@ try:
     from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.twitch.twitchTokensRepositoryInterface import \
         TwitchTokensRepositoryInterface
-    from CynanBotCommon.twitch.twitchWebsocketAllowedUserIdsRepositoryInterface import \
+    from CynanBotCommon.twitch.websocket.twitchWebsocketAllowedUserIdsRepositoryInterface import \
         TwitchWebsocketAllowedUserIdsRepositoryInterface
     from CynanBotCommon.users.userIdsRepositoryInterface import \
         UserIdsRepositoryInterface
@@ -18,7 +18,7 @@ except:
 
     from twitch.twitchTokensRepositoryInterface import \
         TwitchTokensRepositoryInterface
-    from twitch.twitchWebsocketAllowedUserIdsRepositoryInterface import \
+    from twitch.websocket.twitchWebsocketAllowedUserIdsRepositoryInterface import \
         TwitchWebsocketAllowedUserIdsRepositoryInterface
     from users.userIdsRepositoryInterface import UserIdsRepositoryInterface
     from users.userInterface import UserInterface
