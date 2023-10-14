@@ -1,9 +1,14 @@
-from abc import ABC, abstractmethod
-from typing import List
+from abc import abstractmethod
+from typing import Set
+
+try:
+    from CynanBotCommon.clearable import Clearable
+except:
+    from clearable import Clearable
 
 
-class TwitchWebsocketAllowedUserIdsRepositoryInterface(ABC):
+class TwitchWebsocketAllowedUserIdsRepositoryInterface(Clearable):
 
     @abstractmethod
-    async def getUserIds(self) -> List[str]:
+    async def getUserIds(self) -> Set[str]:
         pass
