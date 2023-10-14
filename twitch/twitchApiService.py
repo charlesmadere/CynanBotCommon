@@ -7,11 +7,13 @@ try:
     from CynanBotCommon.network.exceptions import GenericNetworkException
     from CynanBotCommon.network.networkClientProvider import \
         NetworkClientProvider
+    from CynanBotCommon.simpleDateTime import SimpleDateTime
     from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.twitch.exceptions import (
         TwitchAccessTokenMissingException, TwitchErrorException,
         TwitchJsonException, TwitchPasswordChangedException,
-        TwitchRefreshTokenMissingException, TwitchTokenIsExpiredException)
+        TwitchRefreshTokenMissingException, TwitchStatusCodeException,
+        TwitchTokenIsExpiredException)
     from CynanBotCommon.twitch.twitchApiServiceInterface import \
         TwitchApiServiceInterface
     from CynanBotCommon.twitch.twitchBroadcasterType import \
@@ -25,6 +27,8 @@ try:
     from CynanBotCommon.twitch.twitchEmoteType import TwitchEmoteType
     from CynanBotCommon.twitch.twitchEventSubRequest import \
         TwitchEventSubRequest
+    from CynanBotCommon.twitch.twitchEventSubResponse import \
+        TwitchEventSubResponse
     from CynanBotCommon.twitch.twitchLiveUserDetails import \
         TwitchLiveUserDetails
     from CynanBotCommon.twitch.twitchStreamType import TwitchStreamType
@@ -34,16 +38,30 @@ try:
     from CynanBotCommon.twitch.twitchUserSubscriptionDetails import \
         TwitchUserSubscriptionDetails
     from CynanBotCommon.twitch.twitchUserType import TwitchUserType
+    from CynanBotCommon.twitch.websocket.twitchWebsocketJsonMapperInterface import \
+        TwitchWebsocketJsonMapperInterface
+    from CynanBotCommon.twitch.websocket.websocketCondition import \
+        WebsocketCondition
+    from CynanBotCommon.twitch.websocket.websocketSubscriptionStatus import \
+        WebsocketSubscriptionStatus
+    from CynanBotCommon.twitch.websocket.websocketSubscriptionType import \
+        WebsocketSubscriptionType
+    from CynanBotCommon.twitch.websocket.websocketTransport import \
+        WebsocketTransport
+    from CynanBotCommon.twitch.websocket.websocketTransportMethod import \
+        WebsocketTransportMethod
 except:
     import utils
     from network.exceptions import GenericNetworkException
     from network.networkClientProvider import NetworkClientProvider
+    from simpleDateTime import SimpleDateTime
     from timber.timberInterface import TimberInterface
 
     from twitch.exceptions import (TwitchAccessTokenMissingException,
                                    TwitchErrorException, TwitchJsonException,
                                    TwitchPasswordChangedException,
                                    TwitchRefreshTokenMissingException,
+                                   TwitchStatusCodeException,
                                    TwitchTokenIsExpiredException)
     from twitch.twitchApiServiceInterface import TwitchApiServiceInterface
     from twitch.twitchBroadcasterType import TwitchBroadcasterType
@@ -54,6 +72,7 @@ except:
     from twitch.twitchEmoteImageScale import TwitchEmoteImageScale
     from twitch.twitchEmoteType import TwitchEmoteType
     from twitch.twitchEventSubRequest import TwitchEventSubRequest
+    from twitch.twitchEventSubResponse import TwitchEventSubResponse
     from twitch.twitchLiveUserDetails import TwitchLiveUserDetails
     from twitch.twitchStreamType import TwitchStreamType
     from twitch.twitchSubscriberTier import TwitchSubscriberTier
@@ -62,6 +81,16 @@ except:
     from twitch.twitchUserSubscriptionDetails import \
         TwitchUserSubscriptionDetails
     from twitch.twitchUserType import TwitchUserType
+    from twitch.websocket.twitchWebsocketJsonMapperInterface import \
+        TwitchWebsocketJsonMapperInterface
+    from twitch.websocket.websocketCondition import WebsocketCondition
+    from twitch.websocket.websocketSubscriptionStatus import \
+        WebsocketSubscriptionStatus
+    from twitch.websocket.websocketSubscriptionType import \
+        WebsocketSubscriptionType
+    from twitch.websocket.websocketTransport import WebsocketTransport
+    from twitch.websocket.websocketTransportMethod import \
+        WebsocketTransportMethod
 
 
 class TwitchApiService(TwitchApiServiceInterface):
@@ -71,6 +100,7 @@ class TwitchApiService(TwitchApiServiceInterface):
         networkClientProvider: NetworkClientProvider,
         timber: TimberInterface,
         twitchCredentialsProvider: TwitchCredentialsProviderInterface,
+        twitchWebsocketJsonMapper: TwitchWebsocketJsonMapperInterface,
         timeZone: timezone = timezone.utc
     ):
         if not isinstance(networkClientProvider, NetworkClientProvider):
@@ -79,12 +109,15 @@ class TwitchApiService(TwitchApiServiceInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(twitchCredentialsProvider, TwitchCredentialsProviderInterface):
             raise ValueError(f'twitchCredentialsProvider argument is malformed: \"{twitchCredentialsProvider}\"')
+        elif not isinstance(twitchWebsocketJsonMapper, TwitchWebsocketJsonMapperInterface):
+            raise ValueError(f'twitchWebsocketJsonMapper argument is malformed: \"{twitchWebsocketJsonMapper}\"')
         elif not isinstance(timeZone, timezone):
             raise ValueError(f'timeZone argument is malformed: \"{timeZone}\"')
 
         self.__networkClientProvider: NetworkClientProvider = networkClientProvider
         self.__timber: TimberInterface = timber
         self.__twitchCredentialsProvider: TwitchCredentialsProviderInterface = twitchCredentialsProvider
+        self.__twitchWebsocketJsonMapper: TwitchWebsocketJsonMapperInterface = twitchWebsocketJsonMapper
         self.__timeZone: timezone = timeZone
 
     async def __calculateExpirationTime(self, expiresInSeconds: Optional[int]) -> datetime:
@@ -95,12 +128,92 @@ class TwitchApiService(TwitchApiServiceInterface):
         else:
             return nowDateTime - timedelta(weeks = 1)
 
-    async def createEventSubSubscription(self, eventSubRequest: TwitchEventSubRequest):
-        if not isinstance(eventSubRequest, TwitchEventSubRequest):
+    async def createEventSubSubscription(
+        self,
+        twitchAccessToken: str,
+        eventSubRequest: TwitchEventSubRequest
+    ) -> TwitchEventSubResponse:
+        if not utils.isValidStr(twitchAccessToken):
+            raise ValueError(f'twitchAccessToken argument is malformed: \"{twitchAccessToken}\"')
+        elif not isinstance(eventSubRequest, TwitchEventSubRequest):
             raise ValueError(f'eventSubRequest argument is malformed: \"{eventSubRequest}\"')
 
-        # TODO
-        pass
+        self.__timber.log('TwitchApiService', f'Creating EventSub subscription...')
+        twitchClientId = await self.__twitchCredentialsProvider.getTwitchClientId()
+        clientSession = await self.__networkClientProvider.get()
+
+        try:
+            response = await clientSession.post(
+                url = 'https://api.twitch.tv/helix/eventsub/subscriptions',
+                headers = {
+                    'Authorization': f'Bearer {twitchAccessToken}',
+                    'Client-Id': twitchClientId
+                },
+                json = eventSubRequest.toJson()
+            )
+        except GenericNetworkException as e:
+            self.__timber.log('TwitchApiService', f'Encountered network error when creating EventSub subscription (twitchAccessToken=\"{twitchAccessToken}\") (eventSubRequest=\"{eventSubRequest}\"): {e}', e, traceback.format_exc())
+            raise GenericNetworkException(f'TwitchApiService encountered network error when creating EventSub subscription (twitchAccessToken=\"{twitchAccessToken}\") (eventSubRequest=\"{eventSubRequest}\"): {e}')
+
+        responseStatusCode = response.getStatusCode()
+        jsonResponse: Optional[Dict[str, Any]] = await response.json()
+        await response.close()
+
+        if not utils.hasItems(jsonResponse):
+            self.__timber.log('TwitchApiService', f'Received a null/empty JSON resposne when creating EventSub subscription (twitchAccessToken=\"{twitchAccessToken}\") (eventSubRequest=\"{eventSubRequest}\"): {jsonResponse}')
+            raise TwitchJsonException(f'TwitchApiService received a null/empty JSON response when creating EventSub subscription (twitchAccessToken=\"{twitchAccessToken}\") (eventSubRequest=\"{eventSubRequest}\"): {jsonResponse}')
+        elif responseStatusCode != 202:
+            self.__timber.log('TwitchApiService', f'Encountered non-202 HTTP status code ({responseStatusCode}) when creating EventSub subscription (twitchAccessToken=\"{twitchAccessToken}\") (eventSubRequest=\"{eventSubRequest}\"): {jsonResponse}')
+            raise TwitchStatusCodeException(f'TwitchApiService encountered non-202 HTTP status code ({responseStatusCode}) when creating EventSub subscription (twitchAccessToken=\"{twitchAccessToken}\") (eventSubRequest=\"{eventSubRequest}\"): {jsonResponse}')
+
+        data: Optional[List[Dict[str, Any]]] = jsonResponse.get('data')
+        if not utils.hasItems(data):
+            self.__timber.log('TwitchApiService', f'Received a null/empty \"data\" field in the JSON response when creating EventSub subscription (twitchAccessToken=\"{twitchAccessToken}\") (eventSubRequest=\"{eventSubRequest}\"): {jsonResponse}')
+            raise TwitchJsonException(f'TwitchApiService received a null/empty \"data\" field in the JSON response when creating EventSub subscription (twitchAccessToken=\"{twitchAccessToken}\") (eventSubRequest=\"{eventSubRequest}\"): {jsonResponse}')
+
+        dataJson: Dict[str, Any] = data[0]
+        if not utils.hasItems(dataJson):
+            self.__timber.log('TwitchApiService', f'Received a null/empty first \"data\" field element in the JSON response when creating EventSub subscription (twitchAccessToken=\"{twitchAccessToken}\") (eventSubRequest=\"{eventSubRequest}\"): {jsonResponse}')
+            raise TwitchJsonException(f'TwitchApiService received a null/empty first \"data\" field element in the JSON response when creating EventSub subscription (twitchAccessToken=\"{twitchAccessToken}\") (eventSubRequest=\"{eventSubRequest}\"): {jsonResponse}')
+
+        cost = utils.getIntFromDict(dataJson, 'cost')
+        createdAt = SimpleDateTime(utils.getDateTimeFromStr(utils.getStrFromDict(dataJson, 'created_at')))
+        subscriptionId = utils.getStrFromDict(dataJson, 'id')
+        version = utils.getStrFromDict(dataJson, 'version')
+        subscriptionType = WebsocketSubscriptionType.fromStr(utils.getStrFromDict(dataJson, 'type'))
+        status = WebsocketSubscriptionStatus.fromStr(utils.getStrFromDict(dataJson, 'status'))
+
+        conditionJson: Dict[str, Any] = dataJson.get('condition')
+        if not utils.hasItems(conditionJson):
+            self.__timber.log('TwitchApiService', f'Received a null/empty \"condition\" field in the JSON response when creating EventSub subscription (twitchAccessToken=\"{twitchAccessToken}\") (eventSubRequest=\"{eventSubRequest}\"): {jsonResponse}')
+            raise TwitchJsonException(f'TwitchApiService received a null/empty \"condition\" field in the JSON response when creating EventSub subscription (twitchAccessToken=\"{twitchAccessToken}\") (eventSubRequest=\"{eventSubRequest}\"): {jsonResponse}')
+
+        condition = await self.__twitchWebsocketJsonMapper.parseWebsocketCondition(dataJson.get('condition'))
+
+        transportJson: Dict[str, Any] = dataJson.get('transport')
+        if not utils.hasItems(transportJson):
+            self.__timber.log('TwitchApiService', f'Received a null/empty \"transport\" field in the JSON response when creating EventSub subscription (twitchAccessToken=\"{twitchAccessToken}\") (eventSubRequest=\"{eventSubRequest}\"): {jsonResponse}')
+            raise TwitchJsonException(f'TwitchApiService received a null/empty \"transport\" field in the JSON response when creating EventSub subscription (twitchAccessToken=\"{twitchAccessToken}\") (eventSubRequest=\"{eventSubRequest}\"): {jsonResponse}')
+
+        transport = WebsocketTransport(
+            connectedAt = SimpleDateTime(utils.getDateTimeFromStr(utils.getStrFromDict(transportJson, 'connected_at'))),
+            sessionId = utils.getStrFromDict(transportJson, 'session_id'),
+            method = WebsocketTransportMethod.fromStr(utils.getStrFromDict(transportJson, 'method'))
+        )
+
+        return TwitchEventSubResponse(
+            cost = cost,
+            maxTotalCost = utils.getIntFromDict(jsonResponse, 'max_total_cost'),
+            total = utils.getIntFromDict(jsonResponse, 'total'),
+            totalCost = utils.getIntFromDict(jsonResponse, 'total_cost'),
+            createdAt = createdAt,
+            subscriptionId = subscriptionId,
+            version = version,
+            condition = condition,
+            subscriptionType = subscriptionType,
+            status = status,
+            transport = transport
+        )
 
     async def fetchEmoteDetails(
         self,
@@ -125,8 +238,8 @@ class TwitchApiService(TwitchApiServiceInterface):
                 }
             )
         except GenericNetworkException as e:
-            self.__timber.log('TwitchApiService', f'Encountered network error when fetching emote details (broadcasterId=\"{broadcasterId}\"): {e}', e, traceback.format_exc())
-            raise GenericNetworkException(f'TwitchApiService encountered network error when fetching emote details (broadcasterId=\"{broadcasterId}\"): {e}')
+            self.__timber.log('TwitchApiService', f'Encountered network error when fetching emote details (broadcasterId=\"{broadcasterId}\") (twitchAccessToken=\"{twitchAccessToken}\"): {e}', e, traceback.format_exc())
+            raise GenericNetworkException(f'TwitchApiService encountered network error when fetching emote details (broadcasterId=\"{broadcasterId}\") (twitchAccessToken=\"{twitchAccessToken}\"): {e}')
 
         responseStatusCode = response.getStatusCode()
         jsonResponse: Optional[Dict[str, Any]] = await response.json()

@@ -6,6 +6,8 @@ try:
     from CynanBotCommon.twitch.twitchEmoteDetails import TwitchEmoteDetails
     from CynanBotCommon.twitch.twitchEventSubRequest import \
         TwitchEventSubRequest
+    from CynanBotCommon.twitch.twitchEventSubResponse import \
+        TwitchEventSubResponse
     from CynanBotCommon.twitch.twitchLiveUserDetails import \
         TwitchLiveUserDetails
     from CynanBotCommon.twitch.twitchTokensDetails import TwitchTokensDetails
@@ -15,6 +17,7 @@ try:
 except:
     from twitch.twitchEmoteDetails import TwitchEmoteDetails
     from twitch.twitchEventSubRequest import TwitchEventSubRequest
+    from twitch.twitchEventSubResponse import TwitchEventSubResponse
     from twitch.twitchLiveUserDetails import TwitchLiveUserDetails
     from twitch.twitchTokensDetails import TwitchTokensDetails
     from twitch.twitchUserDetails import TwitchUserDetails
@@ -28,7 +31,7 @@ class TwitchApiServiceInterface(ABC):
     async def createEventSubSubscription(
         self,
         eventSubRequest: TwitchEventSubRequest
-    ):
+    ) -> TwitchEventSubResponse:
         pass
 
     @abstractmethod

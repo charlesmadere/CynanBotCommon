@@ -29,16 +29,26 @@ class TestTwitchWebsocketJsonMapper():
         assert isinstance(self.jsonMapper, TwitchWebsocketJsonMapperInterface)
 
     @pytest.mark.asyncio
-    async def test_toWebsocketDataBundle_withEmptyString(self):
-        result = await self.jsonMapper.toWebsocketDataBundle('')
+    async def test_parseWebsocketCondition_withEmptyDictionary(self):
+        result = await self.jsonMapper.parseWebsocketCondition(dict())
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_toWebsocketDataBundle_withNone(self):
-        result = await self.jsonMapper.toWebsocketDataBundle(None)
+    async def test_parseWebsocketCondition_withNone(self):
+        result = await self.jsonMapper.parseWebsocketCondition(None)
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_toWebsocketDataBundle_withWhitespaceString(self):
-        result = await self.jsonMapper.toWebsocketDataBundle(' ')
+    async def test_parseWebsocketDataBundle_withEmptyString(self):
+        result = await self.jsonMapper.parseWebsocketDataBundle('')
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_parseWebsocketDataBundle_withNone(self):
+        result = await self.jsonMapper.parseWebsocketDataBundle(None)
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_parseWebsocketDataBundle_withWhitespaceString(self):
+        result = await self.jsonMapper.parseWebsocketDataBundle(' ')
         assert result is None

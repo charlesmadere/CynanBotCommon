@@ -64,7 +64,7 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
 
         self.__timber: TimberInterface = timber
 
-    async def __parseCondition(self, conditionJson: Optional[Dict[str, Any]]) -> Optional[WebsocketCondition]:
+    async def parseWebsocketCondition(self, conditionJson: Optional[Dict[str, Any]]) -> Optional[WebsocketCondition]:
         if not isinstance(conditionJson, Dict):
             return None
 
@@ -280,7 +280,7 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
         createdAt = SimpleDateTime(utils.getDateTimeFromStr(utils.getStrFromDict(subscriptionJson, 'created_at')))
         subscriptionId = utils.getStrFromDict(subscriptionJson, 'id')
         version = utils.getStrFromDict(subscriptionJson, 'version')
-        condition = await self.__parseCondition(subscriptionJson.get('condition'))
+        condition = await self.parseWebsocketCondition(subscriptionJson.get('condition'))
         status = WebsocketSubscriptionStatus.fromStr(utils.getStrFromDict(subscriptionJson, 'status'))
         subscriptionType = WebsocketSubscriptionType.fromStr(utils.getStrFromDict(subscriptionJson, 'type'))
         transport = await self.__parseTransport(subscriptionJson.get('transport'))
@@ -326,7 +326,7 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
             method = method
         )
 
-    async def toWebsocketDataBundle(self, message: Optional[str]) -> Optional[WebsocketDataBundle]:
+    async def parseWebsocketDataBundle(self, message: Optional[str]) -> Optional[WebsocketDataBundle]:
         if not utils.isValidStr(message):
             return None
 

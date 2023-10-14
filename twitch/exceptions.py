@@ -34,6 +34,12 @@ class TwitchRefreshTokenMissingException(Exception):
         super().__init__(message)
 
 
+class TwitchStatusCodeException(Exception):
+
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
 class TwitchTokenIsExpiredException(Exception):
 
     def __init__(self, message: str):

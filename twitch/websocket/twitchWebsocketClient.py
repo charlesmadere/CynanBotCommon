@@ -3,7 +3,7 @@ import queue
 import traceback
 from datetime import datetime, timedelta, timezone
 from queue import SimpleQueue
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Set
 
 import websockets
 
@@ -14,6 +14,8 @@ try:
     from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.twitch.twitchApiServiceInterface import \
         TwitchApiServiceInterface
+    from CynanBotCommon.twitch.twitchEventSubRequest import \
+        TwitchEventSubRequest
     from CynanBotCommon.twitch.websocket.twitchWebsocketAllowedUserIdsRepositoryInterface import \
         TwitchWebsocketAllowedUserIdsRepositoryInterface
     from CynanBotCommon.twitch.websocket.twitchWebsocketClientInterface import \
@@ -22,8 +24,16 @@ try:
         TwitchWebsocketDataBundleListener
     from CynanBotCommon.twitch.websocket.twitchWebsocketJsonMapperInterface import \
         TwitchWebsocketJsonMapperInterface
+    from CynanBotCommon.twitch.websocket.websocketCondition import \
+        WebsocketCondition
     from CynanBotCommon.twitch.websocket.websocketDataBundle import \
         WebsocketDataBundle
+    from CynanBotCommon.twitch.websocket.websocketSubscriptionType import \
+        WebsocketSubscriptionType
+    from CynanBotCommon.twitch.websocket.websocketTransport import \
+        WebsocketTransport
+    from CynanBotCommon.twitch.websocket.websocketTransportMethod import \
+        WebsocketTransportMethod
 except:
     import utils
     from backgroundTaskHelper import BackgroundTaskHelper
@@ -31,6 +41,7 @@ except:
     from timber.timberInterface import TimberInterface
 
     from twitch.twitchApiServiceInterface import TwitchApiServiceInterface
+    from twitch.twitchEventSubRequest import TwitchEventSubRequest
     from twitch.websocket.twitchWebsocketAllowedUserIdsRepositoryInterface import \
         TwitchWebsocketAllowedUserIdsRepositoryInterface
     from twitch.websocket.twitchWebsocketClientInterface import \
@@ -39,7 +50,13 @@ except:
         TwitchWebsocketDataBundleListener
     from twitch.websocket.twitchWebsocketJsonMapperInterface import \
         TwitchWebsocketJsonMapperInterface
+    from twitch.websocket.websocketCondition import WebsocketCondition
     from twitch.websocket.websocketDataBundle import WebsocketDataBundle
+    from twitch.websocket.websocketSubscriptionType import \
+        WebsocketSubscriptionType
+    from twitch.websocket.websocketTransport import WebsocketTransport
+    from twitch.websocket.websocketTransportMethod import \
+        WebsocketTransportMethod
 
 
 class TwitchWebsocketClient(TwitchWebsocketClientInterface):
@@ -99,10 +116,97 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
         self.__maxMessageAge: timedelta = maxMessageAge
         self.__timeZone: timezone = timeZone
 
+        self.__eventSubSubscriptionsCreated: bool = True
         self.__isStarted: bool = False
         self.__messageIdCache: LruCache = LruCache(128)
         self.__dataBundleQueue: SimpleQueue[WebsocketDataBundle] = SimpleQueue()
+        self.__sessionId: Optional[str] = None
         self.__dataBundleListener: Optional[TwitchWebsocketDataBundleListener] = None
+
+    async def __createEventSubSubscription(self, sessionId: str, userId: str):
+        if not utils.isValidStr(sessionId):
+            raise ValueError(f'sessionId argument is malformed: \"{sessionId}\"')
+        elif not utils.isValidStr(userId):
+            raise ValueError(f'userId argument is malformed: \"{userId}\"')
+
+        # this is the set of currently supported subscription types
+        subscriptionTypes = { WebsocketSubscriptionType.CHANNEL_POINTS_REDEMPTION, WebsocketSubscriptionType.CHEER, \
+            WebsocketSubscriptionType.FOLLOW, WebsocketSubscriptionType.RAID, WebsocketSubscriptionType.SUBSCRIBE, \
+            WebsocketSubscriptionType.SUBSCRIPTION_GIFT, WebsocketSubscriptionType.SUBSCRIPTION_MESSAGE }
+
+        for subscriptionType in subscriptionTypes:
+            condition = await self.__createWebsocketCondition(
+                userId = userId,
+                subscriptionType = subscriptionType
+            )
+
+            transport = WebsocketTransport(
+                sessionId = sessionId,
+                method = WebsocketTransportMethod.WEBSOCKET
+            )
+
+            eventSubRequest = TwitchEventSubRequest(
+                condition = condition,
+                subscriptionType = subscriptionType,
+                transport = transport
+            )
+
+            response = await self.__twitchApiService.createEventSubSubscription(eventSubRequest)
+            # TODO
+
+    async def __createEventSubSubscriptions(self):
+        if self.__eventSubSubscriptionsCreated:
+            return
+
+        sessionId = self.__sessionId
+
+        if not utils.isValidStr(sessionId):
+            return
+
+        self.__eventSubSubscriptionsCreated = True
+        userIds = await self.__twitchWebsocketAllowedUserIdsRepository.getUserIds()
+
+        for userId in userIds:
+            await self.__createEventSubSubscription(
+                sessionId = sessionId,
+                userId = userId
+            )
+
+    async def __createWebsocketCondition(
+        self,
+        userId: str,
+        subscriptionType: WebsocketSubscriptionType
+    ) -> WebsocketCondition:
+        if not utils.isValidStr(userId):
+            raise ValueError(f'userId argument is malformed: \"{userId}\"')
+        elif not isinstance(subscriptionType, WebsocketSubscriptionType):
+            raise ValueError(f'subscriptionType argument is malformed: \"{subscriptionType}\"')
+
+        if subscriptionType is WebsocketSubscriptionType.CHANNEL_POINTS_REDEMPTION:
+            return WebsocketCondition(
+                broadcasterUserId = userId
+            )
+        elif subscriptionType is WebsocketSubscriptionType.CHEER:
+            return WebsocketCondition(
+                broadcasterUserId = userId
+            )
+        elif subscriptionType is WebsocketSubscriptionType.FOLLOW:
+            return WebsocketCondition(
+                broadcasterUserId = userId,
+                moderatorUserId = userId
+            )
+        elif subscriptionType is WebsocketSubscriptionType.RAID:
+            return WebsocketCondition(
+                toBroadcasterUserId = userId
+            )
+        elif subscriptionType is WebsocketSubscriptionType.SUBSCRIBE or \
+                subscriptionType is WebsocketSubscriptionType.SUBSCRIPTION_GIFT or \
+                subscriptionType is WebsocketSubscriptionType.SUBSCRIPTION_MESSAGE:
+            return WebsocketCondition(
+                broadcasterUserId = userId
+            )
+        else:
+            raise RuntimeError(f'can\'t create a WebsocketCondition for the given unsupported WebsocketSubscriptionType: \"{subscriptionType}\"')
 
     async def __isValidMessage(self, dataBundle: WebsocketDataBundle) -> bool:
         if not isinstance(dataBundle, WebsocketDataBundle):
@@ -133,7 +237,7 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
             self.__timber.log('TwitchWebsocketClient', f'Received message object that is of an unexpected type: \"{message}\"')
             return None
         else:
-            return await self.__twitchWebsocketJsonMapper.toWebsocketDataBundle(message)
+            return await self.__twitchWebsocketJsonMapper.parseWebsocketDataBundle(message)
 
     def setDataBundleListener(self, listener: Optional[TwitchWebsocketDataBundleListener]):
         if listener is not None and not isinstance(listener, TwitchWebsocketDataBundleListener):
@@ -182,6 +286,8 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
                 self.__timber.log('TwitchWebsocketClient', f'Connecting to websocket \"{self.__twitchWebsocketUrl}\"...')
 
                 async with websockets.connect(self.__twitchWebsocketUrl) as websocket:
+                    await self.__createEventSubSubscriptions()
+
                     async for message in websocket:
                         try:
                             dataBundle = await self.__parseMessageToDataBundle(message)

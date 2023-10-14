@@ -1,21 +1,15 @@
 from typing import Optional
 
 try:
-    from ..websocket.websocketTransport import (WebsocketTransport,
-                                                WebsocketTransportMethod)
+    from ..websocket.websocketTransport import WebsocketTransport
 except:
-    from twitch.websocket.websocketTransport import (WebsocketTransport,
-                                                     WebsocketTransportMethod)
+    from twitch.websocket.websocketTransport import WebsocketTransport
 
 
 class TestTwitchWebsocketTransport():
 
     def test_requireSessionId_withEmptyString(self):
-        transport = WebsocketTransport(
-            sessionId = '',
-            method = WebsocketTransportMethod.WEBSOCKET
-        )
-
+        transport = WebsocketTransport(sessionId = '')
         sessionId: Optional[str] = None
         exception: Optional[Exception] = None
 
@@ -28,9 +22,7 @@ class TestTwitchWebsocketTransport():
         assert isinstance(exception, Exception)
 
     def test_requireSessionId_withNone(self):
-        transport = WebsocketTransport(
-            method = WebsocketTransportMethod.WEBSOCKET
-        )
+        transport = WebsocketTransport()
         sessionId: Optional[str] = None
         exception: Optional[Exception] = None
 
@@ -43,19 +35,11 @@ class TestTwitchWebsocketTransport():
         assert isinstance(exception, Exception)
 
     def test_requireSessionId_withValidString(self):
-        transport = WebsocketTransport(
-            sessionId = 'abc123',
-            method = WebsocketTransportMethod.WEBSOCKET
-        )
-
+        transport = WebsocketTransport(sessionId = 'abc123')
         assert transport.requireSessionId() == 'abc123'
 
     def test_requireSessionId_withWhitespaceString(self):
-        transport = WebsocketTransport(
-            sessionId = ' ',
-            method = WebsocketTransportMethod.WEBSOCKET
-        )
-
+        transport = WebsocketTransport(sessionId = ' ')
         sessionId: Optional[str] = None
         exception: Optional[Exception] = None
 
