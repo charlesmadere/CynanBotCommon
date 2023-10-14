@@ -176,7 +176,7 @@ class TestQueuedTriviaGameStore1():
 
     def test_sanity(self):
         assert self.queuedTriviaGameStore is not None
-        assert isinstance(self.queuedTriviaGameStore, QueuedTriviaGameStore)
+        assert isinstance(self.queuedTriviaGameStore, QueuedTriviaGameStoreInterface)
 
 
 class TestQueuedTriviaGameStore2():
@@ -199,7 +199,7 @@ class TestQueuedTriviaGameStore2():
 
     def test_sanity(self):
         assert self.queuedTriviaGameStore is not None
-        assert isinstance(self.queuedTriviaGameStore, QueuedTriviaGameStore)
+        assert isinstance(self.queuedTriviaGameStore, QueuedTriviaGameStoreInterface)
 
 
 class TestQueuedTriviaGameStore3():
@@ -223,7 +223,7 @@ class TestQueuedTriviaGameStore3():
 
     def test_sanity(self):
         assert self.queuedTriviaGameStore is not None
-        assert isinstance(self.queuedTriviaGameStore, QueuedTriviaGameStore)
+        assert isinstance(self.queuedTriviaGameStore, QueuedTriviaGameStoreInterface)
 
 
 class TestQueuedTriviaGameStore4():
@@ -275,7 +275,7 @@ class TestQueuedTriviaGameStore4():
 
     def test_sanity(self):
         assert self.queuedTriviaGameStore is not None
-        assert isinstance(self.queuedTriviaGameStore, QueuedTriviaGameStore)
+        assert isinstance(self.queuedTriviaGameStore, QueuedTriviaGameStoreInterface)
 
 
 class TestQueuedTriviaGameStore5():
@@ -327,7 +327,7 @@ class TestQueuedTriviaGameStore5():
 
     def test_sanity(self):
         assert self.queuedTriviaGameStore is not None
-        assert isinstance(self.queuedTriviaGameStore, QueuedTriviaGameStore)
+        assert isinstance(self.queuedTriviaGameStore, QueuedTriviaGameStoreInterface)
 
 
 class TestQueuedTriviaGameStore6():
@@ -400,7 +400,7 @@ class TestQueuedTriviaGameStore6():
 
     def test_sanity(self):
         assert self.queuedTriviaGameStore is not None
-        assert isinstance(self.queuedTriviaGameStore, QueuedTriviaGameStore)
+        assert isinstance(self.queuedTriviaGameStore, QueuedTriviaGameStoreInterface)
 
 
 class TestQueuedTriviaGameStore7():
