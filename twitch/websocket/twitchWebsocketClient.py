@@ -1,6 +1,7 @@
 import asyncio
 import queue
 import traceback
+from datetime import datetime, timedelta, timezone
 from queue import SimpleQueue
 from typing import Any, List, Optional
 
@@ -9,6 +10,7 @@ import websockets
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.backgroundTaskHelper import BackgroundTaskHelper
+    from CynanBotCommon.lruCache import LruCache
     from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.twitch.twitchApiServiceInterface import \
         TwitchApiServiceInterface
@@ -25,6 +27,7 @@ try:
 except:
     import utils
     from backgroundTaskHelper import BackgroundTaskHelper
+    from lruCache import LruCache
     from timber.timberInterface import TimberInterface
 
     from twitch.twitchApiServiceInterface import TwitchApiServiceInterface
@@ -49,9 +52,11 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
         twitchWebsocketAllowedUserIdsRepository: TwitchWebsocketAllowedUserIdsRepositoryInterface,
         twitchWebsocketJsonMapper: TwitchWebsocketJsonMapperInterface,
         queueSleepTimeSeconds: float = 1,
-        queueTimeoutSeconds: int = 3,
         websocketSleepTimeSeconds: float = 3,
-        twitchWebsocketUrl: str = 'wss://eventsub.wss.twitch.tv/ws'
+        queueTimeoutSeconds: int = 3,
+        twitchWebsocketUrl: str = 'wss://eventsub.wss.twitch.tv/ws',
+        maxMessageAge: timedelta = timedelta(minutes = 10),
+        timeZone: timezone = timezone.utc
     ):
         if not isinstance(backgroundTaskHelper, BackgroundTaskHelper):
             raise ValueError(f'backgroundTaskHelper argument is malformed: \"{backgroundTaskHelper}\"')
@@ -67,16 +72,20 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
             raise ValueError(f'queueSleepTimeSeconds argument is malformed: \"{queueSleepTimeSeconds}\"')
         elif queueSleepTimeSeconds < 1 or queueSleepTimeSeconds > 15:
             raise ValueError(f'queueSleepTimeSeconds argument is out of bounds: {queueSleepTimeSeconds}')
-        elif not utils.isValidNum(queueTimeoutSeconds):
-            raise ValueError(f'queueTimeoutSeconds argument is malformed: \"{queueTimeoutSeconds}\"')
-        elif queueTimeoutSeconds < 1 or queueTimeoutSeconds > 5:
-            raise ValueError(f'queueTimeoutSeconds argument is out of bounds: {queueTimeoutSeconds}')
         elif not utils.isValidNum(websocketSleepTimeSeconds):
             raise ValueError(f'websocketSleepTimeSeconds argument is malformed: \"{websocketSleepTimeSeconds}\"')
         elif websocketSleepTimeSeconds < 3 or websocketSleepTimeSeconds > 10:
             raise ValueError(f'websocketSleepTimeSeconds argument is out of bounds: {websocketSleepTimeSeconds}')
+        elif not utils.isValidNum(queueTimeoutSeconds):
+            raise ValueError(f'queueTimeoutSeconds argument is malformed: \"{queueTimeoutSeconds}\"')
+        elif queueTimeoutSeconds < 1 or queueTimeoutSeconds > 5:
+            raise ValueError(f'queueTimeoutSeconds argument is out of bounds: {queueTimeoutSeconds}')
         elif not utils.isValidUrl(twitchWebsocketUrl):
             raise ValueError(f'twitchWebsocketUrl argument is malformed: \"{twitchWebsocketUrl}\"')
+        elif not isinstance(maxMessageAge, timedelta):
+            raise ValueError(f'maxMessageAge argument is malformed: \"{maxMessageAge}\"')
+        elif not isinstance(timeZone, timezone):
+            raise ValueError(f'timeZone argument is malformed: \"{timeZone}\"')
 
         self.__backgroundTaskHelper: BackgroundTaskHelper = backgroundTaskHelper
         self.__timber: TimberInterface = timber
@@ -84,13 +93,37 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
         self.__twitchWebsocketAllowedUserIdsRepository: TwitchWebsocketAllowedUserIdsRepositoryInterface = twitchWebsocketAllowedUserIdsRepository
         self.__twitchWebsocketJsonMapper: TwitchWebsocketJsonMapperInterface = twitchWebsocketJsonMapper
         self.__queueSleepTimeSeconds: float = queueSleepTimeSeconds
-        self.__queueTimeoutSeconds: int = queueTimeoutSeconds
         self.__websocketSleepTimeSeconds: float = websocketSleepTimeSeconds
+        self.__queueTimeoutSeconds: int = queueTimeoutSeconds
         self.__twitchWebsocketUrl: str = twitchWebsocketUrl
+        self.__maxMessageAge: timedelta = maxMessageAge
+        self.__timeZone: timezone = timeZone
 
         self.__isStarted: bool = False
+        self.__messageIdCache: LruCache = LruCache(128)
         self.__dataBundleQueue: SimpleQueue[WebsocketDataBundle] = SimpleQueue()
         self.__dataBundleListener: Optional[TwitchWebsocketDataBundleListener] = None
+
+    async def __isValidMessage(self, dataBundle: WebsocketDataBundle) -> bool:
+        if not isinstance(dataBundle, WebsocketDataBundle):
+            raise ValueError(f'dataBundle argument is malformed: \"{dataBundle}\"')
+
+        # ensure that this isn't a message we've seen before
+        if self.__messageIdCache.contains(dataBundle.getMetadata().getMessageId()):
+            self.__timber.log('TwitchWebsocketClient', f'Encountered a message ID that has already been seen: \"{dataBundle.getMetadata().getMessageId()}\"')
+            return False
+
+        self.__messageIdCache.put(dataBundle.getMetadata().getMessageId())
+
+        # ensure that this message isn't gratuitously old
+        messageTimestamp = dataBundle.getMetadata().getMessageTimestamp().getDateTime()
+        now = datetime.now(self.__timeZone)
+
+        if now - messageTimestamp >= self.__maxMessageAge:
+            self.__timber.log('TwitchWebsocketClient', f'Encountered a message that is too old: \"{dataBundle.getMetadata().getMessageId()}\"')
+            return False
+
+        return True
 
     async def __parseMessageToDataBundle(self, message: Optional[Any]) -> Optional[WebsocketDataBundle]:
         if message is None:
@@ -133,6 +166,9 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
                     self.__timber.log('TwitchWebsocketClient', f'Encountered queue.Empty when building up dataBundles list (queue size: {self.__dataBundleQueue.qsize()}) (dataBundles size: {len(dataBundles)})', e, traceback.format_exc())
 
                 for dataBundle in dataBundles:
+                    if not await self.__isValidMessage(dataBundle):
+                        continue
+
                     try:
                         await dataBundleListener.onNewWebsocketDataBundle(dataBundle)
                     except Exception as e:
