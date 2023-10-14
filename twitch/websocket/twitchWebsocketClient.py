@@ -16,14 +16,16 @@ try:
         TwitchApiServiceInterface
     from CynanBotCommon.twitch.twitchEventSubRequest import \
         TwitchEventSubRequest
-    from CynanBotCommon.twitch.websocket.twitchWebsocketAllowedUserIdsRepositoryInterface import \
-        TwitchWebsocketAllowedUserIdsRepositoryInterface
+    from CynanBotCommon.twitch.websocket.twitchWebsocketAllowedUsersRepositoryInterface import \
+        TwitchWebsocketAllowedUsersRepositoryInterface
     from CynanBotCommon.twitch.websocket.twitchWebsocketClientInterface import \
         TwitchWebsocketClientInterface
     from CynanBotCommon.twitch.websocket.twitchWebsocketDataBundleListener import \
         TwitchWebsocketDataBundleListener
     from CynanBotCommon.twitch.websocket.twitchWebsocketJsonMapperInterface import \
         TwitchWebsocketJsonMapperInterface
+    from CynanBotCommon.twitch.websocket.twitchWebsocketUser import \
+        TwitchWebsocketUser
     from CynanBotCommon.twitch.websocket.websocketCondition import \
         WebsocketCondition
     from CynanBotCommon.twitch.websocket.websocketDataBundle import \
@@ -42,14 +44,15 @@ except:
 
     from twitch.twitchApiServiceInterface import TwitchApiServiceInterface
     from twitch.twitchEventSubRequest import TwitchEventSubRequest
-    from twitch.websocket.twitchWebsocketAllowedUserIdsRepositoryInterface import \
-        TwitchWebsocketAllowedUserIdsRepositoryInterface
+    from twitch.websocket.twitchWebsocketAllowedUsersRepositoryInterface import \
+        TwitchWebsocketAllowedUsersRepositoryInterface
     from twitch.websocket.twitchWebsocketClientInterface import \
         TwitchWebsocketClientInterface
     from twitch.websocket.twitchWebsocketDataBundleListener import \
         TwitchWebsocketDataBundleListener
     from twitch.websocket.twitchWebsocketJsonMapperInterface import \
         TwitchWebsocketJsonMapperInterface
+    from twitch.websocket.twitchWebsocketUser import TwitchWebsocketUser
     from twitch.websocket.websocketCondition import WebsocketCondition
     from twitch.websocket.websocketDataBundle import WebsocketDataBundle
     from twitch.websocket.websocketSubscriptionType import \
@@ -66,7 +69,7 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
         backgroundTaskHelper: BackgroundTaskHelper,
         timber: TimberInterface,
         twitchApiService: TwitchApiServiceInterface,
-        twitchWebsocketAllowedUserIdsRepository: TwitchWebsocketAllowedUserIdsRepositoryInterface,
+        twitchWebsocketAllowedUserIdsRepository: TwitchWebsocketAllowedUsersRepositoryInterface,
         twitchWebsocketJsonMapper: TwitchWebsocketJsonMapperInterface,
         queueSleepTimeSeconds: float = 1,
         websocketSleepTimeSeconds: float = 3,
@@ -81,7 +84,7 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(twitchApiService, TwitchApiServiceInterface):
             raise ValueError(f'twitchApiService argument is malformed: \"{twitchApiService}\"')
-        elif not isinstance(twitchWebsocketAllowedUserIdsRepository, TwitchWebsocketAllowedUserIdsRepositoryInterface):
+        elif not isinstance(twitchWebsocketAllowedUserIdsRepository, TwitchWebsocketAllowedUsersRepositoryInterface):
             raise ValueError(f'twitchWebsocketAllowedUserIdsRepository argument is malformed: \"{twitchWebsocketAllowedUserIdsRepository}\"')
         elif not isinstance(twitchWebsocketJsonMapper, TwitchWebsocketClientInterface):
             raise ValueError(f'twitchWebsocketJsonMapper argument is malformed: \"{twitchWebsocketJsonMapper}\"')
@@ -107,7 +110,7 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
         self.__backgroundTaskHelper: BackgroundTaskHelper = backgroundTaskHelper
         self.__timber: TimberInterface = timber
         self.__twitchApiService: TwitchApiServiceInterface = twitchApiService
-        self.__twitchWebsocketAllowedUserIdsRepository: TwitchWebsocketAllowedUserIdsRepositoryInterface = twitchWebsocketAllowedUserIdsRepository
+        self.__twitchWebsocketAllowedUserIdsRepository: TwitchWebsocketAllowedUsersRepositoryInterface = twitchWebsocketAllowedUserIdsRepository
         self.__twitchWebsocketJsonMapper: TwitchWebsocketJsonMapperInterface = twitchWebsocketJsonMapper
         self.__queueSleepTimeSeconds: float = queueSleepTimeSeconds
         self.__websocketSleepTimeSeconds: float = websocketSleepTimeSeconds
@@ -123,20 +126,20 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
         self.__sessionId: Optional[str] = None
         self.__dataBundleListener: Optional[TwitchWebsocketDataBundleListener] = None
 
-    async def __createEventSubSubscription(self, sessionId: str, userId: str):
+    async def __createEventSubSubscription(self, sessionId: str, user: TwitchWebsocketUser):
         if not utils.isValidStr(sessionId):
             raise ValueError(f'sessionId argument is malformed: \"{sessionId}\"')
-        elif not utils.isValidStr(userId):
-            raise ValueError(f'userId argument is malformed: \"{userId}\"')
+        elif not isinstance(user, TwitchWebsocketUser):
+            raise ValueError(f'user argument is malformed: \"{user}\"')
 
         # this is the set of currently supported subscription types
         subscriptionTypes = { WebsocketSubscriptionType.CHANNEL_POINTS_REDEMPTION, WebsocketSubscriptionType.CHEER, \
             WebsocketSubscriptionType.FOLLOW, WebsocketSubscriptionType.RAID, WebsocketSubscriptionType.SUBSCRIBE, \
             WebsocketSubscriptionType.SUBSCRIPTION_GIFT, WebsocketSubscriptionType.SUBSCRIPTION_MESSAGE }
 
-        for subscriptionType in subscriptionTypes:
+        for index, subscriptionType in enumerate(subscriptionTypes):
             condition = await self.__createWebsocketCondition(
-                userId = userId,
+                user = user,
                 subscriptionType = subscriptionType
             )
 
@@ -151,8 +154,12 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
                 transport = transport
             )
 
-            response = await self.__twitchApiService.createEventSubSubscription(eventSubRequest)
-            # TODO
+            response = await self.__twitchApiService.createEventSubSubscription(
+                twitchAccessToken = user.getTwitchAccessToken(),
+                eventSubRequest = eventSubRequest
+            )
+
+            self.__timber.log('TwitchWebsocketClient', f'Created EventSub subscription #{(index + 1)} for {user.getUserName()} (\"{subscriptionType}\"): {response}')
 
     async def __createEventSubSubscriptions(self):
         if self.__eventSubSubscriptionsCreated:
@@ -164,46 +171,46 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
             return
 
         self.__eventSubSubscriptionsCreated = True
-        userIds = await self.__twitchWebsocketAllowedUserIdsRepository.getUserIds()
+        users = await self.__twitchWebsocketAllowedUserIdsRepository.getUsers()
 
-        for userId in userIds:
+        for user in users:
             await self.__createEventSubSubscription(
                 sessionId = sessionId,
-                userId = userId
+                user = user
             )
 
     async def __createWebsocketCondition(
         self,
-        userId: str,
+        user: TwitchWebsocketUser,
         subscriptionType: WebsocketSubscriptionType
     ) -> WebsocketCondition:
-        if not utils.isValidStr(userId):
-            raise ValueError(f'userId argument is malformed: \"{userId}\"')
+        if not isinstance(user, TwitchWebsocketUser):
+            raise ValueError(f'user argument is malformed: \"{user}\"')
         elif not isinstance(subscriptionType, WebsocketSubscriptionType):
             raise ValueError(f'subscriptionType argument is malformed: \"{subscriptionType}\"')
 
         if subscriptionType is WebsocketSubscriptionType.CHANNEL_POINTS_REDEMPTION:
             return WebsocketCondition(
-                broadcasterUserId = userId
+                broadcasterUserId = user.getUserId()
             )
         elif subscriptionType is WebsocketSubscriptionType.CHEER:
             return WebsocketCondition(
-                broadcasterUserId = userId
+                broadcasterUserId = user.getUserId()
             )
         elif subscriptionType is WebsocketSubscriptionType.FOLLOW:
             return WebsocketCondition(
-                broadcasterUserId = userId,
-                moderatorUserId = userId
+                broadcasterUserId = user.getUserId(),
+                moderatorUserId = user.getUserId()
             )
         elif subscriptionType is WebsocketSubscriptionType.RAID:
             return WebsocketCondition(
-                toBroadcasterUserId = userId
+                toBroadcasterUserId = user.getUserId()
             )
         elif subscriptionType is WebsocketSubscriptionType.SUBSCRIBE or \
                 subscriptionType is WebsocketSubscriptionType.SUBSCRIPTION_GIFT or \
                 subscriptionType is WebsocketSubscriptionType.SUBSCRIPTION_MESSAGE:
             return WebsocketCondition(
-                broadcasterUserId = userId
+                broadcasterUserId = user.getUserId()
             )
         else:
             raise RuntimeError(f'can\'t create a WebsocketCondition for the given unsupported WebsocketSubscriptionType: \"{subscriptionType}\"')

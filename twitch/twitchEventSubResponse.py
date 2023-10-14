@@ -104,3 +104,8 @@ class TwitchEventSubResponse():
 
     def getVersion(self) -> str:
         return self.__version
+
+    def __str__(self) -> str:
+        return f'condition=\"{self.__condition}\", cost=\"{self.__cost}\", createdAt=\"{self.__createdAt}\", maxTotalCost=\"{self.__maxTotalCost}\" \
+            status=\"{self.__status}\", subscriptionId=\"{self.__subscriptionId}\", subscriptionType=\"{self.__subscriptionType}\" \
+            total=\"{self.__total}\", totalCost=\"{self.__totalCost}\", transport=\"{self.__transport}\", version=\"{self.__version}\"'

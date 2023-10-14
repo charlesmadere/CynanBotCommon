@@ -233,3 +233,98 @@ class WebsocketCondition():
             raise ValueError(f'broadcasterUserId has not been set: \"{broadcasterUserId}\"')
 
         return broadcasterUserId
+
+    def __str__(self) -> str:
+        string = ''
+
+        if self.__bits is not None:
+            string = f'{string} bits={self.__bits}'
+
+        if self.__broadcasterUserId is not None:
+            string = f'{string} broadcasterUserId={self.__broadcasterUserId}'
+
+        if self.__broadcasterUserLogin is not None:
+            string = f'{string} broadcasterUserLogin={self.__broadcasterUserLogin}'
+
+        if self.__broadcasterUserName is not None:
+            string = f'{string} broadcasterUserName={self.__broadcasterUserName}'
+
+        if self.__categoryId is not None:
+            string = f'{string} categoryId={self.__categoryId}'
+
+        if self.__categoryName is not None:
+            string = f'{string} categoryName={self.__categoryName}'
+
+        if self.__clientId is not None:
+            string = f'{string} clientId={self.__clientId}'
+
+        if self.__cumulativeTotal is not None:
+            string = f'{string} cumulativeTotal={self.__cumulativeTotal}'
+
+        if self.__fromBroadcasterUserId is not None:
+            string = f'{string} fromBroadcasterUserId={self.__fromBroadcasterUserId}'
+
+        if self.__fromBroadcasterUserLogin is not None:
+            string = f'{string} fromBroadcasterUserLogin={self.__fromBroadcasterUserLogin}'
+
+        if self.__fromBroadcasterUserName is not None:
+            string = f'{string} fromBroadcasterUserName={self.__fromBroadcasterUserName}'
+
+        if self.__message is not None:
+            string = f'{string} message={self.__message}'
+
+        if self.__moderatorUserId is not None:
+            string = f'{string} moderatorUserId={self.__moderatorUserId}'
+
+        if self.__moderatorUserLogin is not None:
+            string = f'{string} moderatorUserLogin={self.__moderatorUserLogin}'
+
+        if self.__moderatorUserName is not None:
+            string = f'{string} moderatorUserName={self.__moderatorUserName}'
+
+        if self.__reason is not None:
+            string = f'{string} reason={self.__reason}'
+
+        if self.__rewardId is not None:
+            string = f'{string} rewardId={self.__rewardId}'
+
+        if self.__tier is not None:
+            string = f'{string} tier={self.__tier}'
+
+        if self.__title is not None:
+            string = f'{string} title={self.__title}'
+
+        if self.__toBroadcasterUserId is not None:
+            string = f'{string} toBroadcasterUserId={self.__toBroadcasterUserId}'
+
+        if self.__toBroadcasterUserLogin is not None:
+            string = f'{string} toBroadcasterUserLogin={self.__toBroadcasterUserLogin}'
+
+        if self.__toBroadcasterUserName is not None:
+            string = f'{string} toBroadcasterUserName={self.__toBroadcasterUserName}'
+
+        if self.__total is not None:
+            string = f'{string} total={self.__total}'
+
+        if self.__userId is not None:
+            string = f'{string} userId={self.__userId}'
+
+        if self.__userLogin is not None:
+            string = f'{string} userLogin={self.__userLogin}'
+
+        if self.__userName is not None:
+            string = f'{string} userName={self.__userName}'
+
+        if self.__viewers is not None:
+            string = f'{string} viewers={self.__viewers}'
+
+        if self.__isAnonymous is not None:
+            string = f'{string} isAnonymous={self.__isAnonymous}'
+
+        if self.__isGift is not None:
+            string = f'{string} isGift={self.__isGift}'
+
+        if self.__isPermanent is not None:
+            string = f'{string} isPermanent={self.__isPermanent}'
+
+        return string.strip()

@@ -127,6 +127,9 @@ class SimpleDateTime():
         else:
             raise ValueError(f'`other` is an unsupported type: \"{other}\"')
 
+    def __str__(self) -> str:
+        return f'{self.__now}'
+
     def __sub__(self, other: Any):
         if isinstance(other, SimpleDateTime):
             return self.__now - other.__now

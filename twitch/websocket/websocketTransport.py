@@ -62,3 +62,8 @@ class WebsocketTransport():
             raise ValueError(f'sessionId has not been set: \"{sessionId}\"')
 
         return sessionId
+
+    def __str__(self) -> str:
+        return f'connectedAt=\"{self.__connectedAt}\", disconnectedAt=\"{self.__disconnectedAt}\", \
+            secret=\"{self.__secret}\", sessionId=\"{self.__sessionId}\", method=\"{self.__method}\"'
+    

@@ -5,8 +5,10 @@ try:
     from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.twitch.twitchTokensRepositoryInterface import \
         TwitchTokensRepositoryInterface
-    from CynanBotCommon.twitch.websocket.twitchWebsocketAllowedUserIdsRepositoryInterface import \
-        TwitchWebsocketAllowedUserIdsRepositoryInterface
+    from CynanBotCommon.twitch.websocket.twitchWebsocketAllowedUsersRepositoryInterface import \
+        TwitchWebsocketAllowedUsersRepositoryInterface
+    from CynanBotCommon.twitch.websocket.twitchWebsocketUser import \
+        TwitchWebsocketUser
     from CynanBotCommon.users.userIdsRepositoryInterface import \
         UserIdsRepositoryInterface
     from CynanBotCommon.users.userInterface import UserInterface
@@ -18,14 +20,15 @@ except:
 
     from twitch.twitchTokensRepositoryInterface import \
         TwitchTokensRepositoryInterface
-    from twitch.websocket.twitchWebsocketAllowedUserIdsRepositoryInterface import \
-        TwitchWebsocketAllowedUserIdsRepositoryInterface
+    from twitch.websocket.twitchWebsocketAllowedUsersRepositoryInterface import \
+        TwitchWebsocketAllowedUsersRepositoryInterface
+    from twitch.websocket.twitchWebsocketUser import TwitchWebsocketUser
     from users.userIdsRepositoryInterface import UserIdsRepositoryInterface
     from users.userInterface import UserInterface
     from users.usersRepositoryInterface import UsersRepositoryInterface
 
 
-class TwitchWebsocketAllowedUserIdsRepository(TwitchWebsocketAllowedUserIdsRepositoryInterface):
+class TwitchWebsocketAllowedUsersRepository(TwitchWebsocketAllowedUsersRepositoryInterface):
 
     def __init__(
         self,
@@ -48,13 +51,13 @@ class TwitchWebsocketAllowedUserIdsRepository(TwitchWebsocketAllowedUserIdsRepos
         self.__userIdsRepository: UserIdsRepositoryInterface = userIdsRepository
         self.__usersRepository: UsersRepositoryInterface = usersRepository
 
-        self.__cache: Optional[Set[str]] = None
+        self.__cache: Optional[List[TwitchWebsocketUser]] = None
 
     async def clearCaches(self):
         self.__cache = None
         self.__timber.log('TwitchWebsocketAllowedUserIdsRepository', 'Caches cleared')
 
-    async def __fetchUserIds(
+    async def __buildTwitchWebsocketUsers(
         self,
         usersWithTwitchTokens: List[UserInterface]
     ) -> Set[str]:
@@ -99,14 +102,15 @@ class TwitchWebsocketAllowedUserIdsRepository(TwitchWebsocketAllowedUserIdsRepos
 
         return enabledUsers
 
-    async def getUserIds(self) -> Set[str]:
+    async def getUsers(self) -> List[TwitchWebsocketUser]:
         if self.__cache is not None:
             return self.__cache
 
         enabledUsers = await self.__getEnabledUsers()
         usersWithTwitchTokens = await self.__findUsersWithTwitchTokens(enabledUsers)
-        userIds = await self.__fetchUserIds(usersWithTwitchTokens)
-        self.__cache = userIds
+        users = await self.__buildTwitchWebsocketUsers(usersWithTwitchTokens)
+        self.__cache = users
 
-        self.__timber.log('TwitchWebsocketAllowedUserIdsRepository', f'Built up a list of {len(userIds)} user(s) that are eligible for websocket connections')
-        return userIds
+        self.__timber.log('TwitchWebsocketAllowedUserIdsRepository', f'Built up a list of {len(users)} user(s) that are eligible for websocket connections')
+        return users
+ 
