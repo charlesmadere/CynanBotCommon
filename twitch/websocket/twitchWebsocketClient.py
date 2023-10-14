@@ -9,7 +9,9 @@ import websockets
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.backgroundTaskHelper import BackgroundTaskHelper
+    from CynanBotCommon.twitch.twitchWebsocketAllowedUserIdsRepositoryInterface import TwitchWebsocketAllowedUserIdsRepositoryInterface
     from CynanBotCommon.timber.timberInterface import TimberInterface
+    from CynanBotCommon.twitch.twitchApiServiceInterface import TwitchApiServiceInterface
     from CynanBotCommon.twitch.websocket.twitchWebsocketClientInterface import \
         TwitchWebsocketClientInterface
     from CynanBotCommon.twitch.websocket.twitchWebsocketDataBundleListener import \
@@ -21,9 +23,10 @@ try:
 except:
     import utils
     from backgroundTaskHelper import BackgroundTaskHelper
+    from twitch.twitchWebsocketAllowedUserIdsRepositoryInterface import TwitchWebsocketAllowedUserIdsRepositoryInterface
     from timber.timberInterface import TimberInterface
-
-    from CynanBotCommon.twitch.websocket.twitchWebsocketDataBundleListener import \
+    from twitch.twitchApiServiceInterface import TwitchApiServiceInterface
+    from twitch.websocket.twitchWebsocketDataBundleListener import \
         TwitchWebsocketDataBundleListener
     from twitch.websocket.twitchWebsocketClientInterface import \
         TwitchWebsocketClientInterface
@@ -38,6 +41,8 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
         self,
         backgroundTaskHelper: BackgroundTaskHelper,
         timber: TimberInterface,
+        twitchApiService: TwitchApiServiceInterface,
+        twitchWebsocketAllowedUserIdsRepository: TwitchWebsocketAllowedUserIdsRepositoryInterface,
         twitchWebsocketJsonMapper: TwitchWebsocketJsonMapperInterface,
         queueSleepTimeSeconds: float = 1,
         queueTimeoutSeconds: int = 3,
@@ -48,6 +53,10 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
             raise ValueError(f'backgroundTaskHelper argument is malformed: \"{backgroundTaskHelper}\"')
         elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
+        elif not isinstance(twitchApiService, TwitchApiServiceInterface):
+            raise ValueError(f'twitchApiService argument is malformed: \"{twitchApiService}\"')
+        elif not isinstance(twitchWebsocketAllowedUserIdsRepository, TwitchWebsocketAllowedUserIdsRepositoryInterface):
+            raise ValueError(f'twitchWebsocketAllowedUserIdsRepository argument is malformed: \"{twitchWebsocketAllowedUserIdsRepository}\"')
         elif not isinstance(twitchWebsocketJsonMapper, TwitchWebsocketClientInterface):
             raise ValueError(f'twitchWebsocketJsonMapper argument is malformed: \"{twitchWebsocketJsonMapper}\"')
         elif not utils.isValidNum(queueSleepTimeSeconds):
@@ -67,6 +76,8 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
 
         self.__backgroundTaskHelper: BackgroundTaskHelper = backgroundTaskHelper
         self.__timber: TimberInterface = timber
+        self.__twitchApiService: TwitchApiServiceInterface = twitchApiService
+        self.__twitchWebsocketAllowedUserIdsRepository: TwitchWebsocketAllowedUserIdsRepositoryInterface = twitchWebsocketAllowedUserIdsRepository
         self.__twitchWebsocketJsonMapper: TwitchWebsocketJsonMapperInterface = twitchWebsocketJsonMapper
         self.__queueSleepTimeSeconds: float = queueSleepTimeSeconds
         self.__queueTimeoutSeconds: int = queueTimeoutSeconds
