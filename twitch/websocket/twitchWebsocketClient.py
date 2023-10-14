@@ -327,7 +327,7 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
                         try:
                             dataBundle = await self.__parseMessageToDataBundle(message)
                         except Exception as e:
-                            self.__timber.log('TwitchWebsocketClient', f'Encountered exception when parsing websocket message: {message}', e, traceback.format_exc())
+                            self.__timber.log('TwitchWebsocketClient', f'Encountered exception when parsing websocket message: \"{message}\"', e, traceback.format_exc())
 
                         if dataBundle is None:
                             self.__timber.log('TwitchWebsocketClient', f'Websocket message was did not parse: \"{message}\"')
