@@ -26,5 +26,5 @@ class WebsocketDataBundle():
     def getMetadata(self) -> WebsocketMetadata:
         return self.__metadata
 
-    def getSubscription(self) -> WebsocketPayload:
+    def getPayload(self) -> WebsocketPayload:
         return self.__payload

@@ -54,3 +54,7 @@ class WebsocketSession():
 
     def getStatus(self) -> WebsocketSubscriptionStatus:
         return self.__status
+
+    def __str__(self) -> str:
+        return f'connectedAt=\"{self.__connectedAt}\", keepAliveTimeoutSeconds=\"{self.__keepAliveTimeoutSeconds}\", \
+            reconnectUrl=\"{self.__reconnectUrl}\", sessionId=\"{self.__sessionId}\", status=\"{self.__status}\"'

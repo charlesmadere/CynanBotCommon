@@ -30,6 +30,8 @@ try:
         WebsocketCondition
     from CynanBotCommon.twitch.websocket.websocketDataBundle import \
         WebsocketDataBundle
+    from CynanBotCommon.twitch.websocket.websocketSubscriptionStatus import \
+        WebsocketSubscriptionStatus
     from CynanBotCommon.twitch.websocket.websocketSubscriptionType import \
         WebsocketSubscriptionType
     from CynanBotCommon.twitch.websocket.websocketTransport import \
@@ -55,6 +57,8 @@ except:
     from twitch.websocket.twitchWebsocketUser import TwitchWebsocketUser
     from twitch.websocket.websocketCondition import WebsocketCondition
     from twitch.websocket.websocketDataBundle import WebsocketDataBundle
+    from twitch.websocket.websocketSubscriptionStatus import \
+        WebsocketSubscriptionStatus
     from twitch.websocket.websocketSubscriptionType import \
         WebsocketSubscriptionType
     from twitch.websocket.websocketTransport import WebsocketTransport
@@ -215,6 +219,18 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
         else:
             raise RuntimeError(f'can\'t create a WebsocketCondition for the given unsupported WebsocketSubscriptionType: \"{subscriptionType}\"')
 
+    async def __isMessageConnectionRelated(self, dataBundle: WebsocketDataBundle) -> bool:
+        if not isinstance(dataBundle, WebsocketDataBundle):
+            raise ValueError(f'dataBundle argument is malformed: \"{dataBundle}\"')
+
+        session = dataBundle.getPayload().getSession()
+
+        if session is not None:
+            self.__timber.log('TwitchWebsocketClient', f'Encountered a message that contains session data: \"{session}\"')
+            return True
+        else:
+            return False
+
     async def __isValidMessage(self, dataBundle: WebsocketDataBundle) -> bool:
         if not isinstance(dataBundle, WebsocketDataBundle):
             raise ValueError(f'dataBundle argument is malformed: \"{dataBundle}\"')
@@ -245,6 +261,18 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
             return None
         else:
             return await self.__twitchWebsocketJsonMapper.parseWebsocketDataBundle(message)
+
+    async def __persistConnectionRelatedData(self, dataBundle: WebsocketDataBundle):
+        if not isinstance(dataBundle, WebsocketDataBundle):
+            raise ValueError(f'dataBundle argument is malformed: \"{dataBundle}\"')
+
+        session = dataBundle.getPayload().getSession()
+
+        if session is None:
+            raise RuntimeError(f'Message contains no session data: \"{dataBundle}\"')
+
+        self.__timber.log('TwitchWebsocketClient', f'Session ID is being changed to \"{session.getSessionId()}\" from \"{self.__sessionId}\"')
+        self.__sessionId = session.getSessionId()
 
     def setDataBundleListener(self, listener: Optional[TwitchWebsocketDataBundleListener]):
         if listener is not None and not isinstance(listener, TwitchWebsocketDataBundleListener):
@@ -293,18 +321,23 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
                 self.__timber.log('TwitchWebsocketClient', f'Connecting to websocket \"{self.__twitchWebsocketUrl}\"...')
 
                 async with websockets.connect(self.__twitchWebsocketUrl) as websocket:
-                    await self.__createEventSubSubscriptions()
-
                     async for message in websocket:
+                        dataBundle: Optional[WebsocketDataBundle] = None
+
                         try:
                             dataBundle = await self.__parseMessageToDataBundle(message)
-
-                            if dataBundle is None:
-                                self.__timber.log('TwitchWebsocketClient', f'Websocket message was did not parse: \"{message}\"')
-                            else:
-                                await self.__submitDataBundle(dataBundle)
                         except Exception as e:
                             self.__timber.log('TwitchWebsocketClient', f'Encountered exception when parsing websocket message: {message}', e, traceback.format_exc())
+
+                        if dataBundle is None:
+                            self.__timber.log('TwitchWebsocketClient', f'Websocket message was did not parse: \"{message}\"')
+                            continue
+
+                        if await self.__isMessageConnectionRelated(dataBundle):
+                            await self.__persistConnectionRelatedData(dataBundle)
+                            await self.__createEventSubSubscriptions()
+                        else:
+                            await self.__submitDataBundle(dataBundle)
             except Exception as e:
                 self.__timber.log('TwitchWebsocketClient', f'Encountered websocket exception', e, traceback.format_exc())
 
