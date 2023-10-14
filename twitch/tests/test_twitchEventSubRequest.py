@@ -2,16 +2,17 @@ from typing import Dict
 
 try:
     from ..twitchEventSubRequest import TwitchEventSubRequest
+    from ..websocket.websocketCondition import WebsocketCondition
     from ..websocket.websocketSubscriptionType import WebsocketSubscriptionType
     from ..websocket.websocketTransport import WebsocketTransport
     from ..websocket.websocketTransportMethod import WebsocketTransportMethod
-    from ..websocket.websocketCondition import WebsocketCondition
 except:
-    from twitch.twitchEventSubRequest import TwitchEventSubRequest
     from websocket.websocketCondition import WebsocketCondition
-    from websocket.websocketTransportMethod import WebsocketTransportMethod
-    from websocket.websocketTransport import WebsocketTransport
     from websocket.websocketSubscriptionType import WebsocketSubscriptionType
+    from websocket.websocketTransport import WebsocketTransport
+    from websocket.websocketTransportMethod import WebsocketTransportMethod
+
+    from twitch.twitchEventSubRequest import TwitchEventSubRequest
 
 
 class TestTwitchEventSubRequest():

@@ -1,11 +1,11 @@
 from typing import Optional
 
 try:
-    from ..websocket.websocketTransport import WebsocketTransport
-    from ..websocket.websocketTransport import WebsocketTransportMethod
+    from ..websocket.websocketTransport import (WebsocketTransport,
+                                                WebsocketTransportMethod)
 except:
-    from twitch.websocket.websocketTransport import WebsocketTransport
-    from twitch.websocket.websocketTransport import WebsocketTransportMethod
+    from twitch.websocket.websocketTransport import (WebsocketTransport,
+                                                     WebsocketTransportMethod)
 
 
 class TestTwitchWebsocketTransport():

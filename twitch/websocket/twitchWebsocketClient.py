@@ -9,9 +9,11 @@ import websockets
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.backgroundTaskHelper import BackgroundTaskHelper
-    from CynanBotCommon.twitch.twitchWebsocketAllowedUserIdsRepositoryInterface import TwitchWebsocketAllowedUserIdsRepositoryInterface
     from CynanBotCommon.timber.timberInterface import TimberInterface
-    from CynanBotCommon.twitch.twitchApiServiceInterface import TwitchApiServiceInterface
+    from CynanBotCommon.twitch.twitchApiServiceInterface import \
+        TwitchApiServiceInterface
+    from CynanBotCommon.twitch.twitchWebsocketAllowedUserIdsRepositoryInterface import \
+        TwitchWebsocketAllowedUserIdsRepositoryInterface
     from CynanBotCommon.twitch.websocket.twitchWebsocketClientInterface import \
         TwitchWebsocketClientInterface
     from CynanBotCommon.twitch.websocket.twitchWebsocketDataBundleListener import \
@@ -23,13 +25,15 @@ try:
 except:
     import utils
     from backgroundTaskHelper import BackgroundTaskHelper
-    from twitch.twitchWebsocketAllowedUserIdsRepositoryInterface import TwitchWebsocketAllowedUserIdsRepositoryInterface
     from timber.timberInterface import TimberInterface
+
     from twitch.twitchApiServiceInterface import TwitchApiServiceInterface
-    from twitch.websocket.twitchWebsocketDataBundleListener import \
-        TwitchWebsocketDataBundleListener
+    from twitch.twitchWebsocketAllowedUserIdsRepositoryInterface import \
+        TwitchWebsocketAllowedUserIdsRepositoryInterface
     from twitch.websocket.twitchWebsocketClientInterface import \
         TwitchWebsocketClientInterface
+    from twitch.websocket.twitchWebsocketDataBundleListener import \
+        TwitchWebsocketDataBundleListener
     from twitch.websocket.twitchWebsocketJsonMapperInterface import \
         TwitchWebsocketJsonMapperInterface
     from twitch.websocket.websocketDataBundle import WebsocketDataBundle

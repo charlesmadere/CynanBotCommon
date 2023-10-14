@@ -27,9 +27,9 @@ class WebsocketTransport():
             raise ValueError(f'connectedAt argument is malformed: \"{connectedAt}\"')
         elif disconnectedAt is not None and not isinstance(disconnectedAt, SimpleDateTime):
             raise ValueError(f'disconnectedAt argument is malformed: \"{disconnectedAt}\"')
-        elif secret is not None and not utils.isValidStr(secret):
+        elif secret is not None and not isinstance(secret, str):
             raise ValueError(f'secret argument is malformed: \"{secret}\"')
-        elif sessionId is not None and not utils.isValidStr(sessionId):
+        elif sessionId is not None and not isinstance(sessionId, str):
             raise ValueError(f'sessionId argument is malformed: \"{sessionId}\"')
         elif not isinstance(method, WebsocketTransportMethod):
             raise ValueError(f'method argument is malformed: \"{method}\"')
