@@ -54,3 +54,11 @@ class WebsocketTransport():
 
     def getSessionId(self) -> Optional[str]:
         return self.__sessionId
+
+    def requireSessionId(self) -> str:
+        sessionId = self.__sessionId
+
+        if not utils.isValidStr(sessionId):
+            raise ValueError(f'sessionId has not been set: \"{sessionId}\"')
+
+        return sessionId

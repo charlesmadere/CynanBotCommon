@@ -225,3 +225,11 @@ class WebsocketCondition():
 
     def isPermanent(self) -> Optional[bool]:
         return self.__isPermanent
+
+    def requireBroadcasterUserId(self) -> str:
+        broadcasterUserId = self.__broadcasterUserId
+
+        if not utils.isValidStr(broadcasterUserId):
+            raise ValueError(f'broadcasterUserId has not been set: \"{broadcasterUserId}\"')
+
+        return broadcasterUserId
