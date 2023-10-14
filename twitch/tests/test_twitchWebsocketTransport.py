@@ -26,36 +26,36 @@ class TestTwitchWebsocketTransport():
 
     def test_requireBroadcasterUserId_withNone(self):
         transport = WebsocketTransport()
-        broadcasterUserId: Optional[str] = None
+        sessionId: Optional[str] = None
         exception: Optional[Exception] = None
 
         try:
-            broadcasterUserId = transport.requireSessionId()
+            sessionId = transport.requireSessionId()
         except Exception as e:
             exception = e
 
-        assert broadcasterUserId is None
+        assert sessionId is None
         assert isinstance(exception, Exception)
 
-    def test_requireBroadcasterUserId_withValidString(self):
+    def test_requireSessionId_withValidString(self):
         transport = WebsocketTransport(
-            broadcasterUserId = 'abc123'
+            sessionId = 'abc123'
         )
 
         assert transport.requireSessionId() == 'abc123'
 
-    def test_requireBroadcasterUserId_withWhitespaceString(self):
+    def test_requireSessionId_withWhitespaceString(self):
         transport = WebsocketTransport(
-            broadcasterUserId = ' '
+            sessionId = ' '
         )
 
-        broadcasterUserId: Optional[str] = None
+        sessionId: Optional[str] = None
         exception: Optional[Exception] = None
 
         try:
-            broadcasterUserId = transport.requireSessionId()
+            sessionId = transport.requireSessionId()
         except Exception as e:
             exception = e
 
-        assert broadcasterUserId is None
+        assert sessionId is None
         assert isinstance(exception, Exception)
