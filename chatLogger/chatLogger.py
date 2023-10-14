@@ -96,7 +96,7 @@ class ChatLogger(ChatLoggerInterface):
     def logRaid(self, raidSize: int, fromWho: str, twitchChannel: str):
         if not utils.isValidInt(raidSize):
             raise ValueError(f'raidSize argument is malformed: \"{raidSize}\"')
-        elif raidSize < 0:
+        elif raidSize < 0 or raidSize > utils.getIntMaxSafeSize():
             raise ValueError(f'raidSize argument is out of bounds: {raidSize}')
         elif not utils.isValidStr(fromWho):
             raise ValueError(f'fromWho argument is malformed: \"{fromWho}\"')

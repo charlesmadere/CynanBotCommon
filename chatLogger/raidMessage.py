@@ -6,7 +6,6 @@ try:
     from CynanBotCommon.chatLogger.chatEventType import ChatEventType
 except:
     import utils
-
     from chatLogger.absChatMessage import AbsChatMessage
     from chatLogger.chatEventType import ChatEventType
 
@@ -24,9 +23,9 @@ class RaidMessage(AbsChatMessage):
             twitchChannel = twitchChannel
         )
 
-        if not utils.isValidNum(raidSize):
+        if not utils.isValidInt(raidSize):
             raise ValueError(f'raidSize argument is malformed: \"{raidSize}\"')
-        elif raidSize < 0:
+        elif raidSize < 0 or raidSize > utils.getIntMaxSafeSize():
             raise ValueError(f'raidSize argument is out of bounds: {raidSize}')
         elif not utils.isValidStr(fromWho):
             raise ValueError(f'fromWho argument is malformed: \"{fromWho}\"')

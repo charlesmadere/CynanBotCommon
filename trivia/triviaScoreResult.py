@@ -21,15 +21,15 @@ class TriviaScoreResult():
             raise ValueError(f'streak argument is malformed: \"{streak}\"')
         elif not utils.isValidInt(superTriviaWins):
             raise ValueError(f'superTriviaWins argument is malformed: \"{superTriviaWins}\"')
-        elif superTriviaWins < 0:
+        elif superTriviaWins < 0 or superTriviaWins > utils.getIntMaxSafeSize():
             raise ValueError(f'superTriviaWins argument is out of bounds: {superTriviaWins}')
         elif not utils.isValidInt(triviaLosses):
             raise ValueError(f'triviaLosses argument is malformed: \"{triviaLosses}\"')
-        elif triviaLosses < 0:
+        elif triviaLosses < 0 or triviaLosses > utils.getIntMaxSafeSize():
             raise ValueError(f'triviaLosses argument is out of bounds: {triviaLosses}')
         elif not utils.isValidInt(triviaWins):
             raise ValueError(f'triviaWins argument is malformed: \"{triviaWins}\"')
-        elif triviaWins < 0:
+        elif triviaWins < 0 or triviaWins > utils.getIntMaxSafeSize():
             raise ValueError(f'triviaWins argument is out of bounds: {triviaWins}')
         elif not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')

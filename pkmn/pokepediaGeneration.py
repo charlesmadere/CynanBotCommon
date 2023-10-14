@@ -26,9 +26,9 @@ class PokepediaGeneration(Enum):
 
     @classmethod
     def fromMoveId(cls, moveId: int):
-        if not utils.isValidNum(moveId):
+        if not utils.isValidInt(moveId):
             raise ValueError(f'moveId argument is malformed: \"{moveId}\"')
-        elif moveId < 0:
+        elif moveId < 0 or moveId > utils.getIntMaxSafeSize():
             raise ValueError(f'moveId argument is out of bounds: {moveId}')
 
         if moveId <= PokepediaGeneration.GENERATION_1.getMaxMoveId():
@@ -50,9 +50,9 @@ class PokepediaGeneration(Enum):
 
     @classmethod
     def fromPokedexId(cls, pokedexId: int):
-        if not utils.isValidNum(pokedexId):
+        if not utils.isValidInt(pokedexId):
             raise ValueError(f'pokedexId argument is malformed: \"{pokedexId}\"')
-        elif pokedexId < 0:
+        elif pokedexId < 0 or pokedexId > utils.getIntMaxSafeSize():
             raise ValueError(f'pokedexId argument is out of bounds: {pokedexId}')
 
         if pokedexId <= PokepediaGeneration.GENERATION_1.getMaxPokedexId():
