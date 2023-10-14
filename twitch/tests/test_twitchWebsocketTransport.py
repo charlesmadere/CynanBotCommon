@@ -2,15 +2,18 @@ from typing import Optional
 
 try:
     from ..websocket.websocketTransport import WebsocketTransport
+    from ..websocket.websocketTransport import WebsocketTransportMethod
 except:
     from twitch.websocket.websocketTransport import WebsocketTransport
+    from twitch.websocket.websocketTransport import WebsocketTransportMethod
 
 
 class TestTwitchWebsocketTransport():
 
     def test_requireSessionId_withEmptyString(self):
         transport = WebsocketTransport(
-            sessionId = ''
+            sessionId = '',
+            method = WebsocketTransportMethod.WEBSOCKET
         )
 
         sessionId: Optional[str] = None
@@ -24,8 +27,10 @@ class TestTwitchWebsocketTransport():
         assert sessionId is None
         assert isinstance(exception, Exception)
 
-    def test_requireBroadcasterUserId_withNone(self):
-        transport = WebsocketTransport()
+    def test_requireSessionId_withNone(self):
+        transport = WebsocketTransport(
+            method = WebsocketTransportMethod.WEBSOCKET
+        )
         sessionId: Optional[str] = None
         exception: Optional[Exception] = None
 
@@ -39,13 +44,15 @@ class TestTwitchWebsocketTransport():
 
     def test_requireSessionId_withValidString(self):
         transport = WebsocketTransport(
-            sessionId = 'abc123'
+            sessionId = 'abc123',
+            method = WebsocketTransportMethod.WEBSOCKET
         )
 
         assert transport.requireSessionId() == 'abc123'
 
     def test_requireSessionId_withWhitespaceString(self):
         transport = WebsocketTransport(
+            method = WebsocketTransportMethod.WEBSOCKET
             sessionId = ' '
         )
 

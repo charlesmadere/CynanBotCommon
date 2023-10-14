@@ -17,11 +17,11 @@ class WebsocketTransport():
 
     def __init__(
         self,
-        connectedAt: Optional[SimpleDateTime],
-        disconnectedAt: Optional[SimpleDateTime],
-        secret: Optional[str],
-        sessionId: Optional[str],
-        method: WebsocketTransportMethod
+        connectedAt: Optional[SimpleDateTime] = None,
+        disconnectedAt: Optional[SimpleDateTime] = None,
+        secret: Optional[str] = None,
+        sessionId: Optional[str] = None,
+        method: WebsocketTransportMethod = WebsocketTransportMethod.WEBSOCKET,
     ):
         if connectedAt is not None and not isinstance(connectedAt, SimpleDateTime):
             raise ValueError(f'connectedAt argument is malformed: \"{connectedAt}\"')
@@ -38,7 +38,6 @@ class WebsocketTransport():
         self.__disconnectedAt: Optional[SimpleDateTime] = disconnectedAt
         self.__secret: Optional[str] = secret
         self.__sessionId: Optional[str] = sessionId
-        self.__method: WebsocketTransportMethod = method
 
     def getConnectedAt(self) -> Optional[SimpleDateTime]:
         return self.__connectedAt
