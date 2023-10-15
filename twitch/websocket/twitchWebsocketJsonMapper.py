@@ -3,6 +3,8 @@ import traceback
 from json.decoder import JSONDecodeError
 from typing import Any, Dict, Optional
 
+from CynanBotCommon.twitch.websocket.websocketReward import WebsocketReward
+
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.simpleDateTime import SimpleDateTime
@@ -12,6 +14,8 @@ try:
         TwitchWebsocketJsonMapperInterface
     from CynanBotCommon.twitch.websocket.websocketCondition import \
         WebsocketCondition
+    from CynanBotCommon.twitch.websocket.websocketConditionStatus import \
+        WebsocketConditionStatus
     from CynanBotCommon.twitch.websocket.websocketDataBundle import \
         WebsocketDataBundle
     from CynanBotCommon.twitch.websocket.websocketMessageType import \
@@ -20,6 +24,7 @@ try:
         WebsocketMetadata
     from CynanBotCommon.twitch.websocket.websocketPayload import \
         WebsocketPayload
+    from CynanBotCommon.twitch.websocket.websocketReward import WebsocketReward
     from CynanBotCommon.twitch.websocket.websocketSession import \
         WebsocketSession
     from CynanBotCommon.twitch.websocket.websocketSubscription import \
@@ -41,10 +46,13 @@ except:
     from twitch.websocket.twitchWebsocketJsonMapperInterface import \
         TwitchWebsocketJsonMapperInterface
     from twitch.websocket.websocketCondition import WebsocketCondition
+    from twitch.websocket.websocketConditionStatus import \
+        WebsocketConditionStatus
     from twitch.websocket.websocketDataBundle import WebsocketDataBundle
     from twitch.websocket.websocketMessageType import WebsocketMessageType
     from twitch.websocket.websocketMetadata import WebsocketMetadata
     from twitch.websocket.websocketPayload import WebsocketPayload
+    from twitch.websocket.websocketReward import WebsocketReward
     from twitch.websocket.websocketSession import WebsocketSession
     from twitch.websocket.websocketSubscription import WebsocketSubscription
     from twitch.websocket.websocketSubscriptionStatus import \
@@ -176,6 +184,10 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
         if 'user_id' in conditionJson and utils.isValidStr(conditionJson.get('user_id')):
             userId = utils.getStrFromDict(conditionJson, 'user_id')
 
+        userInput: Optional[str] = None
+        if 'user_input' in conditionJson and utils.isValidStr(conditionJson.get('user_input')):
+            userInput = utils.getStrFromDict(conditionJson, 'user_input')
+
         userLogin: Optional[str] = None
         if 'user_login' in conditionJson and utils.isValidStr(conditionJson.get('user_login')):
             userLogin = utils.getStrFromDict(conditionJson, 'user_login')
@@ -187,6 +199,14 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
         tier: Optional[TwitchSubscriberTier] = None
         if 'tier' in conditionJson and utils.isValidStr(conditionJson.get('tier')):
             tier = TwitchSubscriberTier.fromStr(utils.getStrFromDict(conditionJson, 'tier'))
+
+        status: Optional[WebsocketConditionStatus] = None
+        if 'status' in conditionJson and utils.isValidStr(conditionJson.get('status')):
+            status = WebsocketConditionStatus.fromStr(utils.getStrFromDict(conditionJson, 'status'))
+
+        reward: Optional[WebsocketReward] = None
+        if 'reward' in conditionJson:
+            reward = await self.parseWebsocketReward(conditionJson.get('reward'))
 
         return WebsocketCondition(
             isAnonymous = isAnonymous,
@@ -216,9 +236,12 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
             toBroadcasterUserLogin = toBroadcasterUserLogin,
             toBroadcasterUserName = toBroadcasterUserName,
             userId = userId,
+            userInput = userInput,
             userLogin = userLogin,
             userName = userName,
-            tier = tier
+            tier = tier,
+            status = status,
+            reward = reward
         )
 
     async def __parseMetadata(self, metadataJson: Optional[Dict[str, Any]]) -> Optional[WebsocketMetadata]:
@@ -355,4 +378,24 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
         return WebsocketDataBundle(
             metadata = metadata,
             payload = payload
+        )
+
+    async def parseWebsocketReward(self, rewardJson: Optional[Dict[str, Any]]) -> Optional[WebsocketReward]:
+        if not isinstance(rewardJson, Dict):
+            return None
+
+        cost = utils.getIntFromDict(rewardJson, 'cost')
+
+        prompt: Optional[str] = None
+        if 'prompt' in rewardJson and utils.isValidStr(rewardJson.get('prompt')):
+            prompt = utils.getStrFromDict(rewardJson, 'prompt')
+
+        rewardId = utils.getStrFromDict(rewardJson, 'reward_id')
+        title = utils.getStrFromDict(rewardJson, 'title')
+
+        return WebsocketReward(
+            cost = cost,
+            prompt = prompt,
+            rewardId = rewardId,
+            title = title
         )

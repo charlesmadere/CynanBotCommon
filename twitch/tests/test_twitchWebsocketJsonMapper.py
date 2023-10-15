@@ -43,6 +43,7 @@ class TestTwitchWebsocketJsonMapper():
         assert result.getCategoryId() is None
         assert result.getCategoryName() is None
         assert result.getClientId() is None
+        assert result.getConditionStatus() is None
         assert result.getCumulativeTotal() is None
         assert result.getFromBroadcasterUserId() is None
         assert result.getFromBroadcasterUserLogin() is None
@@ -52,6 +53,7 @@ class TestTwitchWebsocketJsonMapper():
         assert result.getModeratorUserLogin() is None
         assert result.getModeratorUserName() is None
         assert result.getReason() is None
+        assert result.getReward() is None
         assert result.getRewardId() is None
         assert result.getTier() is None
         assert result.getTitle() is None
@@ -60,6 +62,7 @@ class TestTwitchWebsocketJsonMapper():
         assert result.getToBroadcasterUserName() is None
         assert result.getTotal() is None
         assert result.getUserId() is None
+        assert result.getUserInput() is None
         assert result.getUserLogin() is None
         assert result.getUserName() is None
         assert result.getViewers() is None

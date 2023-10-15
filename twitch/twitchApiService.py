@@ -40,8 +40,6 @@ try:
     from CynanBotCommon.twitch.twitchUserType import TwitchUserType
     from CynanBotCommon.twitch.websocket.twitchWebsocketJsonMapperInterface import \
         TwitchWebsocketJsonMapperInterface
-    from CynanBotCommon.twitch.websocket.websocketCondition import \
-        WebsocketCondition
     from CynanBotCommon.twitch.websocket.websocketSubscriptionStatus import \
         WebsocketSubscriptionStatus
     from CynanBotCommon.twitch.websocket.websocketSubscriptionType import \
@@ -83,7 +81,6 @@ except:
     from twitch.twitchUserType import TwitchUserType
     from twitch.websocket.twitchWebsocketJsonMapperInterface import \
         TwitchWebsocketJsonMapperInterface
-    from twitch.websocket.websocketCondition import WebsocketCondition
     from twitch.websocket.websocketSubscriptionStatus import \
         WebsocketSubscriptionStatus
     from twitch.websocket.websocketSubscriptionType import \

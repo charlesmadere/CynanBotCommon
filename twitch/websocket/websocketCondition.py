@@ -3,10 +3,16 @@ from typing import Optional
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.twitch.twitchSubscriberTier import TwitchSubscriberTier
+    from CynanBotCommon.twitch.websocket.websocketConditionStatus import \
+        WebsocketConditionStatus
+    from CynanBotCommon.twitch.websocket.websocketReward import WebsocketReward
 except:
     import utils
 
     from twitch.twitchSubscriberTier import TwitchSubscriberTier
+    from twitch.websocket.websocketConditionStatus import \
+        WebsocketConditionStatus
+    from twitch.websocket.websocketReward import WebsocketReward
 
 
 class WebsocketCondition():
@@ -40,9 +46,12 @@ class WebsocketCondition():
         toBroadcasterUserLogin: Optional[str] = None,
         toBroadcasterUserName: Optional[str] = None,
         userId: Optional[str] = None,
+        userInput: Optional[str] = None,
         userLogin: Optional[str] = None,
         userName: Optional[str] = None,
-        tier: Optional[TwitchSubscriberTier] = None
+        tier: Optional[TwitchSubscriberTier] = None,
+        conditionStatus: Optional[WebsocketConditionStatus] = None,
+        reward: Optional[WebsocketReward] = None
     ):
         if isAnonymous is not None and not utils.isValidBool(isAnonymous):
             raise ValueError(f'isAnonymous argument is malformed: \"{isAnonymous}\"')
@@ -98,12 +107,18 @@ class WebsocketCondition():
             raise ValueError(f'toBroadcasterUserName argument is malformed: \"{toBroadcasterUserName}\"')
         elif userId is not None and not isinstance(userId, str):
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
+        elif userInput is not None and not isinstance(userInput, str):
+            raise ValueError(f'userInput argument is malformed: \"{userInput}\"')
         elif userLogin is not None and not isinstance(userLogin, str):
             raise ValueError(f'userLogin argument is malformed: \"{userLogin}\"')
         elif userName is not None and not isinstance(userName, str):
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
         elif tier is not None and not isinstance(tier, TwitchSubscriberTier):
             raise ValueError(f'tier argument is malformed: \"{tier}\"')
+        elif conditionStatus is not None and not isinstance(conditionStatus, WebsocketConditionStatus):
+            raise ValueError(f'conditionStatus argument is malformed: \"{conditionStatus}\"')
+        elif reward is not None and not isinstance(reward, WebsocketReward):
+            raise ValueError(f'reward argument is malformed: \"{reward}\"')
 
         self.__isAnonymous: Optional[bool] = isAnonymous
         self.__isGift: Optional[bool] = isGift
@@ -132,9 +147,12 @@ class WebsocketCondition():
         self.__toBroadcasterUserLogin: Optional[str] = toBroadcasterUserLogin
         self.__toBroadcasterUserName: Optional[str] = toBroadcasterUserName
         self.__userId: Optional[str] = userId
+        self.__userInput: Optional[str] = userInput
         self.__userLogin: Optional[str] = userLogin
         self.__userName: Optional[str] = userName
         self.__tier: Optional[TwitchSubscriberTier] = tier
+        self.__conditionStatus: Optional[WebsocketConditionStatus] = conditionStatus
+        self.__reward: Optional[WebsocketReward] = reward
 
     def getBits(self) -> Optional[int]:
         return self.__bits
@@ -156,6 +174,9 @@ class WebsocketCondition():
 
     def getClientId(self) -> Optional[str]:
         return self.__clientId
+
+    def getConditionStatus(self) -> Optional[WebsocketConditionStatus]:
+        return self.__conditionStatus
 
     def getCumulativeTotal(self) -> Optional[int]:
         return self.__cumulativeTotal
@@ -184,6 +205,9 @@ class WebsocketCondition():
     def getReason(self) -> Optional[str]:
         return self.__reason
 
+    def getReward(self) -> Optional[WebsocketReward]:
+        return self.__reward
+
     def getRewardId(self) -> Optional[str]:
         return self.__rewardId
 
@@ -207,6 +231,9 @@ class WebsocketCondition():
 
     def getUserId(self) -> Optional[str]:
         return self.__userId
+
+    def getUserInput(self) -> Optional[str]:
+        return self.__userInput
 
     def getUserLogin(self) -> Optional[str]:
         return self.__userLogin
@@ -258,6 +285,9 @@ class WebsocketCondition():
         if self.__clientId is not None:
             string = f'{string} clientId={self.__clientId}'
 
+        if self.__conditionStatus is not None:
+            string = f'{string} conditionStatus={self.__conditionStatus}'
+
         if self.__cumulativeTotal is not None:
             string = f'{string} cumulativeTotal={self.__cumulativeTotal}'
 
@@ -285,6 +315,9 @@ class WebsocketCondition():
         if self.__reason is not None:
             string = f'{string} reason={self.__reason}'
 
+        if self.__reward is not None:
+            string = f'{string} reward={self.__reward}'
+
         if self.__rewardId is not None:
             string = f'{string} rewardId={self.__rewardId}'
 
@@ -308,6 +341,9 @@ class WebsocketCondition():
 
         if self.__userId is not None:
             string = f'{string} userId={self.__userId}'
+
+        if self.__userInput is not None:
+            string = f'{string} userInput={self.__userInput}'
 
         if self.__userLogin is not None:
             string = f'{string} userLogin={self.__userLogin}'

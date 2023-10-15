@@ -6,9 +6,11 @@ try:
         WebsocketCondition
     from CynanBotCommon.twitch.websocket.websocketDataBundle import \
         WebsocketDataBundle
+    from CynanBotCommon.twitch.websocket.websocketReward import WebsocketReward
 except:
     from twitch.websocket.websocketCondition import WebsocketCondition
     from twitch.websocket.websocketDataBundle import WebsocketDataBundle
+    from twitch.websocket.websocketReward import WebsocketReward
 
 
 class TwitchWebsocketJsonMapperInterface(ABC):
@@ -19,4 +21,8 @@ class TwitchWebsocketJsonMapperInterface(ABC):
 
     @abstractmethod
     async def parseWebsocketDataBundle(self, message: Optional[str]) -> Optional[WebsocketDataBundle]:
+        pass
+
+    @abstractmethod
+    async def parseWebsocketReward(self, rewardJson: Optional[Dict[str, Any]]) -> Optional[WebsocketReward]:
         pass
