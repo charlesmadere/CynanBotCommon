@@ -25,7 +25,7 @@ class WebsocketConditionStatus(Enum):
             return WebsocketConditionStatus.CANCELED
         elif text == 'fulfilled':
             return WebsocketConditionStatus.FULFILLED
-        elif text == 'unfilfilled':
+        elif text == 'unfulfilled':
             return WebsocketConditionStatus.UNFULFILLED
         else:
             return WebsocketConditionStatus.UNKNOWN
