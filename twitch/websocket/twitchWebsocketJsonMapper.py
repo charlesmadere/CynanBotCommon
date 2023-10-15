@@ -200,9 +200,9 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
         if 'tier' in conditionJson and utils.isValidStr(conditionJson.get('tier')):
             tier = TwitchSubscriberTier.fromStr(utils.getStrFromDict(conditionJson, 'tier'))
 
-        status: Optional[WebsocketConditionStatus] = None
+        conditionStatus: Optional[WebsocketConditionStatus] = None
         if 'status' in conditionJson and utils.isValidStr(conditionJson.get('status')):
-            status = WebsocketConditionStatus.fromStr(utils.getStrFromDict(conditionJson, 'status'))
+            conditionStatus = WebsocketConditionStatus.fromStr(utils.getStrFromDict(conditionJson, 'status'))
 
         reward: Optional[WebsocketReward] = None
         if 'reward' in conditionJson:
@@ -213,6 +213,7 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
             isGift = isGift,
             isPermanent = isPermanent,
             bits = bits,
+            conditionStatus = conditionStatus,
             cumulativeTotal = cumulativeTotal,
             total = total,
             viewers = viewers,
@@ -240,7 +241,6 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
             userLogin = userLogin,
             userName = userName,
             tier = tier,
-            status = status,
             reward = reward
         )
 
