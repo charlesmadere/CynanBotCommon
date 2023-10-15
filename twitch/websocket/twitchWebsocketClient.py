@@ -130,6 +130,10 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
         self.__sessionId: Optional[str] = None
         self.__dataBundleListener: Optional[TwitchWebsocketDataBundleListener] = None
 
+    async def __cleanUpConnectionData(self):
+        self.__sessionId = None
+        self.__eventSubSubscriptionsCreated = False
+
     async def __createEventSubSubscription(self, sessionId: str, user: TwitchWebsocketUser):
         if not utils.isValidStr(sessionId):
             raise ValueError(f'sessionId argument is malformed: \"{sessionId}\"')
@@ -165,7 +169,7 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
 
             self.__timber.log('TwitchWebsocketClient', f'Created EventSub subscription #{(index + 1)} for {user.getUserName()} (\"{subscriptionType}\"): {response}')
 
-    async def __createEventSubSubscriptions(self):
+    async def __createEventSubSubscriptionsIfNecessary(self):
         if self.__eventSubSubscriptionsCreated:
             return
 
@@ -219,6 +223,18 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
         else:
             raise RuntimeError(f'can\'t create a WebsocketCondition for the given unsupported WebsocketSubscriptionType: \"{subscriptionType}\"')
 
+    async def __handleConnectionRelatedMessage(self, dataBundle: WebsocketDataBundle):
+        if not isinstance(dataBundle, WebsocketDataBundle):
+            raise ValueError(f'dataBundle argument is malformed: \"{dataBundle}\"')
+
+        session = dataBundle.getPayload().getSession()
+
+        if session is None:
+            raise RuntimeError(f'Message contains no session data: \"{dataBundle}\"')
+
+        self.__timber.log('TwitchWebsocketClient', f'Session ID is being changed to \"{session.getSessionId()}\" from \"{self.__sessionId}\"')
+        self.__sessionId = session.getSessionId()
+
     async def __isMessageConnectionRelated(self, dataBundle: WebsocketDataBundle) -> bool:
         if not isinstance(dataBundle, WebsocketDataBundle):
             raise ValueError(f'dataBundle argument is malformed: \"{dataBundle}\"')
@@ -261,18 +277,6 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
             return None
         else:
             return await self.__twitchWebsocketJsonMapper.parseWebsocketDataBundle(message)
-
-    async def __persistConnectionRelatedData(self, dataBundle: WebsocketDataBundle):
-        if not isinstance(dataBundle, WebsocketDataBundle):
-            raise ValueError(f'dataBundle argument is malformed: \"{dataBundle}\"')
-
-        session = dataBundle.getPayload().getSession()
-
-        if session is None:
-            raise RuntimeError(f'Message contains no session data: \"{dataBundle}\"')
-
-        self.__timber.log('TwitchWebsocketClient', f'Session ID is being changed to \"{session.getSessionId()}\" from \"{self.__sessionId}\"')
-        self.__sessionId = session.getSessionId()
 
     def setDataBundleListener(self, listener: Optional[TwitchWebsocketDataBundleListener]):
         if listener is not None and not isinstance(listener, TwitchWebsocketDataBundleListener):
@@ -334,12 +338,13 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
                             continue
 
                         if await self.__isMessageConnectionRelated(dataBundle):
-                            await self.__persistConnectionRelatedData(dataBundle)
-                            await self.__createEventSubSubscriptions()
+                            await self.__handleConnectionRelatedMessage(dataBundle)
+                            await self.__createEventSubSubscriptionsIfNecessary()
                         else:
                             await self.__submitDataBundle(dataBundle)
             except Exception as e:
                 self.__timber.log('TwitchWebsocketClient', f'Encountered websocket exception', e, traceback.format_exc())
+                await self.__cleanUpConnectionData()
 
             await asyncio.sleep(self.__websocketSleepTimeSeconds)
 
