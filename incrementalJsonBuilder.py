@@ -12,7 +12,7 @@ class IncrementalJsonBuilder():
     def __init__(self):
         self.__jsonString: Optional[str] = None
 
-    def buildDictionariesOrAppendInternalJsonCache(
+    async def buildDictionariesOrAppendInternalJsonCache(
         self,
         jsonString: Optional[str]
     ) -> Optional[List[Dict[Any, Any]]]:
