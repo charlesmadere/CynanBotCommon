@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import pytest
 
@@ -28,8 +28,17 @@ class TestIncrementalJsonBuilder():
     @pytest.mark.asyncio
     async def test_buildDictionariesOrAppendInternalJsonCache_withEmptyHalfJsonStructure(self):
         builder = IncrementalJsonBuilder()
-        result = await builder.buildDictionariesOrAppendInternalJsonCache('}')
+
+        result: Optional[List[Dict[Any, Any]]] = None
+        exception: Optional[Exception] = None
+
+        try:
+            result = await builder.buildDictionariesOrAppendInternalJsonCache('}')
+        except Exception as e:
+            exception = e
+
         assert result is None
+        assert isinstance(exception, Exception)
 
     @pytest.mark.asyncio
     async def test_buildDictionariesOrAppendInternalJsonCache_withNone(self):
