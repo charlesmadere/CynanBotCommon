@@ -52,7 +52,7 @@ class TestIncrementalJsonBuilder():
         result = await builder.buildDictionariesOrAppendInternalJsonCache('\"test\"')
         assert result is None
 
-        result = await builder.buildDictionariesOrAppendInternalJsonCache('}{}{}{\"is_mod":true')
+        result = await builder.buildDictionariesOrAppendInternalJsonCache('}{}{}{\"is_mod\":true')
         assert isinstance(result, List)
         assert len(result) == 3
         assert isinstance(result[0], Dict)
