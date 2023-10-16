@@ -10,6 +10,7 @@ import websockets
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.backgroundTaskHelper import BackgroundTaskHelper
+    from CynanBotCommon.incrementalJsonBuilder import IncrementalJsonBuilder
     from CynanBotCommon.lruCache import LruCache
     from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.twitch.twitchApiServiceInterface import \
@@ -41,6 +42,7 @@ try:
 except:
     import utils
     from backgroundTaskHelper import BackgroundTaskHelper
+    from incrementalJsonBuilder import IncrementalJsonBuilder
     from lruCache import LruCache
     from timber.timberInterface import TimberInterface
 
@@ -125,6 +127,7 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
 
         self.__eventSubSubscriptionsCreated: bool = True
         self.__isStarted: bool = False
+        self.__jsonBuilder: IncrementalJsonBuilder = IncrementalJsonBuilder()
         self.__messageIdCache: LruCache = LruCache(128)
         self.__dataBundleQueue: SimpleQueue[WebsocketDataBundle] = SimpleQueue()
         self.__sessionId: Optional[str] = None

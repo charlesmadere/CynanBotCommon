@@ -73,12 +73,3 @@ class IncrementalJsonBuilder():
             return None
         else:
             return dictionaries
-
-# x = IncrementalJsonBuilder()
-# print(x.buildDictionariesOrAppendInternalJsonCache('{}'))
-# print(x.buildDictionariesOrAppendInternalJsonCache('{}{\"hello\":"world"}'))
-
-# print(x.buildDictionariesOrAppendInternalJsonCache('{}{\"hello\":"world"}{\"abc'))
-# print(x.buildDictionariesOrAppendInternalJsonCache('\":'))
-# print(x.buildDictionariesOrAppendInternalJsonCache('true'))
-# print(x.buildDictionariesOrAppendInternalJsonCache('}'))
