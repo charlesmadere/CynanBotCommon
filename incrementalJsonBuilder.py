@@ -69,7 +69,10 @@ class IncrementalJsonBuilder():
         else:
             self.__jsonString = self.__jsonString[index:]
 
-        return dictionaries
+        if len(dictionaries) == 0:
+            return None
+        else:
+            return dictionaries
 
 # x = IncrementalJsonBuilder()
 # print(x.buildDictionariesOrAppendInternalJsonCache('{}'))
