@@ -25,7 +25,7 @@ class IncrementalJsonBuilder():
             self.__jsonString += jsonString
 
         if self.__jsonString[0] != '{':
-            return None
+            raise RuntimeError(f'Invalid internal JSON string state: \"{self.__jsonString}\"')
 
         inString: Optional[str] = None
         skipNext = False
