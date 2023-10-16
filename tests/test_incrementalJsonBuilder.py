@@ -74,13 +74,20 @@ class TestIncrementalJsonBuilder():
         assert isinstance(result[2], Dict)
         assert len(result[2]) == 0
 
-        result = await builder.buildDictionariesOrAppendInternalJsonCache('}')
+        result = await builder.buildDictionariesOrAppendInternalJsonCache(',\"stats\":{\"rank\":50}}')
         assert isinstance(result, List)
         assert len(result) == 1
         assert isinstance(result[0], Dict)
         assert 'is_mod' in result[0]
         assert isinstance(result[0]['is_mod'], bool)
         assert result[0]['is_mod'] is True
+
+        assert 'stats' in result[0]
+        assert isinstance(result[0]['stats'], Dict)
+        assert len(result[0]['stats']) == 1
+        assert 'rank' in result[0]['stats']
+        assert isinstance(result[0]['stats']['rank'], int)
+        assert result[0]['stats']['rank'] == 50
 
     @pytest.mark.asyncio
     async def test_buildDictionariesOrAppendInternalJsonCache_withTwoEmptyJsonStructures(self):
