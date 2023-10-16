@@ -30,6 +30,7 @@ class IncrementalJsonBuilder():
         inString: Optional[str] = None
         skipNext = False
         depth = 0
+        index = 0
         dictionaries: List[Dict[Any, Any]] = list()
 
         for i in range(len(self.__jsonString)):
@@ -59,15 +60,22 @@ class IncrementalJsonBuilder():
                 depth -= 1
 
                 if depth == 0:
-                    jsonStringToParse = self.__jsonString[:i + 1]
-                    self.__jsonString = self.__jsonString[i + 1:]
+                    jsonStringToParse = self.__jsonString[index:i + 1]
+                    index = i + 1
                     dictionaries.append(json.loads(jsonStringToParse))
 
-        if len(self.__jsonString) == 0:
+        if index >= len(self.__jsonString):
             self.__jsonString = None
+        else:
+            self.__jsonString = self.__jsonString[index:]
 
         return dictionaries
 
 # x = IncrementalJsonBuilder()
-# result = x.buildDictionariesOrAppendInternalJsonCache('{}')
-# print(result)
+# print(x.buildDictionariesOrAppendInternalJsonCache('{}'))
+# print(x.buildDictionariesOrAppendInternalJsonCache('{}{\"hello\":"world"}'))
+
+# print(x.buildDictionariesOrAppendInternalJsonCache('{}{\"hello\":"world"}{\"abc'))
+# print(x.buildDictionariesOrAppendInternalJsonCache('\":'))
+# print(x.buildDictionariesOrAppendInternalJsonCache('true'))
+# print(x.buildDictionariesOrAppendInternalJsonCache('}'))
