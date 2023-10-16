@@ -12,7 +12,7 @@ class IncrementalJsonBuilder():
     def __init__(self):
         self.__jsonString: Optional[str] = None
 
-    async def buildDictionariesOrAppendInternalJsonCache(
+    def buildDictionariesOrAppendInternalJsonCache(
         self,
         jsonString: Optional[str]
     ) -> Optional[List[Dict[Any, Any]]]:
@@ -59,8 +59,15 @@ class IncrementalJsonBuilder():
                 depth -= 1
 
                 if depth == 0:
-                    jsonStringToParse = self.__jsonString[:i]
+                    jsonStringToParse = self.__jsonString[:i + 1]
                     self.__jsonString = self.__jsonString[i + 1:]
                     dictionaries.append(json.loads(jsonStringToParse))
 
+        if len(self.__jsonString) == 0:
+            self.__jsonString = None
+
         return dictionaries
+
+# x = IncrementalJsonBuilder()
+# result = x.buildDictionariesOrAppendInternalJsonCache('{}')
+# print(result)
