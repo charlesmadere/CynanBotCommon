@@ -77,6 +77,10 @@ class UserInterface(ABC):
         pass
 
     @abstractmethod
+    def hasCutenessBoosterPacks(self) -> bool:
+        pass
+
+    @abstractmethod
     def hasDiscord(self) -> bool:
         pass
 
