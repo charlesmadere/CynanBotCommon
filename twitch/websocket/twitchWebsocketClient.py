@@ -183,12 +183,15 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
 
         self.__eventSubSubscriptionsCreated = True
         users = await self.__twitchWebsocketAllowedUserIdsRepository.getUsers()
+        self.__timber.log('TwitchWebsocketClient', f'Creating EventSub subscription(s) for {len(users)} user(s)...')
 
         for user in users:
             await self.__createEventSubSubscription(
                 sessionId = sessionId,
                 user = user
             )
+
+        self.__timber.log('TwitchWebsocketClient', f'Finished creating EventSub subscription(s) for {len(users)}')
 
     async def __createWebsocketCondition(
         self,
@@ -271,15 +274,51 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
 
         return True
 
-    async def __parseMessageToDataBundle(self, message: Optional[Any]) -> Optional[WebsocketDataBundle]:
+    async def __parseMessageToDataBundles(self, message: Optional[Any]) -> Optional[List[WebsocketDataBundle]]:
         if message is None:
             self.__timber.log('TwitchWebsocketClient', f'Received message object that is None: \"{message}\"')
             return None
         elif not isinstance(message, str):
             self.__timber.log('TwitchWebsocketClient', f'Received message object that is of an unexpected type: \"{message}\"')
             return None
+
+        dictionaries = await self.__jsonBuilder.buildDictionariesOrAppendInternalJsonCache(message)
+
+        if not utils.hasItems(dictionaries):
+            return None
+
+        dataBundles: List[WebsocketDataBundle] = list()
+
+        for index, dictionary in enumerate(dictionaries):
+            dataBundle: Optional[WebsocketDataBundle] = None
+            exception: Optional[Exception] = None
+
+            try:
+                dataBundle = await self.__twitchWebsocketJsonMapper.parseWebsocketDataBundle(dictionary)
+            except Exception as e:
+                exception = e
+
+            if dataBundle is None or exception is not None:
+                self.__timber.log('TwitchWebsocketClient', f'Encountered an exception when attempting to convert dictionary at index {index} into WebsocketDataBundle: \"{dictionary}\"', e, traceback.format_exc())
+                continue
+
+            dataBundles.append(dataBundle)
+
+        if utils.hasItems(dataBundles):
+            return dataBundles
         else:
-            return await self.__twitchWebsocketJsonMapper.parseWebsocketDataBundle(message)
+            return None
+
+    async def __processDataBundles(self, dataBundles: List[WebsocketDataBundle]):
+        if not utils.hasItems(dataBundles):
+            raise ValueError(f'dataBundles argument is malformed: \"{dataBundles}\"')
+
+        for dataBundle in dataBundles:
+            if await self.__isMessageConnectionRelated(dataBundle):
+                await self.__handleConnectionRelatedMessage(dataBundle)
+                await self.__createEventSubSubscriptionsIfNecessary()
+            else:
+                await self.__submitDataBundle(dataBundle)
 
     def setDataBundleListener(self, listener: Optional[TwitchWebsocketDataBundleListener]):
         if listener is not None and not isinstance(listener, TwitchWebsocketDataBundleListener):
@@ -329,22 +368,12 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
 
                 async with websockets.connect(self.__twitchWebsocketUrl) as websocket:
                     async for message in websocket:
-                        dataBundle: Optional[WebsocketDataBundle] = None
+                        dataBundles = await self.__parseMessageToDataBundles(message)
 
-                        try:
-                            dataBundle = await self.__parseMessageToDataBundle(message)
-                        except Exception as e:
-                            self.__timber.log('TwitchWebsocketClient', f'Encountered exception when parsing websocket message: \"{message}\"', e, traceback.format_exc())
-
-                        if dataBundle is None:
-                            self.__timber.log('TwitchWebsocketClient', f'Websocket message was did not parse: \"{message}\"')
+                        if not utils.hasItems(dataBundles):
                             continue
 
-                        if await self.__isMessageConnectionRelated(dataBundle):
-                            await self.__handleConnectionRelatedMessage(dataBundle)
-                            await self.__createEventSubSubscriptionsIfNecessary()
-                        else:
-                            await self.__submitDataBundle(dataBundle)
+                        await self.__processDataBundles(dataBundles)
             except Exception as e:
                 self.__timber.log('TwitchWebsocketClient', f'Encountered websocket exception', e, traceback.format_exc())
                 await self.__cleanUpConnectionData()
