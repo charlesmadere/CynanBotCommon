@@ -3,7 +3,7 @@ import queue
 import traceback
 from datetime import datetime, timedelta, timezone
 from queue import SimpleQueue
-from typing import Any, List, Optional, Set
+from typing import Any, List, Optional
 
 import websockets
 
@@ -29,10 +29,10 @@ try:
         TwitchWebsocketUser
     from CynanBotCommon.twitch.websocket.websocketCondition import \
         WebsocketCondition
+    from CynanBotCommon.twitch.websocket.websocketConnectionStatus import \
+        WebsocketConnectionStatus
     from CynanBotCommon.twitch.websocket.websocketDataBundle import \
         WebsocketDataBundle
-    from CynanBotCommon.twitch.websocket.websocketSubscriptionStatus import \
-        WebsocketSubscriptionStatus
     from CynanBotCommon.twitch.websocket.websocketSubscriptionType import \
         WebsocketSubscriptionType
     from CynanBotCommon.twitch.websocket.websocketTransport import \
@@ -58,9 +58,9 @@ except:
         TwitchWebsocketJsonMapperInterface
     from twitch.websocket.twitchWebsocketUser import TwitchWebsocketUser
     from twitch.websocket.websocketCondition import WebsocketCondition
+    from twitch.websocket.websocketConnectionStatus import \
+        WebsocketConnectionStatus
     from twitch.websocket.websocketDataBundle import WebsocketDataBundle
-    from twitch.websocket.websocketSubscriptionStatus import \
-        WebsocketSubscriptionStatus
     from twitch.websocket.websocketSubscriptionType import \
         WebsocketSubscriptionType
     from twitch.websocket.websocketTransport import WebsocketTransport
@@ -148,15 +148,15 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
             WebsocketSubscriptionType.FOLLOW, WebsocketSubscriptionType.RAID, WebsocketSubscriptionType.SUBSCRIBE, \
             WebsocketSubscriptionType.SUBSCRIPTION_GIFT, WebsocketSubscriptionType.SUBSCRIPTION_MESSAGE }
 
+        transport = WebsocketTransport(
+            sessionId = sessionId,
+            method = WebsocketTransportMethod.WEBSOCKET
+        )
+
         for index, subscriptionType in enumerate(subscriptionTypes):
             condition = await self.__createWebsocketCondition(
                 user = user,
                 subscriptionType = subscriptionType
-            )
-
-            transport = WebsocketTransport(
-                sessionId = sessionId,
-                method = WebsocketTransportMethod.WEBSOCKET
             )
 
             eventSubRequest = TwitchEventSubRequest(

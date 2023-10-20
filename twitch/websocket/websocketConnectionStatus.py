@@ -7,7 +7,7 @@ except:
     import utils
 
 
-class WebsocketSubscriptionStatus(Enum):
+class WebsocketConnectionStatus(Enum):
 
     CONNECTED = auto()
     ENABLED = auto()
@@ -24,16 +24,16 @@ class WebsocketSubscriptionStatus(Enum):
         text = text.lower()
 
         if text == 'connected':
-            return WebsocketSubscriptionStatus.CONNECTED
+            return WebsocketConnectionStatus.CONNECTED
         elif text == 'enabled':
-            return WebsocketSubscriptionStatus.ENABLED
+            return WebsocketConnectionStatus.ENABLED
         elif text == 'reconnecting':
-            return WebsocketSubscriptionStatus.RECONNECTING
+            return WebsocketConnectionStatus.RECONNECTING
         elif text == 'authorization_revoked':
-            return WebsocketSubscriptionStatus.REVOKED
+            return WebsocketConnectionStatus.REVOKED
         elif text == 'user_removed':
-            return WebsocketSubscriptionStatus.USER_REMOVED
+            return WebsocketConnectionStatus.USER_REMOVED
         elif text == 'version_removed':
-            return WebsocketSubscriptionStatus.VERSION_REMOVED
+            return WebsocketConnectionStatus.VERSION_REMOVED
         else:
             return None

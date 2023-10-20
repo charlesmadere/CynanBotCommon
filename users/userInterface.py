@@ -65,6 +65,10 @@ class UserInterface(ABC):
         pass
 
     @abstractmethod
+    def getTriviaGameRewardId(self) -> Optional[str]:
+        pass
+
+    @abstractmethod
     def getTriviaGameShinyMultiplier(self) -> Optional[int]:
         pass
 
@@ -86,6 +90,10 @@ class UserInterface(ABC):
 
     @abstractmethod
     def hasLocationId(self) -> bool:
+        pass
+
+    @abstractmethod
+    def hasPkmnCatchBoosterPacks(self) -> bool:
         pass
 
     @abstractmethod
@@ -162,6 +170,10 @@ class UserInterface(ABC):
 
     @abstractmethod
     def isLoremIpsumEnabled(self) -> bool:
+        pass
+
+    @abstractmethod
+    def isPkmnEnabled(self) -> bool:
         pass
 
     @abstractmethod

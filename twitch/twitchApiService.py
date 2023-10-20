@@ -40,8 +40,8 @@ try:
     from CynanBotCommon.twitch.twitchUserType import TwitchUserType
     from CynanBotCommon.twitch.websocket.twitchWebsocketJsonMapperInterface import \
         TwitchWebsocketJsonMapperInterface
-    from CynanBotCommon.twitch.websocket.websocketSubscriptionStatus import \
-        WebsocketSubscriptionStatus
+    from CynanBotCommon.twitch.websocket.websocketConnectionStatus import \
+        WebsocketConnectionStatus
     from CynanBotCommon.twitch.websocket.websocketSubscriptionType import \
         WebsocketSubscriptionType
     from CynanBotCommon.twitch.websocket.websocketTransport import \
@@ -81,8 +81,8 @@ except:
     from twitch.twitchUserType import TwitchUserType
     from twitch.websocket.twitchWebsocketJsonMapperInterface import \
         TwitchWebsocketJsonMapperInterface
-    from twitch.websocket.websocketSubscriptionStatus import \
-        WebsocketSubscriptionStatus
+    from twitch.websocket.websocketConnectionStatus import \
+        WebsocketConnectionStatus
     from twitch.websocket.websocketSubscriptionType import \
         WebsocketSubscriptionType
     from twitch.websocket.websocketTransport import WebsocketTransport
@@ -178,7 +178,7 @@ class TwitchApiService(TwitchApiServiceInterface):
         subscriptionId = utils.getStrFromDict(dataJson, 'id')
         version = utils.getStrFromDict(dataJson, 'version')
         subscriptionType = WebsocketSubscriptionType.fromStr(utils.getStrFromDict(dataJson, 'type'))
-        status = WebsocketSubscriptionStatus.fromStr(utils.getStrFromDict(dataJson, 'status'))
+        status = WebsocketConnectionStatus.fromStr(utils.getStrFromDict(dataJson, 'status'))
 
         conditionJson: Dict[str, Any] = dataJson.get('condition')
         if not utils.hasItems(conditionJson):

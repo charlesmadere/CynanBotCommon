@@ -3,15 +3,11 @@ from typing import Optional
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.twitch.twitchSubscriberTier import TwitchSubscriberTier
-    from CynanBotCommon.twitch.websocket.websocketConditionStatus import \
-        WebsocketConditionStatus
     from CynanBotCommon.twitch.websocket.websocketReward import WebsocketReward
 except:
     import utils
 
     from twitch.twitchSubscriberTier import TwitchSubscriberTier
-    from twitch.websocket.websocketConditionStatus import \
-        WebsocketConditionStatus
     from twitch.websocket.websocketReward import WebsocketReward
 
 
@@ -50,7 +46,6 @@ class WebsocketCondition():
         userLogin: Optional[str] = None,
         userName: Optional[str] = None,
         tier: Optional[TwitchSubscriberTier] = None,
-        conditionStatus: Optional[WebsocketConditionStatus] = None,
         reward: Optional[WebsocketReward] = None
     ):
         if isAnonymous is not None and not utils.isValidBool(isAnonymous):
@@ -115,8 +110,6 @@ class WebsocketCondition():
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
         elif tier is not None and not isinstance(tier, TwitchSubscriberTier):
             raise ValueError(f'tier argument is malformed: \"{tier}\"')
-        elif conditionStatus is not None and not isinstance(conditionStatus, WebsocketConditionStatus):
-            raise ValueError(f'conditionStatus argument is malformed: \"{conditionStatus}\"')
         elif reward is not None and not isinstance(reward, WebsocketReward):
             raise ValueError(f'reward argument is malformed: \"{reward}\"')
 
@@ -151,7 +144,6 @@ class WebsocketCondition():
         self.__userLogin: Optional[str] = userLogin
         self.__userName: Optional[str] = userName
         self.__tier: Optional[TwitchSubscriberTier] = tier
-        self.__conditionStatus: Optional[WebsocketConditionStatus] = conditionStatus
         self.__reward: Optional[WebsocketReward] = reward
 
     def getBits(self) -> Optional[int]:
@@ -174,9 +166,6 @@ class WebsocketCondition():
 
     def getClientId(self) -> Optional[str]:
         return self.__clientId
-
-    def getConditionStatus(self) -> Optional[WebsocketConditionStatus]:
-        return self.__conditionStatus
 
     def getCumulativeTotal(self) -> Optional[int]:
         return self.__cumulativeTotal

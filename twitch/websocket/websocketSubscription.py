@@ -3,8 +3,8 @@ try:
     from CynanBotCommon.simpleDateTime import SimpleDateTime
     from CynanBotCommon.twitch.websocket.websocketCondition import \
         WebsocketCondition
-    from CynanBotCommon.twitch.websocket.websocketSubscriptionStatus import \
-        WebsocketSubscriptionStatus
+    from CynanBotCommon.twitch.websocket.websocketConnectionStatus import \
+        WebsocketConnectionStatus
     from CynanBotCommon.twitch.websocket.websocketSubscriptionType import \
         WebsocketSubscriptionType
     from CynanBotCommon.twitch.websocket.websocketTransport import \
@@ -14,8 +14,8 @@ except:
     from simpleDateTime import SimpleDateTime
 
     from twitch.websocket.websocketCondition import WebsocketCondition
-    from twitch.websocket.websocketSubscriptionStatus import \
-        WebsocketSubscriptionStatus
+    from CynanBotCommon.twitch.websocket.websocketConnectionStatus import \
+        WebsocketConnectionStatus
     from twitch.websocket.websocketSubscriptionType import \
         WebsocketSubscriptionType
     from twitch.websocket.websocketTransport import WebsocketTransport
@@ -30,7 +30,7 @@ class WebsocketSubscription():
         subscriptionId: str,
         version: str,
         condition: WebsocketCondition,
-        status: WebsocketSubscriptionStatus,
+        status: WebsocketConnectionStatus,
         subscriptionType: WebsocketSubscriptionType,
         transport: WebsocketTransport
     ):
@@ -44,7 +44,7 @@ class WebsocketSubscription():
             raise ValueError(f'version argument is malformed: \"{version}\"')
         elif not isinstance(condition, WebsocketCondition):
             raise ValueError(f'condition argument is malformed: \"{condition}\"')
-        elif not isinstance(status, WebsocketSubscriptionStatus):
+        elif not isinstance(status, WebsocketConnectionStatus):
             raise ValueError(f'status argument is malformed: \"{status}\"')
         elif not isinstance(subscriptionType, WebsocketSubscriptionType):
             raise ValueError(f'subscriptionType argument is malformed: \"{subscriptionType}\"')
@@ -56,7 +56,7 @@ class WebsocketSubscription():
         self.__subscriptionId: str = subscriptionId
         self.__version: str = version
         self.__condition: WebsocketCondition = condition
-        self.__status: WebsocketSubscriptionStatus = status
+        self.__status: WebsocketConnectionStatus = status
         self.__subscriptionType: WebsocketSubscriptionType = subscriptionType
         self.__transport: WebsocketTransport = transport
 
@@ -69,7 +69,7 @@ class WebsocketSubscription():
     def getCreatedAt(self) -> SimpleDateTime:
         return self.__createdAt
 
-    def getStatus(self) -> WebsocketSubscriptionStatus:
+    def getStatus(self) -> WebsocketConnectionStatus:
         return self.__status
 
     def getSubscriptionId(self) -> str:

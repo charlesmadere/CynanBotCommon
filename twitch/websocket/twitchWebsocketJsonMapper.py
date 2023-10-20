@@ -9,8 +9,8 @@ try:
         TwitchWebsocketJsonMapperInterface
     from CynanBotCommon.twitch.websocket.websocketCondition import \
         WebsocketCondition
-    from CynanBotCommon.twitch.websocket.websocketConditionStatus import \
-        WebsocketConditionStatus
+    from CynanBotCommon.twitch.websocket.websocketConnectionStatus import \
+        WebsocketConnectionStatus
     from CynanBotCommon.twitch.websocket.websocketDataBundle import \
         WebsocketDataBundle
     from CynanBotCommon.twitch.websocket.websocketEvent import WebsocketEvent
@@ -25,8 +25,6 @@ try:
         WebsocketSession
     from CynanBotCommon.twitch.websocket.websocketSubscription import \
         WebsocketSubscription
-    from CynanBotCommon.twitch.websocket.websocketSubscriptionStatus import \
-        WebsocketSubscriptionStatus
     from CynanBotCommon.twitch.websocket.websocketSubscriptionType import \
         WebsocketSubscriptionType
     from CynanBotCommon.twitch.websocket.websocketTransport import \
@@ -42,8 +40,8 @@ except:
     from twitch.websocket.twitchWebsocketJsonMapperInterface import \
         TwitchWebsocketJsonMapperInterface
     from twitch.websocket.websocketCondition import WebsocketCondition
-    from twitch.websocket.websocketConditionStatus import \
-        WebsocketConditionStatus
+    from twitch.websocket.websocketConnectionStatus import \
+        WebsocketConnectionStatus
     from twitch.websocket.websocketDataBundle import WebsocketDataBundle
     from twitch.websocket.websocketEvent import WebsocketEvent
     from twitch.websocket.websocketMessageType import WebsocketMessageType
@@ -52,8 +50,6 @@ except:
     from twitch.websocket.websocketReward import WebsocketReward
     from twitch.websocket.websocketSession import WebsocketSession
     from twitch.websocket.websocketSubscription import WebsocketSubscription
-    from twitch.websocket.websocketSubscriptionStatus import \
-        WebsocketSubscriptionStatus
     from twitch.websocket.websocketSubscriptionType import \
         WebsocketSubscriptionType
     from twitch.websocket.websocketTransport import WebsocketTransport
@@ -197,10 +193,6 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
         if 'tier' in conditionJson and utils.isValidStr(conditionJson.get('tier')):
             tier = TwitchSubscriberTier.fromStr(utils.getStrFromDict(conditionJson, 'tier'))
 
-        conditionStatus: Optional[WebsocketConditionStatus] = None
-        if 'status' in conditionJson and utils.isValidStr(conditionJson.get('status')):
-            conditionStatus = WebsocketConditionStatus.fromStr(utils.getStrFromDict(conditionJson, 'status'))
-
         reward: Optional[WebsocketReward] = None
         if 'reward' in conditionJson:
             reward = await self.parseWebsocketReward(conditionJson.get('reward'))
@@ -210,7 +202,6 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
             isGift = isGift,
             isPermanent = isPermanent,
             bits = bits,
-            conditionStatus = conditionStatus,
             cumulativeTotal = cumulativeTotal,
             total = total,
             viewers = viewers,
@@ -502,7 +493,7 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
         connectedAt = SimpleDateTime(utils.getDateTimeFromStr(utils.getStrFromDict(sessionJson, 'connected_at')))
         reconnectUrl = utils.getStrFromDict(sessionJson, 'reconnect_url', fallback = '')
         sessionId = utils.getStrFromDict(sessionJson, 'id')
-        status = WebsocketSubscriptionStatus.fromStr(utils.getStrFromDict(sessionJson, 'status'))
+        status = WebsocketConnectionStatus.fromStr(utils.getStrFromDict(sessionJson, 'status'))
         
         return WebsocketSession(
             keepAliveTimeoutSeconds = keepAliveTimeoutSeconds,
@@ -521,7 +512,7 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
         subscriptionId = utils.getStrFromDict(subscriptionJson, 'id')
         version = utils.getStrFromDict(subscriptionJson, 'version')
         condition = await self.parseWebsocketCondition(subscriptionJson.get('condition'))
-        status = WebsocketSubscriptionStatus.fromStr(utils.getStrFromDict(subscriptionJson, 'status'))
+        status = WebsocketConnectionStatus.fromStr(utils.getStrFromDict(subscriptionJson, 'status'))
         subscriptionType = WebsocketSubscriptionType.fromStr(utils.getStrFromDict(subscriptionJson, 'type'))
         transport = await self.__parseTransport(subscriptionJson.get('transport'))
 

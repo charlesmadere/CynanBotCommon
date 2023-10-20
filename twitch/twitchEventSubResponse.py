@@ -3,8 +3,8 @@ try:
     from CynanBotCommon.simpleDateTime import SimpleDateTime
     from CynanBotCommon.twitch.websocket.websocketCondition import \
         WebsocketCondition
-    from CynanBotCommon.twitch.websocket.websocketSubscriptionStatus import \
-        WebsocketSubscriptionStatus
+    from CynanBotCommon.twitch.websocket.websocketConnectionStatus import \
+        WebsocketConnectionStatus
     from CynanBotCommon.twitch.websocket.websocketSubscriptionType import \
         WebsocketSubscriptionType
     from CynanBotCommon.twitch.websocket.websocketTransport import \
@@ -14,8 +14,8 @@ except:
     from simpleDateTime import SimpleDateTime
 
     from twitch.websocket.websocketCondition import WebsocketCondition
-    from twitch.websocket.websocketSubscriptionStatus import \
-        WebsocketSubscriptionStatus
+    from CynanBotCommon.twitch.websocket.websocketConnectionStatus import \
+        WebsocketConnectionStatus
     from twitch.websocket.websocketSubscriptionType import \
         WebsocketSubscriptionType
     from twitch.websocket.websocketTransport import WebsocketTransport
@@ -34,7 +34,7 @@ class TwitchEventSubResponse():
         version: str,
         condition: WebsocketCondition,
         subscriptionType: WebsocketSubscriptionType,
-        status: WebsocketSubscriptionStatus,
+        status: WebsocketConnectionStatus,
         transport: WebsocketTransport
     ):
         if not utils.isValidInt(cost):
@@ -55,7 +55,7 @@ class TwitchEventSubResponse():
             raise ValueError(f'condition argument is malformed: \"{condition}\"')
         elif not isinstance(subscriptionType, WebsocketSubscriptionType):
             raise ValueError(f'subscriptionType argument is malformed: \"{subscriptionType}\"')
-        elif not isinstance(status, WebsocketSubscriptionStatus):
+        elif not isinstance(status, WebsocketConnectionStatus):
             raise ValueError(f'status argument is malformed: \"{status}\"')
         elif not isinstance(transport, WebsocketTransport):
             raise ValueError(f'transport argument is malformed: \"{transport}\"')
@@ -68,7 +68,7 @@ class TwitchEventSubResponse():
         self.__subscriptionId: str = subscriptionId
         self.__version: str = version
         self.__condition: WebsocketCondition = condition
-        self.__status: WebsocketSubscriptionStatus = status
+        self.__status: WebsocketConnectionStatus = status
         self.__subscriptionType: WebsocketSubscriptionType = subscriptionType
         self.__transport: WebsocketTransport = transport
 
@@ -84,7 +84,7 @@ class TwitchEventSubResponse():
     def getMaxTotalCost(self) -> int:
         return self.__maxTotalCost
 
-    def getStatus(self) -> WebsocketSubscriptionStatus:
+    def getStatus(self) -> WebsocketConnectionStatus:
         return self.__status
 
     def getSubscriptionId(self) -> str:
