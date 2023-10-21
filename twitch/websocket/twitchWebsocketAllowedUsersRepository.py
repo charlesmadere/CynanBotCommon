@@ -67,6 +67,8 @@ class TwitchWebsocketAllowedUsersRepository(TwitchWebsocketAllowedUsersRepositor
             return userIds
 
         for user in usersWithTwitchTokens:
+            await self.__twitchTokensRepository.validateAndRefreshAccessToken(user.getHandle())
+
             userId = await self.__userIdsRepository.fetchUserId(
                 userName = user.getHandle(),
                 twitchAccessToken = await self.__twitchTokensRepository.getAccessToken(user.getHandle())
