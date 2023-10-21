@@ -8,6 +8,10 @@ except:
 
 class TestTwitchSubscriberTier():
 
+    def test_fromStr_withPrimeString(self):
+        result = TwitchSubscriberTier.fromStr('prime')
+        assert result is TwitchSubscriberTier.PRIME
+
     def test_fromStr_with1000String(self):
         result = TwitchSubscriberTier.fromStr('1000')
         assert result is TwitchSubscriberTier.TIER_ONE

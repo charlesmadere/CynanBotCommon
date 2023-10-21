@@ -9,6 +9,7 @@ except:
 
 class TwitchSubscriberTier(Enum):
 
+    PRIME = auto()
     TIER_ONE = auto()
     TIER_TWO = auto()
     TIER_THREE = auto()
@@ -20,7 +21,9 @@ class TwitchSubscriberTier(Enum):
 
         text = text.lower()
 
-        if text == '1000':
+        if text == 'prime':
+            return TwitchSubscriberTier.PRIME
+        elif text == '1000':
             return TwitchSubscriberTier.TIER_ONE
         elif text == '2000':
             return TwitchSubscriberTier.TIER_TWO
