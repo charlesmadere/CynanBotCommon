@@ -75,7 +75,7 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
         backgroundTaskHelper: BackgroundTaskHelper,
         timber: TimberInterface,
         twitchApiService: TwitchApiServiceInterface,
-        twitchWebsocketAllowedUserIdsRepository: TwitchWebsocketAllowedUsersRepositoryInterface,
+        twitchWebsocketAllowedUsersRepository: TwitchWebsocketAllowedUsersRepositoryInterface,
         twitchWebsocketJsonMapper: TwitchWebsocketJsonMapperInterface,
         queueSleepTimeSeconds: float = 1,
         websocketSleepTimeSeconds: float = 3,
@@ -90,8 +90,8 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(twitchApiService, TwitchApiServiceInterface):
             raise ValueError(f'twitchApiService argument is malformed: \"{twitchApiService}\"')
-        elif not isinstance(twitchWebsocketAllowedUserIdsRepository, TwitchWebsocketAllowedUsersRepositoryInterface):
-            raise ValueError(f'twitchWebsocketAllowedUserIdsRepository argument is malformed: \"{twitchWebsocketAllowedUserIdsRepository}\"')
+        elif not isinstance(twitchWebsocketAllowedUsersRepository, TwitchWebsocketAllowedUsersRepositoryInterface):
+            raise ValueError(f'twitchWebsocketAllowedUsersRepository argument is malformed: \"{twitchWebsocketAllowedUsersRepository}\"')
         elif not isinstance(twitchWebsocketJsonMapper, TwitchWebsocketClientInterface):
             raise ValueError(f'twitchWebsocketJsonMapper argument is malformed: \"{twitchWebsocketJsonMapper}\"')
         elif not utils.isValidNum(queueSleepTimeSeconds):
@@ -116,7 +116,7 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
         self.__backgroundTaskHelper: BackgroundTaskHelper = backgroundTaskHelper
         self.__timber: TimberInterface = timber
         self.__twitchApiService: TwitchApiServiceInterface = twitchApiService
-        self.__twitchWebsocketAllowedUserIdsRepository: TwitchWebsocketAllowedUsersRepositoryInterface = twitchWebsocketAllowedUserIdsRepository
+        self.__twitchWebsocketAllowedUsersRepository: TwitchWebsocketAllowedUsersRepositoryInterface = twitchWebsocketAllowedUsersRepository
         self.__twitchWebsocketJsonMapper: TwitchWebsocketJsonMapperInterface = twitchWebsocketJsonMapper
         self.__queueSleepTimeSeconds: float = queueSleepTimeSeconds
         self.__websocketSleepTimeSeconds: float = websocketSleepTimeSeconds
@@ -182,7 +182,7 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
             return
 
         self.__eventSubSubscriptionsCreated = True
-        users = await self.__twitchWebsocketAllowedUserIdsRepository.getUsers()
+        users = await self.__twitchWebsocketAllowedUsersRepository.getUsers()
         self.__timber.log('TwitchWebsocketClient', f'Creating EventSub subscription(s) for {len(users)} user(s)...')
 
         for user in users:
