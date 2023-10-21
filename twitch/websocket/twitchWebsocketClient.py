@@ -480,19 +480,24 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
         if not isinstance(user, TwitchWebsocketUser):
             raise ValueError(f'user argument is malformed: \"{user}\"')
 
-        try:
-            self.__timber.log('TwitchWebsocketClient', f'Connecting to websocket \"{self.__twitchWebsocketUrl}\" for {user=}...')
+        while True:
+            try:
+                self.__timber.log('TwitchWebsocketClient', f'Connecting to websocket \"{self.__twitchWebsocketUrl}\" for {user=}...')
 
-            async with websockets.connect(self.__twitchWebsocketUrl) as websocket:
-                async for message in websocket:
-                    dataBundles = await self.__parseMessageToDataBundles(message)
+                async with websockets.connect(self.__twitchWebsocketUrl) as websocket:
+                    async for message in websocket:
+                        dataBundles = await self.__parseMessageToDataBundles(message)
 
-                    if not utils.hasItems(dataBundles):
-                        continue
+                        if not utils.hasItems(dataBundles):
+                            continue
 
-                    await self.__processDataBundlesFor(dataBundles, user)
-        except Exception as e:
-            self.__timber.log('TwitchWebsocketClient', f'Encountered websocket exception for {user=}', e, traceback.format_exc())
+                        await self.__processDataBundlesFor(dataBundles, user)
+            except Exception as e:
+                self.__timber.log('TwitchWebsocketClient', f'Encountered websocket exception for {user=}', e, traceback.format_exc())
+                self.__eventSubSubscriptionsCreatedFor[user.getUserName().lower()] = False
+                self.__sessionIdFor[user.getUserName().lower()] = ''
+
+            await asyncio.sleep(self.__websocketSleepTimeSeconds)
 
     async def __startWebsocketConnections(self):
         users = await self.__twitchWebsocketAllowedUsersRepository.getUsers()
