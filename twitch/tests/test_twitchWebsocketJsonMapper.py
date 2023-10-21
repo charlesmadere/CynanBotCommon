@@ -47,7 +47,6 @@ class TestTwitchWebsocketJsonMapper():
         assert result.getCategoryId() is None
         assert result.getCategoryName() is None
         assert result.getClientId() is None
-        assert result.getConditionStatus() is None
         assert result.getCumulativeTotal() is None
         assert result.getFromBroadcasterUserId() is None
         assert result.getFromBroadcasterUserLogin() is None

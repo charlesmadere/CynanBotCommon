@@ -274,9 +274,6 @@ class WebsocketCondition():
         if self.__clientId is not None:
             string = f'{string} clientId={self.__clientId}'
 
-        if self.__conditionStatus is not None:
-            string = f'{string} conditionStatus={self.__conditionStatus}'
-
         if self.__cumulativeTotal is not None:
             string = f'{string} cumulativeTotal={self.__cumulativeTotal}'
 
