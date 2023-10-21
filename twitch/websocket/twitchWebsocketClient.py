@@ -477,6 +477,9 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
             await asyncio.sleep(self.__websocketSleepTimeSeconds)
 
     async def __startWebsocketConnectionFor(self, user: TwitchWebsocketUser):
+        if not isinstance(user, TwitchWebsocketUser):
+            raise ValueError(f'user argument is malformed: \"{user}\"')
+
         try:
             self.__timber.log('TwitchWebsocketClient', f'Connecting to websocket \"{self.__twitchWebsocketUrl}\" for {user=}...')
 

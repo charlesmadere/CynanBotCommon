@@ -31,3 +31,6 @@ class TwitchWebsocketUser():
 
     def getUserName(self) -> str:
         return self.__userName
+
+    def __repr__(self) -> str:
+        return self.getUserName()
