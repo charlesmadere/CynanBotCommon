@@ -493,7 +493,7 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
         if not isinstance(sessionJson, Dict) or not utils.hasItems(sessionJson):
             return None
 
-        keepAliveTimeoutSeconds = utils.getIntFromDict(utils.getIntFromDict(sessionJson, 'keepalive_timeout_seconds'))
+        keepAliveTimeoutSeconds = utils.getIntFromDict(sessionJson, 'keepalive_timeout_seconds')
         connectedAt = SimpleDateTime(utils.getDateTimeFromStr(utils.getStrFromDict(sessionJson, 'connected_at')))
         sessionId = utils.getStrFromDict(sessionJson, 'id')
         status = WebsocketConnectionStatus.fromStr(utils.getStrFromDict(sessionJson, 'status'))
