@@ -322,11 +322,11 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
             return None
 
         isAnonymous: Optional[bool] = None
-        if 'is_anonymous' in eventJson and utils.isValidBool(eventJson.get('is_anonymous')):
+        if 'is_anonymous' in eventJson and eventJson.get('is_anonymous') is not None:
             isAnonymous = utils.getBoolFromDict(eventJson, 'is_anonymous')
 
         isGift: Optional[bool] = None
-        if 'is_gift' in eventJson and utils.isValidBool(eventJson.get('is_gift')):
+        if 'is_gift' in eventJson and eventJson.get('is_gift') is not None:
             isGift = utils.getBoolFromDict(eventJson, 'is_gift')
 
         bits: Optional[int] = None
