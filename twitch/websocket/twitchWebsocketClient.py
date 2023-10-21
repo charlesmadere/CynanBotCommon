@@ -299,7 +299,7 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
                 exception = e
 
             if dataBundle is None or exception is not None:
-                self.__timber.log('TwitchWebsocketClient', f'Encountered an exception when attempting to convert dictionary at index {index} into WebsocketDataBundle: \"{dictionary}\"', e, traceback.format_exc())
+                self.__timber.log('TwitchWebsocketClient', f'Encountered an exception when attempting to convert dictionary at index {index} into WebsocketDataBundle: \"{dictionary}\"', exception, traceback.format_exc())
                 continue
 
             dataBundles.append(dataBundle)
