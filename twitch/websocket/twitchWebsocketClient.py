@@ -9,6 +9,8 @@ import websockets
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.administratorProviderInterface import \
+        AdministratorProviderInterface
     from CynanBotCommon.backgroundTaskHelper import BackgroundTaskHelper
     from CynanBotCommon.incrementalJsonBuilder import IncrementalJsonBuilder
     from CynanBotCommon.lruCache import LruCache
@@ -19,6 +21,8 @@ try:
         TwitchEventSubRequest
     from CynanBotCommon.twitch.twitchEventSubResponse import \
         TwitchEventSubResponse
+    from CynanBotCommon.twitch.twitchTokensRepositoryInterface import \
+        TwitchTokensRepositoryInterface
     from CynanBotCommon.twitch.websocket.twitchWebsocketAllowedUsersRepositoryInterface import \
         TwitchWebsocketAllowedUsersRepositoryInterface
     from CynanBotCommon.twitch.websocket.twitchWebsocketClientInterface import \
@@ -31,8 +35,6 @@ try:
         TwitchWebsocketUser
     from CynanBotCommon.twitch.websocket.websocketCondition import \
         WebsocketCondition
-    from CynanBotCommon.twitch.websocket.websocketConnectionStatus import \
-        WebsocketConnectionStatus
     from CynanBotCommon.twitch.websocket.websocketDataBundle import \
         WebsocketDataBundle
     from CynanBotCommon.twitch.websocket.websocketSubscriptionType import \
@@ -43,6 +45,7 @@ try:
         WebsocketTransportMethod
 except:
     import utils
+    from administratorProviderInterface import AdministratorProviderInterface
     from backgroundTaskHelper import BackgroundTaskHelper
     from incrementalJsonBuilder import IncrementalJsonBuilder
     from lruCache import LruCache
@@ -51,6 +54,8 @@ except:
     from twitch.twitchApiServiceInterface import TwitchApiServiceInterface
     from twitch.twitchEventSubRequest import TwitchEventSubRequest
     from twitch.twitchEventSubResponse import TwitchEventSubResponse
+    from twitch.twitchTokensRepositoryInterface import \
+        TwitchTokensRepositoryInterface
     from twitch.websocket.twitchWebsocketAllowedUsersRepositoryInterface import \
         TwitchWebsocketAllowedUsersRepositoryInterface
     from twitch.websocket.twitchWebsocketClientInterface import \
@@ -61,8 +66,6 @@ except:
         TwitchWebsocketJsonMapperInterface
     from twitch.websocket.twitchWebsocketUser import TwitchWebsocketUser
     from twitch.websocket.websocketCondition import WebsocketCondition
-    from twitch.websocket.websocketConnectionStatus import \
-        WebsocketConnectionStatus
     from twitch.websocket.websocketDataBundle import WebsocketDataBundle
     from twitch.websocket.websocketSubscriptionType import \
         WebsocketSubscriptionType
@@ -75,9 +78,11 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
 
     def __init__(
         self,
+        administratorProvider: AdministratorProviderInterface,
         backgroundTaskHelper: BackgroundTaskHelper,
         timber: TimberInterface,
         twitchApiService: TwitchApiServiceInterface,
+        twitchTokensRepository: TwitchTokensRepositoryInterface,
         twitchWebsocketAllowedUsersRepository: TwitchWebsocketAllowedUsersRepositoryInterface,
         twitchWebsocketJsonMapper: TwitchWebsocketJsonMapperInterface,
         queueSleepTimeSeconds: float = 1,
@@ -87,12 +92,16 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
         maxMessageAge: timedelta = timedelta(minutes = 10),
         timeZone: timezone = timezone.utc
     ):
-        if not isinstance(backgroundTaskHelper, BackgroundTaskHelper):
+        if not isinstance(administratorProvider, AdministratorProviderInterface):
+            raise ValueError(f'administratorProvider argument is malformed: \"{administratorProvider}\"')
+        elif not isinstance(backgroundTaskHelper, BackgroundTaskHelper):
             raise ValueError(f'backgroundTaskHelper argument is malformed: \"{backgroundTaskHelper}\"')
         elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(twitchApiService, TwitchApiServiceInterface):
             raise ValueError(f'twitchApiService argument is malformed: \"{twitchApiService}\"')
+        elif not isinstance(twitchTokensRepository, TwitchTokensRepositoryInterface):
+            raise ValueError(f'twitchTokensRepository argument is malformed: \"{twitchTokensRepository}\"')
         elif not isinstance(twitchWebsocketAllowedUsersRepository, TwitchWebsocketAllowedUsersRepositoryInterface):
             raise ValueError(f'twitchWebsocketAllowedUsersRepository argument is malformed: \"{twitchWebsocketAllowedUsersRepository}\"')
         elif not isinstance(twitchWebsocketJsonMapper, TwitchWebsocketJsonMapperInterface):
@@ -116,9 +125,11 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
         elif not isinstance(timeZone, timezone):
             raise ValueError(f'timeZone argument is malformed: \"{timeZone}\"')
 
+        self.__administratorProvider: AdministratorProviderInterface = administratorProvider
         self.__backgroundTaskHelper: BackgroundTaskHelper = backgroundTaskHelper
         self.__timber: TimberInterface = timber
         self.__twitchApiService: TwitchApiServiceInterface = twitchApiService
+        self.__twitchTokensRepository: TwitchTokensRepositoryInterface = twitchTokensRepository
         self.__twitchWebsocketAllowedUsersRepository: TwitchWebsocketAllowedUsersRepositoryInterface = twitchWebsocketAllowedUsersRepository
         self.__twitchWebsocketJsonMapper: TwitchWebsocketJsonMapperInterface = twitchWebsocketJsonMapper
         self.__queueSleepTimeSeconds: float = queueSleepTimeSeconds
@@ -141,9 +152,16 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
         self.__eventSubSubscriptionsCreated = False
         self.__sessionId = None
 
-    async def __createEventSubSubscription(self, sessionId: str, user: TwitchWebsocketUser):
+    async def __createEventSubSubscription(
+        self,
+        sessionId: str,
+        twitchAppAccessToken: str,
+        user: TwitchWebsocketUser
+    ):
         if not utils.isValidStr(sessionId):
             raise ValueError(f'sessionId argument is malformed: \"{sessionId}\"')
+        elif not utils.isValidStr(twitchAppAccessToken):
+            raise ValueError(f'twitchAppAccessToken argument is malformed: \"{twitchAppAccessToken}\"')
         elif not isinstance(user, TwitchWebsocketUser):
             raise ValueError(f'user argument is malformed: \"{user}\"')
 
@@ -178,7 +196,7 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
 
             try:
                 response = await self.__twitchApiService.createEventSubSubscription(
-                    twitchAccessToken = user.getTwitchAccessToken(),
+                    twitchAppAccessToken = user.getTwitchAccessToken(),
                     eventSubRequest = eventSubRequest
                 )
             except Exception as e:
@@ -204,9 +222,14 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
         users = await self.__twitchWebsocketAllowedUsersRepository.getUsers()
         self.__timber.log('TwitchWebsocketClient', f'Creating EventSub subscription(s) for {len(users)} user(s)...')
 
+        twitchAppAccessToken = await self.__twitchTokensRepository.requireAccessToken(
+            twitchChannel = await self.__administratorProvider.getAdministratorUserName()
+        )
+
         for user in users:
             await self.__createEventSubSubscription(
                 sessionId = sessionId,
+                twitchAppAccessToken = twitchAppAccessToken,
                 user = user
             )
 
