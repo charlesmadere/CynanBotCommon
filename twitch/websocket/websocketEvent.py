@@ -4,11 +4,13 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.simpleDateTime import SimpleDateTime
     from CynanBotCommon.twitch.twitchSubscriberTier import TwitchSubscriberTier
+    from CynanBotCommon.twitch.websocket.websocketReward import WebsocketReward
 except:
     import utils
     from simpleDateTime import SimpleDateTime
 
     from twitch.twitchSubscriberTier import TwitchSubscriberTier
+    from twitch.websocket.websocketReward import WebsocketReward
 
 
 class WebsocketEvent():
@@ -43,7 +45,8 @@ class WebsocketEvent():
         userInput: Optional[str] = None,
         userLogin: Optional[str] = None,
         userName: Optional[str] = None,
-        tier: Optional[TwitchSubscriberTier] = None
+        tier: Optional[TwitchSubscriberTier] = None,
+        reward: Optional[WebsocketReward] = None
     ):
         if isAnonymous is not None and not utils.isValidBool(isAnonymous):
             raise ValueError(f'isAnonymous argument is malformed: \"{isAnonymous}\"')
@@ -103,6 +106,8 @@ class WebsocketEvent():
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
         elif tier is not None and not isinstance(tier, TwitchSubscriberTier):
             raise ValueError(f'tier argument is malformed: \"{tier}\"')
+        elif reward is not None and not isinstance(reward, WebsocketReward):
+            raise ValueError(f'reward argument is malformed: \"{reward}\"')
 
         self.__isAnonymous: Optional[bool] = isAnonymous
         self.__isGift: Optional[bool] = isGift
@@ -133,6 +138,7 @@ class WebsocketEvent():
         self.__userLogin: Optional[str] = userLogin
         self.__userName: Optional[str] = userName
         self.__tier: Optional[TwitchSubscriberTier] = tier
+        self.__reward: Optional[WebsocketReward] = reward
 
     def getBits(self) -> Optional[int]:
         return self.__bits
@@ -175,6 +181,9 @@ class WebsocketEvent():
 
     def getRedeemedAt(self) -> Optional[SimpleDateTime]:
         return self.__redeemedAt
+
+    def getReward(self) -> Optional[WebsocketReward]:
+        return self.__reward
 
     def getRewardId(self) -> Optional[str]:
         return self.__rewardId

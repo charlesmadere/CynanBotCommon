@@ -437,6 +437,10 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
         if 'tier' in eventJson and utils.isValidStr(eventJson.get('tier')):
             tier = TwitchSubscriberTier.fromStr(utils.getStrFromDict(eventJson, 'tier'))
 
+        reward: Optional[WebsocketReward] = None
+        if 'reward' in eventJson:
+            reward = await self.parseWebsocketReward(eventJson.get('reward'))
+
         return WebsocketEvent(
             isAnonymous = isAnonymous,
             isGift = isGift,
@@ -466,7 +470,8 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
             userInput = userInput,
             userLogin = userLogin,
             userName = userName,
-            tier = tier
+            tier = tier,
+            reward = reward
         )
 
     async def parseWebsocketReward(self, rewardJson: Optional[Dict[str, Any]]) -> Optional[WebsocketReward]:
