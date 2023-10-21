@@ -1,4 +1,5 @@
 import math
+from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 try:
@@ -232,6 +233,22 @@ class TestUtils():
         result: List[str] = utils.getCleanedSplits(original)
         assert result is not None
         assert len(result) == 0
+
+    def test_getDateTimeFromStr_withDateTimeString1(self):
+        result = utils.getDateTimeFromStr('2002-08-01T14:11:00')
+        assert isinstance(result, datetime)
+
+    def test_getDateTimeFromStr_withEmptyString(self):
+        result = utils.getDateTimeFromStr('')
+        assert result is None
+
+    def test_getDateTimeFromStr_withNone(self):
+        result = utils.getDateTimeFromStr(None)
+        assert result is None
+
+    def test_getDateTimeFromStr_withTwitchDateTimeString(self):
+        result = utils.getDateTimeFromStr('2023-10-21T14:11:45.338014562Z')
+        assert isinstance(result, datetime)
 
     def test_getFloatFromDict_withEmptyDict(self):
         d: Dict[str, Any] = dict()
