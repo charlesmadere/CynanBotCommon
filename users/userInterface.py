@@ -2,11 +2,20 @@ from abc import ABC, abstractmethod
 from datetime import tzinfo
 from typing import List, Optional
 
+try:
+    from CynanBotCommon.cuteness.cutenessBoosterPack import CutenessBoosterPack
+except:
+    from cuteness.cutenessBoosterPack import CutenessBoosterPack
+
 
 class UserInterface(ABC):
 
     @abstractmethod
     def areRecurringActionsEnabled(self) -> bool:
+        pass
+
+    @abstractmethod
+    def getCutenessBoosterPacks(self) -> Optional[List[CutenessBoosterPack]]:
         pass
 
     @abstractmethod
