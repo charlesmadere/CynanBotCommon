@@ -135,7 +135,7 @@ class TwitchApiService(TwitchApiServiceInterface):
         elif not isinstance(eventSubRequest, TwitchEventSubRequest):
             raise ValueError(f'eventSubRequest argument is malformed: \"{eventSubRequest}\"')
 
-        self.__timber.log('TwitchApiService', f'Creating EventSub subscription...')
+        self.__timber.log('TwitchApiService', f'Creating EventSub subscription... (twitchAccessToken=\"{twitchAccessToken}\") (eventSubRequest=\"{eventSubRequest.toJson()}\")')
         twitchClientId = await self.__twitchCredentialsProvider.getTwitchClientId()
         clientSession = await self.__networkClientProvider.get()
 
