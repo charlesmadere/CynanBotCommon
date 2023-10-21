@@ -17,6 +17,8 @@ try:
         TwitchApiServiceInterface
     from CynanBotCommon.twitch.twitchEventSubRequest import \
         TwitchEventSubRequest
+    from CynanBotCommon.twitch.twitchEventSubResponse import \
+        TwitchEventSubResponse
     from CynanBotCommon.twitch.websocket.twitchWebsocketAllowedUsersRepositoryInterface import \
         TwitchWebsocketAllowedUsersRepositoryInterface
     from CynanBotCommon.twitch.websocket.twitchWebsocketClientInterface import \
@@ -48,6 +50,7 @@ except:
 
     from twitch.twitchApiServiceInterface import TwitchApiServiceInterface
     from twitch.twitchEventSubRequest import TwitchEventSubRequest
+    from twitch.twitchEventSubResponse import TwitchEventSubResponse
     from twitch.websocket.twitchWebsocketAllowedUsersRepositoryInterface import \
         TwitchWebsocketAllowedUsersRepositoryInterface
     from twitch.websocket.twitchWebsocketClientInterface import \
@@ -169,12 +172,23 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
                 transport = transport
             )
 
-            response = await self.__twitchApiService.createEventSubSubscription(
-                twitchAccessToken = user.getTwitchAccessToken(),
-                eventSubRequest = eventSubRequest
-            )
+            response: Optional[TwitchEventSubResponse] = None
+            exception: Optional[Exception] = None
 
-            self.__timber.log('TwitchWebsocketClient', f'Created EventSub subscription #{(index + 1)} for {user.getUserName()} (\"{subscriptionType}\"): {response}')
+            try:
+                response = await self.__twitchApiService.createEventSubSubscription(
+                    twitchAccessToken = user.getTwitchAccessToken(),
+                    eventSubRequest = eventSubRequest
+                )
+            except Exception as e:
+                exception = e
+
+            if exception is not None:
+                self.__timber.log('TwitchWebsocketClient', f'Encountered exception when attempting to create EventSub subscription #{(index + 1)} for {user.getUserName()} (\"{subscriptionType}\"): {response}', exception, traceback.format_exc())
+            elif response is None:
+                self.__timber.log('TwitchWebsocketClient', f'Attempted to create EventSub subscription #{(index + 1)} for {user.getUserName()} (\"{subscriptionType}\"), but no response was returned')
+            else:
+                self.__timber.log('TwitchWebsocketClient', f'Created EventSub subscription #{(index + 1)} for {user.getUserName()} (\"{subscriptionType}\"): {response}')
 
     async def __createEventSubSubscriptionsIfNecessary(self):
         if self.__eventSubSubscriptionsCreated:
