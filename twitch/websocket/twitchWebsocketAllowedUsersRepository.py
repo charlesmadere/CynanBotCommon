@@ -79,7 +79,7 @@ class TwitchWebsocketAllowedUsersRepository(TwitchWebsocketAllowedUsersRepositor
                 users.append(TwitchWebsocketUser(
                     twitchAccessToken = twitchAccessToken,
                     userId = userId,
-                    userName = user
+                    userName = user.getHandle()
                 ))
 
         return users
