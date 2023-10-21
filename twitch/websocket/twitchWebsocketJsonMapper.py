@@ -233,13 +233,16 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
         )
 
     async def __parseMetadata(self, metadataJson: Optional[Dict[str, Any]]) -> Optional[WebsocketMetadata]:
-        if not isinstance(metadataJson, Dict):
+        if not isinstance(metadataJson, Dict) or not utils.hasItems(metadataJson):
             return None
 
         messageTimestamp = SimpleDateTime(utils.getDateTimeFromStr(utils.getStrFromDict(metadataJson, 'message_timestamp')))
         messageId = utils.getStrFromDict(metadataJson, 'message_id')
         messageType = WebsocketMessageType.fromStr(utils.getStrFromDict(metadataJson, 'message_type'))
-        subscriptionType = WebsocketSubscriptionType.fromStr(utils.getStrFromDict(metadataJson, 'subscription_type', fallback = ''))
+
+        subscriptionType: Optional[WebsocketSubscriptionType] = None
+        if 'subscription_type' in metadataJson and utils.isValidStr(metadataJson.get('subscription_type')):
+            subscriptionType = WebsocketSubscriptionType.fromStr(utils.getStrFromDict(metadataJson, 'subscription_type'))
 
         subscriptionVersion: Optional[str] = None
         if 'subscription_version' in metadataJson and utils.isValidStr(metadataJson.get('subscription_version')):
@@ -314,7 +317,7 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
         )
 
     async def parseWebsocketEvent(self, eventJson: Optional[Dict[str, Any]]) -> Optional[WebsocketEvent]:
-        if not isinstance(eventJson, Dict):
+        if not isinstance(eventJson, Dict) or not utils.hasItems(eventJson):
             return None
 
         isAnonymous: Optional[bool] = None
@@ -491,15 +494,17 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
 
         keepAliveTimeoutSeconds = utils.getIntFromDict(utils.getIntFromDict(sessionJson, 'keepalive_timeout_seconds'))
         connectedAt = SimpleDateTime(utils.getDateTimeFromStr(utils.getStrFromDict(sessionJson, 'connected_at')))
-        reconnectUrl = utils.getStrFromDict(sessionJson, 'reconnect_url', fallback = '')
         sessionId = utils.getStrFromDict(sessionJson, 'id')
         status = WebsocketConnectionStatus.fromStr(utils.getStrFromDict(sessionJson, 'status'))
-        
+
+        if 'reconnect_url' in sessionJson and utils.isValidUrl(sessionJson.get('reconnect_url')):
+            reconnectUrl = utils.getStrFromDict(sessionJson, 'reconnect_url')
+
         return WebsocketSession(
             keepAliveTimeoutSeconds = keepAliveTimeoutSeconds,
             connectedAt = connectedAt,
             reconnectUrl = reconnectUrl,
-            sesionId = sessionId,
+            sessionId = sessionId,
             status = status
         )
 

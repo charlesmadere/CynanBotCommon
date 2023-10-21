@@ -102,7 +102,7 @@ class TestTwitchWebsocketJsonMapper():
     @pytest.mark.asyncio
     async def test_parseWebsocketEvent_withEmptyDictionary(self):
         result = await self.jsonMapper.parseWebsocketEvent(dict())
-        assert isinstance(result, WebsocketEvent)
+        assert result is None
 
     @pytest.mark.asyncio
     async def test_parseWebsocketEvent_withNone(self):
