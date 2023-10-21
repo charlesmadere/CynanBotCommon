@@ -184,7 +184,7 @@ def getDateTimeFromStr(text: Optional[str]) -> Optional[datetime]:
     twitchDateTimeRegExMatch = twitchDateTimeRegEx.fullmatch(text)
 
     if twitchDateTimeRegExMatch is not None:
-        text = twitchDateTimeRegExMatch.group(1)
+        text = f'{twitchDateTimeRegExMatch.group(1)}+00:00'
     elif naiveTimeZoneRegEx.fullmatch(text) is None:
         text = f'{text}+00:00'
 
