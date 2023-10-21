@@ -196,7 +196,7 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
 
             try:
                 response = await self.__twitchApiService.createEventSubSubscription(
-                    twitchAppAccessToken = twitchAppAccessToken,
+                    twitchAppAccessToken = user.getTwitchAccessToken(),
                     eventSubRequest = eventSubRequest
                 )
             except Exception as e:
