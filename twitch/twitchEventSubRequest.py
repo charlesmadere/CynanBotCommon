@@ -44,6 +44,10 @@ class TwitchEventSubRequest():
     def getTransport(self) -> WebsocketTransport:
         return self.__transport
 
+    def __str__(self) -> str:
+        jsonDictionary = self.toJson()
+        return f'{jsonDictionary}'
+
     def toJson(self) -> Dict[Any, Any]:
         return {
             'condition': {
