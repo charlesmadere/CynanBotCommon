@@ -484,7 +484,7 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
         if 'prompt' in rewardJson and utils.isValidStr(rewardJson.get('prompt')):
             prompt = utils.getStrFromDict(rewardJson, 'prompt')
 
-        rewardId = utils.getStrFromDict(rewardJson, 'reward_id')
+        rewardId = utils.getStrFromDict(rewardJson, 'id')
         title = utils.getStrFromDict(rewardJson, 'title')
 
         return WebsocketReward(
