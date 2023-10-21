@@ -137,8 +137,9 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
         self.__dataBundleListener: Optional[TwitchWebsocketDataBundleListener] = None
 
     async def __cleanUpConnectionData(self):
-        self.__sessionId = None
+        self.__twitchWebsocketAllowedUsersRepository.clearCaches()
         self.__eventSubSubscriptionsCreated = False
+        self.__sessionId = None
 
     async def __createEventSubSubscription(self, sessionId: str, user: TwitchWebsocketUser):
         if not utils.isValidStr(sessionId):
@@ -246,6 +247,10 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
             )
         else:
             raise RuntimeError(f'can\'t create a WebsocketCondition for the given unsupported WebsocketSubscriptionType: \"{subscriptionType}\"')
+
+    async def __fetchTwitchWebsocketAllowedUsers(self):
+        # allows this repository to pre-fetch and cache this data ahead of time
+        await self.__twitchWebsocketAllowedUsersRepository.getUsers()
 
     async def __handleConnectionRelatedMessage(self, dataBundle: WebsocketDataBundle):
         if not isinstance(dataBundle, WebsocketDataBundle):
@@ -394,6 +399,8 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
 
     async def __startWebsocketConnection(self):
         while True:
+            await self.__fetchTwitchWebsocketAllowedUsers()
+
             try:
                 self.__timber.log('TwitchWebsocketClient', f'Connecting to websocket \"{self.__twitchWebsocketUrl}\"...')
 
