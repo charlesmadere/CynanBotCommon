@@ -92,7 +92,7 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
             raise ValueError(f'twitchApiService argument is malformed: \"{twitchApiService}\"')
         elif not isinstance(twitchWebsocketAllowedUsersRepository, TwitchWebsocketAllowedUsersRepositoryInterface):
             raise ValueError(f'twitchWebsocketAllowedUsersRepository argument is malformed: \"{twitchWebsocketAllowedUsersRepository}\"')
-        elif not isinstance(twitchWebsocketJsonMapper, TwitchWebsocketClientInterface):
+        elif not isinstance(twitchWebsocketJsonMapper, TwitchWebsocketJsonMapperInterface):
             raise ValueError(f'twitchWebsocketJsonMapper argument is malformed: \"{twitchWebsocketJsonMapper}\"')
         elif not utils.isValidNum(queueSleepTimeSeconds):
             raise ValueError(f'queueSleepTimeSeconds argument is malformed: \"{queueSleepTimeSeconds}\"')
