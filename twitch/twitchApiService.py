@@ -157,7 +157,7 @@ class TwitchApiService(TwitchApiServiceInterface):
         await response.close()
 
         if not utils.hasItems(jsonResponse):
-            self.__timber.log('TwitchApiService', f'Received a null/empty JSON resposne when creating EventSub subscription ({twitchAccessToken=}) ({eventSubRequest=}): {jsonResponse}')
+            self.__timber.log('TwitchApiService', f'Received a null/empty JSON response when creating EventSub subscription ({twitchAccessToken=}) ({eventSubRequest=}): {jsonResponse}')
             raise TwitchJsonException(f'TwitchApiService received a null/empty JSON response when creating EventSub subscription ({twitchAccessToken=}) ({eventSubRequest=}): {jsonResponse}')
         elif responseStatusCode != 202:
             self.__timber.log('TwitchApiService', f'Encountered non-202 HTTP status code ({responseStatusCode}) when creating EventSub subscription ({twitchAccessToken=}) ({eventSubRequest=}): {jsonResponse}')
