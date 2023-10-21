@@ -137,7 +137,7 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
         self.__dataBundleListener: Optional[TwitchWebsocketDataBundleListener] = None
 
     async def __cleanUpConnectionData(self):
-        self.__twitchWebsocketAllowedUsersRepository.clearCaches()
+        await self.__twitchWebsocketAllowedUsersRepository.clearCaches()
         self.__eventSubSubscriptionsCreated = False
         self.__sessionId = None
 
