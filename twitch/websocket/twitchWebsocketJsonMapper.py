@@ -305,11 +305,12 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
             return None
 
         metadata = await self.__parseMetadata(dataBundleJson.get('metadata'))
-        payload = await self.__parsePayload(dataBundleJson.get('payload'))
 
-        if metadata is None or payload is None:
-            self.__timber.log('TwitchWebsocketJsonMapper', f'Websocket message ({dataBundleJson}) is missing either \"metadata\" ({metadata}) or \"payload\" ({payload})')
+        if metadata is None:
+            self.__timber.log('TwitchWebsocketJsonMapper', f'Websocket message ({dataBundleJson}) is missing \"metadata\" ({metadata}) field')
             return None
+
+        payload = await self.__parsePayload(dataBundleJson.get('payload'))
 
         return WebsocketDataBundle(
             metadata = metadata,

@@ -1,3 +1,5 @@
+from typing import Optional
+
 try:
     from CynanBotCommon.twitch.websocket.websocketMetadata import \
         WebsocketMetadata
@@ -13,18 +15,18 @@ class WebsocketDataBundle():
     def __init__(
         self,
         metadata: WebsocketMetadata,
-        payload: WebsocketPayload
+        payload: Optional[WebsocketPayload]
     ):
         if not isinstance(metadata, WebsocketMetadata):
             raise ValueError(f'metadata argument is malformed: \"{metadata}\"')
-        if not isinstance(payload, WebsocketPayload):
+        if payload is not None and not isinstance(payload, WebsocketPayload):
             raise ValueError(f'payload argument is malformed: \"{payload}\"')
 
         self.__metadata: WebsocketMetadata = metadata
-        self.__payload: WebsocketPayload = payload
+        self.__payload: Optional[WebsocketPayload] = payload
 
     def getMetadata(self) -> WebsocketMetadata:
         return self.__metadata
 
-    def getPayload(self) -> WebsocketPayload:
+    def getPayload(self) -> Optional[WebsocketPayload]:
         return self.__payload

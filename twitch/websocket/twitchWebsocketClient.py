@@ -233,10 +233,15 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
         if not isinstance(dataBundle, WebsocketDataBundle):
             raise ValueError(f'dataBundle argument is malformed: \"{dataBundle}\"')
 
-        session = dataBundle.getPayload().getSession()
+        payload = dataBundle.getPayload()
+
+        if payload is None:
+            return
+
+        session = payload.getSession()
 
         if session is None:
-            raise RuntimeError(f'Message contains no session data: \"{dataBundle}\"')
+            return
 
         self.__timber.log('TwitchWebsocketClient', f'Session ID is being changed to \"{session.getSessionId()}\" from \"{self.__sessionId}\"')
         self.__sessionId = session.getSessionId()
@@ -245,7 +250,12 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
         if not isinstance(dataBundle, WebsocketDataBundle):
             raise ValueError(f'dataBundle argument is malformed: \"{dataBundle}\"')
 
-        session = dataBundle.getPayload().getSession()
+        payload = dataBundle.getPayload()
+
+        if payload is None:
+            return True
+
+        session = payload.getSession()
 
         if session is not None:
             self.__timber.log('TwitchWebsocketClient', f'Encountered a message that contains session data: \"{session}\"')
