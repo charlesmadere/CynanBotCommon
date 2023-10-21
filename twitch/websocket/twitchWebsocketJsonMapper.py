@@ -466,7 +466,7 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
         )
 
     async def parseWebsocketReward(self, rewardJson: Optional[Dict[str, Any]]) -> Optional[WebsocketReward]:
-        if not isinstance(rewardJson, Dict):
+        if not isinstance(rewardJson, Dict) or not utils.hasItems(rewardJson):
             return None
 
         cost = utils.getIntFromDict(rewardJson, 'cost')
