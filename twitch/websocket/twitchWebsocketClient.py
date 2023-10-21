@@ -144,9 +144,13 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
             raise ValueError(f'user argument is malformed: \"{user}\"')
 
         # this is the set of currently supported subscription types
-        subscriptionTypes = { WebsocketSubscriptionType.CHANNEL_POINTS_REDEMPTION,
-            WebsocketSubscriptionType.CHEER, WebsocketSubscriptionType.SUBSCRIBE, \
-            WebsocketSubscriptionType.SUBSCRIPTION_GIFT, WebsocketSubscriptionType.SUBSCRIPTION_MESSAGE }
+        subscriptionTypes = {
+            WebsocketSubscriptionType.CHANNEL_POINTS_REDEMPTION,
+            WebsocketSubscriptionType.CHEER,
+            WebsocketSubscriptionType.SUBSCRIBE,
+            WebsocketSubscriptionType.SUBSCRIPTION_GIFT,
+            WebsocketSubscriptionType.SUBSCRIPTION_MESSAGE
+        }
 
         transport = WebsocketTransport(
             sessionId = sessionId,

@@ -60,24 +60,29 @@ class TwitchWebsocketAllowedUsersRepository(TwitchWebsocketAllowedUsersRepositor
     async def __buildTwitchWebsocketUsers(
         self,
         usersWithTwitchTokens: List[UserInterface]
-    ) -> Set[str]:
-        userIds: Set[str] = set()
+    ) -> List[TwitchWebsocketUser]:
+        users: List[TwitchWebsocketUser] = list()
 
         if not utils.hasItems(usersWithTwitchTokens):
-            return userIds
+            return users
 
         for user in usersWithTwitchTokens:
             await self.__twitchTokensRepository.validateAndRefreshAccessToken(user.getHandle())
+            twitchAccessToken = await self.__twitchTokensRepository.requireAccessToken(user.getHandle())
 
             userId = await self.__userIdsRepository.fetchUserId(
                 userName = user.getHandle(),
-                twitchAccessToken = await self.__twitchTokensRepository.getAccessToken(user.getHandle())
+                twitchAccessToken = twitchAccessToken
             )
 
             if utils.isValidStr(userId):
-                userIds.add(userId)
+                users.append(TwitchWebsocketUser(
+                    twitchAccessToken = twitchAccessToken,
+                    userId = userId,
+                    userName = user
+                ))
 
-        return userIds
+        return users
 
     async def __findUsersWithTwitchTokens(
         self,
