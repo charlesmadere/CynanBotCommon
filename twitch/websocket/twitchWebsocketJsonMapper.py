@@ -498,6 +498,7 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
         sessionId = utils.getStrFromDict(sessionJson, 'id')
         status = WebsocketConnectionStatus.fromStr(utils.getStrFromDict(sessionJson, 'status'))
 
+        reconnectUrl: Optional[str] = None
         if 'reconnect_url' in sessionJson and utils.isValidUrl(sessionJson.get('reconnect_url')):
             reconnectUrl = utils.getStrFromDict(sessionJson, 'reconnect_url')
 
