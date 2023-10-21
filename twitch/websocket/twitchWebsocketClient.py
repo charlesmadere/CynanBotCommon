@@ -3,7 +3,7 @@ import queue
 import traceback
 from datetime import datetime, timedelta, timezone
 from queue import SimpleQueue
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Set
 
 import websockets
 
@@ -148,12 +148,12 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
             raise ValueError(f'user argument is malformed: \"{user}\"')
 
         # this is the set of currently supported subscription types
-        subscriptionTypes = {
+        subscriptionTypes: Set[WebsocketSubscriptionType] = {
             WebsocketSubscriptionType.CHANNEL_POINTS_REDEMPTION,
-            WebsocketSubscriptionType.CHEER,
-            WebsocketSubscriptionType.SUBSCRIBE,
-            WebsocketSubscriptionType.SUBSCRIPTION_GIFT,
-            WebsocketSubscriptionType.SUBSCRIPTION_MESSAGE
+            # WebsocketSubscriptionType.CHEER,
+            # WebsocketSubscriptionType.SUBSCRIBE,
+            # WebsocketSubscriptionType.SUBSCRIPTION_GIFT,
+            # WebsocketSubscriptionType.SUBSCRIPTION_MESSAGE
         }
 
         transport = WebsocketTransport(
