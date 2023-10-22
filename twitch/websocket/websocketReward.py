@@ -40,3 +40,6 @@ class WebsocketReward():
 
     def getTitle(self) -> str:
         return self.__title
+
+    def __repr__(self) -> str:
+        return f'({self.__cost=}, {self.__prompt=}, {self.__rewardId=}, {self.__title=})'
