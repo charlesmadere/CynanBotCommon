@@ -55,7 +55,9 @@ class TriviaQuestionCompiler():
         responses: List[str],
         htmlUnescape: bool = False
     ) -> List[str]:
-        if not utils.isValidBool(htmlUnescape):
+        if not isinstance(responses, List):
+            raise ValueError(f'responses argument is malformed: \"{responses}\"')
+        elif not utils.isValidBool(htmlUnescape):
             raise ValueError(f'htmlUnescape argument is malformed: \"{htmlUnescape}\"')
 
         if not utils.hasItems(responses):
@@ -64,7 +66,10 @@ class TriviaQuestionCompiler():
         compiledResponses: Set[str] = set()
 
         for response in responses:
-            compiledResponse = await self.compileResponse(response, htmlUnescape)
+            compiledResponse = await self.compileResponse(
+                response = response,
+                htmlUnescape = htmlUnescape
+            )
 
             if utils.isValidStr(compiledResponse):
                 compiledResponses.add(compiledResponse)

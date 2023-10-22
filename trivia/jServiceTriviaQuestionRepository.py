@@ -19,7 +19,8 @@ try:
     from CynanBotCommon.trivia.triviaExceptions import (
         GenericTriviaNetworkException, MalformedTriviaJsonException)
     from CynanBotCommon.trivia.triviaFetchOptions import TriviaFetchOptions
-    from CynanBotCommon.trivia.triviaIdGenerator import TriviaIdGenerator
+    from CynanBotCommon.trivia.triviaIdGeneratorInterface import \
+        TriviaIdGeneratorInterface
     from CynanBotCommon.trivia.triviaQuestionCompiler import \
         TriviaQuestionCompiler
     from CynanBotCommon.trivia.triviaSettingsRepositoryInterface import \
@@ -42,7 +43,7 @@ except:
     from trivia.triviaExceptions import (GenericTriviaNetworkException,
                                          MalformedTriviaJsonException)
     from trivia.triviaFetchOptions import TriviaFetchOptions
-    from trivia.triviaIdGenerator import TriviaIdGenerator
+    from trivia.triviaIdGeneratorInterface import TriviaIdGeneratorInterface
     from trivia.triviaQuestionCompiler import TriviaQuestionCompiler
     from trivia.triviaSettingsRepositoryInterface import \
         TriviaSettingsRepositoryInterface
@@ -58,7 +59,7 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
         networkClientProvider: NetworkClientProvider,
         timber: TimberInterface,
         triviaAnswerCompiler: TriviaAnswerCompiler,
-        triviaIdGenerator: TriviaIdGenerator,
+        triviaIdGenerator: TriviaIdGeneratorInterface,
         triviaQuestionCompiler: TriviaQuestionCompiler,
         triviaSettingsRepository: TriviaSettingsRepositoryInterface
     ):
@@ -72,7 +73,7 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(triviaAnswerCompiler, TriviaAnswerCompiler):
             raise ValueError(f'triviaAnswerCompiler argument is malformed: \"{triviaAnswerCompiler}\"')
-        elif not isinstance(triviaIdGenerator, TriviaIdGenerator):
+        elif not isinstance(triviaIdGenerator, TriviaIdGeneratorInterface):
             raise ValueError(f'triviaIdGenerator argument is malformed: \"{triviaIdGenerator}\"')
         elif not isinstance(triviaQuestionCompiler, TriviaQuestionCompiler):
             raise ValueError(f'triviaQuestionCompiler argument is malformed: \"{triviaQuestionCompiler}\"')
@@ -81,24 +82,8 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self.__networkClientProvider: NetworkClientProvider = networkClientProvider
         self.__timber: TimberInterface = timber
         self.__triviaAnswerCompiler: TriviaAnswerCompiler = triviaAnswerCompiler
-        self.__triviaIdGenerator: TriviaIdGenerator = triviaIdGenerator
+        self.__triviaIdGenerator: TriviaIdGeneratorInterface = triviaIdGenerator
         self.__triviaQuestionCompiler: TriviaQuestionCompiler = triviaQuestionCompiler
-
-    async def __addAdditionalAnswers(self, correctAnswers: List[str], triviaId: str):
-        if not utils.isValidStr(triviaId):
-            raise ValueError(f'triviaId argument is malformed: \"{triviaId}\"')
-
-        reference = await self.__additionalTriviaAnswersRepository.getAdditionalTriviaAnswers(
-            triviaId = triviaId,
-            triviaSource = TriviaSource.J_SERVICE,
-            triviaType = TriviaType.QUESTION_ANSWER
-        )
-
-        if reference is None:
-            return
-
-        self.__timber.log('JServiceTriviaQuestionRepository', f'Adding additional answers to question (triviaId=\"{triviaId}\"): {reference.getAdditionalAnswers()}')
-        correctAnswers.extend(reference.getAdditionalAnswersStrs())
 
     async def fetchTriviaQuestion(self, fetchOptions: TriviaFetchOptions) -> AbsTriviaQuestion:
         if not isinstance(fetchOptions, TriviaFetchOptions):
@@ -141,21 +126,36 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
         question = await self.__triviaQuestionCompiler.compileQuestion(question)
 
         triviaId = utils.getStrFromDict(triviaJson, 'id', fallback = '')
+
         if not utils.isValidStr(triviaId):
-            triviaId = await self.__triviaIdGenerator.generate(category = category, question = question)
+            triviaId = await self.__triviaIdGenerator.generate(
+                category = category,
+                question = question
+            )
 
         correctAnswers: List[str] = list()
         correctAnswers.append(utils.getStrFromDict(triviaJson, 'answer').encode('latin1').decode('utf8'))
 
-        await self.__addAdditionalAnswers(
-            correctAnswers = correctAnswers,
-            triviaId = triviaId
-        )
+        if await self.__additionalTriviaAnswersRepository.addAdditionalTriviaAnswers(
+            currentAnswers = correctAnswers,
+            triviaId = triviaId,
+            triviaSource = self.getTriviaSource(),
+            triviaType = TriviaType.QUESTION_ANSWER
+        ):
+            self.__timber.log('JServiceTriviaQuestionRepository', f'Added additional answers to question (triviaId=\"{triviaId}\")')
 
         correctAnswers = await self.__triviaQuestionCompiler.compileResponses(correctAnswers)
 
         cleanedCorrectAnswers: List[str] = list()
         cleanedCorrectAnswers.append(utils.getStrFromDict(triviaJson, 'answer').encode('latin1').decode('utf8'))
+
+        await self.__additionalTriviaAnswersRepository.addAdditionalTriviaAnswers(
+            currentAnswers = cleanedCorrectAnswers,
+            triviaId = triviaId,
+            triviaSource = self.getTriviaSource(),
+            triviaType = TriviaType.QUESTION_ANSWER
+        )
+
         cleanedCorrectAnswers = await self.__triviaAnswerCompiler.compileTextAnswersList(cleanedCorrectAnswers)
 
         expandedCleanedCorrectAnswers: Set[str] = set()

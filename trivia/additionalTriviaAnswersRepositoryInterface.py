@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import List, Optional
 
 try:
     from CynanBotCommon.trivia.additionalTriviaAnswers import \
@@ -23,6 +23,16 @@ class AdditionalTriviaAnswersRepositoryInterface(ABC):
         triviaSource: TriviaSource,
         triviaType: TriviaType
     ) -> AdditionalTriviaAnswers:
+        pass
+
+    @abstractmethod
+    async def addAdditionalTriviaAnswers(
+        self,
+        currentAnswers: List[str],
+        triviaId: str,
+        triviaSource: TriviaSource,
+        triviaType: TriviaType
+    ) -> bool:
         pass
 
     @abstractmethod

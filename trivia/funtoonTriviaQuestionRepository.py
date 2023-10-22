@@ -78,22 +78,6 @@ class FuntoonTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self.__triviaAnswerCompiler: TriviaAnswerCompiler = triviaAnswerCompiler
         self.__triviaQuestionCompiler: TriviaQuestionCompiler = triviaQuestionCompiler
 
-    async def __addAdditionalAnswers(self, correctAnswers: List[str], triviaId: str):
-        if not utils.isValidStr(triviaId):
-            raise ValueError(f'triviaId argument is malformed: \"{triviaId}\"')
-
-        reference = await self.__additionalTriviaAnswersRepository.getAdditionalTriviaAnswers(
-            triviaId = triviaId,
-            triviaSource = TriviaSource.FUNTOON,
-            triviaType = TriviaType.QUESTION_ANSWER
-        )
-
-        if reference is None:
-            return
-
-        self.__timber.log('FuntoonTriviaQuestionRepository', f'Adding additional answers to question (triviaId=\"{triviaId}\"): {reference.getAdditionalAnswers()}')
-        correctAnswers.extend(reference.getAdditionalAnswersStrs())
-
     async def fetchTriviaQuestion(self, fetchOptions: TriviaFetchOptions) -> AbsTriviaQuestion:
         if not isinstance(fetchOptions, TriviaFetchOptions):
             raise ValueError(f'fetchOptions argument is malformed: \"{fetchOptions}\"')
@@ -135,15 +119,26 @@ class FuntoonTriviaQuestionRepository(AbsTriviaQuestionRepository):
         correctAnswers: List[str] = list()
         correctAnswers.append(utils.getStrFromDict(jsonResponse, 'answer'))
 
-        await self.__addAdditionalAnswers(
-            correctAnswers = correctAnswers,
-            triviaId = triviaId
-        )
+        if await self.__additionalTriviaAnswersRepository.addAdditionalTriviaAnswers(
+            currentAnswers = correctAnswers,
+            triviaId = triviaId,
+            triviaSource = self.getTriviaSource(),
+            triviaType = TriviaType.QUESTION_ANSWER
+        ):
+            self.__timber.log('FuntoonTriviaQuestionRepository', f'Added additional answers to question (triviaId=\"{triviaId}\")')
 
         correctAnswers = await self.__triviaQuestionCompiler.compileResponses(correctAnswers)
 
         cleanedCorrectAnswers: List[str] = list()
         cleanedCorrectAnswers.append(utils.getStrFromDict(jsonResponse, 'answer'))
+
+        await self.__additionalTriviaAnswersRepository.addAdditionalTriviaAnswers(
+            currentAnswers = cleanedCorrectAnswers,
+            triviaId = triviaId,
+            triviaSource = self.getTriviaSource(),
+            triviaType = TriviaType.QUESTION_ANSWER
+        )
+
         cleanedCorrectAnswers = await self.__triviaAnswerCompiler.compileTextAnswersList(cleanedCorrectAnswers)
 
         expandedCleanedCorrectAnswers: Set[str] = set()

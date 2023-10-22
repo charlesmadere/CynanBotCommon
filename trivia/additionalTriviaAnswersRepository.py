@@ -179,6 +179,34 @@ class AdditionalTriviaAnswersRepository(AdditionalTriviaAnswersRepositoryInterfa
             triviaType = triviaType
         )
 
+    async def addAdditionalTriviaAnswers(
+        self,
+        currentAnswers: List[str],
+        triviaId: str,
+        triviaSource: TriviaSource,
+        triviaType: TriviaType
+    ) -> bool:
+        if not isinstance(currentAnswers, List):
+            raise ValueError(f'currentAnswers argument is malformed: \"{currentAnswers}\"')
+        elif not utils.isValidStr(triviaId):
+            raise ValueError(f'triviaId argument is malformed: \"{triviaId}\"')
+        elif not isinstance(triviaSource, TriviaSource):
+            raise ValueError(f'triviaSource argument is malformed: \"{triviaSource}\"')
+        elif not isinstance(triviaType, TriviaType):
+            raise ValueError(f'triviaType argument is malformed: \"{triviaType}\"')
+
+        reference = await self.getAdditionalTriviaAnswers(
+            triviaId = triviaId,
+            triviaSource = triviaSource,
+            triviaType = triviaType
+        )
+
+        if reference is None:
+            return False
+
+        currentAnswers.extend(reference.getAdditionalAnswersStrs())
+        return True
+
     async def deleteAdditionalTriviaAnswers(
         self,
         triviaId: str,

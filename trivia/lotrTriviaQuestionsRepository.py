@@ -74,22 +74,6 @@ class LotrTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
         self.__hasQuestionSetAvailable: Optional[bool] = None
 
-    async def __addAdditionalAnswers(self, correctAnswers: List[str], triviaId: str):
-        if not utils.isValidStr(triviaId):
-            raise ValueError(f'triviaId argument is malformed: \"{triviaId}\"')
-
-        reference = await self.__additionalTriviaAnswersRepository.getAdditionalTriviaAnswers(
-            triviaId = triviaId,
-            triviaSource = TriviaSource.LORD_OF_THE_RINGS,
-            triviaType = TriviaType.QUESTION_ANSWER
-        )
-
-        if reference is None:
-            return
-
-        self.__timber.log('LotrTriviaQuestionRepository', f'Adding additional answers to question (triviaId=\"{triviaId}\"): {reference.getAdditionalAnswers()}')
-        correctAnswers.extend(reference.getAdditionalAnswersStrs())
-
     async def fetchTriviaQuestion(self, fetchOptions: TriviaFetchOptions) -> AbsTriviaQuestion:
         if not isinstance(fetchOptions, TriviaFetchOptions):
             raise ValueError(f'fetchOptions argument is malformed: \"{fetchOptions}\"')
@@ -101,20 +85,26 @@ class LotrTriviaQuestionRepository(AbsTriviaQuestionRepository):
         if await self._triviaSettingsRepository.isDebugLoggingEnabled():
             self.__timber.log('LotrTriviaQuestionRepository', f'{triviaDict}')
 
-        triviaId = utils.getStrFromDict(triviaDict, 'triviaId')
-
         question = utils.getStrFromDict(triviaDict, 'question')
         question = await self.__triviaQuestionCompiler.compileQuestion(question)
 
-        originalCorrectAnswers: List[str] = triviaDict['correctAnswers']
+        triviaId = utils.getStrFromDict(triviaDict, 'triviaId')
 
-        await self.__addAdditionalAnswers(
-            correctAnswers = originalCorrectAnswers,
-            triviaId = triviaId
-        )
+        correctAnswers: List[str] = list()
+        correctAnswers.extend(triviaDict['correctAnswers'])
 
-        correctAnswers = await self.__triviaQuestionCompiler.compileResponses(originalCorrectAnswers)
-        cleanedCorrectAnswers = await self.__triviaAnswerCompiler.compileTextAnswersList(originalCorrectAnswers)
+        if await self.__additionalTriviaAnswersRepository.addAdditionalTriviaAnswers(
+            currentAnswers = correctAnswers,
+            triviaId = triviaId,
+            triviaSource = self.getTriviaSource(),
+            triviaType = TriviaType.QUESTION_ANSWER
+        ):
+            self.__timber.log('LotrTriviaQuestionRepository', f'Added additional answers to question (triviaId=\"{triviaId}\")')
+
+        correctAnswers = await self.__triviaQuestionCompiler.compileResponses(correctAnswers)
+
+        cleanedCorrectAnswers: List[str] = list()
+        cleanedCorrectAnswers = await self.__triviaAnswerCompiler.compileTextAnswersList(correctAnswers)
 
         expandedCorrectAnswers: Set[str] = set()
         for answer in cleanedCorrectAnswers:
