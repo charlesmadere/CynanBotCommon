@@ -1,6 +1,6 @@
 import html
 import re
-from typing import List, Pattern, Set
+from typing import List, Optional, Pattern, Set
 
 try:
     import CynanBotCommon.utils as utils
@@ -52,12 +52,10 @@ class TriviaQuestionCompiler():
 
     async def compileResponses(
         self,
-        responses: List[str],
+        responses: Optional[List[str]],
         htmlUnescape: bool = False
     ) -> List[str]:
-        if not isinstance(responses, List):
-            raise ValueError(f'responses argument is malformed: \"{responses}\"')
-        elif not utils.isValidBool(htmlUnescape):
+        if not utils.isValidBool(htmlUnescape):
             raise ValueError(f'htmlUnescape argument is malformed: \"{htmlUnescape}\"')
 
         if not utils.hasItems(responses):
