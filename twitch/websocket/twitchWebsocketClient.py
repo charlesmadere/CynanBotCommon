@@ -83,6 +83,7 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
         twitchWebsocketAllowedUsersRepository: TwitchWebsocketAllowedUsersRepositoryInterface,
         twitchWebsocketJsonMapper: TwitchWebsocketJsonMapperInterface,
         queueSleepTimeSeconds: float = 1,
+        websocketCreationDelayTimeSeconds: float = 0.25,
         websocketSleepTimeSeconds: float = 3,
         queueTimeoutSeconds: int = 3,
         twitchWebsocketUrl: str = 'wss://eventsub.wss.twitch.tv/ws',
@@ -105,6 +106,10 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
             raise ValueError(f'queueSleepTimeSeconds argument is malformed: \"{queueSleepTimeSeconds}\"')
         elif queueSleepTimeSeconds < 1 or queueSleepTimeSeconds > 15:
             raise ValueError(f'queueSleepTimeSeconds argument is out of bounds: {queueSleepTimeSeconds}')
+        elif not utils.isValidNum(websocketCreationDelayTimeSeconds):
+            raise ValueError(f'websocketCreationDelayTimeSeconds argument is malformed: \"{websocketCreationDelayTimeSeconds}\"')
+        elif websocketCreationDelayTimeSeconds < 0.1 or websocketCreationDelayTimeSeconds > 8:
+            raise ValueError(f'websocketCreationDelayTimeSeconds argument is out of bounds: {websocketCreationDelayTimeSeconds}')
         elif not utils.isValidNum(websocketSleepTimeSeconds):
             raise ValueError(f'websocketSleepTimeSeconds argument is malformed: \"{websocketSleepTimeSeconds}\"')
         elif websocketSleepTimeSeconds < 3 or websocketSleepTimeSeconds > 15:
@@ -127,6 +132,7 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
         self.__twitchWebsocketAllowedUsersRepository: TwitchWebsocketAllowedUsersRepositoryInterface = twitchWebsocketAllowedUsersRepository
         self.__twitchWebsocketJsonMapper: TwitchWebsocketJsonMapperInterface = twitchWebsocketJsonMapper
         self.__queueSleepTimeSeconds: float = queueSleepTimeSeconds
+        self.__websocketCreationDelayTimeSeconds: float = websocketCreationDelayTimeSeconds
         self.__websocketSleepTimeSeconds: float = websocketSleepTimeSeconds
         self.__queueTimeoutSeconds: int = queueTimeoutSeconds
         self.__maxMessageAge: timedelta = maxMessageAge
@@ -447,6 +453,7 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
 
         for user in users:
             self.__backgroundTaskHelper.createTask(self.__startWebsocketConnectionFor(user))
+            await asyncio.sleep(self.__websocketCreationDelayTimeSeconds)
 
         self.__timber.log('TwitchWebsocketClient', f'Finished establishing websocket connections for {len(users)} user(s)')
 
