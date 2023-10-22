@@ -1,3 +1,5 @@
+from typing import Any
+
 try:
     import CynanBotCommon.utils as utils
 except:
@@ -23,6 +25,12 @@ class TwitchWebsocketUser():
         self.__userId: str = userId
         self.__userName: str = userName
 
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, TwitchWebsocketUser):
+            return False
+
+        return self.__userId == other.__userId
+
     def getTwitchAccessToken(self) -> str:
         return self.__twitchAccessToken
 
@@ -31,6 +39,9 @@ class TwitchWebsocketUser():
 
     def getUserName(self) -> str:
         return self.__userName
+
+    def __hash__(self) -> int:
+        return hash(self.__userId)
 
     def __repr__(self) -> str:
         return self.getUserName()

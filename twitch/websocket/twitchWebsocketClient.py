@@ -100,7 +100,7 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
             raise ValueError(f'queueSleepTimeSeconds argument is out of bounds: {queueSleepTimeSeconds}')
         elif not utils.isValidNum(websocketSleepTimeSeconds):
             raise ValueError(f'websocketSleepTimeSeconds argument is malformed: \"{websocketSleepTimeSeconds}\"')
-        elif websocketSleepTimeSeconds < 3 or websocketSleepTimeSeconds > 10:
+        elif websocketSleepTimeSeconds < 3 or websocketSleepTimeSeconds > 15:
             raise ValueError(f'websocketSleepTimeSeconds argument is out of bounds: {websocketSleepTimeSeconds}')
         elif not utils.isValidNum(queueTimeoutSeconds):
             raise ValueError(f'queueTimeoutSeconds argument is malformed: \"{queueTimeoutSeconds}\"')
@@ -127,8 +127,9 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
 
         self.__eventSubSubscriptionsCreated: bool = True
         self.__isStarted: bool = False
-        self.__eventSubSubscriptionsCreatedFor: Dict[str, bool] = defaultdict(lambda: False)
-        self.__sessionIdFor: Dict[str, Optional[str]] = defaultdict(lambda: '')
+        self.__eventSubSubscriptionsCreatedFor: Dict[TwitchWebsocketUser, bool] = defaultdict(lambda: False)
+        self.__jsonBuilderFor: Dict[TwitchWebsocketUser, IncrementalJsonBuilder] = defaultdict(lambda: IncrementalJsonBuilder())
+        self.__sessionIdFor: Dict[TwitchWebsocketUser, Optional[str]] = defaultdict(lambda: '')
         self.__jsonBuilder: IncrementalJsonBuilder = IncrementalJsonBuilder()
         self.__messageIdCache: LruCache = LruCache(128)
         self.__dataBundleQueue: SimpleQueue[WebsocketDataBundle] = SimpleQueue()
@@ -215,15 +216,15 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
         if not isinstance(user, TwitchWebsocketUser):
             raise ValueError(f'user argument is malformed: \"{user}\"')
 
-        if self.__eventSubSubscriptionsCreatedFor[user.getUserName().lower()]:
+        if self.__eventSubSubscriptionsCreatedFor[user]:
             return
 
-        sessionId = self.__sessionIdFor[user.getUserName().lower()]
+        sessionId = self.__sessionIdFor[user]
 
         if not utils.isValidStr(sessionId):
             return
 
-        self.__eventSubSubscriptionsCreatedFor[user.getUserName().lower()] = True
+        self.__eventSubSubscriptionsCreatedFor[user] = True
         self.__timber.log('TwitchWebsocketClient', f'Creating EventSub subscription(s) for {user.getUserName()}...')
 
         await self.__createEventSubSubscription(
@@ -306,9 +307,9 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
         if session is None:
             return
 
-        oldSessionId = self.__sessionIdFor[user.getUserName().lower()]
-        self.__timber.log('TwitchWebsocketClient', f'Session ID for \"{user.getUserName()}\" is being changed to \"{session.getSessionId()}\" from \"{oldSessionId}\"')
-        self.__sessionIdFor[user.getUserName().lower()] = session.getSessionId()
+        oldSessionId = self.__sessionIdFor[user]
+        self.__timber.log('TwitchWebsocketClient', f'Session ID for \"{user}\" is being changed to \"{session.getSessionId()}\" from \"{oldSessionId}\"')
+        self.__sessionIdFor[user] = session.getSessionId()
 
     async def __isMessageConnectionRelated(self, dataBundle: WebsocketDataBundle) -> bool:
         if not isinstance(dataBundle, WebsocketDataBundle):
@@ -357,6 +358,52 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
             return None
 
         dictionaries = await self.__jsonBuilder.buildDictionariesOrAppendInternalJsonCache(message)
+
+        if not utils.hasItems(dictionaries):
+            return None
+
+        dataBundles: List[WebsocketDataBundle] = list()
+
+        for index, dictionary in enumerate(dictionaries):
+            dataBundle: Optional[WebsocketDataBundle] = None
+            exception: Optional[Exception] = None
+
+            try:
+                dataBundle = await self.__twitchWebsocketJsonMapper.parseWebsocketDataBundle(dictionary)
+            except Exception as e:
+                exception = e
+
+            if exception is not None:
+                self.__timber.log('TwitchWebsocketClient', f'Encountered an exception when attempting to convert dictionary ({dictionary}) at index {index} into WebsocketDataBundle: {exception}', exception, traceback.format_exc())
+                continue
+            elif dataBundle is None:
+                self.__timber.log('TwitchWebsocketClient', f'Received `None` when attempting to convert dictionary at index {index} into WebsocketDataBundle: \"{dictionary}\"')
+                continue
+
+            dataBundles.append(dataBundle)
+
+        if utils.hasItems(dataBundles):
+            return dataBundles
+        else:
+            return None
+
+    async def __parseMessageToDataBundlesFor(
+        self,
+        message: Optional[Any],
+        user: TwitchWebsocketUser
+    ) -> Optional[List[WebsocketDataBundle]]:
+        if not isinstance(user, TwitchWebsocketUser):
+            raise ValueError(f'user argument is malformed: \"{user}\"')
+
+        if message is None:
+            self.__timber.log('TwitchWebsocketClient', f'Received message object that is None: \"{message}\"')
+            return None
+        elif not isinstance(message, str):
+            self.__timber.log('TwitchWebsocketClient', f'Received message object that is of an unexpected type: \"{message}\"')
+            return None
+
+        jsonBuilder = self.__jsonBuilderFor[user]
+        dictionaries = await jsonBuilder.buildDictionariesOrAppendInternalJsonCache(message)
 
         if not utils.hasItems(dictionaries):
             return None
