@@ -1,4 +1,4 @@
-from typing import List, Optional, Set
+from typing import Optional, Set
 
 try:
     import CynanBotCommon.utils as utils
@@ -11,7 +11,6 @@ try:
         TwitchWebsocketUser
     from CynanBotCommon.users.userIdsRepositoryInterface import \
         UserIdsRepositoryInterface
-    from CynanBotCommon.users.userInterface import UserInterface
     from CynanBotCommon.users.usersRepositoryInterface import \
         UsersRepositoryInterface
 except:
@@ -24,7 +23,6 @@ except:
         TwitchWebsocketAllowedUsersRepositoryInterface
     from twitch.websocket.twitchWebsocketUser import TwitchWebsocketUser
     from users.userIdsRepositoryInterface import UserIdsRepositoryInterface
-    from users.userInterface import UserInterface
     from users.usersRepositoryInterface import UsersRepositoryInterface
 
 
@@ -51,73 +49,73 @@ class TwitchWebsocketAllowedUsersRepository(TwitchWebsocketAllowedUsersRepositor
         self.__userIdsRepository: UserIdsRepositoryInterface = userIdsRepository
         self.__usersRepository: UsersRepositoryInterface = usersRepository
 
-        self.__cache: Optional[List[TwitchWebsocketUser]] = None
-
-    async def clearCaches(self):
-        self.__cache = None
-        self.__timber.log('TwitchWebsocketAllowedUserIdsRepository', 'Caches cleared')
-
     async def __buildTwitchWebsocketUsers(
         self,
-        usersWithTwitchTokens: List[UserInterface]
-    ) -> List[TwitchWebsocketUser]:
-        users: List[TwitchWebsocketUser] = list()
+        usersWithTwitchTokens: Set[str]
+    ) -> Set[TwitchWebsocketUser]:
+        users: Set[TwitchWebsocketUser] = set()
 
         if not utils.hasItems(usersWithTwitchTokens):
             return users
 
         for user in usersWithTwitchTokens:
-            await self.__twitchTokensRepository.validateAndRefreshAccessToken(user.getHandle())
-            twitchAccessToken = await self.__twitchTokensRepository.requireAccessToken(user.getHandle())
+            twitchAccessToken = await self.__validateAndRefreshAccessToken(user)
+
+            if not utils.isValidStr(twitchAccessToken):
+                self.__timber.log('TwitchWebsocketAllowedUsersRepository', f'Unable to find Twitch access token for \"{user}\"')
+                continue
 
             userId = await self.__userIdsRepository.fetchUserId(
-                userName = user.getHandle(),
+                userName = user,
                 twitchAccessToken = twitchAccessToken
             )
 
-            if utils.isValidStr(userId):
-                users.append(TwitchWebsocketUser(
-                    twitchAccessToken = twitchAccessToken,
-                    userId = userId,
-                    userName = user.getHandle()
-                ))
+            if not utils.isValidStr(userId):
+                self.__timber.log('TwitchWebsocketAllowedUsersRepository', f'Unable to find user ID for \"{user}\" using Twitch access token \"{twitchAccessToken}\"')
+                continue
+
+            users.add(TwitchWebsocketUser(
+                userId = userId,
+                userName = user
+            ))
 
         return users
 
-    async def __findUsersWithTwitchTokens(
-        self,
-        enabledUsers: List[UserInterface]
-    ) -> List[UserInterface]:
-        usersWithTwitchTokens: List[UserInterface] = list()
+    async def __findUsersWithTwitchTokens(self, enabledUsers: Set[str]) -> Set[str]:
+        usersWithTwitchTokens: Set[str] = set()
 
         if not utils.hasItems(enabledUsers):
             return usersWithTwitchTokens
 
         for user in enabledUsers:
-            if await self.__twitchTokensRepository.hasAccessToken(user.getHandle()):
-                usersWithTwitchTokens.append(user)
+            if await self.__twitchTokensRepository.hasAccessToken(user):
+                usersWithTwitchTokens.add(user)
 
         return usersWithTwitchTokens
 
-    async def __getEnabledUsers(self) -> List[UserInterface]:
-        enabledUsers: List[UserInterface] = list()
+    async def __getEnabledUsers(self) -> Set[str]:
+        enabledUsers: Set[str] = set()
         users = await self.__usersRepository.getUsersAsync()
 
         for user in users:
             if user.isEnabled():
-                enabledUsers.append(user)
+                enabledUsers.add(user.getHandle())
 
         return enabledUsers
 
-    async def getUsers(self) -> List[TwitchWebsocketUser]:
-        if self.__cache is not None:
-            return self.__cache
-
+    async def getUsers(self) -> Set[TwitchWebsocketUser]:
         enabledUsers = await self.__getEnabledUsers()
         usersWithTwitchTokens = await self.__findUsersWithTwitchTokens(enabledUsers)
         users = await self.__buildTwitchWebsocketUsers(usersWithTwitchTokens)
-        self.__cache = users
 
-        self.__timber.log('TwitchWebsocketAllowedUserIdsRepository', f'Built up a list of {len(users)} user(s) that are eligible for websocket connections')
+        self.__timber.log('TwitchWebsocketAllowedUsersRepository', f'Built up a list of {len(users)} user(s) that are eligible for websocket connections')
+
         return users
+ 
+    async def __validateAndRefreshAccessToken(self, user: str) -> Optional[str]:
+        if not utils.isValidStr(user):
+            raise ValueError(f'user argument is malformed: \"{user}\"')
+ 
+        await self.__twitchTokensRepository.validateAndRefreshAccessToken(user)
+        return await self.__twitchTokensRepository.getAccessToken(user)
  

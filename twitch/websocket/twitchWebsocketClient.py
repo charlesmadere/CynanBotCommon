@@ -20,6 +20,8 @@ try:
         TwitchEventSubRequest
     from CynanBotCommon.twitch.twitchEventSubResponse import \
         TwitchEventSubResponse
+    from CynanBotCommon.twitch.twitchTokensRepositoryInterface import \
+        TwitchTokensRepositoryInterface
     from CynanBotCommon.twitch.websocket.twitchWebsocketAllowedUsersRepositoryInterface import \
         TwitchWebsocketAllowedUsersRepositoryInterface
     from CynanBotCommon.twitch.websocket.twitchWebsocketClientInterface import \
@@ -50,6 +52,8 @@ except:
     from twitch.twitchApiServiceInterface import TwitchApiServiceInterface
     from twitch.twitchEventSubRequest import TwitchEventSubRequest
     from twitch.twitchEventSubResponse import TwitchEventSubResponse
+    from twitch.twitchTokensRepositoryInterface import \
+        TwitchTokensRepositoryInterface
     from twitch.websocket.twitchWebsocketAllowedUsersRepositoryInterface import \
         TwitchWebsocketAllowedUsersRepositoryInterface
     from twitch.websocket.twitchWebsocketClientInterface import \
@@ -75,6 +79,7 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
         backgroundTaskHelper: BackgroundTaskHelper,
         timber: TimberInterface,
         twitchApiService: TwitchApiServiceInterface,
+        twitchTokensRepository: TwitchTokensRepositoryInterface,
         twitchWebsocketAllowedUsersRepository: TwitchWebsocketAllowedUsersRepositoryInterface,
         twitchWebsocketJsonMapper: TwitchWebsocketJsonMapperInterface,
         queueSleepTimeSeconds: float = 1,
@@ -90,6 +95,8 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(twitchApiService, TwitchApiServiceInterface):
             raise ValueError(f'twitchApiService argument is malformed: \"{twitchApiService}\"')
+        elif not isinstance(twitchTokensRepository, TwitchTokensRepositoryInterface):
+            raise ValueError(f'twitchTokensRepository argument is malformed: \"{twitchTokensRepository}\"')
         elif not isinstance(twitchWebsocketAllowedUsersRepository, TwitchWebsocketAllowedUsersRepositoryInterface):
             raise ValueError(f'twitchWebsocketAllowedUsersRepository argument is malformed: \"{twitchWebsocketAllowedUsersRepository}\"')
         elif not isinstance(twitchWebsocketJsonMapper, TwitchWebsocketJsonMapperInterface):
@@ -116,6 +123,7 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
         self.__backgroundTaskHelper: BackgroundTaskHelper = backgroundTaskHelper
         self.__timber: TimberInterface = timber
         self.__twitchApiService: TwitchApiServiceInterface = twitchApiService
+        self.__twitchTokensRepository: TwitchTokensRepositoryInterface = twitchTokensRepository
         self.__twitchWebsocketAllowedUsersRepository: TwitchWebsocketAllowedUsersRepositoryInterface = twitchWebsocketAllowedUsersRepository
         self.__twitchWebsocketJsonMapper: TwitchWebsocketJsonMapperInterface = twitchWebsocketJsonMapper
         self.__queueSleepTimeSeconds: float = queueSleepTimeSeconds
@@ -152,7 +160,8 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
             method = WebsocketTransportMethod.WEBSOCKET
         )
 
-        twitchAccessToken = user.getTwitchAccessToken()
+        await self.__twitchTokensRepository.validateAndRefreshAccessToken(user.getUserName())
+        twitchAccessToken = await self.__twitchTokensRepository.requireAccessToken(user.getUserName())
 
         for index, subscriptionType in enumerate(subscriptionTypes):
             condition = await self.__createWebsocketCondition(

@@ -164,7 +164,6 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
 
-        await self.validateAndRefreshAccessToken(twitchChannel)
         tokensDetails = await self.getTokensDetails(twitchChannel)
 
         if tokensDetails is None:

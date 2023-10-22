@@ -1,18 +1,15 @@
-from abc import abstractmethod
-from typing import List
+from abc import ABC, abstractmethod
+from typing import Set
 
 try:
-    from CynanBotCommon.clearable import Clearable
     from CynanBotCommon.twitch.websocket.twitchWebsocketUser import \
         TwitchWebsocketUser
 except:
-    from clearable import Clearable
-
     from twitch.websocket.twitchWebsocketUser import TwitchWebsocketUser
 
 
-class TwitchWebsocketAllowedUsersRepositoryInterface(Clearable):
+class TwitchWebsocketAllowedUsersRepositoryInterface(ABC):
 
     @abstractmethod
-    async def getUsers(self) -> List[TwitchWebsocketUser]:
+    async def getUsers(self) -> Set[TwitchWebsocketUser]:
         pass

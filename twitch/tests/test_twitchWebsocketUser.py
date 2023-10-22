@@ -10,13 +10,11 @@ class TestTwitchWebsocketUser():
         userName = 'smCharles'
 
         user1 = TwitchWebsocketUser(
-            twitchAccessToken = 'a',
             userId = '123',
             userName = userName
         )
 
         user2 = TwitchWebsocketUser(
-            twitchAccessToken = 'z',
             userId = '456',
             userName = userName
         )
@@ -27,13 +25,11 @@ class TestTwitchWebsocketUser():
         userId = 'abc123'
 
         user1 = TwitchWebsocketUser(
-            twitchAccessToken = 'a',
             userId = userId,
             userName = 'Anny'
         )
 
         user2 = TwitchWebsocketUser(
-            twitchAccessToken = 'z',
             userId = userId,
             userName = 'Silvervale'
         )
@@ -44,13 +40,11 @@ class TestTwitchWebsocketUser():
         userName = 'Oatsngoats'
 
         user1 = TwitchWebsocketUser(
-            twitchAccessToken = 'a',
             userId = '123',
             userName = userName
         )
 
         user2 = TwitchWebsocketUser(
-            twitchAccessToken = 'z',
             userId = '456',
             userName = userName
         )
@@ -61,13 +55,11 @@ class TestTwitchWebsocketUser():
         userId = 'abc123'
 
         user1 = TwitchWebsocketUser(
-            twitchAccessToken = 'a',
             userId = userId,
             userName = 'imyt'
         )
 
         user2 = TwitchWebsocketUser(
-            twitchAccessToken = 'z',
             userId = userId,
             userName = 'jay_cee'
         )
