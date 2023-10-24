@@ -17,7 +17,8 @@ try:
         GenericTriviaNetworkException, MalformedTriviaJsonException,
         UnsupportedTriviaTypeException)
     from CynanBotCommon.trivia.triviaFetchOptions import TriviaFetchOptions
-    from CynanBotCommon.trivia.triviaIdGenerator import TriviaIdGenerator
+    from CynanBotCommon.trivia.triviaIdGeneratorInterface import \
+        TriviaIdGeneratorInterface
     from CynanBotCommon.trivia.triviaQuestionCompiler import \
         TriviaQuestionCompiler
     from CynanBotCommon.trivia.triviaSettingsRepositoryInterface import \
@@ -40,7 +41,7 @@ except:
                                          MalformedTriviaJsonException,
                                          UnsupportedTriviaTypeException)
     from trivia.triviaFetchOptions import TriviaFetchOptions
-    from trivia.triviaIdGenerator import TriviaIdGenerator
+    from trivia.triviaIdGeneratorInterface import TriviaIdGeneratorInterface
     from trivia.triviaQuestionCompiler import TriviaQuestionCompiler
     from trivia.triviaSettingsRepositoryInterface import \
         TriviaSettingsRepositoryInterface
@@ -55,7 +56,7 @@ class WillFryTriviaQuestionRepository(AbsTriviaQuestionRepository):
         self,
         networkClientProvider: NetworkClientProvider,
         timber: TimberInterface,
-        triviaIdGenerator: TriviaIdGenerator,
+        triviaIdGenerator: TriviaIdGeneratorInterface,
         triviaQuestionCompiler: TriviaQuestionCompiler,
         triviaSettingsRepository: TriviaSettingsRepositoryInterface
     ):
@@ -65,14 +66,14 @@ class WillFryTriviaQuestionRepository(AbsTriviaQuestionRepository):
             raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
         elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif not isinstance(triviaIdGenerator, TriviaIdGenerator):
+        elif not isinstance(triviaIdGenerator, TriviaIdGeneratorInterface):
             raise ValueError(f'triviaIdGenerator argument is malformed: \"{triviaIdGenerator}\"')
         elif not isinstance(triviaQuestionCompiler, TriviaQuestionCompiler):
             raise ValueError(f'triviaQuestionCompiler argument is malformed: \"{triviaQuestionCompiler}\"')
 
         self.__networkClientProvider: NetworkClientProvider = networkClientProvider
         self.__timber: TimberInterface = timber
-        self.__triviaIdGenerator: TriviaIdGenerator = triviaIdGenerator
+        self.__triviaIdGenerator: TriviaIdGeneratorInterface = triviaIdGenerator
         self.__triviaQuestionCompiler: TriviaQuestionCompiler = triviaQuestionCompiler
 
     async def fetchTriviaQuestion(self, fetchOptions: TriviaFetchOptions) -> AbsTriviaQuestion:
