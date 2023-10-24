@@ -86,6 +86,7 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
         websocketCreationDelayTimeSeconds: float = 0.25,
         websocketSleepTimeSeconds: float = 3,
         queueTimeoutSeconds: int = 3,
+        subscriptionTypes: Set[WebsocketSubscriptionType] = { WebsocketSubscriptionType.CHANNEL_POINTS_REDEMPTION },
         twitchWebsocketUrl: str = 'wss://eventsub.wss.twitch.tv/ws',
         maxMessageAge: timedelta = timedelta(minutes = 10),
         timeZone: timezone = timezone.utc
@@ -118,6 +119,8 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
             raise ValueError(f'queueTimeoutSeconds argument is malformed: \"{queueTimeoutSeconds}\"')
         elif queueTimeoutSeconds < 1 or queueTimeoutSeconds > 5:
             raise ValueError(f'queueTimeoutSeconds argument is out of bounds: {queueTimeoutSeconds}')
+        elif not isinstance(subscriptionTypes, Set) or not utils.hasItems(subscriptionTypes):
+            raise ValueError(f'subscriptionTypes argument is malformed: \"{subscriptionTypes}\"')
         elif not utils.isValidUrl(twitchWebsocketUrl):
             raise ValueError(f'twitchWebsocketUrl argument is malformed: \"{twitchWebsocketUrl}\"')
         elif not isinstance(maxMessageAge, timedelta):
@@ -135,6 +138,7 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
         self.__websocketCreationDelayTimeSeconds: float = websocketCreationDelayTimeSeconds
         self.__websocketSleepTimeSeconds: float = websocketSleepTimeSeconds
         self.__queueTimeoutSeconds: int = queueTimeoutSeconds
+        self.__subscriptionTypes: Set[WebsocketSubscriptionType] = subscriptionTypes
         self.__maxMessageAge: timedelta = maxMessageAge
         self.__timeZone: timezone = timeZone
 
@@ -152,15 +156,6 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
         elif not isinstance(user, TwitchWebsocketUser):
             raise ValueError(f'user argument is malformed: \"{user}\"')
 
-        # this is the set of currently supported subscription types
-        subscriptionTypes: Set[WebsocketSubscriptionType] = {
-            WebsocketSubscriptionType.CHANNEL_POINTS_REDEMPTION,
-            # WebsocketSubscriptionType.CHEER,
-            # WebsocketSubscriptionType.SUBSCRIBE,
-            # WebsocketSubscriptionType.SUBSCRIPTION_GIFT,
-            # WebsocketSubscriptionType.SUBSCRIPTION_MESSAGE
-        }
-
         transport = WebsocketTransport(
             sessionId = sessionId,
             method = WebsocketTransportMethod.WEBSOCKET
@@ -169,7 +164,7 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
         await self.__twitchTokensRepository.validateAndRefreshAccessToken(user.getUserName())
         twitchAccessToken = await self.__twitchTokensRepository.requireAccessToken(user.getUserName())
 
-        for index, subscriptionType in enumerate(subscriptionTypes):
+        for index, subscriptionType in enumerate(self.__subscriptionTypes):
             condition = await self.__createWebsocketCondition(
                 user = user,
                 subscriptionType = subscriptionType
