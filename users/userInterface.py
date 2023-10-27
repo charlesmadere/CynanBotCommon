@@ -27,6 +27,10 @@ class UserInterface(ABC):
         pass
 
     @abstractmethod
+    def getMastodonUrl(self) -> Optional[str]:
+        pass
+
+    @abstractmethod
     def getPkmnBattleRewardId(self) -> Optional[str]:
         pass
 
@@ -79,6 +83,10 @@ class UserInterface(ABC):
 
     @abstractmethod
     def getTriviaGameShinyMultiplier(self) -> Optional[int]:
+        pass
+
+    @abstractmethod
+    def getTwitterUrl(self) -> Optional[str]:
         pass
 
     @abstractmethod
@@ -211,6 +219,10 @@ class UserInterface(ABC):
 
     @abstractmethod
     def isTriviaGameEnabled(self) -> bool:
+        pass
+
+    @abstractmethod
+    def isTtsEnabled(self) -> bool:
         pass
 
     @abstractmethod
