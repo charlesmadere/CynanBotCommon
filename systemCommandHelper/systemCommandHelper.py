@@ -1,3 +1,7 @@
+import traceback
+from subprocess import check_output
+from typing import Optional
+
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.systemCommandHelper.systemCommandHelperInterface import \
@@ -23,5 +27,17 @@ class SystemCommandHelper(SystemCommandHelperInterface):
             self.__timber.log('SystemCommandHelper', f'Received malformed command argument: \"{command}\"')
             return
 
-        # TODO
-        pass
+        exception: Optional[Exception] = None
+
+        try:
+            outputBytes = check_output(command, shell = True)
+        except Exception as e:
+            exception = e
+
+        if exception is not None:
+            self.__timber.log('SystemCommandHelper', f'Encountered exception when attempting to run system command ({command}): {exception}', exception, traceback.format_exc())
+        elif outputBytes is None:
+            self.__timber.log('SystemCommandHelper', f'None was returned when attempting to run system command ({command})')
+        else:
+            outputString = outputBytes.decode('utf8')
+            self.__timber.log('SystemCommandHelper', f'Ran system command ({command}): \"{outputString}\"')
