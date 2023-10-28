@@ -42,7 +42,8 @@ class TtsManager(TtsManagerInterface):
         timber: TimberInterface,
         ttsSettingsRepository: TtsSettingsRepositoryInterface,
         queueSleepTimeSeconds: float = 3,
-        queueTimeoutSeconds: int = 3
+        queueTimeoutSeconds: int = 3,
+        pathToDecTalk: str = '../dectalk/speak_us.exe'
     ):
         if not isinstance(backgroundTaskHelper, BackgroundTaskHelper):
             raise ValueError(f'backgroundTaskHelper argument is malformed: \"{backgroundTaskHelper}\"')
@@ -62,6 +63,8 @@ class TtsManager(TtsManagerInterface):
             raise ValueError(f'queueTimeoutSeconds argument is malformed: \"{queueTimeoutSeconds}\"')
         elif queueTimeoutSeconds < 1 or queueTimeoutSeconds > 5:
             raise ValueError(f'queueTimeoutSeconds argument is out of bounds: {queueTimeoutSeconds}')
+        elif not utils.isValidStr(pathToDecTalk):
+            raise ValueError(f'pathToDecTalk argument is malformed: \"{pathToDecTalk}\"')
 
         self.__backgroundTaskHelper: BackgroundTaskHelper = backgroundTaskHelper
         self.__contentScanner: ContentScannerInterface = contentScanner
@@ -70,6 +73,7 @@ class TtsManager(TtsManagerInterface):
         self.__ttsSettingsRepository: TtsSettingsRepositoryInterface = ttsSettingsRepository
         self.__queueSleepTimeSeconds: float = queueSleepTimeSeconds
         self.__queueTimeoutSeconds: int = queueTimeoutSeconds
+        self.__pathToDecTalk: str = pathToDecTalk
 
         self.__isStarted: bool = False
         self.__bannedPhrases: List[Pattern] = self.__buildBannedPhrases()
@@ -124,7 +128,7 @@ class TtsManager(TtsManagerInterface):
         if not utils.isValidStr(message):
             return None
 
-        return f'say {message}'
+        return f'{self.__pathToDecTalk} say {message}'
 
     async def __processTtsEvent(self, event: TtsEvent):
         if not isinstance(event, TtsEvent):
