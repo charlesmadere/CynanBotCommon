@@ -1,13 +1,17 @@
 from abc import ABC, abstractmethod
 
 try:
-    from CynanBotCommon.users.userInterface import UserInterface
+    from CynanBotCommon.tts.ttsEvent import TtsEvent
 except:
-    from users.userInterface import UserInterface
+    from tts.ttsEvent import TtsEvent
 
 
 class TtsManagerInterface(ABC):
 
     @abstractmethod
-    async def executeTts(self, user: UserInterface, message: str):
+    def start(self):
+        pass
+
+    @abstractmethod
+    def submitTtsEvent(self, event: TtsEvent):
         pass
