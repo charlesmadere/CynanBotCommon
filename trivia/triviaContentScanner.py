@@ -1,5 +1,4 @@
-import re
-from typing import Optional, Pattern, Set
+from typing import Optional, Set
 
 try:
     import CynanBotCommon.utils as utils
@@ -58,9 +57,6 @@ class TriviaContentScanner(TriviaContentScannerInterface):
         self.__contentScanner: ContentScannerInterface = contentScanner
         self.__timber: TimberInterface = timber
         self.__triviaSettingsRepository: TriviaSettingsRepositoryInterface = triviaSettingsRepository
-
-        self.__phraseRegEx: Pattern = re.compile(r'[a-z]+', re.IGNORECASE)
-        self.__wordRegEx: Pattern = re.compile(r'\w', re.IGNORECASE)
 
     async def __getAllPhrasesFromQuestion(self, question: AbsTriviaQuestion) -> Set[Optional[str]]:
         if not isinstance(question, AbsTriviaQuestion):
