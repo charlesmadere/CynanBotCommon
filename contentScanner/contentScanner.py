@@ -37,12 +37,17 @@ class ContentScanner(ContentScannerInterface):
         self.__wordRegEx: Pattern = re.compile(r'\w', re.IGNORECASE)
 
     async def scan(self, message: Optional[str]) -> ContentCode:
-        if not utils.isValidStr(message):
-            # TODO
-            return
+        if message is None:
+            return ContentCode.IS_NONE
+        elif not isinstance(message, str):
+            raise ValueError(f'message argument is malformed: \"{message}\"')
+        elif len(message) == 0:
+            return ContentCode.IS_EMPTY
+        elif message.isspace():
+            return ContentCode.IS_BLANK
 
         # TODO
-        pass
+        return ContentCode.OK
 
     async def updatePhrasesContent(
         self,

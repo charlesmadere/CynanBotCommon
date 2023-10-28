@@ -56,6 +56,11 @@ class TestContentScanner():
         assert result is ContentCode.IS_EMPTY
 
     @pytest.mark.asyncio
+    async def test_scan_withHelloWorld(self):
+        result = await self.contentScanner.scan('Hello, World!')
+        assert result is ContentCode.OK
+
+    @pytest.mark.asyncio
     async def test_scan_withNone(self):
         result = await self.contentScanner.scan(None)
         assert result is ContentCode.IS_NONE
