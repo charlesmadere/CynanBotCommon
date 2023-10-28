@@ -60,7 +60,7 @@ class TestContentScanner():
     @pytest.mark.asyncio
     async def test_scan_withUrl(self):
         result = await self.contentScanner.scan('Hello https://google.com/ World!')
-        assert result is ContentCode.OK
+        assert result is ContentCode.CONTAINS_URL
 
     @pytest.mark.asyncio
     async def test_updatePhrasesContent(self):
