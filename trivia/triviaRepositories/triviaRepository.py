@@ -10,25 +10,17 @@ try:
     from CynanBotCommon.backgroundTaskHelper import BackgroundTaskHelper
     from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
-    from CynanBotCommon.trivia.pkmnTriviaQuestionRepository import \
-        PkmnTriviaQuestionRepository
     from CynanBotCommon.trivia.questionAnswerTriviaConditions import \
         QuestionAnswerTriviaConditions
     from CynanBotCommon.trivia.questionAnswerTriviaQuestion import \
         QuestionAnswerTriviaQuestion
-    from CynanBotCommon.trivia.quizApiTriviaQuestionRepository import \
-        QuizApiTriviaQuestionRepository
     from CynanBotCommon.trivia.triviaContentCode import TriviaContentCode
-    from CynanBotCommon.trivia.triviaDatabaseTriviaQuestionRepository import \
-        TriviaDatabaseTriviaQuestionRepository
     from CynanBotCommon.trivia.triviaExceptions import (
         GenericTriviaNetworkException, MalformedTriviaJsonException,
         NoTriviaCorrectAnswersException,
         NoTriviaMultipleChoiceResponsesException, NoTriviaQuestionException,
         TooManyTriviaFetchAttemptsException)
     from CynanBotCommon.trivia.triviaFetchOptions import TriviaFetchOptions
-    from CynanBotCommon.trivia.triviaQuestionCompanyTriviaQuestionRepository import \
-        TriviaQuestionCompanyTriviaQuestionRepository
     from CynanBotCommon.trivia.triviaRepositories.bongoTriviaQuestionRepository import \
         BongoTriviaQuestionRepository
     from CynanBotCommon.trivia.triviaRepositories.funtoonTriviaQuestionRepository import \
@@ -45,6 +37,14 @@ try:
         OpenTriviaDatabaseTriviaQuestionRepository
     from CynanBotCommon.trivia.triviaRepositories.openTriviaQaTriviaQuestionRepository import \
         OpenTriviaQaTriviaQuestionRepository
+    from CynanBotCommon.trivia.triviaRepositories.pkmnTriviaQuestionRepository import \
+        PkmnTriviaQuestionRepository
+    from CynanBotCommon.trivia.triviaRepositories.quizApiTriviaQuestionRepository import \
+        QuizApiTriviaQuestionRepository
+    from CynanBotCommon.trivia.triviaRepositories.triviaDatabaseTriviaQuestionRepository import \
+        TriviaDatabaseTriviaQuestionRepository
+    from CynanBotCommon.trivia.triviaRepositories.triviaQuestionCompanyTriviaQuestionRepository import \
+        TriviaQuestionCompanyTriviaQuestionRepository
     from CynanBotCommon.trivia.triviaRepositories.triviaQuestionRepositoryInterface import \
         TriviaQuestionRepositoryInterface
     from CynanBotCommon.trivia.triviaRepositories.triviaRepositoryInterface import \
@@ -68,25 +68,17 @@ except:
     from backgroundTaskHelper import BackgroundTaskHelper
     from timber.timberInterface import TimberInterface
     from trivia.absTriviaQuestion import AbsTriviaQuestion
-    from trivia.pkmnTriviaQuestionRepository import \
-        PkmnTriviaQuestionRepository
     from trivia.questionAnswerTriviaConditions import \
         QuestionAnswerTriviaConditions
     from trivia.questionAnswerTriviaQuestion import \
         QuestionAnswerTriviaQuestion
-    from trivia.quizApiTriviaQuestionRepository import \
-        QuizApiTriviaQuestionRepository
     from trivia.triviaContentCode import TriviaContentCode
-    from trivia.triviaDatabaseTriviaQuestionRepository import \
-        TriviaDatabaseTriviaQuestionRepository
     from trivia.triviaExceptions import (
         GenericTriviaNetworkException, MalformedTriviaJsonException,
         NoTriviaCorrectAnswersException,
         NoTriviaMultipleChoiceResponsesException, NoTriviaQuestionException,
         TooManyTriviaFetchAttemptsException)
     from trivia.triviaFetchOptions import TriviaFetchOptions
-    from trivia.triviaQuestionCompanyTriviaQuestionRepository import \
-        TriviaQuestionCompanyTriviaQuestionRepository
     from trivia.triviaRepositories.funtoonTriviaQuestionRepository import \
         FuntoonTriviaQuestionRepository
     from trivia.triviaRepositories.jokeTriviaQuestionRepository import \
@@ -101,6 +93,14 @@ except:
         OpenTriviaDatabaseTriviaQuestionRepository
     from trivia.triviaRepositories.openTriviaQaTriviaQuestionRepository import \
         OpenTriviaQaTriviaQuestionRepository
+    from trivia.triviaRepositories.pkmnTriviaQuestionRepository import \
+        PkmnTriviaQuestionRepository
+    from trivia.triviaRepositories.quizApiTriviaQuestionRepository import \
+        QuizApiTriviaQuestionRepository
+    from trivia.triviaRepositories.triviaDatabaseTriviaQuestionRepository import \
+        TriviaDatabaseTriviaQuestionRepository
+    from trivia.triviaRepositories.triviaQuestionCompanyTriviaQuestionRepository import \
+        TriviaQuestionCompanyTriviaQuestionRepository
     from trivia.triviaRepositories.triviaQuestionRepositoryInterface import \
         TriviaQuestionRepositoryInterface
     from trivia.triviaRepositories.triviaRepositoryInterface import \

@@ -8,8 +8,6 @@ try:
         NetworkClientProvider
     from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
-    from CynanBotCommon.trivia.absTriviaQuestionRepository import \
-        AbsTriviaQuestionRepository
     from CynanBotCommon.trivia.additionalTriviaAnswersRepositoryInterface import \
         AdditionalTriviaAnswersRepositoryInterface
     from CynanBotCommon.trivia.questionAnswerTriviaQuestion import \
@@ -21,6 +19,8 @@ try:
     from CynanBotCommon.trivia.triviaFetchOptions import TriviaFetchOptions
     from CynanBotCommon.trivia.triviaQuestionCompiler import \
         TriviaQuestionCompiler
+    from CynanBotCommon.trivia.triviaRepositories.absTriviaQuestionRepository import \
+        AbsTriviaQuestionRepository
     from CynanBotCommon.trivia.triviaSettingsRepositoryInterface import \
         TriviaSettingsRepositoryInterface
     from CynanBotCommon.trivia.triviaSource import TriviaSource
@@ -31,7 +31,6 @@ except:
     from network.networkClientProvider import NetworkClientProvider
     from timber.timberInterface import TimberInterface
     from trivia.absTriviaQuestion import AbsTriviaQuestion
-    from trivia.absTriviaQuestionRepository import AbsTriviaQuestionRepository
     from trivia.additionalTriviaAnswersRepositoryInterface import \
         AdditionalTriviaAnswersRepositoryInterface
     from trivia.questionAnswerTriviaQuestion import \
@@ -42,6 +41,8 @@ except:
                                          MalformedTriviaJsonException)
     from trivia.triviaFetchOptions import TriviaFetchOptions
     from trivia.triviaQuestionCompiler import TriviaQuestionCompiler
+    from trivia.triviaRepositories.absTriviaQuestionRepository import \
+        AbsTriviaQuestionRepository
     from trivia.triviaSettingsRepositoryInterface import \
         TriviaSettingsRepositoryInterface
     from trivia.triviaSource import TriviaSource

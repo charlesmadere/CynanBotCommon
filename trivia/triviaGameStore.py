@@ -7,6 +7,8 @@ try:
     from CynanBotCommon.trivia.triviaExceptions import \
         UnknownTriviaGameTypeException
     from CynanBotCommon.trivia.triviaGameState import TriviaGameState
+    from CynanBotCommon.trivia.triviaGameStoreInterface import \
+        TriviaGameStoreInterface
     from CynanBotCommon.trivia.triviaGameType import TriviaGameType
 except:
     import utils
@@ -14,10 +16,11 @@ except:
     from trivia.superTriviaGameState import SuperTriviaGameState
     from trivia.triviaExceptions import UnknownTriviaGameTypeException
     from trivia.triviaGameState import TriviaGameState
+    from trivia.triviaGameStoreInterface import TriviaGameStoreInterface
     from trivia.triviaGameType import TriviaGameType
 
 
-class TriviaGameStore():
+class TriviaGameStore(TriviaGameStoreInterface):
 
     def __init__(self):
         self.__normalGameStates: List[TriviaGameState] = list()

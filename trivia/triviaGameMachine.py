@@ -80,9 +80,10 @@ try:
     from CynanBotCommon.trivia.triviaGameMachineInterface import \
         TriviaGameMachineInterface
     from CynanBotCommon.trivia.triviaGameState import TriviaGameState
-    from CynanBotCommon.trivia.triviaGameStore import TriviaGameStore
+    from CynanBotCommon.trivia.triviaGameStoreInterface import \
+        TriviaGameStoreInterface
     from CynanBotCommon.trivia.triviaGameType import TriviaGameType
-    from CynanBotCommon.trivia.triviaRepositoryInterface import \
+    from CynanBotCommon.trivia.triviaRepositories.triviaRepositoryInterface import \
         TriviaRepositoryInterface
     from CynanBotCommon.trivia.triviaScoreRepository import \
         TriviaScoreRepository
@@ -156,9 +157,10 @@ except:
                                          UnknownTriviaGameTypeException)
     from trivia.triviaGameMachineInterface import TriviaGameMachineInterface
     from trivia.triviaGameState import TriviaGameState
-    from trivia.triviaGameStore import TriviaGameStore
+    from trivia.triviaGameStoreInterface import TriviaGameStoreInterface
     from trivia.triviaGameType import TriviaGameType
-    from trivia.triviaRepositoryInterface import TriviaRepositoryInterface
+    from trivia.triviaRepositories.triviaRepositoryInterface import \
+        TriviaRepositoryInterface
     from trivia.triviaScoreRepository import TriviaScoreRepository
     from trivia.wrongUserCheckAnswerTriviaEvent import \
         WrongUserCheckAnswerTriviaEvent
@@ -181,7 +183,7 @@ class TriviaGameMachine(TriviaGameMachineInterface):
         toxicTriviaHelper: ToxicTriviaHelper,
         triviaAnswerChecker: TriviaAnswerChecker,
         triviaEmoteGenerator: TriviaEmoteGeneratorInterface,
-        triviaGameStore: TriviaGameStore,
+        triviaGameStore: TriviaGameStoreInterface,
         triviaRepository: TriviaRepositoryInterface,
         triviaScoreRepository: TriviaScoreRepository,
         twitchTokensRepository: TwitchTokensRepositoryInterface,
@@ -208,7 +210,7 @@ class TriviaGameMachine(TriviaGameMachineInterface):
             raise ValueError(f'triviaAnswerChecker argument is malformed: \"{triviaAnswerChecker}\"')
         elif not isinstance(triviaEmoteGenerator, TriviaEmoteGeneratorInterface):
             raise ValueError(f'triviaEmoteGenerator argument is malformed: \"{triviaEmoteGenerator}\"')
-        elif not isinstance(triviaGameStore, TriviaGameStore):
+        elif not isinstance(triviaGameStore, TriviaGameStoreInterface):
             raise ValueError(f'triviaGameStore argument is malformed: \"{triviaGameStore}\"')
         elif not isinstance(triviaRepository, TriviaRepositoryInterface):
             raise ValueError(f'triviaRepository argument is malformed: \"{triviaRepository}\"')
@@ -238,7 +240,7 @@ class TriviaGameMachine(TriviaGameMachineInterface):
         self.__toxicTriviaHelper: ToxicTriviaHelper = toxicTriviaHelper
         self.__triviaAnswerChecker: TriviaAnswerChecker = triviaAnswerChecker
         self.__triviaEmoteGenerator: TriviaEmoteGeneratorInterface = triviaEmoteGenerator
-        self.__triviaGameStore: TriviaGameStore = triviaGameStore
+        self.__triviaGameStore: TriviaGameStoreInterface = triviaGameStore
         self.__triviaRepository: TriviaRepositoryInterface = triviaRepository
         self.__triviaScoreRepository: TriviaScoreRepository = triviaScoreRepository
         self.__twitchTokensRepositoryInterface: TwitchTokensRepositoryInterface = twitchTokensRepository

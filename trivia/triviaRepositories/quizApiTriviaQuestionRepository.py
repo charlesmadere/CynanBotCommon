@@ -1,5 +1,5 @@
 import traceback
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 try:
     import CynanBotCommon.utils as utils
@@ -13,12 +13,10 @@ try:
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
     from CynanBotCommon.trivia.triviaExceptions import (
         GenericTriviaNetworkException, MalformedTriviaJsonException,
-        UnsupportedTriviaTypeException)
+        NoTriviaCorrectAnswersException, UnsupportedTriviaTypeException)
     from CynanBotCommon.trivia.triviaFetchOptions import TriviaFetchOptions
     from CynanBotCommon.trivia.triviaIdGeneratorInterface import \
         TriviaIdGeneratorInterface
-    from CynanBotCommon.trivia.triviaQuestionCompiler import \
-        TriviaQuestionCompiler
     from CynanBotCommon.trivia.triviaRepositories.absTriviaQuestionRepository import \
         AbsTriviaQuestionRepository
     from CynanBotCommon.trivia.triviaSettingsRepositoryInterface import \
@@ -38,10 +36,10 @@ except:
     from trivia.triviaDifficulty import TriviaDifficulty
     from trivia.triviaExceptions import (GenericTriviaNetworkException,
                                          MalformedTriviaJsonException,
+                                         NoTriviaCorrectAnswersException,
                                          UnsupportedTriviaTypeException)
     from trivia.triviaFetchOptions import TriviaFetchOptions
     from trivia.triviaIdGeneratorInterface import TriviaIdGeneratorInterface
-    from trivia.triviaQuestionCompiler import TriviaQuestionCompiler
     from trivia.triviaRepositories.absTriviaQuestionRepository import \
         AbsTriviaQuestionRepository
     from trivia.triviaSettingsRepositoryInterface import \
@@ -51,91 +49,116 @@ except:
     from trivia.trueFalseTriviaQuestion import TrueFalseTriviaQuestion
 
 
-class WillFryTriviaQuestionRepository(AbsTriviaQuestionRepository):
+class QuizApiTriviaQuestionRepository(AbsTriviaQuestionRepository):
 
     def __init__(
         self,
         networkClientProvider: NetworkClientProvider,
+        quizApiKey: str,
         timber: TimberInterface,
         triviaIdGenerator: TriviaIdGeneratorInterface,
-        triviaQuestionCompiler: TriviaQuestionCompiler,
         triviaSettingsRepository: TriviaSettingsRepositoryInterface
     ):
         super().__init__(triviaSettingsRepository)
 
         if not isinstance(networkClientProvider, NetworkClientProvider):
             raise ValueError(f'networkClientProvider argument is malformed: \"{networkClientProvider}\"')
+        elif not utils.isValidStr(quizApiKey):
+            raise ValueError(f'quizApiKey argument is malformed: \"{quizApiKey}\"')
         elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(triviaIdGenerator, TriviaIdGeneratorInterface):
             raise ValueError(f'triviaIdGenerator argument is malformed: \"{triviaIdGenerator}\"')
-        elif not isinstance(triviaQuestionCompiler, TriviaQuestionCompiler):
-            raise ValueError(f'triviaQuestionCompiler argument is malformed: \"{triviaQuestionCompiler}\"')
 
         self.__networkClientProvider: NetworkClientProvider = networkClientProvider
+        self.__quizApiKey: str = quizApiKey
         self.__timber: TimberInterface = timber
         self.__triviaIdGenerator: TriviaIdGeneratorInterface = triviaIdGenerator
-        self.__triviaQuestionCompiler: TriviaQuestionCompiler = triviaQuestionCompiler
 
     async def fetchTriviaQuestion(self, fetchOptions: TriviaFetchOptions) -> AbsTriviaQuestion:
         if not isinstance(fetchOptions, TriviaFetchOptions):
             raise ValueError(f'fetchOptions argument is malformed: \"{fetchOptions}\"')
 
-        self.__timber.log('WillFryTriviaQuestionRepository', f'Fetching trivia question... (fetchOptions={fetchOptions})')
+        self.__timber.log('QuizApiTriviaQuestionRepository', f'Fetching trivia question... (fetchOptions={fetchOptions})')
 
         clientSession = await self.__networkClientProvider.get()
 
         try:
-            response = await clientSession.get('https://the-trivia-api.com/api/questions?limit=1')
+            response = await clientSession.get(
+                url = f'https://quizapi.io/api/v1/questions?apiKey={self.__quizApiKey}&limit=1',
+                headers = {
+                    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:97.0) Gecko/20100101 Firefox/97.0' # LOOOOL
+                }
+            )
         except GenericNetworkException as e:
-            self.__timber.log('WillFryTriviaQuestionRepository', f'Encountered network error: {e}', e, traceback.format_exc())
+            self.__timber.log('QuizApiTriviaQuestionRepository', f'Encountered network error when fetching trivia question: {e}', e, traceback.format_exc())
             raise GenericTriviaNetworkException(self.getTriviaSource(), e)
 
         if response.getStatusCode() != 200:
-            self.__timber.log('WillFryTriviaQuestionRepository', f'Encountered non-200 HTTP status code: \"{response.getStatusCode()}\"')
+            self.__timber.log('QuizApiTriviaQuestionRepository', f'Encountered non-200 HTTP status code when fetching trivia question: \"{response.getStatusCode()}\"')
             raise GenericTriviaNetworkException(self.getTriviaSource())
 
-        jsonResponse: Optional[Dict[str, Any]] = await response.json()
+        jsonResponse: Optional[List[Dict[str, Any]]] = await response.json()
         await response.close()
 
         if await self._triviaSettingsRepository.isDebugLoggingEnabled():
-            self.__timber.log('WillFryTriviaQuestionRepository', f'{jsonResponse}')
+            self.__timber.log('QuizApiTriviaQuestionRepository', f'{jsonResponse}')
 
         if not utils.hasItems(jsonResponse):
-            self.__timber.log('WillFryTriviaQuestionRepository', f'Rejecting Will Fry Trivia\'s JSON data due to null/empty contents: {jsonResponse}')
-            raise MalformedTriviaJsonException(f'Rejecting Will Fry Trivia\'s JSON data due to null/empty contents: {jsonResponse}')
+            self.__timber.log('QuizApiTriviaQuestionRepository', f'Rejecting Quiz API\'s JSON data due to null/empty contents: {jsonResponse}')
+            raise MalformedTriviaJsonException(f'Rejecting Quiz API JSON data due to null/empty contents: {jsonResponse}')
 
-        triviaJson: Dict[str, Any] = jsonResponse[0]
+        triviaJson: Optional[Dict[str, Any]] = jsonResponse[0]
         if not utils.hasItems(triviaJson):
-            self.__timber.log('WillFryTriviaQuestionRepository', f'Rejecting Will Fry Trivia\'s JSON data due to null/empty contents: {jsonResponse}')
-            raise MalformedTriviaJsonException(f'Rejecting Will Fry Trivia\'s JSON data due to null/empty contents: {jsonResponse}')
+            self.__timber.log('QuizApiTriviaQuestionRepository', f'Rejecting Quiz API\'s JSON data due to null/empty contents: {jsonResponse}')
+            raise MalformedTriviaJsonException(f'Rejecting Quiz API\'s JSON data due to null/empty contents: {jsonResponse}')
 
-        triviaType = TriviaType.fromStr(utils.getStrFromDict(triviaJson, 'type'))
-        category = await self.__triviaQuestionCompiler.compileCategory(utils.getStrFromDict(triviaJson, 'category', fallback = ''))
-        question = await self.__triviaQuestionCompiler.compileQuestion(utils.getStrFromDict(triviaJson, 'question'))
+        triviaDifficulty = TriviaDifficulty.fromStr(utils.getStrFromDict(triviaJson, 'difficulty', fallback = ''))
+        category = utils.getStrFromDict(triviaJson, 'category', fallback = '', clean = True)
+        question = utils.getStrFromDict(triviaJson, 'question', clean = True)
+
+        # this API seems to only ever give multiple choice, so for now, we're just hardcoding this
+        triviaType = TriviaType.MULTIPLE_CHOICE
 
         triviaId = utils.getStrFromDict(triviaJson, 'id', fallback = '')
         if not utils.isValidStr(triviaId):
-            triviaId = await self.__triviaIdGenerator.generate(category = category, question = question)
+            triviaId = await self.__triviaIdGenerator.generate(
+                category = category,
+                difficulty = triviaDifficulty.toStr(),
+                question = question
+            )
+
+        answersJson: Dict[str, str] = triviaJson['answers']
+        answersList: List[Tuple[str, str]] = list(answersJson.items())
+        answersList.sort(key = lambda entry: entry[0].lower())
+
+        correctAnswersJson: Dict[str, str] = triviaJson['correct_answers']
+        correctAnswersList: List[Tuple[str, str]] = list(correctAnswersJson.items())
+        correctAnswersList.sort(key = lambda entry: entry[0].lower())
+
+        if not utils.hasItems(answersList) or not utils.hasItems(correctAnswersList) or len(answersList) != len(correctAnswersList):
+            raise MalformedTriviaJsonException(f'Rejecting Quiz API\'s data due to malformed \"answers\" and/or \"correct_answers\" data: {jsonResponse}')
+
+        correctAnswers: List[str] = list()
+        filteredAnswers: List[str] = list()
+
+        for index, pair in enumerate(answersList):
+            if utils.isValidStr(pair[0]) and utils.isValidStr(pair[1]):
+                filteredAnswers.append(pair[1])
+                correctAnswerPair: Tuple[str, str] = correctAnswersList[index]
+
+                if utils.strToBool(correctAnswerPair[1]):
+                    correctAnswers.append(pair[1])
+
+        if not utils.hasItems(correctAnswers):
+            raise NoTriviaCorrectAnswersException(f'Rejecting Quiz API\'s JSON data due to there being no correct answers: {jsonResponse}')
+
+        multipleChoiceResponses = await self._buildMultipleChoiceResponsesList(
+            correctAnswers = correctAnswers,
+            multipleChoiceResponses = filteredAnswers
+        )
 
         if triviaType is TriviaType.MULTIPLE_CHOICE:
-            correctAnswer = await self.__triviaQuestionCompiler.compileResponse(
-                response = utils.getStrFromDict(triviaJson, 'correctAnswer'),
-                htmlUnescape = True
-            )
-            correctAnswers: List[str] = list()
-            correctAnswers.append(correctAnswer)
-
-            incorrectAnswers = await self.__triviaQuestionCompiler.compileResponses(
-                responses = triviaJson['incorrectAnswers'],
-                htmlUnescape = True
-            )
-
-            multipleChoiceResponses = await self._buildMultipleChoiceResponsesList(
-                correctAnswers = correctAnswers,
-                multipleChoiceResponses = incorrectAnswers
-            )
-
             if await self._verifyIsActuallyMultipleChoiceQuestion(correctAnswers, multipleChoiceResponses):
                 return MultipleChoiceTriviaQuestion(
                     correctAnswers = correctAnswers,
@@ -144,35 +167,31 @@ class WillFryTriviaQuestionRepository(AbsTriviaQuestionRepository):
                     categoryId = None,
                     question = question,
                     triviaId = triviaId,
-                    triviaDifficulty = TriviaDifficulty.UNKNOWN,
-                    triviaSource = TriviaSource.WILL_FRY_TRIVIA
+                    triviaDifficulty = triviaDifficulty,
+                    triviaSource = TriviaSource.QUIZ_API
                 )
             else:
-                self.__timber.log('WillFryTriviaQuestionRepository', f'Encountered a multiple choice question that is better suited for true/false')
+                self.__timber.log('QuizApiTriviaQuestionRepository', f'Encountered a multiple choice question that is better suited for true/false')
                 triviaType = TriviaType.TRUE_FALSE
 
         if triviaType is TriviaType.TRUE_FALSE:
-            correctAnswer = utils.getBoolFromDict(triviaJson, 'correctAnswer')
-            correctAnswers: List[bool] = list()
-            correctAnswers.append(correctAnswer)
-
             return TrueFalseTriviaQuestion(
-                correctAnswers = correctAnswers,
+                correctAnswers = utils.strsToBools(correctAnswers),
                 category = category,
                 categoryId = None,
                 question = question,
                 triviaId = triviaId,
-                triviaDifficulty = TriviaDifficulty.UNKNOWN,
-                triviaSource = TriviaSource.WILL_FRY_TRIVIA
+                triviaDifficulty = triviaDifficulty,
+                triviaSource = TriviaSource.QUIZ_API
             )
 
-        raise UnsupportedTriviaTypeException(f'triviaType \"{triviaType}\" is not supported for Will Fry Trivia: {jsonResponse}')
+        raise UnsupportedTriviaTypeException(f'triviaType \"{triviaType}\" is not supported for Quiz API: {jsonResponse}')
 
     def getSupportedTriviaTypes(self) -> Set[TriviaType]:
         return { TriviaType.MULTIPLE_CHOICE, TriviaType.TRUE_FALSE }
 
     def getTriviaSource(self) -> TriviaSource:
-        return TriviaSource.WILL_FRY_TRIVIA
+        return TriviaSource.QUIZ_API
 
     async def hasQuestionSetAvailable(self) -> bool:
         return True

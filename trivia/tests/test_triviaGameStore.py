@@ -8,6 +8,7 @@ try:
     from ..triviaDifficulty import TriviaDifficulty
     from ..triviaGameState import TriviaGameState
     from ..triviaGameStore import TriviaGameStore
+    from ..triviaGameStoreInterface import TriviaGameStoreInterface
     from ..triviaSource import TriviaSource
     from ..trueFalseTriviaQuestion import TrueFalseTriviaQuestion
 except:
@@ -20,6 +21,7 @@ except:
     from trivia.triviaDifficulty import TriviaDifficulty
     from trivia.triviaGameState import TriviaGameState
     from trivia.triviaGameStore import TriviaGameStore
+    from trivia.triviaGameStoreInterface import TriviaGameStoreInterface
     from trivia.triviaSource import TriviaSource
     from trivia.trueFalseTriviaQuestion import TrueFalseTriviaQuestion
 
@@ -147,7 +149,7 @@ class TriviaGameStoreTests():
         twitchChannel = 'Imyt'
     )
 
-    triviaGameStore = TriviaGameStore()
+    triviaGameStore: TriviaGameStoreInterface = TriviaGameStore()
 
     @pytest.mark.asyncio
     async def test_add(self):

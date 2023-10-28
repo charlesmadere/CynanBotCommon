@@ -12,8 +12,6 @@ try:
     from CynanBotCommon.storage.databaseType import DatabaseType
     from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
-    from CynanBotCommon.trivia.absTriviaQuestionRepository import \
-        AbsTriviaQuestionRepository
     from CynanBotCommon.trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
@@ -25,6 +23,8 @@ try:
         TriviaIdGeneratorInterface
     from CynanBotCommon.trivia.triviaQuestionCompiler import \
         TriviaQuestionCompiler
+    from CynanBotCommon.trivia.triviaRepositories.absTriviaQuestionRepository import \
+        AbsTriviaQuestionRepository
     from CynanBotCommon.trivia.triviaSettingsRepositoryInterface import \
         TriviaSettingsRepositoryInterface
     from CynanBotCommon.trivia.triviaSource import TriviaSource
@@ -41,7 +41,6 @@ except:
     from storage.databaseType import DatabaseType
     from timber.timberInterface import TimberInterface
     from trivia.absTriviaQuestion import AbsTriviaQuestion
-    from trivia.absTriviaQuestionRepository import AbsTriviaQuestionRepository
     from trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
     from trivia.triviaDifficulty import TriviaDifficulty
@@ -52,6 +51,8 @@ except:
     from trivia.triviaFetchOptions import TriviaFetchOptions
     from trivia.triviaIdGeneratorInterface import TriviaIdGeneratorInterface
     from trivia.triviaQuestionCompiler import TriviaQuestionCompiler
+    from trivia.triviaRepositories.absTriviaQuestionRepository import \
+        AbsTriviaQuestionRepository
     from trivia.triviaSettingsRepositoryInterface import \
         TriviaSettingsRepositoryInterface
     from trivia.triviaSource import TriviaSource
