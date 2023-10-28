@@ -6,6 +6,9 @@ try:
     from ...contentScanner.bannedWordsRepository import BannedWordsRepository
     from ...contentScanner.bannedWordsRepositoryInterface import \
         BannedWordsRepositoryInterface
+    from ...contentScanner.contentScanner import ContentScanner
+    from ...contentScanner.contentScannerInterface import \
+        ContentScannerInterface
     from ...storage.jsonStaticReader import JsonStaticReader
     from ...storage.linesReaderInterface import LinesReaderInterface
     from ...storage.linesStaticReader import LinesStaticReader
@@ -27,6 +30,8 @@ except:
     from contentScanner.bannedWordsRepository import BannedWordsRepository
     from contentScanner.bannedWordsRepositoryInterface import \
         BannedWordsRepositoryInterface
+    from contentScanner.contentScanner import ContentScanner
+    from contentScanner.contentScannerInterface import ContentScannerInterface
     from storage.jsonStaticReader import JsonStaticReader
     from storage.linesReaderInterface import LinesReaderInterface
     from storage.linesStaticReader import LinesStaticReader
@@ -61,13 +66,18 @@ class TestTriviaContentScanner():
 
     timber: TimberInterface = TimberStub()
 
-    bannedWordsRepositoryInterface: BannedWordsRepositoryInterface = BannedWordsRepository(
+    bannedWordsRepository: BannedWordsRepositoryInterface = BannedWordsRepository(
         bannedWordsLinesReader = bannedWordsLinesReader,
         timber = timber
     )
 
+    contentScanner: ContentScannerInterface = ContentScanner(
+        bannedWordsRepository = bannedWordsRepository,
+        timber = timber
+    )
+
     triviaContentScanner: TriviaContentScannerInterface = TriviaContentScanner(
-        bannedWordsRepository = bannedWordsRepositoryInterface,
+        bannedWordsRepository = bannedWordsRepository,
         timber = timber,
         triviaSettingsRepository = triviaSettingsRepository
     )

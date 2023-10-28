@@ -8,6 +8,8 @@ try:
     from CynanBotCommon.contentScanner.bannedWordsRepositoryInterface import \
         BannedWordsRepositoryInterface
     from CynanBotCommon.contentScanner.bannedWordType import BannedWordType
+    from CynanBotCommon.contentScanner.contentScannerInterface import \
+        ContentScannerInterface
     from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
     from CynanBotCommon.trivia.triviaContentCode import TriviaContentCode
@@ -23,6 +25,7 @@ except:
     from contentScanner.bannedWordsRepositoryInterface import \
         BannedWordsRepositoryInterface
     from contentScanner.bannedWordType import BannedWordType
+    from contentScanner.contentScannerInterface import ContentScannerInterface
     from timber.timberInterface import TimberInterface
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.triviaContentCode import TriviaContentCode
@@ -38,17 +41,21 @@ class TriviaContentScanner(TriviaContentScannerInterface):
     def __init__(
         self,
         bannedWordsRepository: BannedWordsRepositoryInterface,
+        contentScanner: ContentScannerInterface,
         timber: TimberInterface,
         triviaSettingsRepository: TriviaSettingsRepositoryInterface
     ):
         if not isinstance(bannedWordsRepository, BannedWordsRepositoryInterface):
             raise ValueError(f'bannedWordsRepository argument is malformed: \"{bannedWordsRepository}\"')
+        elif not isinstance(contentScanner, ContentScannerInterface):
+            raise ValueError(f'contentScanner argument is malformed: \"{contentScanner}\"')
         elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(triviaSettingsRepository, TriviaSettingsRepositoryInterface):
             raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
 
         self.__bannedWordsRepository: BannedWordsRepositoryInterface = bannedWordsRepository
+        self.__contentScanner: ContentScannerInterface = contentScanner
         self.__timber: TimberInterface = timber
         self.__triviaSettingsRepository: TriviaSettingsRepositoryInterface = triviaSettingsRepository
 
@@ -60,17 +67,17 @@ class TriviaContentScanner(TriviaContentScannerInterface):
             raise ValueError(f'question argument is malformed: \"{question}\"')
 
         phrases: Set[Optional[str]] = set()
-        await self.__updateQuestionPhrasesContent(phrases, question.getQuestion())
-        await self.__updateQuestionPhrasesContent(phrases, question.getPrompt())
+        await self.__contentScanner.updatePhrasesContent(phrases, question.getQuestion())
+        await self.__contentScanner.updatePhrasesContent(phrases, question.getPrompt())
 
         if question.hasCategory():
-            await self.__updateQuestionPhrasesContent(phrases, question.getCategory())
+            await self.__contentScanner.updatePhrasesContent(phrases, question.getCategory())
 
         for correctAnswer in question.getCorrectAnswers():
-            await self.__updateQuestionPhrasesContent(phrases, correctAnswer)
+            await self.__contentScanner.updatePhrasesContent(phrases, correctAnswer)
 
         for response in question.getResponses():
-            await self.__updateQuestionPhrasesContent(phrases, response)
+            await self.__contentScanner.updatePhrasesContent(phrases, response)
 
         return phrases
 
@@ -79,65 +86,19 @@ class TriviaContentScanner(TriviaContentScannerInterface):
             raise ValueError(f'question argument is malformed: \"{question}\"')
 
         words: Set[Optional[str]] = set()
-        await self.__updateQuestionWordsContent(words, question.getQuestion())
-        await self.__updateQuestionWordsContent(words, question.getPrompt())
+        await self.__contentScanner.updateWordsContent(words, question.getQuestion())
+        await self.__contentScanner.updateWordsContent(words, question.getPrompt())
 
         if question.hasCategory():
-            await self.__updateQuestionWordsContent(words, question.getCategory())
+            await self.__contentScanner.updateWordsContent(words, question.getCategory())
 
         for correctAnswer in question.getCorrectAnswers():
-            await self.__updateQuestionWordsContent(words, correctAnswer)
+            await self.__contentScanner.updateWordsContent(words, correctAnswer)
 
         for response in question.getResponses():
-            await self.__updateQuestionWordsContent(words, response)
+            await self.__contentScanner.updateWordsContent(words, response)
 
         return words
-
-    async def __updateQuestionPhrasesContent(
-        self,
-        phrases: Set[str],
-        string: Optional[str]
-    ):
-        if not isinstance(phrases, Set):
-            raise ValueError(f'phrases argument is malformed: \"{phrases}\"')
-
-        if not utils.isValidStr(string):
-            return
-
-        string = string.lower()
-        words = self.__phraseRegEx.findall(string)
-
-        if not utils.hasItems(words):
-            return
-
-        phrase = ' '.join(words)
-        phrases.add(phrase)
-
-    async def __updateQuestionWordsContent(
-        self,
-        words: Set[Optional[str]],
-        string: Optional[str]
-    ):
-        if not isinstance(words, Set):
-            raise ValueError(f'words argument is malformed: \"{words}\"')
-
-        if not utils.isValidStr(string):
-            return
-
-        splits = string.lower().split()
-
-        if not utils.hasItems(splits):
-            return
-
-        for split in splits:
-            words.add(split)
-            characters = self.__wordRegEx.findall(split)
-
-            if not utils.hasItems(characters):
-                continue
-
-            word = ''.join(characters)
-            words.add(word)
 
     async def verify(self, question: Optional[AbsTriviaQuestion]) -> TriviaContentCode:
         if question is None:

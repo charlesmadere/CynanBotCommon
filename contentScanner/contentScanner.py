@@ -44,7 +44,7 @@ class ContentScanner(ContentScannerInterface):
         # TODO
         pass
 
-    async def __updateQuestionPhrasesContent(
+    async def updatePhrasesContent(
         self,
         phrases: Set[str],
         string: Optional[str]
@@ -64,7 +64,7 @@ class ContentScanner(ContentScannerInterface):
         phrase = ' '.join(words)
         phrases.add(phrase)
 
-    async def __updateQuestionWordsContent(
+    async def updateWordsContent(
         self,
         words: Set[Optional[str]],
         string: Optional[str]
