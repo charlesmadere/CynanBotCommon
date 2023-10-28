@@ -78,6 +78,7 @@ class TestTriviaContentScanner():
 
     triviaContentScanner: TriviaContentScannerInterface = TriviaContentScanner(
         bannedWordsRepository = bannedWordsRepository,
+        contentScanner = contentScanner,
         timber = timber,
         triviaSettingsRepository = triviaSettingsRepository
     )
