@@ -10,22 +10,6 @@ try:
     from CynanBotCommon.backgroundTaskHelper import BackgroundTaskHelper
     from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
-    from CynanBotCommon.trivia.bongoTriviaQuestionRepository import \
-        BongoTriviaQuestionRepository
-    from CynanBotCommon.trivia.funtoonTriviaQuestionRepository import \
-        FuntoonTriviaQuestionRepository
-    from CynanBotCommon.trivia.jokeTriviaQuestionRepository import \
-        JokeTriviaQuestionRepository
-    from CynanBotCommon.trivia.jServiceTriviaQuestionRepository import \
-        JServiceTriviaQuestionRepository
-    from CynanBotCommon.trivia.lotrTriviaQuestionsRepository import \
-        LotrTriviaQuestionRepository
-    from CynanBotCommon.trivia.millionaireTriviaQuestionRepository import \
-        MillionaireTriviaQuestionRepository
-    from CynanBotCommon.trivia.openTriviaDatabaseTriviaQuestionRepository import \
-        OpenTriviaDatabaseTriviaQuestionRepository
-    from CynanBotCommon.trivia.openTriviaQaTriviaQuestionRepository import \
-        OpenTriviaQaTriviaQuestionRepository
     from CynanBotCommon.trivia.pkmnTriviaQuestionRepository import \
         PkmnTriviaQuestionRepository
     from CynanBotCommon.trivia.questionAnswerTriviaConditions import \
@@ -45,10 +29,30 @@ try:
     from CynanBotCommon.trivia.triviaFetchOptions import TriviaFetchOptions
     from CynanBotCommon.trivia.triviaQuestionCompanyTriviaQuestionRepository import \
         TriviaQuestionCompanyTriviaQuestionRepository
-    from CynanBotCommon.trivia.triviaQuestionRepositoryInterface import \
+    from CynanBotCommon.trivia.triviaRepositories.bongoTriviaQuestionRepository import \
+        BongoTriviaQuestionRepository
+    from CynanBotCommon.trivia.triviaRepositories.funtoonTriviaQuestionRepository import \
+        FuntoonTriviaQuestionRepository
+    from CynanBotCommon.trivia.triviaRepositories.jokeTriviaQuestionRepository import \
+        JokeTriviaQuestionRepository
+    from CynanBotCommon.trivia.triviaRepositories.jServiceTriviaQuestionRepository import \
+        JServiceTriviaQuestionRepository
+    from CynanBotCommon.trivia.triviaRepositories.lotrTriviaQuestionsRepository import \
+        LotrTriviaQuestionRepository
+    from CynanBotCommon.trivia.triviaRepositories.millionaireTriviaQuestionRepository import \
+        MillionaireTriviaQuestionRepository
+    from CynanBotCommon.trivia.triviaRepositories.openTriviaDatabaseTriviaQuestionRepository import \
+        OpenTriviaDatabaseTriviaQuestionRepository
+    from CynanBotCommon.trivia.triviaRepositories.openTriviaQaTriviaQuestionRepository import \
+        OpenTriviaQaTriviaQuestionRepository
+    from CynanBotCommon.trivia.triviaRepositories.triviaQuestionRepositoryInterface import \
         TriviaQuestionRepositoryInterface
-    from CynanBotCommon.trivia.triviaRepositoryInterface import \
+    from CynanBotCommon.trivia.triviaRepositories.triviaRepositoryInterface import \
         TriviaRepositoryInterface
+    from CynanBotCommon.trivia.triviaRepositories.willFryTriviaQuestionRepository import \
+        WillFryTriviaQuestionRepository
+    from CynanBotCommon.trivia.triviaRepositories.wwtbamTriviaQuestionRepository import \
+        WwtbamTriviaQuestionRepository
     from CynanBotCommon.trivia.triviaSettingsRepositoryInterface import \
         TriviaSettingsRepositoryInterface
     from CynanBotCommon.trivia.triviaSource import TriviaSource
@@ -57,10 +61,6 @@ try:
     from CynanBotCommon.trivia.triviaType import TriviaType
     from CynanBotCommon.trivia.triviaVerifierInterface import \
         TriviaVerifierInterface
-    from CynanBotCommon.trivia.willFryTriviaQuestionRepository import \
-        WillFryTriviaQuestionRepository
-    from CynanBotCommon.trivia.wwtbamTriviaQuestionRepository import \
-        WwtbamTriviaQuestionRepository
     from CynanBotCommon.twitch.twitchHandleProviderInterface import \
         TwitchHandleProviderInterface
 except:
@@ -68,20 +68,6 @@ except:
     from backgroundTaskHelper import BackgroundTaskHelper
     from timber.timberInterface import TimberInterface
     from trivia.absTriviaQuestion import AbsTriviaQuestion
-    from trivia.funtoonTriviaQuestionRepository import \
-        FuntoonTriviaQuestionRepository
-    from trivia.jokeTriviaQuestionRepository import \
-        JokeTriviaQuestionRepository
-    from trivia.jServiceTriviaQuestionRepository import \
-        JServiceTriviaQuestionRepository
-    from trivia.lotrTriviaQuestionsRepository import \
-        LotrTriviaQuestionRepository
-    from trivia.millionaireTriviaQuestionRepository import \
-        MillionaireTriviaQuestionRepository
-    from trivia.openTriviaDatabaseTriviaQuestionRepository import \
-        OpenTriviaDatabaseTriviaQuestionRepository
-    from trivia.openTriviaQaTriviaQuestionRepository import \
-        OpenTriviaQaTriviaQuestionRepository
     from trivia.pkmnTriviaQuestionRepository import \
         PkmnTriviaQuestionRepository
     from trivia.questionAnswerTriviaConditions import \
@@ -101,9 +87,26 @@ except:
     from trivia.triviaFetchOptions import TriviaFetchOptions
     from trivia.triviaQuestionCompanyTriviaQuestionRepository import \
         TriviaQuestionCompanyTriviaQuestionRepository
-    from trivia.triviaQuestionRepositoryInterface import \
+    from trivia.triviaRepositories.funtoonTriviaQuestionRepository import \
+        FuntoonTriviaQuestionRepository
+    from trivia.triviaRepositories.jokeTriviaQuestionRepository import \
+        JokeTriviaQuestionRepository
+    from trivia.triviaRepositories.jServiceTriviaQuestionRepository import \
+        JServiceTriviaQuestionRepository
+    from trivia.triviaRepositories.lotrTriviaQuestionsRepository import \
+        LotrTriviaQuestionRepository
+    from trivia.triviaRepositories.millionaireTriviaQuestionRepository import \
+        MillionaireTriviaQuestionRepository
+    from trivia.triviaRepositories.openTriviaDatabaseTriviaQuestionRepository import \
+        OpenTriviaDatabaseTriviaQuestionRepository
+    from trivia.triviaRepositories.openTriviaQaTriviaQuestionRepository import \
+        OpenTriviaQaTriviaQuestionRepository
+    from trivia.triviaRepositories.triviaQuestionRepositoryInterface import \
         TriviaQuestionRepositoryInterface
-    from trivia.triviaRepositoryInterface import TriviaRepositoryInterface
+    from trivia.triviaRepositories.triviaRepositoryInterface import \
+        TriviaRepositoryInterface
+    from trivia.triviaRepositories.wwtbamTriviaQuestionRepository import \
+        WwtbamTriviaQuestionRepository
     from trivia.triviaSettingsRepositoryInterface import \
         TriviaSettingsRepositoryInterface
     from trivia.triviaSource import TriviaSource
@@ -111,8 +114,6 @@ except:
         TriviaSourceInstabilityHelper
     from trivia.triviaType import TriviaType
     from trivia.triviaVerifierInterface import TriviaVerifierInterface
-    from trivia.wwtbamTriviaQuestionRepository import \
-        WwtbamTriviaQuestionRepository
 
     from twitch.twitchHandleProviderInterface import \
         TwitchHandleProviderInterface

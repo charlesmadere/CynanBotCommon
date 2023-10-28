@@ -1,9 +1,9 @@
 try:
-    from ...trivia.bannedWords.bannedWord import BannedWord
-    from ...trivia.bannedWords.bannedWordType import BannedWordType
+    from ...contentScanner.bannedWord import BannedWord
+    from ...contentScanner.bannedWordType import BannedWordType
 except:
-    from trivia.bannedWords.bannedWord import BannedWord
-    from trivia.bannedWords.bannedWordType import BannedWordType
+    from contentScanner.bannedWord import BannedWord
+    from contentScanner.bannedWordType import BannedWordType
 
 
 class TestBannedWord():

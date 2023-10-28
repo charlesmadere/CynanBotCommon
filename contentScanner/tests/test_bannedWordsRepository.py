@@ -1,26 +1,25 @@
 import pytest
 
 try:
+    from ...contentScanner.bannedPhrase import BannedPhrase
+    from ...contentScanner.bannedWord import BannedWord
+    from ...contentScanner.bannedWordsRepository import BannedWordsRepository
+    from ...contentScanner.bannedWordsRepositoryInterface import \
+        BannedWordsRepositoryInterface
     from ...storage.linesReaderInterface import LinesReaderInterface
     from ...storage.linesStaticReader import LinesStaticReader
     from ...timber.timberInterface import TimberInterface
     from ...timber.timberStub import TimberStub
-    from ...trivia.bannedWords.bannedPhrase import BannedPhrase
-    from ...trivia.bannedWords.bannedWord import BannedWord
-    from ...trivia.bannedWords.bannedWordsRepository import \
-        BannedWordsRepository
-    from ...trivia.bannedWords.bannedWordsRepositoryInterface import \
-        BannedWordsRepositoryInterface
 except:
+    from contentScanner.bannedPhrase import BannedPhrase
+    from contentScanner.bannedWord import BannedWord
+    from contentScanner.bannedWordsRepository import BannedWordsRepository
+    from contentScanner.bannedWordsRepositoryInterface import \
+        BannedWordsRepositoryInterface
     from storage.linesReaderInterface import LinesReaderInterface
     from storage.linesStaticReader import LinesStaticReader
     from timber.timberInterface import TimberInterface
     from timber.timberStub import TimberStub
-    from trivia.bannedWords.bannedPhrase import BannedPhrase
-    from trivia.bannedWords.bannedWord import BannedWord
-    from trivia.bannedWords.bannedWordsRepository import BannedWordsRepository
-    from trivia.bannedWords.bannedWordsRepositoryInterface import \
-        BannedWordsRepositoryInterface
 
 
 class TestBannedWordsRepository():

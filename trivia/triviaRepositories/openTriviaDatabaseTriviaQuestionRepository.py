@@ -21,7 +21,8 @@ try:
         BadTriviaSessionTokenException, GenericTriviaNetworkException,
         MalformedTriviaJsonException, UnsupportedTriviaTypeException)
     from CynanBotCommon.trivia.triviaFetchOptions import TriviaFetchOptions
-    from CynanBotCommon.trivia.triviaIdGeneratorInterface import TriviaIdGeneratorInterface
+    from CynanBotCommon.trivia.triviaIdGeneratorInterface import \
+        TriviaIdGeneratorInterface
     from CynanBotCommon.trivia.triviaQuestionCompiler import \
         TriviaQuestionCompiler
     from CynanBotCommon.trivia.triviaSettingsRepositoryInterface import \

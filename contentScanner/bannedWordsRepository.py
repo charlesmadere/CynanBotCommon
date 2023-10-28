@@ -4,23 +4,23 @@ from typing import List, Optional, Pattern, Set
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.contentScanner.absBannedWord import AbsBannedWord
+    from CynanBotCommon.contentScanner.bannedPhrase import BannedPhrase
+    from CynanBotCommon.contentScanner.bannedWord import BannedWord
+    from CynanBotCommon.contentScanner.bannedWordsRepositoryInterface import \
+        BannedWordsRepositoryInterface
     from CynanBotCommon.storage.linesReaderInterface import \
         LinesReaderInterface
     from CynanBotCommon.timber.timberInterface import TimberInterface
-    from CynanBotCommon.trivia.bannedWords.absBannedWord import AbsBannedWord
-    from CynanBotCommon.trivia.bannedWords.bannedPhrase import BannedPhrase
-    from CynanBotCommon.trivia.bannedWords.bannedWord import BannedWord
-    from CynanBotCommon.trivia.bannedWords.bannedWordsRepositoryInterface import \
-        BannedWordsRepositoryInterface
 except:
     import utils
+    from contentScanner.absBannedWord import AbsBannedWord
+    from contentScanner.bannedPhrase import BannedPhrase
+    from contentScanner.bannedWord import BannedWord
+    from contentScanner.bannedWordsRepositoryInterface import \
+        BannedWordsRepositoryInterface
     from storage.linesReaderInterface import LinesReaderInterface
     from timber.timberInterface import TimberInterface
-    from trivia.bannedWords.absBannedWord import AbsBannedWord
-    from trivia.bannedWords.bannedPhrase import BannedPhrase
-    from trivia.bannedWords.bannedWord import BannedWord
-    from trivia.bannedWords.bannedWordsRepositoryInterface import \
-        BannedWordsRepositoryInterface
 
 
 class BannedWordsRepository(BannedWordsRepositoryInterface):

@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 
 try:
-    from CynanBotCommon.trivia.bannedWords.bannedWordType import BannedWordType
+    from CynanBotCommon.contentScanner.bannedWordType import BannedWordType
 except:
-    from trivia.bannedWords.bannedWordType import BannedWordType
+    from contentScanner.bannedWordType import BannedWordType
 
 
 class AbsBannedWord(ABC):

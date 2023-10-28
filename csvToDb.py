@@ -7,17 +7,17 @@ from typing import List, Optional, Set
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.backgroundTaskHelper import BackgroundTaskHelper
+    from CynanBotCommon.contentScanner.bannedPhrase import BannedPhrase
+    from CynanBotCommon.contentScanner.bannedWord import BannedWord
+    from CynanBotCommon.contentScanner.bannedWordsRepository import \
+        BannedWordsRepository
+    from CynanBotCommon.contentScanner.bannedWordsRepositoryInterface import \
+        BannedWordsRepositoryInterface
+    from CynanBotCommon.contentScanner.bannedWordType import BannedWordType
     from CynanBotCommon.storage.jsonFileReader import JsonFileReader
     from CynanBotCommon.storage.linesFileReader import LinesFileReader
     from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.timber.timberStub import TimberStub
-    from CynanBotCommon.trivia.bannedWords.bannedPhrase import BannedPhrase
-    from CynanBotCommon.trivia.bannedWords.bannedWord import BannedWord
-    from CynanBotCommon.trivia.bannedWords.bannedWordsRepository import \
-        BannedWordsRepository
-    from CynanBotCommon.trivia.bannedWords.bannedWordsRepositoryInterface import \
-        BannedWordsRepositoryInterface
-    from CynanBotCommon.trivia.bannedWords.bannedWordType import BannedWordType
     from CynanBotCommon.trivia.triviaContentScanner import TriviaContentScanner
     from CynanBotCommon.trivia.triviaContentScannerInterface import \
         TriviaContentScannerInterface
@@ -28,16 +28,16 @@ try:
 except:
     import utils
     from backgroundTaskHelper import BackgroundTaskHelper
+    from contentScanner.bannedPhrase import BannedPhrase
+    from contentScanner.bannedWord import BannedWord
+    from contentScanner.bannedWordsRepository import BannedWordsRepository
+    from contentScanner.bannedWordsRepositoryInterface import \
+        BannedWordsRepositoryInterface
+    from contentScanner.bannedWordType import BannedWordType
     from storage.jsonFileReader import JsonFileReader
     from storage.linesFileReader import LinesFileReader
     from timber.timberInterface import TimberInterface
     from timber.timberStub import TimberStub
-    from trivia.bannedWords.bannedPhrase import BannedPhrase
-    from trivia.bannedWords.bannedWord import BannedWord
-    from trivia.bannedWords.bannedWordsRepository import BannedWordsRepository
-    from trivia.bannedWords.bannedWordsRepositoryInterface import \
-        BannedWordsRepositoryInterface
-    from trivia.bannedWords.bannedWordType import BannedWordType
     from trivia.triviaContentScanner import TriviaContentScanner
     from trivia.triviaContentScannerInterface import \
         TriviaContentScannerInterface

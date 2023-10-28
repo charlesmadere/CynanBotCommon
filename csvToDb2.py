@@ -6,13 +6,13 @@ from typing import List, Optional, Set
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.contentScanner.bannedWordsRepository import \
+        BannedWordsRepository
+    from CynanBotCommon.contentScanner.bannedWordsRepositoryInterface import \
+        BannedWordsRepositoryInterface
     from CynanBotCommon.storage.jsonFileReader import JsonFileReader
     from CynanBotCommon.timber.timber import Timber
     from CynanBotCommon.timber.timberInterface import TimberInterface
-    from CynanBotCommon.trivia.bannedWords.bannedWordsRepository import \
-        BannedWordsRepository
-    from CynanBotCommon.trivia.bannedWords.bannedWordsRepositoryInterface import \
-        BannedWordsRepositoryInterface
     from CynanBotCommon.trivia.triviaContentScanner import TriviaContentScanner
     from CynanBotCommon.trivia.triviaDifficulty import TriviaDifficulty
     from CynanBotCommon.trivia.triviaSettingsRepository import \
@@ -20,12 +20,12 @@ try:
     from CynanBotCommon.trivia.triviaType import TriviaType
 except:
     import utils
+    from contentScanner.bannedWordsRepository import BannedWordsRepository
+    from contentScanner.bannedWordsRepositoryInterface import \
+        BannedWordsRepositoryInterface
     from storage.jsonFileReader import JsonFileReader
     from timber.timber import Timber
     from timber.timberInterface import TimberInterface
-    from trivia.bannedWords.bannedWordsRepository import BannedWordsRepository
-    from trivia.bannedWords.bannedWordsRepositoryInterface import \
-        BannedWordsRepositoryInterface
     from trivia.triviaContentScanner import TriviaContentScanner
     from trivia.triviaDifficulty import TriviaDifficulty
     from trivia.triviaSettingsRepository import TriviaSettingsRepository

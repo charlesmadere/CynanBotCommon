@@ -3,10 +3,10 @@ from typing import Set
 
 try:
     from CynanBotCommon.clearable import Clearable
-    from CynanBotCommon.trivia.bannedWords.absBannedWord import AbsBannedWord
+    from CynanBotCommon.contentScanner.absBannedWord import AbsBannedWord
 except:
     from clearable import Clearable
-    from trivia.bannedWords.absBannedWord import AbsBannedWord
+    from contentScanner.absBannedWord import AbsBannedWord
 
 
 class BannedWordsRepositoryInterface(Clearable):

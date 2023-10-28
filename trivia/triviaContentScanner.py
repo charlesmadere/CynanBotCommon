@@ -3,13 +3,13 @@ from typing import Optional, Pattern, Set
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.contentScanner.bannedPhrase import BannedPhrase
+    from CynanBotCommon.contentScanner.bannedWord import BannedWord
+    from CynanBotCommon.contentScanner.bannedWordsRepositoryInterface import \
+        BannedWordsRepositoryInterface
+    from CynanBotCommon.contentScanner.bannedWordType import BannedWordType
     from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.trivia.absTriviaQuestion import AbsTriviaQuestion
-    from CynanBotCommon.trivia.bannedWords.bannedPhrase import BannedPhrase
-    from CynanBotCommon.trivia.bannedWords.bannedWord import BannedWord
-    from CynanBotCommon.trivia.bannedWords.bannedWordsRepositoryInterface import \
-        BannedWordsRepositoryInterface
-    from CynanBotCommon.trivia.bannedWords.bannedWordType import BannedWordType
     from CynanBotCommon.trivia.triviaContentCode import TriviaContentCode
     from CynanBotCommon.trivia.triviaContentScannerInterface import \
         TriviaContentScannerInterface
@@ -18,13 +18,13 @@ try:
     from CynanBotCommon.trivia.triviaType import TriviaType
 except:
     import utils
+    from contentScanner.bannedPhrase import BannedPhrase
+    from contentScanner.bannedWord import BannedWord
+    from contentScanner.bannedWordsRepositoryInterface import \
+        BannedWordsRepositoryInterface
+    from contentScanner.bannedWordType import BannedWordType
     from timber.timberInterface import TimberInterface
     from trivia.absTriviaQuestion import AbsTriviaQuestion
-    from trivia.bannedWords.bannedPhrase import BannedPhrase
-    from trivia.bannedWords.bannedWord import BannedWord
-    from trivia.bannedWords.bannedWordsRepositoryInterface import \
-        BannedWordsRepositoryInterface
-    from trivia.bannedWords.bannedWordType import BannedWordType
     from trivia.triviaContentCode import TriviaContentCode
     from trivia.triviaContentScannerInterface import \
         TriviaContentScannerInterface

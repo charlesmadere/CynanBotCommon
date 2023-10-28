@@ -3,40 +3,36 @@ from typing import List
 import pytest
 
 try:
+    from ...contentScanner.bannedWordsRepository import BannedWordsRepository
+    from ...contentScanner.bannedWordsRepositoryInterface import \
+        BannedWordsRepositoryInterface
     from ...storage.jsonStaticReader import JsonStaticReader
     from ...storage.linesReaderInterface import LinesReaderInterface
     from ...storage.linesStaticReader import LinesStaticReader
     from ...timber.timberInterface import TimberInterface
     from ...timber.timberStub import TimberStub
-    from ...trivia.absTriviaQuestion import AbsTriviaQuestion
-    from ...trivia.bannedWords.bannedWordsRepository import \
-        BannedWordsRepository
-    from ...trivia.bannedWords.bannedWordsRepositoryInterface import \
-        BannedWordsRepositoryInterface
-    from ...trivia.multipleChoiceTriviaQuestion import \
-        MultipleChoiceTriviaQuestion
-    from ...trivia.questionAnswerTriviaQuestion import \
-        QuestionAnswerTriviaQuestion
-    from ...trivia.triviaContentCode import TriviaContentCode
-    from ...trivia.triviaContentScanner import TriviaContentScanner
-    from ...trivia.triviaContentScannerInterface import \
-        TriviaContentScannerInterface
-    from ...trivia.triviaDifficulty import TriviaDifficulty
-    from ...trivia.triviaSettingsRepository import TriviaSettingsRepository
-    from ...trivia.triviaSettingsRepositoryInterface import \
+    from ..absTriviaQuestion import AbsTriviaQuestion
+    from ..multipleChoiceTriviaQuestion import MultipleChoiceTriviaQuestion
+    from ..questionAnswerTriviaQuestion import QuestionAnswerTriviaQuestion
+    from ..triviaContentCode import TriviaContentCode
+    from ..triviaContentScanner import TriviaContentScanner
+    from ..triviaContentScannerInterface import TriviaContentScannerInterface
+    from ..triviaDifficulty import TriviaDifficulty
+    from ..triviaSettingsRepository import TriviaSettingsRepository
+    from ..triviaSettingsRepositoryInterface import \
         TriviaSettingsRepositoryInterface
-    from ...trivia.triviaSource import TriviaSource
-    from ...trivia.trueFalseTriviaQuestion import TrueFalseTriviaQuestion
+    from ..triviaSource import TriviaSource
+    from ..trueFalseTriviaQuestion import TrueFalseTriviaQuestion
 except:
+    from contentScanner.bannedWordsRepository import BannedWordsRepository
+    from contentScanner.bannedWordsRepositoryInterface import \
+        BannedWordsRepositoryInterface
     from storage.jsonStaticReader import JsonStaticReader
     from storage.linesReaderInterface import LinesReaderInterface
     from storage.linesStaticReader import LinesStaticReader
     from timber.timberInterface import TimberInterface
     from timber.timberStub import TimberStub
     from trivia.absTriviaQuestion import AbsTriviaQuestion
-    from trivia.bannedWords.bannedWordsRepository import BannedWordsRepository
-    from trivia.bannedWords.bannedWordsRepositoryInterface import \
-        BannedWordsRepositoryInterface
     from trivia.multipleChoiceTriviaQuestion import \
         MultipleChoiceTriviaQuestion
     from trivia.questionAnswerTriviaQuestion import \

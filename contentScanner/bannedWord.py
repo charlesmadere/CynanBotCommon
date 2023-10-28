@@ -2,12 +2,12 @@ from typing import Any
 
 try:
     import CynanBotCommon.utils as utils
-    from CynanBotCommon.trivia.bannedWords.absBannedWord import AbsBannedWord
-    from CynanBotCommon.trivia.bannedWords.bannedWordType import BannedWordType
+    from CynanBotCommon.contentScanner.absBannedWord import AbsBannedWord
+    from CynanBotCommon.contentScanner.bannedWordType import BannedWordType
 except:
     import utils
-    from trivia.bannedWords.absBannedWord import AbsBannedWord
-    from trivia.bannedWords.bannedWordType import BannedWordType
+    from contentScanner.absBannedWord import AbsBannedWord
+    from contentScanner.bannedWordType import BannedWordType
 
 
 class BannedWord(AbsBannedWord):
@@ -25,7 +25,7 @@ class BannedWord(AbsBannedWord):
             else:
                 return False
         else:
-            raise ValueError(f'`other` is an unsupported type: \"{other}\"')
+            return False
 
     def getType(self) -> BannedWordType:
         return BannedWordType.EXACT_WORD
