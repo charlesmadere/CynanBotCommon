@@ -38,6 +38,26 @@ class TestContentScanner():
     )
 
     @pytest.mark.asyncio
+    async def test_scan_withBannedPhrase1(self):
+        result = await self.contentScanner.scan('qanonbelievers need help')
+        assert result is ContentCode.OK
+
+    @pytest.mark.asyncio
+    async def test_scan_withBannedPhrase2(self):
+        result = await self.contentScanner.scan('qanon believers need help')
+        assert result is ContentCode.CONTAINS_BANNED_CONTENT
+
+    @pytest.mark.asyncio
+    async def test_scan_withBannedWord1(self):
+        result = await self.contentScanner.scan('im pretty sure Nintendo hates Melee lol')
+        assert result is ContentCode.CONTAINS_BANNED_CONTENT
+
+    @pytest.mark.asyncio
+    async def test_scan_withBannedWord2(self):
+        result = await self.contentScanner.scan('but do you hate sONY')
+        assert result is ContentCode.CONTAINS_BANNED_CONTENT
+
+    @pytest.mark.asyncio
     async def test_scan_withBlankString(self):
         result = await self.contentScanner.scan(' ')
         assert result is ContentCode.IS_BLANK
