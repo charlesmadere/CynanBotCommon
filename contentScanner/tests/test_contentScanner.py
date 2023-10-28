@@ -1,29 +1,21 @@
 import pytest
 
 try:
-    from ...contentScanner.bannedPhrase import BannedPhrase
-    from ...contentScanner.bannedWord import BannedWord
-    from ...contentScanner.bannedWordsRepository import BannedWordsRepository
-    from ...contentScanner.bannedWordsRepositoryInterface import \
-        BannedWordsRepositoryInterface
-    from ...contentScanner.contentCode import ContentCode
-    from ...contentScanner.contentScanner import ContentScanner
-    from ...contentScanner.contentScannerInterface import \
-        ContentScannerInterface
-    from ...storage.linesReaderInterface import LinesReaderInterface
     from ...storage.linesStaticReader import LinesStaticReader
     from ...timber.timberInterface import TimberInterface
     from ...timber.timberStub import TimberStub
+    from ..bannedWordsRepository import BannedWordsRepository
+    from ..bannedWordsRepositoryInterface import BannedWordsRepositoryInterface
+    from ..contentCode import ContentCode
+    from ..contentScanner import ContentScanner
+    from ..contentScannerInterface import ContentScannerInterface
 except:
-    from contentScanner.bannedPhrase import BannedPhrase
-    from contentScanner.bannedWord import BannedWord
     from contentScanner.bannedWordsRepository import BannedWordsRepository
     from contentScanner.bannedWordsRepositoryInterface import \
         BannedWordsRepositoryInterface
     from contentScanner.contentCode import ContentCode
     from contentScanner.contentScanner import ContentScanner
     from contentScanner.contentScannerInterface import ContentScannerInterface
-    from storage.linesReaderInterface import LinesReaderInterface
     from storage.linesStaticReader import LinesStaticReader
     from timber.timberInterface import TimberInterface
     from timber.timberStub import TimberStub
@@ -33,9 +25,9 @@ class TestContentScanner():
 
     timber: TimberInterface = TimberStub()
 
-    bannedWordsRepository: BannedWordsRepository = BannedWordsRepository(
+    bannedWordsRepository: BannedWordsRepositoryInterface = BannedWordsRepository(
         bannedWordsLinesReader = LinesStaticReader(
-            lines = [ 'Hello', 'WORLD', '"QAnon"', 'world' ]
+            lines = [ 'Nintendo', 'SONY', '"QAnon"', 'sony' ]
         ),
         timber = timber
     )
@@ -64,6 +56,11 @@ class TestContentScanner():
     async def test_scan_withNone(self):
         result = await self.contentScanner.scan(None)
         assert result is ContentCode.IS_NONE
+
+    @pytest.mark.asyncio
+    async def test_scan_withUrl(self):
+        result = await self.contentScanner.scan('Hello https://google.com/ World!')
+        assert result is ContentCode.OK
 
     @pytest.mark.asyncio
     async def test_updatePhrasesContent(self):

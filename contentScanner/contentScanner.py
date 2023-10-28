@@ -3,16 +3,22 @@ from typing import Optional, Pattern, Set
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.contentScanner.bannedPhrase import BannedPhrase
+    from CynanBotCommon.contentScanner.bannedWord import BannedWord
     from CynanBotCommon.contentScanner.bannedWordsRepositoryInterface import \
         BannedWordsRepositoryInterface
+    from CynanBotCommon.contentScanner.bannedWordType import BannedWordType
     from CynanBotCommon.contentScanner.contentCode import ContentCode
     from CynanBotCommon.contentScanner.contentScannerInterface import \
         ContentScannerInterface
     from CynanBotCommon.timber.timberInterface import TimberInterface
 except:
     import utils
+    from contentScanner.bannedPhrase import BannedPhrase
+    from contentScanner.bannedWord import BannedWord
     from contentScanner.bannedWordsRepositoryInterface import \
         BannedWordsRepositoryInterface
+    from contentScanner.bannedWordType import BannedWordType
     from contentScanner.contentCode import ContentCode
     from contentScanner.contentScannerInterface import ContentScannerInterface
     from timber.timberInterface import TimberInterface
@@ -36,17 +42,61 @@ class ContentScanner(ContentScannerInterface):
         self.__phraseRegEx: Pattern = re.compile(r'[a-z]+', re.IGNORECASE)
         self.__wordRegEx: Pattern = re.compile(r'\w', re.IGNORECASE)
 
-    async def scan(self, message: Optional[str]) -> ContentCode:
-        if message is None:
+    async def scan(self, string: Optional[str]) -> ContentCode:
+        if string is None:
             return ContentCode.IS_NONE
-        elif not isinstance(message, str):
-            raise ValueError(f'message argument is malformed: \"{message}\"')
-        elif len(message) == 0:
+        elif not isinstance(string, str):
+            raise ValueError(f'message argument is malformed: \"{string}\"')
+        elif len(string) == 0:
             return ContentCode.IS_EMPTY
-        elif message.isspace():
+        elif string.isspace():
             return ContentCode.IS_BLANK
 
-        # TODO
+        if utils.containsUrl(string):
+            self.__timber.log('ContentScanner', f'Content contains a URL: \"{string}\"')
+            return ContentCode.CONTAINS_URL
+
+        phrases: Set[Optional[str]] = set()
+        await self.updatePhrasesContent(phrases, string)
+
+        words: Set[Optional[str]] = set()
+        await self.updateWordsContent(words, string)
+
+        phrasesAndWordsContentCode = await self.__scanPhrasesAndWords(phrases, words)
+        if phrasesAndWordsContentCode is not ContentCode.OK:
+            return phrasesAndWordsContentCode
+
+        return ContentCode.OK
+
+    async def __scanPhrasesAndWords(
+        self,
+        phrases: Set[Optional[str]],
+        words: Set[Optional[str]]
+    ) -> ContentCode:
+        if not isinstance(phrases, Set):
+            raise ValueError(f'phrases argument is malformed: \"{phrases}\"')
+        elif not isinstance(words, Set):
+            raise ValueError(f'words argument is malformed: \"{words}\"')
+
+        absBannedWords = await self.__bannedWordsRepository.getBannedWordsAsync()
+
+        for absBannedWord in absBannedWords:
+            if absBannedWord.getType() is BannedWordType.EXACT_WORD:
+                bannedWord: BannedWord = absBannedWord
+
+                if bannedWord.getWord() in words:
+                    self.__timber.log('ContentScanner', f'Content contains a banned word ({absBannedWord}): \"{bannedWord.getWord()}\"')
+                    return ContentCode.CONTAINS_BANNED_CONTENT
+            elif absBannedWord.getType() is BannedWordType.PHRASE:
+                bannedPhrase: BannedPhrase = absBannedWord
+
+                for phrase in phrases:
+                    if bannedPhrase.getPhrase() in phrase:
+                        self.__timber.log('ContentScanner', f'Content contains a banned phrase ({absBannedWord}): \"{bannedPhrase.getPhrase()}\"')
+                        return ContentCode.CONTAINS_BANNED_CONTENT
+            else:
+                raise RuntimeError(f'unknown BannedWordType ({absBannedWord}): \"{absBannedWord.getType()}\"')
+
         return ContentCode.OK
 
     async def updatePhrasesContent(
