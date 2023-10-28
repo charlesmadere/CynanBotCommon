@@ -9,9 +9,8 @@ try:
     from ...storage.backingSqliteDatabase import BackingSqliteDatabase
     from ...timber.timberInterface import TimberInterface
     from ...timber.timberStub import TimberStub
-    from ...trivia.triviaEmoteGenerator import TriviaEmoteGenerator
-    from ...trivia.triviaEmoteGeneratorInterface import \
-        TriviaEmoteGeneratorInterface
+    from ..triviaEmoteGenerator import TriviaEmoteGenerator
+    from ..triviaEmoteGeneratorInterface import TriviaEmoteGeneratorInterface
 except:
     from backgroundTaskHelper import BackgroundTaskHelper
     from storage.backingDatabase import BackingDatabase

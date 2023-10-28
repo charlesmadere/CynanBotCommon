@@ -1,5 +1,5 @@
 try:
-    from ...trivia.triviaSource import TriviaSource
+    from ..triviaSource import TriviaSource
 except:
     from trivia.triviaSource import TriviaSource
 

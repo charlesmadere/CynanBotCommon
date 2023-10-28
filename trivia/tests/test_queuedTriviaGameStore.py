@@ -4,16 +4,13 @@ try:
     from ...storage.jsonStaticReader import JsonStaticReader
     from ...timber.timberInterface import TimberInterface
     from ...timber.timberStub import TimberStub
-    from ...trivia.questionAnswerTriviaConditions import \
-        QuestionAnswerTriviaConditions
-    from ...trivia.queuedTriviaGameStore import QueuedTriviaGameStore
-    from ...trivia.queuedTriviaGameStoreInterface import \
-        QueuedTriviaGameStoreInterface
-    from ...trivia.startNewSuperTriviaGameAction import \
-        StartNewSuperTriviaGameAction
-    from ...trivia.triviaFetchOptions import TriviaFetchOptions
-    from ...trivia.triviaSettingsRepository import TriviaSettingsRepository
-    from ...trivia.triviaSettingsRepositoryInterface import \
+    from ..questionAnswerTriviaConditions import QuestionAnswerTriviaConditions
+    from ..queuedTriviaGameStore import QueuedTriviaGameStore
+    from ..queuedTriviaGameStoreInterface import QueuedTriviaGameStoreInterface
+    from ..startNewSuperTriviaGameAction import StartNewSuperTriviaGameAction
+    from ..triviaFetchOptions import TriviaFetchOptions
+    from ..triviaSettingsRepository import TriviaSettingsRepository
+    from ..triviaSettingsRepositoryInterface import \
         TriviaSettingsRepositoryInterface
 except:
     from storage.jsonStaticReader import JsonStaticReader

@@ -5,8 +5,8 @@ import pytest
 try:
     from ...timber.timberInterface import TimberInterface
     from ...timber.timberStub import TimberStub
-    from ...trivia.triviaAnswerCompiler import TriviaAnswerCompiler
-    from ...trivia.triviaExceptions import BadTriviaAnswerException
+    from ..triviaAnswerCompiler import TriviaAnswerCompiler
+    from ..triviaExceptions import BadTriviaAnswerException
 except:
     from timber.timberInterface import TimberInterface
     from timber.timberStub import TimberStub

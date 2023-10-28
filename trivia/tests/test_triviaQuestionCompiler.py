@@ -3,7 +3,7 @@ from typing import List
 import pytest
 
 try:
-    from ...trivia.triviaQuestionCompiler import TriviaQuestionCompiler
+    from ..triviaQuestionCompiler import TriviaQuestionCompiler
 except:
     from trivia.triviaQuestionCompiler import TriviaQuestionCompiler
 

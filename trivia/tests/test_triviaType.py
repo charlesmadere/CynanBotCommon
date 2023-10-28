@@ -1,7 +1,7 @@
 from typing import List
 
 try:
-    from ...trivia.triviaType import TriviaType
+    from ..triviaType import TriviaType
 except:
     from trivia.triviaType import TriviaType
 

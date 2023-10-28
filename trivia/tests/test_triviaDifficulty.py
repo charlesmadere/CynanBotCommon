@@ -1,5 +1,5 @@
 try:
-    from ...trivia.triviaDifficulty import TriviaDifficulty
+    from ..triviaDifficulty import TriviaDifficulty
 except:
     from trivia.triviaDifficulty import TriviaDifficulty
 

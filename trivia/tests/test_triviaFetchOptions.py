@@ -1,7 +1,6 @@
 try:
-    from ...trivia.questionAnswerTriviaConditions import \
-        QuestionAnswerTriviaConditions
-    from ...trivia.triviaFetchOptions import TriviaFetchOptions
+    from ..questionAnswerTriviaConditions import QuestionAnswerTriviaConditions
+    from ..triviaFetchOptions import TriviaFetchOptions
 except:
     from trivia.questionAnswerTriviaConditions import \
         QuestionAnswerTriviaConditions

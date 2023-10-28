@@ -6,21 +6,19 @@ try:
     from ...storage.jsonStaticReader import JsonStaticReader
     from ...timber.timberInterface import TimberInterface
     from ...timber.timberStub import TimberStub
-    from ...trivia.absTriviaQuestion import AbsTriviaQuestion
-    from ...trivia.multipleChoiceTriviaQuestion import \
-        MultipleChoiceTriviaQuestion
-    from ...trivia.questionAnswerTriviaQuestion import \
-        QuestionAnswerTriviaQuestion
-    from ...trivia.triviaAnswerChecker import TriviaAnswerChecker
-    from ...trivia.triviaAnswerCheckResult import TriviaAnswerCheckResult
-    from ...trivia.triviaAnswerCompiler import TriviaAnswerCompiler
-    from ...trivia.triviaDifficulty import TriviaDifficulty
-    from ...trivia.triviaQuestionCompiler import TriviaQuestionCompiler
-    from ...trivia.triviaSettingsRepository import TriviaSettingsRepository
-    from ...trivia.triviaSettingsRepositoryInterface import \
+    from ..absTriviaQuestion import AbsTriviaQuestion
+    from ..multipleChoiceTriviaQuestion import MultipleChoiceTriviaQuestion
+    from ..questionAnswerTriviaQuestion import QuestionAnswerTriviaQuestion
+    from ..triviaAnswerChecker import TriviaAnswerChecker
+    from ..triviaAnswerCheckResult import TriviaAnswerCheckResult
+    from ..triviaAnswerCompiler import TriviaAnswerCompiler
+    from ..triviaDifficulty import TriviaDifficulty
+    from ..triviaQuestionCompiler import TriviaQuestionCompiler
+    from ..triviaSettingsRepository import TriviaSettingsRepository
+    from ..triviaSettingsRepositoryInterface import \
         TriviaSettingsRepositoryInterface
-    from ...trivia.triviaSource import TriviaSource
-    from ...trivia.trueFalseTriviaQuestion import TrueFalseTriviaQuestion
+    from ..triviaSource import TriviaSource
+    from ..trueFalseTriviaQuestion import TrueFalseTriviaQuestion
 except:
     from storage.jsonStaticReader import JsonStaticReader
     from timber.timberInterface import TimberInterface

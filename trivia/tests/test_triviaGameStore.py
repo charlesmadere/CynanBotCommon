@@ -1,17 +1,15 @@
 import pytest
 
 try:
-    from ...trivia.absTriviaQuestion import AbsTriviaQuestion
-    from ...trivia.multipleChoiceTriviaQuestion import \
-        MultipleChoiceTriviaQuestion
-    from ...trivia.questionAnswerTriviaQuestion import \
-        QuestionAnswerTriviaQuestion
-    from ...trivia.superTriviaGameState import SuperTriviaGameState
-    from ...trivia.triviaDifficulty import TriviaDifficulty
-    from ...trivia.triviaGameState import TriviaGameState
-    from ...trivia.triviaGameStore import TriviaGameStore
-    from ...trivia.triviaSource import TriviaSource
-    from ...trivia.trueFalseTriviaQuestion import TrueFalseTriviaQuestion
+    from ..absTriviaQuestion import AbsTriviaQuestion
+    from ..multipleChoiceTriviaQuestion import MultipleChoiceTriviaQuestion
+    from ..questionAnswerTriviaQuestion import QuestionAnswerTriviaQuestion
+    from ..superTriviaGameState import SuperTriviaGameState
+    from ..triviaDifficulty import TriviaDifficulty
+    from ..triviaGameState import TriviaGameState
+    from ..triviaGameStore import TriviaGameStore
+    from ..triviaSource import TriviaSource
+    from ..trueFalseTriviaQuestion import TrueFalseTriviaQuestion
 except:
     from trivia.absTriviaQuestion import AbsTriviaQuestion
     from trivia.multipleChoiceTriviaQuestion import \
