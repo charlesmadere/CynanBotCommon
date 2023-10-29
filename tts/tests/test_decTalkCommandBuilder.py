@@ -55,6 +55,11 @@ class TestDecTalkCommandBuilder():
         assert result == 'say.exe cd dir'
 
     @pytest.mark.asyncio
+    async def test_buildAndCleanCommand_withExtraneousSpacesString(self):
+        result = await self.decTalkCommandBuilder.buildAndCleanCommand('  Hello,    World! ')
+        assert result == 'say.exe Hello, World!'
+
+    @pytest.mark.asyncio
     async def test_buildAndCleanCommand_withHelloWorldString(self):
         result = await self.decTalkCommandBuilder.buildAndCleanCommand('Hello, World!')
         assert result == 'say.exe Hello, World!'

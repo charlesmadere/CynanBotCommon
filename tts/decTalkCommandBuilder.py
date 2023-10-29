@@ -28,6 +28,8 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         if not utils.isValidStr(command):
             return None
 
+        command = command.strip()
+
         for bannedPhrase in self.__bannedStrings:
             command = bannedPhrase.sub('', command)
 
@@ -38,7 +40,7 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
             return None
 
         # remove extranneous whitespace
-        command = self.__whiteSpaceRegEx.sub('', command)
+        command = self.__whiteSpaceRegEx.sub(' ', command)
 
         return f'{self.__pathToDecTalk} {command}'
 
