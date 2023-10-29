@@ -64,6 +64,6 @@ class TestTwitchEmoteImageScale():
         result = TwitchEmoteImageScale.fromStr('2.0')
         assert result is TwitchEmoteImageScale.MEDIUM
 
-    def test_fromStr_with20String(self):
+    def test_fromStr_with30String(self):
         result = TwitchEmoteImageScale.fromStr('3.0')
         assert result is TwitchEmoteImageScale.LARGE
