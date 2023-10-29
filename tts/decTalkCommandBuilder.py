@@ -1,3 +1,4 @@
+import os
 import re
 from typing import List, Optional, Pattern
 
@@ -19,8 +20,7 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         if not utils.isValidStr(pathToDecTalk):
             raise ValueError(f'pathToDecTalk argument is malformed: \"{pathToDecTalk}\"')
 
-        self.__pathToDecTalk: str = pathToDecTalk
-
+        self.__pathToDecTalk: str = self.__normalizePathToDecTalk(pathToDecTalk)
         self.__bannedStrings: List[Pattern] = self.__buildBannedStrings()
 
     async def buildAndCleanCommand(self, command: Optional[str]) -> Optional[str]:
@@ -61,3 +61,9 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         bannedPhrases.append(re.compile(r'(^|\s+)-l((\[\w+\])|\w+)?', re.IGNORECASE))
 
         return bannedPhrases
+
+    def __normalizePathToDecTalk(self, pathToDecTalk: str) -> str:
+        if not utils.isValidStr(pathToDecTalk):
+            raise ValueError(f'pathToDecTalk argument is malformed: \"{pathToDecTalk}\"')
+
+        return os.path.normcase(os.path.normpath(pathToDecTalk))
