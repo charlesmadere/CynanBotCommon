@@ -16,7 +16,7 @@ except:
 
 class SystemCommandHelper(SystemCommandHelperInterface):
 
-    def __self__(self, timber: TimberInterface):
+    def __init__(self, timber: TimberInterface):
         if not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
 
