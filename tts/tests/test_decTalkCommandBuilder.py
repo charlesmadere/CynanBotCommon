@@ -11,7 +11,7 @@ except:
 class TestDecTalkCommandBuilder():
 
     decTalkCommandBuilder: TtsCommandBuilderInterface = DecTalkCommandBuilder(
-        pathToDecTalk = './SAY.EXE'
+        pathToDecTalk = './say.exe'
     )
 
     @pytest.mark.asyncio
