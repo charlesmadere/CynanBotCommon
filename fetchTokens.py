@@ -1,6 +1,5 @@
 import requests
 
-
 # This file is meant to be run separately from the others in this repository. It retrieves some
 # important keys / tokens that are required in order for some Twitch-related functionaly in
 # CynanBot and CynanBotDiscord to authenticate with Twitch and run properly.
@@ -16,7 +15,7 @@ TWITCH_CLIENT_ID: str = None
 TWITCH_CLIENT_SECRET: str = None
 
 # This code is derived from clicking this URL and then authenticating:
-# https://id.twitch.tv/oauth2/authorize?response_type=code&client_id=CLIENT_ID_HERE&redirect_uri=http://localhost&scope=chat:read+chat:edit+channel:moderate+whispers:read+whispers:edit+channel_editor+channel:read:redemptions
+# https://id.twitch.tv/oauth2/authorize?response_type=code&client_id=CLIENT_ID_HERE&redirect_uri=http://localhost&scope=channel:bot+chat:read+chat:edit+channel:moderate+whispers:read+whispers:edit+channel_editor+channel:read:redemptions+channel:manage:redemptions+channel:read:subscriptions+channel:read:polls+channel:read:predictions+channel:manage:predictions+moderator:read:chatters+user:read:chat
 TWITCH_CODE_SECRET: str = None
 
 if TWITCH_CLIENT_SECRET is None or TWITCH_CLIENT_SECRET is None or TWITCH_CODE_SECRET is None:
