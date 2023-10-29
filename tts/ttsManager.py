@@ -15,6 +15,8 @@ try:
         SystemCommandHelperInterface
     from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.tts.ttsCheerDonation import TtsCheerDonation
+    from CynanBotCommon.tts.ttsCommandBuilderInterface import \
+        TtsCommandBuilderInterface
     from CynanBotCommon.tts.ttsEvent import TtsEvent
     from CynanBotCommon.tts.ttsManagerInterface import TtsManagerInterface
     from CynanBotCommon.tts.ttsSettingsRepositoryInterface import \
@@ -30,6 +32,7 @@ except:
         SystemCommandHelperInterface
     from timber.timberInterface import TimberInterface
     from tts.ttsCheerDonation import TtsCheerDonation
+    from tts.ttsCommandBuilderInterface import TtsCommandBuilderInterface
     from tts.ttsEvent import TtsEvent
     from tts.ttsManagerInterface import TtsManagerInterface
     from tts.ttsSettingsRepositoryInterface import \
@@ -45,10 +48,10 @@ class TtsManager(TtsManagerInterface):
         contentScanner: ContentScannerInterface,
         systemCommandHelper: SystemCommandHelperInterface,
         timber: TimberInterface,
+        ttsCommandBuilder: TtsCommandBuilderInterface,
         ttsSettingsRepository: TtsSettingsRepositoryInterface,
         queueSleepTimeSeconds: float = 3,
-        queueTimeoutSeconds: int = 3,
-        pathToDecTalk: str = '../dectalk/speak_us.exe'
+        queueTimeoutSeconds: int = 3
     ):
         if not isinstance(backgroundTaskHelper, BackgroundTaskHelper):
             raise ValueError(f'backgroundTaskHelper argument is malformed: \"{backgroundTaskHelper}\"')
@@ -58,6 +61,8 @@ class TtsManager(TtsManagerInterface):
             raise ValueError(f'systemCommandHelper argument is malformed: \"{systemCommandHelper}\"')
         elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
+        elif not isinstance(ttsCommandBuilder, TtsCommandBuilderInterface):
+            raise ValueError(f'ttsCommandBuilder argument is malformed: \"{ttsCommandBuilder}\"')
         elif not isinstance(ttsSettingsRepository, TtsSettingsRepositoryInterface):
             raise ValueError(f'ttsSettingsRepository argument is malformed: \"{ttsSettingsRepository}\"')
         elif not utils.isValidNum(queueSleepTimeSeconds):
@@ -68,39 +73,18 @@ class TtsManager(TtsManagerInterface):
             raise ValueError(f'queueTimeoutSeconds argument is malformed: \"{queueTimeoutSeconds}\"')
         elif queueTimeoutSeconds < 1 or queueTimeoutSeconds > 5:
             raise ValueError(f'queueTimeoutSeconds argument is out of bounds: {queueTimeoutSeconds}')
-        elif not utils.isValidStr(pathToDecTalk):
-            raise ValueError(f'pathToDecTalk argument is malformed: \"{pathToDecTalk}\"')
 
         self.__backgroundTaskHelper: BackgroundTaskHelper = backgroundTaskHelper
         self.__contentScanner: ContentScannerInterface = contentScanner
         self.__systemCommandHelper: SystemCommandHelperInterface = systemCommandHelper
         self.__timber: TimberInterface = timber
+        self.__ttsCommandBuilder: TtsCommandBuilderInterface = ttsCommandBuilder
         self.__ttsSettingsRepository: TtsSettingsRepositoryInterface = ttsSettingsRepository
         self.__queueSleepTimeSeconds: float = queueSleepTimeSeconds
         self.__queueTimeoutSeconds: int = queueTimeoutSeconds
-        self.__pathToDecTalk: str = pathToDecTalk
 
         self.__isStarted: bool = False
-        self.__bannedPhrases: List[Pattern] = self.__buildBannedPhrases()
         self.__eventQueue: SimpleQueue[TtsEvent] = SimpleQueue()
-
-    def __buildBannedPhrases(self) -> List[Pattern]:
-        bannedPhrases: List[Pattern] = list()
-
-        # purge various help flags
-        bannedPhrases.append(re.compile(r'(^|\s+)-h', re.IGNORECASE))
-        bannedPhrases.append(re.compile(r'(^|\s+)-\?', re.IGNORECASE))
-
-        # purge various input flags
-        bannedPhrases.append(re.compile(r'(^|\s+)-pre', re.IGNORECASE))
-        bannedPhrases.append(re.compile(r'(^|\s+)-post', re.IGNORECASE))
-        bannedPhrases.append(re.compile(r'^\s*text', re.IGNORECASE))
-
-        # purge various output flags
-        bannedPhrases.append(re.compile(r'(^|\s+)-w', re.IGNORECASE))
-        bannedPhrases.append(re.compile(r'(^|\s+)-l((\[\w+\])|\w+)?', re.IGNORECASE))
-
-        return bannedPhrases
 
     async def __processTtsEvent(self, event: TtsEvent):
         if not isinstance(event, TtsEvent):
@@ -138,16 +122,7 @@ class TtsManager(TtsManagerInterface):
             self.__timber.log('TtsManager', f'TTS message in \"{event.getTwitchChannel()}\" returned a bad content code: \"{contentCode}\"')
             return None
 
-        for bannedPhrase in self.__bannedPhrases:
-            message = bannedPhrase.sub('', message)
-
-            if not utils.isValidStr(message):
-                return None
-
-        if not utils.isValidStr(message):
-            return None
-
-        return f'{self.__pathToDecTalk} say {message}'
+        return await self.__ttsCommandBuilder.buildAndCleanCommand(message)
 
     def start(self):
         if self.__isStarted:
