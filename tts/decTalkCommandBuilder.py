@@ -36,7 +36,7 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         if not utils.isValidStr(command):
             return None
 
-        return f'{self.__pathToDecTalk} say {command}'
+        return f'{self.__pathToDecTalk} {command}'
 
     def __buildBannedStrings(self) -> List[Pattern]:
         bannedPhrases: List[Pattern] = list()
