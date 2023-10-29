@@ -134,8 +134,13 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
             fromBroadcasterUserName = utils.getStrFromDict(conditionJson, 'from_broadcaster_user_name')
 
         message: Optional[str] = None
-        if 'message' in conditionJson and utils.isValidStr(conditionJson.get('message')):
-            message = utils.getStrFromDict(conditionJson, 'message')
+        if 'message' in conditionJson:
+            messageItem: Any = conditionJson.get('message')
+
+            if utils.isValidStr(messageItem):
+                message = utils.getStrFromDict(conditionJson, 'message')
+            elif isinstance(messageItem, Dict) and utils.isValidStr(messageItem.get('text')):
+                message = utils.getStrFromDict(messageItem, 'text')
 
         moderatorUserId: Optional[str] = None
         if 'moderator_user_id' in conditionJson and utils.isValidStr(conditionJson.get('moderator_user_id')):
@@ -390,8 +395,13 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
             fromBroadcasterUserName = utils.getStrFromDict(eventJson, 'from_broadcaster_user_name')
 
         message: Optional[str] = None
-        if 'message' in eventJson and utils.isValidStr(eventJson.get('message')):
-            message = utils.getStrFromDict(eventJson, 'message')
+        if 'message' in eventJson:
+            messageItem: Any = eventJson.get('message')
+
+            if utils.isValidStr(messageItem):
+                message = utils.getStrFromDict(eventJson, 'message')
+            elif isinstance(messageItem, Dict) and utils.isValidStr(messageItem.get('text')):
+                message = utils.getStrFromDict(messageItem, 'text')
 
         rewardId: Optional[str] = None
         if 'reward_id' in eventJson and utils.isValidStr(eventJson.get('reward_id')):
