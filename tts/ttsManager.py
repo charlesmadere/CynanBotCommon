@@ -110,6 +110,10 @@ class TtsManager(TtsManagerInterface):
             raise ValueError(f'event argument is malformed: \"{event}\"')
 
         message = event.getMessage()
+
+        if not utils.isValidStr(message):
+            return None
+
         maxMessageSize = await self.__ttsSettingsRepository.getMaximumMessageSize()
 
         if len(message) > maxMessageSize:
