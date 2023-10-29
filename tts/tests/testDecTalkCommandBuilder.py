@@ -8,7 +8,7 @@ except:
     from tts.ttsCommandBuilderInterface import TtsCommandBuilderInterface
 
 
-class DecTalkCommandBuilderTests():
+class TestDecTalkCommandBuilder():
 
     decTalkCommandBuilder: TtsCommandBuilderInterface = DecTalkCommandBuilder(
         pathToDecTalk = 'say.exe'
