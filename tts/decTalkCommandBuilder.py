@@ -22,6 +22,7 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
 
         self.__pathToDecTalk: str = self.__normalizePathToDecTalk(pathToDecTalk)
         self.__bannedStrings: List[Pattern] = self.__buildBannedStrings()
+        self.__whiteSpaceRegEx: Pattern = re.compile(r'\s{2,}', re.IGNORECASE)
 
     async def buildAndCleanCommand(self, command: Optional[str]) -> Optional[str]:
         if not utils.isValidStr(command):
@@ -35,6 +36,9 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
 
         if not utils.isValidStr(command):
             return None
+
+        # remove extranneous whitespace
+        command = self.__whiteSpaceRegEx.sub(' ', command)
 
         return f'{self.__pathToDecTalk} {command}'
 
