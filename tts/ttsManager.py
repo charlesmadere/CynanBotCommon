@@ -14,10 +14,13 @@ try:
     from CynanBotCommon.systemCommandHelper.systemCommandHelperInterface import \
         SystemCommandHelperInterface
     from CynanBotCommon.timber.timberInterface import TimberInterface
+    from CynanBotCommon.tts.ttsCheerDonation import TtsCheerDonation
     from CynanBotCommon.tts.ttsEvent import TtsEvent
     from CynanBotCommon.tts.ttsManagerInterface import TtsManagerInterface
     from CynanBotCommon.tts.ttsSettingsRepositoryInterface import \
         TtsSettingsRepositoryInterface
+    from CynanBotCommon.tts.ttsSubscriptionDonation import \
+        TtsSubscriptionDonation
 except:
     import utils
     from backgroundTaskHelper import BackgroundTaskHelper
@@ -26,10 +29,12 @@ except:
     from systemCommandHelper.systemCommandHelperInterface import \
         SystemCommandHelperInterface
     from timber.timberInterface import TimberInterface
+    from tts.ttsCheerDonation import TtsCheerDonation
     from tts.ttsEvent import TtsEvent
     from tts.ttsManagerInterface import TtsManagerInterface
     from tts.ttsSettingsRepositoryInterface import \
         TtsSettingsRepositoryInterface
+    from tts.ttsSubscriptionDonation import TtsSubscriptionDonation
 
 
 class TtsManager(TtsManagerInterface):
@@ -97,26 +102,40 @@ class TtsManager(TtsManagerInterface):
 
         return bannedPhrases
 
-    async def __processMessageIntoCommand(
-        self,
-        message: Optional[str],
-        twitchChannel: str
-    ) -> Optional[str]:
-        if not utils.isValidStr(message):
-            return None
-        elif not utils.isValidStr(twitchChannel):
-            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+    async def __processTtsEvent(self, event: TtsEvent):
+        if not isinstance(event, TtsEvent):
+            raise ValueError(f'event argument is malformed: \"{event}\"')
 
+        if not await self.__ttsSettingsRepository.isTtsEnabled():
+            return
+
+        command = await self.__processTtsEventIntoCommandString(event)
+
+        if not utils.isValidStr(command):
+            self.__timber.log('TtsManager', f'Failed to parse TTS message in \"{event.getTwitchChannel()}\" into a valid command: \"{event.getMessage()}\"')
+            return
+
+        self.__timber.log('TtsManager', f'Executing TTS message in \"{event.getTwitchChannel()}\": \"{command}\"...')
+        await self.__systemCommandHelper.executeCommand(command)
+
+    async def __processTtsEventIntoCommandString(
+        self,
+        event: TtsEvent
+    ) -> Optional[str]:
+        if not isinstance(event, TtsEvent):
+            raise ValueError(f'event argument is malformed: \"{event}\"')
+
+        message = event.getMessage()
         maxMessageSize = await self.__ttsSettingsRepository.getMaximumMessageSize()
 
         if len(message) > maxMessageSize:
-            self.__timber.log('TtsManager', f'Chopping down TTS message in \"{twitchChannel}\" as it is too long (len={len(message)}) ({maxMessageSize=}) ({message})')
+            self.__timber.log('TtsManager', f'Chopping down TTS message in \"{event.getTwitchChannel()}\" as it is too long (len={len(message)}) ({maxMessageSize=}) ({message})')
             message = message[:maxMessageSize]
 
         contentCode = await self.__contentScanner.scan(message)
 
         if contentCode is not ContentCode.OK:
-            self.__timber.log('TtsManager', f'TTS message in \"{twitchChannel}\" returned a bad content code: \"{contentCode}\"')
+            self.__timber.log('TtsManager', f'TTS message in \"{event.getTwitchChannel()}\" returned a bad content code: \"{contentCode}\"')
             return None
 
         for bannedPhrase in self.__bannedPhrases:
@@ -129,25 +148,6 @@ class TtsManager(TtsManagerInterface):
             return None
 
         return f'{self.__pathToDecTalk} say {message}'
-
-    async def __processTtsEvent(self, event: TtsEvent):
-        if not isinstance(event, TtsEvent):
-            raise ValueError(f'event argument is malformed: \"{event}\"')
-
-        if not await self.__ttsSettingsRepository.isTtsEnabled():
-            return
-
-        command = await self.__processMessageIntoCommand(
-            message = event.getMessage(),
-            twitchChannel = event.getTwitchChannel()
-        )
-
-        if not utils.isValidStr(command):
-            self.__timber.log('TtsManager', f'Failed to parse TTS message in \"{event.getTwitchChannel()}\" into a valid command: \"{event.getMessage()}\"')
-            return
-
-        self.__timber.log('TtsManager', f'Executing TTS message in \"{event.getTwitchChannel()}\": \"{command}\"...')
-        await self.__systemCommandHelper.executeCommand(command)
 
     def start(self):
         if self.__isStarted:
@@ -169,9 +169,12 @@ class TtsManager(TtsManagerInterface):
             except queue.Empty as e:
                 self.__timber.log('TtsManager', f'Encountered queue.Empty when building up events list (queue size: {self.__eventQueue.qsize()}) (events size: {len(events)}): {e}', e, traceback.format_exc())
 
+            ttsDelayBetweenSeconds = await self.__ttsSettingsRepository.getTtsDelayBetweenSeconds()
+
             for event in events:
                 try:
                     await self.__processTtsEvent(event)
+                    await asyncio.sleep(ttsDelayBetweenSeconds)
                 except Exception as e:
                     self.__timber.log('TtsManager', f'Encountered unknown Exception when looping through events (queue size: {self.__eventQueue.qsize()}) (event=\"{event}\"): {e}', e, traceback.format_exc())
 
