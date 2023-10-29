@@ -29,6 +29,20 @@ class TtsSettingsRepository(TtsSettingsRepositoryInterface):
         jsonContents = await self.__readJson()
         return utils.getIntFromDict(jsonContents, 'maxMessageSize', fallback = 200)
 
+    async def getTtsDelayBetweenSeconds(self) -> float:
+        jsonContents = await self.__readJson()
+
+        ttsDelayBetweenSeconds = utils.getFloatFromDict(
+            d = jsonContents,
+            key = 'ttsDelayBetweenSeconds',
+            fallback = 2
+        )
+
+        if ttsDelayBetweenSeconds < 0 or ttsDelayBetweenSeconds > 16:
+            raise ValueError(f'ttsDelayBetweenSeconds is out of bounds: \"{ttsDelayBetweenSeconds}\"')
+
+        return ttsDelayBetweenSeconds
+
     async def isTtsEnabled(self) -> bool:
         jsonContents = await self.__readJson()
         return utils.getBoolFromDict(jsonContents, 'isEnabled', fallback = False)
