@@ -35,7 +35,10 @@ class SqliteDatabaseConnection(DatabaseConnection):
         if not utils.isValidStr(query):
             raise ValueError(f'query argument is malformed: \"{query}\"')
 
-        await self.execute(query, args)
+        if utils.hasItems(args):
+            await self.execute(query, args)
+        else:
+            await self.execute(query)
 
     async def execute(self, query: str, *args: Optional[Any]):
         if not utils.isValidStr(query):
