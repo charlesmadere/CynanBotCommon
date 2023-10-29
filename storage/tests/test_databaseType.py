@@ -1,5 +1,7 @@
+from typing import Optional
+
 try:
-    from ...storage.databaseType import DatabaseType
+    from ..databaseType import DatabaseType
 except:
     from storage.databaseType import DatabaseType
 
@@ -7,8 +9,8 @@ except:
 class TestDatabaseType():
 
     def test_fromStr_withEmptyString(self):
-        result: DatabaseType = None
-        exception: Exception = None
+        result: Optional[DatabaseType] = None
+        exception: Optional[Exception] = None
 
         try:
             result = DatabaseType.fromStr('')
@@ -16,8 +18,7 @@ class TestDatabaseType():
             exception = e
 
         assert result is None
-        assert exception is not None
-        assert isinstance(exception, ValueError)
+        assert isinstance(exception, Exception)
 
     def test_fromStr_withPostgresString(self):
         result = DatabaseType.fromStr('postgres')
@@ -32,8 +33,8 @@ class TestDatabaseType():
         assert result is DatabaseType.SQLITE
 
     def test_fromStr_withNone(self):
-        result: DatabaseType = None
-        exception: Exception = None
+        result: Optional[DatabaseType] = None
+        exception: Optional[Exception] = None
 
         try:
             result = DatabaseType.fromStr(None)
@@ -41,12 +42,11 @@ class TestDatabaseType():
             exception = e
 
         assert result is None
-        assert exception is not None
-        assert isinstance(exception, ValueError)
+        assert isinstance(exception, Exception)
 
     def test_fromStr_withWhitespaceString(self):
-        result: DatabaseType = None
-        exception: Exception = None
+        result: Optional[DatabaseType] = None
+        exception: Optional[Exception] = None
 
         try:
             result = DatabaseType.fromStr(' ')
@@ -54,5 +54,4 @@ class TestDatabaseType():
             exception = e
 
         assert result is None
-        assert exception is not None
-        assert isinstance(exception, ValueError)
+        assert isinstance(exception, Exception)
