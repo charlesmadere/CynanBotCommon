@@ -38,7 +38,7 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
             return None
 
         # remove extranneous whitespace
-        command = self.__whiteSpaceRegEx.sub(' ', command)
+        command = self.__whiteSpaceRegEx.sub('', command)
 
         return f'{self.__pathToDecTalk} {command}'
 
