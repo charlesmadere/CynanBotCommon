@@ -6,7 +6,13 @@ from typing import Any, Dict, List, Optional
 
 import aiofiles
 import aiofiles.ospath
-from google.cloud import translate_v2 as translate
+
+isGoogleMissing = False
+
+try:
+    from google.cloud import translate_v2 as translate
+except:
+    isGoogleMissing = True
 
 try:
     import CynanBotCommon.utils as utils
@@ -110,7 +116,10 @@ class TranslationHelper():
             translationApiSource = TranslationApiSource.DEEP_L
         )
 
-    async def __getGoogleTranslateClient(self):
+    async def __getGoogleTranslateClient(self) -> Optional[Any]:
+        if isGoogleMissing:
+            return None
+
         if self.__googleTranslateClient is None:
             self.__timber.log('TranslationHelper', f'Initializing new Google translate.Client instance...')
 
@@ -127,6 +136,9 @@ class TranslationHelper():
         self.__timber.log('TranslationHelper', f'Fetching translation from Google Translate...')
 
         googleTranslateClient = await self.__getGoogleTranslateClient()
+        if googleTranslateClient is None:
+            raise RuntimeError(f'googleTranslateClient is None!')
+
         translationResult: Optional[Dict[str, Any]] = googleTranslateClient.translate(
             text,
             target_language = targetLanguageEntry.getIso6391Code()
