@@ -64,7 +64,7 @@ class TestDecTalkCommandBuilder():
         result = await self.decTalkCommandBuilder.buildAndCleanCommand(None)
         assert result is None
 
-    @pytest
+    @pytest.mark.asyncio
     async def test_buildAndCleanCommand_withWhitespaceString(self):
         result = await self.decTalkCommandBuilder.buildAndCleanCommand(' ')
         assert result is None
