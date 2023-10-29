@@ -42,7 +42,7 @@ class SqliteDatabaseConnection(DatabaseConnection):
             raise ValueError(f'query argument is malformed: \"{query}\"')
 
         self.__requireNotClosed()
-        cursor = await self.__connection.execute(query, [ args ])
+        cursor = await self.__connection.execute(query, args)
         await self.__connection.commit()
         await cursor.close()
 
@@ -51,7 +51,7 @@ class SqliteDatabaseConnection(DatabaseConnection):
             raise ValueError(f'query argument is malformed: \"{query}\"')
 
         self.__requireNotClosed()
-        cursor = await self.__connection.execute(query, [ args ])
+        cursor = await self.__connection.execute(query, args)
         row = await cursor.fetchone()
 
         if not utils.hasItems(row):
@@ -69,7 +69,7 @@ class SqliteDatabaseConnection(DatabaseConnection):
             raise ValueError(f'query argument is malformed: \"{query}\"')
 
         self.__requireNotClosed()
-        cursor = await self.__connection.execute(query, [ args ])
+        cursor = await self.__connection.execute(query, args)
         rows = await cursor.fetchall()
 
         if not utils.hasItems(rows):
