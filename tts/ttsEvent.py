@@ -2,8 +2,10 @@ from typing import Optional
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.tts.ttsDonation import TtsDonation
 except:
     import utils
+    from tts.ttsDonation import TtsDonation
 
 
 class TtsEvent():
@@ -13,7 +15,8 @@ class TtsEvent():
         message: Optional[str],
         twitchChannel: str,
         userId: str,
-        userName: str
+        userName: str,
+        donation: Optional[TtsDonation]
     ):
         if message is not None and not isinstance(message, str):
             raise ValueError(f'message argument is malformed: \"{message}\"')
@@ -23,11 +26,17 @@ class TtsEvent():
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
         elif not utils.isValidStr(userName):
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
+        elif donation is not None and not isinstance(donation, TtsDonation):
+            raise ValueError(f'donation argument is malformed: \"{donation}\"')
 
         self.__message: Optional[str] = message
         self.__twitchChannel: str = twitchChannel
         self.__userId: str = userId
         self.__userName: str = userName
+        self.__donation: Optional[TtsDonation] = donation
+
+    def getDonation(self) -> Optional[TtsDonation]:
+        return self.__donation
 
     def getMessage(self) -> Optional[str]:
         return self.__message
