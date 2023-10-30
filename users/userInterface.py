@@ -31,6 +31,10 @@ class UserInterface(ABC):
         pass
 
     @abstractmethod
+    def getMinimumTtsCheerAmount(self) -> Optional[int]:
+        pass
+
+    @abstractmethod
     def getPkmnBattleRewardId(self) -> Optional[str]:
         pass
 
@@ -44,6 +48,10 @@ class UserInterface(ABC):
 
     @abstractmethod
     def getSpeedrunProfile(self) -> Optional[str]:
+        pass
+
+    @abstractmethod
+    def getSuperTriviaCheerTriggerAmount(self) -> Optional[int]:
         pass
 
     @abstractmethod
@@ -70,6 +78,11 @@ class UserInterface(ABC):
     def getSuperTriviaPerUserAttempts(self) -> Optional[int]:
         pass
 
+    @abstractmethod
+    def getSuperTriviaSubscribeTriggerAmount(self) -> Optional[float]:
+        pass
+
+    @abstractmethod
     def getTimeZones(self) -> Optional[List[tzinfo]]:
         pass
 
@@ -110,11 +123,19 @@ class UserInterface(ABC):
         pass
 
     @abstractmethod
+    def hasMinimumTtsCheerAmount(self) -> bool:
+        pass
+
+    @abstractmethod
     def hasPkmnCatchBoosterPacks(self) -> bool:
         pass
 
     @abstractmethod
     def hasSpeedrunProfile(self) -> bool:
+        pass
+
+    @abstractmethod
+    def hasSuperTriviaCheerTriggerAmount(self) -> bool:
         pass
 
     @abstractmethod
@@ -135,6 +156,10 @@ class UserInterface(ABC):
 
     @abstractmethod
     def hasSuperTriviaGameToxicPunishmentMultiplier(self) -> bool:
+        pass
+
+    @abstractmethod
+    def hasSuperTriviaSubscribeTriggerAmount(self) -> bool:
         pass
 
     @abstractmethod

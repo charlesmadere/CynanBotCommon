@@ -20,6 +20,7 @@ class WebsocketEvent():
         isAnonymous: Optional[bool] = None,
         isGift: Optional[bool] = None,
         bits: Optional[int] = None,
+        communitySubTotal: Optional[int] = None,
         cumulativeMonths: Optional[int] = None,
         total: Optional[int] = None,
         viewers: Optional[int] = None,
@@ -54,6 +55,8 @@ class WebsocketEvent():
             raise ValueError(f'isGift argument is malformed: \"{isGift}\'')
         elif bits is not None and not utils.isValidInt(bits):
             raise ValueError(f'bits argument is malformed: \"{bits}\"')
+        elif communitySubTotal is not None and not utils.isValidInt(communitySubTotal):
+            raise ValueError(f'communitySubTotal argument is malformed: \"{communitySubTotal}\"')
         elif cumulativeMonths is not None and not utils.isValidInt(cumulativeMonths):
             raise ValueError(f'cumulativeMonths argument is malformed: \"{cumulativeMonths}\"')
         elif total is not None and not utils.isValidInt(total):
@@ -112,6 +115,7 @@ class WebsocketEvent():
         self.__isAnonymous: Optional[bool] = isAnonymous
         self.__isGift: Optional[bool] = isGift
         self.__bits: Optional[int] = bits
+        self.__communitySubTotal: Optional[int] = communitySubTotal
         self.__cumulativeMonths: Optional[int] = cumulativeMonths
         self.__total: Optional[int] = total
         self.__viewers: Optional[int] = viewers
@@ -157,6 +161,9 @@ class WebsocketEvent():
 
     def getCategoryName(self) -> Optional[str]:
         return self.__categoryName
+
+    def getCommunitySubTotal(self) -> Optional[int]:
+        return self.__communitySubTotal
 
     def getCumulativeMonths(self) -> Optional[int]:
         return self.__cumulativeMonths

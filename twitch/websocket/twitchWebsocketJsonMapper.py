@@ -338,6 +338,13 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
         if 'bits' in eventJson and utils.isValidInt(eventJson.get('bits')):
             bits = utils.getIntFromDict(eventJson, 'bits')
 
+        communitySubTotal: Optional[int] = None
+        if 'community_sub_gift' in eventJson:
+            communitySubGiftItem: Any = eventJson.get('community_sub_gift')
+
+            if isinstance(communitySubGiftItem, Dict) and utils.isValidInt(communitySubGiftItem.get('total')):
+                communitySubTotal = utils.getIntFromDict(communitySubGiftItem, 'total')
+
         cumulativeMonths: Optional[int] = None
         if 'cumulative_months' in eventJson and utils.isValidInt(eventJson.get('cumulative_months')):
             cumulativeMonths = utils.getIntFromDict(eventJson, 'cumulative_months')
@@ -455,6 +462,7 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
             isAnonymous = isAnonymous,
             isGift = isGift,
             bits = bits,
+            communitySubTotal = communitySubTotal,
             cumulativeMonths = cumulativeMonths,
             total = total,
             viewers = viewers,
