@@ -50,6 +50,21 @@ class TestDecTalkCommandBuilder():
         assert result == 'say.exe hello'
 
     @pytest.mark.asyncio
+    async def test_buildAndCleanCommand_withDecTalkFlagsString6(self):
+        result = await self.decTalkCommandBuilder.buildAndCleanCommand('-v show version information')
+        assert result == 'say.exe show version information'
+
+    @pytest.mark.asyncio
+    async def test_buildAndCleanCommand_withDecTalkFlagsString7(self):
+        result = await self.decTalkCommandBuilder.buildAndCleanCommand('-d userDict')
+        assert result == 'say.exe userDict'
+
+    @pytest.mark.asyncio
+    async def test_buildAndCleanCommand_withDecTalkFlagsString7(self):
+        result = await self.decTalkCommandBuilder.buildAndCleanCommand('-lang uk hello world')
+        assert result == 'say.exe uk hello world'
+
+    @pytest.mark.asyncio
     async def test_buildAndCleanCommand_withDirectoryTraversalString(self):
         result = await self.decTalkCommandBuilder.buildAndCleanCommand('& cd .. & dir')
         assert result == 'say.exe cd dir'

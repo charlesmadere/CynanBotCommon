@@ -63,6 +63,15 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         bannedPhrases.append(re.compile(r'(^|\s+)-post', re.IGNORECASE))
         bannedPhrases.append(re.compile(r'^\s*text', re.IGNORECASE))
 
+        # purge user dictionary flag
+        bannedPhrases.append(re.compile(r'(^|\s+)-d', re.IGNORECASE))
+
+        # purge version information flag
+        bannedPhrases.append(re.compile(r'(^|\s+)-v', re.IGNORECASE))
+
+        # purge language flag
+        bannedPhrases.append(re.compile(r'(^|\s+)-lang', re.IGNORECASE))
+
         # purge various output flags
         bannedPhrases.append(re.compile(r'(^|\s+)-w', re.IGNORECASE))
         bannedPhrases.append(re.compile(r'(^|\s+)-l((\[\w+\])|\w+)?', re.IGNORECASE))
