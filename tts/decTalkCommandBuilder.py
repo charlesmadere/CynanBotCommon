@@ -15,7 +15,7 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
 
     def __init__(
         self,
-        pathToDecTalk: str = '../80speak-master/dectalk/say.exe'
+        pathToDecTalk: str = '../dectalk/say.exe'
     ):
         if not utils.isValidStr(pathToDecTalk):
             raise ValueError(f'pathToDecTalk argument is malformed: \"{pathToDecTalk}\"')
