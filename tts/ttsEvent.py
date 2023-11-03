@@ -49,3 +49,14 @@ class TtsEvent():
 
     def getUserName(self) -> str:
         return self.__userName
+
+    def __repr__(self) -> str:
+        dictionary = {
+            'donation': self.__donation.toDictionary(),
+            'message': self.__message,
+            'twitchChannel': self.__twitchChannel,
+            'userId': self.__userId,
+            'userName': self.__userName
+        }
+
+        return f'{dictionary}'

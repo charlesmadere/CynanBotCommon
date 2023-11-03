@@ -1,4 +1,5 @@
 import asyncio
+import os
 import queue
 import traceback
 from queue import SimpleQueue
@@ -7,12 +8,10 @@ from typing import List, Optional
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.backgroundTaskHelper import BackgroundTaskHelper
-    from CynanBotCommon.contentScanner.contentCode import ContentCode
-    from CynanBotCommon.contentScanner.contentScannerInterface import \
-        ContentScannerInterface
     from CynanBotCommon.systemCommandHelper.systemCommandHelperInterface import \
         SystemCommandHelperInterface
     from CynanBotCommon.timber.timberInterface import TimberInterface
+    from CynanBotCommon.tts.decTalkCommandBuilder import DecTalkCommandBuilder
     from CynanBotCommon.tts.ttsCheerDonation import TtsCheerDonation
     from CynanBotCommon.tts.ttsCommandBuilderInterface import \
         TtsCommandBuilderInterface
@@ -25,11 +24,10 @@ try:
 except:
     import utils
     from backgroundTaskHelper import BackgroundTaskHelper
-    from contentScanner.contentCode import ContentCode
-    from contentScanner.contentScannerInterface import ContentScannerInterface
     from systemCommandHelper.systemCommandHelperInterface import \
         SystemCommandHelperInterface
     from timber.timberInterface import TimberInterface
+    from tts.decTalkCommandBuilder import DecTalkCommandBuilder
     from tts.ttsCheerDonation import TtsCheerDonation
     from tts.ttsCommandBuilderInterface import TtsCommandBuilderInterface
     from tts.ttsEvent import TtsEvent
@@ -39,29 +37,27 @@ except:
     from tts.ttsSubscriptionDonation import TtsSubscriptionDonation
 
 
-class TtsManager(TtsManagerInterface):
+class DecTalkManager(TtsManagerInterface):
 
     def __init__(
         self,
         backgroundTaskHelper: BackgroundTaskHelper,
-        contentScanner: ContentScannerInterface,
+        ttsCommandBuilder: DecTalkCommandBuilder,
         systemCommandHelper: SystemCommandHelperInterface,
         timber: TimberInterface,
-        ttsCommandBuilder: TtsCommandBuilderInterface,
         ttsSettingsRepository: TtsSettingsRepositoryInterface,
         queueSleepTimeSeconds: float = 3,
-        queueTimeoutSeconds: int = 3
+        queueTimeoutSeconds: int = 3,
+        pathToDecTalk: str = 'say'
     ):
         if not isinstance(backgroundTaskHelper, BackgroundTaskHelper):
             raise ValueError(f'backgroundTaskHelper argument is malformed: \"{backgroundTaskHelper}\"')
-        elif not isinstance(contentScanner, ContentScannerInterface):
-            raise ValueError(f'contentScanner argument is malformed: \"{contentScanner}\"')
+        elif not isinstance(ttsCommandBuilder, DecTalkCommandBuilder):
+            raise ValueError(f'ttsCommandBuilder argument is malformed: \"{ttsCommandBuilder}\"')
         elif not isinstance(systemCommandHelper, SystemCommandHelperInterface):
             raise ValueError(f'systemCommandHelper argument is malformed: \"{systemCommandHelper}\"')
         elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif not isinstance(ttsCommandBuilder, TtsCommandBuilderInterface):
-            raise ValueError(f'ttsCommandBuilder argument is malformed: \"{ttsCommandBuilder}\"')
         elif not isinstance(ttsSettingsRepository, TtsSettingsRepositoryInterface):
             raise ValueError(f'ttsSettingsRepository argument is malformed: \"{ttsSettingsRepository}\"')
         elif not utils.isValidNum(queueSleepTimeSeconds):
@@ -72,15 +68,17 @@ class TtsManager(TtsManagerInterface):
             raise ValueError(f'queueTimeoutSeconds argument is malformed: \"{queueTimeoutSeconds}\"')
         elif queueTimeoutSeconds < 1 or queueTimeoutSeconds > 5:
             raise ValueError(f'queueTimeoutSeconds argument is out of bounds: {queueTimeoutSeconds}')
+        elif not utils.isValidStr(pathToDecTalk):
+            raise ValueError(f'pathToDecTalk argument is malformed: \"{pathToDecTalk}\"')
 
         self.__backgroundTaskHelper: BackgroundTaskHelper = backgroundTaskHelper
-        self.__contentScanner: ContentScannerInterface = contentScanner
         self.__systemCommandHelper: SystemCommandHelperInterface = systemCommandHelper
         self.__timber: TimberInterface = timber
         self.__ttsCommandBuilder: TtsCommandBuilderInterface = ttsCommandBuilder
         self.__ttsSettingsRepository: TtsSettingsRepositoryInterface = ttsSettingsRepository
         self.__queueSleepTimeSeconds: float = queueSleepTimeSeconds
         self.__queueTimeoutSeconds: int = queueTimeoutSeconds
+        self.__pathToDecTalk: str = pathToDecTalk
 
         self.__isStarted: bool = False
         self.__eventQueue: SimpleQueue[TtsEvent] = SimpleQueue()
@@ -95,10 +93,11 @@ class TtsManager(TtsManagerInterface):
         command = await self.__processTtsEventIntoCommandString(event)
 
         if not utils.isValidStr(command):
-            self.__timber.log('TtsManager', f'Failed to parse TTS message in \"{event.getTwitchChannel()}\" into a valid command: \"{event.getMessage()}\"')
+            self.__timber.log('DecTalkManager', f'Failed to parse TTS message in \"{event.getTwitchChannel()}\" into a valid command: \"{event}\"')
             return
 
-        self.__timber.log('TtsManager', f'Executing TTS message in \"{event.getTwitchChannel()}\": \"{command}\"...')
+        command = f'{self.__pathToDecTalk} {command}'
+        self.__timber.log('DecTalkManager', f'Executing TTS message in \"{event.getTwitchChannel()}\": \"{command}\"...')
         await self.__systemCommandHelper.executeCommand(command)
 
     async def __processTtsEventIntoCommandString(
@@ -110,51 +109,37 @@ class TtsManager(TtsManagerInterface):
 
         message = event.getMessage()
 
-        if not utils.isValidStr(message):
-            return None
+        if utils.isValidStr(message):
+            command = await self.__ttsCommandBuilder.buildAndCleanCommand(message)
 
-        maxMessageSize = await self.__ttsSettingsRepository.getMaximumMessageSize()
+            if utils.isValidStr(command):
+                return command
 
-        if len(message) > maxMessageSize:
-            self.__timber.log('TtsManager', f'Chopping down TTS message in \"{event.getTwitchChannel()}\" as it is too long (len={len(message)}) ({maxMessageSize=}) ({message})')
-            message = message[:maxMessageSize]
-
-        contentCode = await self.__contentScanner.scan(message)
-
-        if contentCode is not ContentCode.OK:
-            self.__timber.log('TtsManager', f'TTS message in \"{event.getTwitchChannel()}\" returned a bad content code: \"{contentCode}\"')
-            return None
-
-        return await self.__ttsCommandBuilder.buildAndCleanCommand(message)
+        return None
 
     def start(self):
         if self.__isStarted:
-            self.__timber.log('TtsManager', 'Not starting TtsManager as it has already been started')
+            self.__timber.log('DecTalkManager', 'Not starting DecTalkManager as it has already been started')
             return
 
         self.__isStarted = True
-        self.__timber.log('TtsManager', 'Starting TtsManager...')
+        self.__timber.log('DecTalkManager', 'Starting DecTalkManager...')
 
         self.__backgroundTaskHelper.createTask(self.__startEventLoop())
 
     async def __startEventLoop(self):
         while True:
-            events: List[TtsEvent] = list()
-
             try:
                 while not self.__eventQueue.empty():
-                    events.append(self.__eventQueue.get_nowait())
+                    event = self.__eventQueue.get_nowait()
+
+                    try:
+                        await self.__processTtsEvent(event)
+                        await asyncio.sleep(await self.__ttsSettingsRepository.getTtsDelayBetweenSeconds())
+                    except Exception as e:
+                        self.__timber.log('DecTalkManager', f'Encountered unknown Exception when looping through events (queue size: {self.__eventQueue.qsize()}) (event=\"{event}\"): {e}', e, traceback.format_exc())
             except queue.Empty as e:
-                self.__timber.log('TtsManager', f'Encountered queue.Empty when building up events list (queue size: {self.__eventQueue.qsize()}) (events size: {len(events)}): {e}', e, traceback.format_exc())
-
-            ttsDelayBetweenSeconds = await self.__ttsSettingsRepository.getTtsDelayBetweenSeconds()
-
-            for event in events:
-                try:
-                    await self.__processTtsEvent(event)
-                    await asyncio.sleep(ttsDelayBetweenSeconds)
-                except Exception as e:
-                    self.__timber.log('TtsManager', f'Encountered unknown Exception when looping through events (queue size: {self.__eventQueue.qsize()}) (event=\"{event}\"): {e}', e, traceback.format_exc())
+                self.__timber.log('DecTalkManager', f'Encountered queue.Empty when grabbing event from queue (queue size: {self.__eventQueue.qsize()}): {e}', e, traceback.format_exc())
 
             await asyncio.sleep(self.__queueSleepTimeSeconds)
 
@@ -165,4 +150,4 @@ class TtsManager(TtsManagerInterface):
         try:
             self.__eventQueue.put(event, block = True, timeout = self.__queueTimeoutSeconds)
         except queue.Full as e:
-            self.__timber.log('TtsManager', f'Encountered queue.Full when submitting a new event ({event}) into the event queue (queue size: {self.__eventQueue.qsize()}): {e}', e, traceback.format_exc())
+            self.__timber.log('DecTalkManager', f'Encountered queue.Full when submitting a new event ({event}) into the event queue (queue size: {self.__eventQueue.qsize()}): {e}', e, traceback.format_exc())

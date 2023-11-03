@@ -1,3 +1,5 @@
+from typing import Any, Dict
+
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.tts.ttsDonation import TtsDonation
@@ -41,3 +43,11 @@ class TtsSubscriptionDonation(TtsDonation):
 
     def isGift(self) -> bool:
         return self.__isGift
+
+    def toDictionary(self) -> Dict[str, Any]:
+        return {
+            'isAnonymous': self.__isAnonymous,
+            'isGift': self.__isGift,
+            'tier': self.__tier,
+            'type': self.getType()
+        }

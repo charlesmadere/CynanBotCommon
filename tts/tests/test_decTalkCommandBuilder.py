@@ -1,17 +1,62 @@
 import pytest
 
 try:
+    from ...contentScanner.bannedWordsRepository import BannedWordsRepository
+    from ...contentScanner.bannedWordsRepositoryInterface import \
+        BannedWordsRepositoryInterface
+    from ...contentScanner.contentScanner import ContentScanner
+    from ...contentScanner.contentScannerInterface import \
+        ContentScannerInterface
+    from ...storage.jsonStaticReader import JsonStaticReader
+    from ...storage.linesStaticReader import LinesStaticReader
+    from ...timber.timberInterface import TimberInterface
+    from ...timber.timberStub import TimberStub
+    from ...tts.ttsSettingsRepository import TtsSettingsRepository
+    from ...tts.ttsSettingsRepositoryInterface import \
+        TtsSettingsRepositoryInterface
     from ..decTalkCommandBuilder import DecTalkCommandBuilder
     from ..ttsCommandBuilderInterface import TtsCommandBuilderInterface
 except:
+    from contentScanner.bannedWordsRepository import BannedWordsRepository
+    from contentScanner.bannedWordsRepositoryInterface import \
+        BannedWordsRepositoryInterface
+    from contentScanner.contentScanner import ContentScanner
+    from contentScanner.contentScannerInterface import ContentScannerInterface
+    from storage.jsonStaticReader import JsonStaticReader
+    from storage.linesStaticReader import LinesStaticReader
+    from timber.timberInterface import TimberInterface
+    from timber.timberStub import TimberStub
     from tts.decTalkCommandBuilder import DecTalkCommandBuilder
     from tts.ttsCommandBuilderInterface import TtsCommandBuilderInterface
+    from tts.ttsSettingsRepository import TtsSettingsRepository
+    from tts.ttsSettingsRepositoryInterface import \
+        TtsSettingsRepositoryInterface
 
 
 class TestDecTalkCommandBuilder():
 
+    timber: TimberInterface = TimberStub()
+
+    bannedWordsRepository: BannedWordsRepositoryInterface = BannedWordsRepository(
+        bannedWordsLinesReader = LinesStaticReader(
+            lines = list('hydroxychloroquine')
+        ),
+        timber = timber
+    )
+
+    contentScanner: ContentScannerInterface = ContentScanner(
+        bannedWordsRepository = bannedWordsRepository,
+        timber = timber
+    )
+
+    ttsSettingsRepository: TtsSettingsRepositoryInterface = TtsSettingsRepository(
+        settingsJsonReader = JsonStaticReader(dict())
+    )
+
     decTalkCommandBuilder: TtsCommandBuilderInterface = DecTalkCommandBuilder(
-        pathToDecTalk = './say.exe'
+        contentScanner = contentScanner,
+        timber = timber,
+        ttsSettingsRepository = ttsSettingsRepository
     )
 
     @pytest.mark.asyncio
@@ -62,7 +107,7 @@ class TestDecTalkCommandBuilder():
     @pytest.mark.asyncio
     async def test_buildAndCleanCommand_withDecTalkFlagsString7(self):
         result = await self.decTalkCommandBuilder.buildAndCleanCommand('-lang uk hello world')
-        assert result == 'say.exe uk hello world'
+        assert result == 'say.exe hello world'
 
     @pytest.mark.asyncio
     async def test_buildAndCleanCommand_withDirectoryTraversalString(self):
