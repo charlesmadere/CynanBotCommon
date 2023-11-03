@@ -67,7 +67,7 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
             message = await self.buildAndCleanMessage(message)
 
         if utils.isValidStr(prefix) and utils.isValidStr(message):
-            return f'{prefix}! {message}'
+            return f'{prefix} {message}'
         elif utils.isValidStr(prefix):
             return prefix
         elif utils.isValidStr(message):
@@ -196,8 +196,8 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         # I don't think it makes sense for a subscription to be anonymous, but not a gift?
 
         if donation.isAnonymous() and donation.isGift():
-            return f'anonymous gifted a sub'
+            return f'anonymous gifted a sub!'
         elif donation.isGift():
-            return f'{event.getUserName()} gifted a sub'
+            return f'{event.getUserName()} gifted a sub!'
         else:
-            return f'{event.getUserName()} subscribed'
+            return f'{event.getUserName()} subscribed!'
