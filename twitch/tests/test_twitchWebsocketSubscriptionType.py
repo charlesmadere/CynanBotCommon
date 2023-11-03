@@ -120,11 +120,11 @@ class TestTwitchWebsocketSubscriptionType():
         assert string == 'channel.channel_points_custom_reward_redemption.add'
 
     def test_toStr_withChannelPredictionBegin(self):
-        string = WebsocketSubscriptionType.CHANNEL_PREDICTION_BEGIN.getVersion()
+        string = WebsocketSubscriptionType.CHANNEL_PREDICTION_BEGIN.toStr()
         assert string == 'channel.prediction.begin'
 
     def test_toStr_withChannelPredictionEnd(self):
-        string = WebsocketSubscriptionType.CHANNEL_PREDICTION_END.getVersion()
+        string = WebsocketSubscriptionType.CHANNEL_PREDICTION_END.toStr()
         assert string == 'channel.prediction.end'
 
     def test_toStr_withChannelPredictionLock(self):
