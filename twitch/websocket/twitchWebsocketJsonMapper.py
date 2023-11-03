@@ -24,6 +24,8 @@ try:
         WebsocketOutcome
     from CynanBotCommon.twitch.websocket.websocketOutcomeColor import \
         WebsocketOutcomeColor
+    from CynanBotCommon.twitch.websocket.websocketOutcomePredictor import \
+        WebsocketOutcomePredictor
     from CynanBotCommon.twitch.websocket.websocketPayload import \
         WebsocketPayload
     from CynanBotCommon.twitch.websocket.websocketReward import WebsocketReward
@@ -55,6 +57,8 @@ except:
     from twitch.websocket.websocketNoticeType import WebsocketNoticeType
     from twitch.websocket.websocketOutcome import WebsocketOutcome
     from twitch.websocket.websocketOutcomeColor import WebsocketOutcomeColor
+    from twitch.websocket.websocketOutcomePredictor import \
+        WebsocketOutcomePredictor
     from twitch.websocket.websocketPayload import WebsocketPayload
     from twitch.websocket.websocketReward import WebsocketReward
     from twitch.websocket.websocketSession import WebsocketSession
@@ -533,12 +537,51 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
         title = utils.getStrFromDict(outcomeJson, 'title')
         color = WebsocketOutcomeColor.fromStr(utils.getStrFromDict(outcomeJson, 'color'))
 
+        topPredictors: Optional[List[WebsocketOutcomePredictor]] = None
+        if 'top_predictors' in outcomeJson:
+            topPredictorsItem: Any = outcomeJson.get('top_predictors')
+
+            if isinstance(topPredictorsItem, List) and utils.hasItems(outcomeId):
+                topPredictors = list()
+
+                for topPredictorItem in topPredictorsItem:
+                    topPredictor = await self.parseWebsocketOutcomePredictor(topPredictorItem)
+
+                    if topPredictor is not None:
+                        topPredictors.append(topPredictor)
+
+                if len(topPredictors) == 0:
+                    topPredictors = None
+
         return WebsocketOutcome(
             channelPoints = channelPoints,
             users = users,
             outcomeId = outcomeId,
             title = title,
-            color = color
+            color = color,
+            topPredictors = topPredictors
+        )
+
+    async def parseWebsocketOutcomePredictor(self, predictorJson: Optional[Dict[str, Any]]) -> Optional[WebsocketOutcomePredictor]:
+        if not isinstance(predictorJson, Dict) or not utils.hasItems(predictorJson):
+            return None
+
+        channelPointsUsed = utils.getIntFromDict(predictorJson, 'channel_points_used')
+
+        channelPointsWon: Optional[int] = None
+        if 'channel_points_won' in predictorJson and utils.isValidInt(predictorJson.get('channel_points_won')):
+            channelPointsWon = utils.getIntFromDict(predictorJson, 'channel_points_won')
+
+        userId = utils.getStrFromDict(predictorJson, 'user_id')
+        userLogin = utils.getStrFromDict(predictorJson, 'user_login')
+        userName = utils.getStrFromDict(predictorJson, 'user_name')
+
+        return WebsocketOutcomePredictor(
+            channelPointsUsed = channelPointsUsed,
+            channelPointsWon = channelPointsWon,
+            userId = userId,
+            userLogin = userLogin,
+            userName = userName
         )
 
     async def parseWebsocketReward(self, rewardJson: Optional[Dict[str, Any]]) -> Optional[WebsocketReward]:

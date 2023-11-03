@@ -9,6 +9,8 @@ try:
     from CynanBotCommon.twitch.websocket.websocketEvent import WebsocketEvent
     from CynanBotCommon.twitch.websocket.websocketOutcome import \
         WebsocketOutcome
+    from CynanBotCommon.twitch.websocket.websocketOutcomePredictor import \
+        WebsocketOutcomePredictor
     from CynanBotCommon.twitch.websocket.websocketReward import WebsocketReward
     from CynanBotCommon.twitch.websocket.websocketSession import \
         WebsocketSession
@@ -19,6 +21,8 @@ except:
     from twitch.websocket.websocketDataBundle import WebsocketDataBundle
     from twitch.websocket.websocketEvent import WebsocketEvent
     from twitch.websocket.websocketOutcome import WebsocketOutcome
+    from twitch.websocket.websocketOutcomePredictor import \
+        WebsocketOutcomePredictor
     from twitch.websocket.websocketReward import WebsocketReward
     from twitch.websocket.websocketSession import WebsocketSession
     from twitch.websocket.websocketSubscription import WebsocketSubscription
@@ -40,6 +44,10 @@ class TwitchWebsocketJsonMapperInterface(ABC):
 
     @abstractmethod
     async def parseWebsocketOutcome(self, outcomeJson: Optional[Dict[str, Any]]) -> Optional[WebsocketOutcome]:
+        pass
+
+    @abstractmethod
+    async def parseWebsocketOutcomePredictor(self, predictorJson: Optional[Dict[str, Any]]) -> Optional[WebsocketOutcomePredictor]:
         pass
 
     @abstractmethod
