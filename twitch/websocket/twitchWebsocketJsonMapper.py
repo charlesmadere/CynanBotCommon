@@ -18,6 +18,8 @@ try:
         WebsocketMessageType
     from CynanBotCommon.twitch.websocket.websocketMetadata import \
         WebsocketMetadata
+    from CynanBotCommon.twitch.websocket.websocketNoticeType import \
+        WebsocketNoticeType
     from CynanBotCommon.twitch.websocket.websocketPayload import \
         WebsocketPayload
     from CynanBotCommon.twitch.websocket.websocketReward import WebsocketReward
@@ -46,6 +48,7 @@ except:
     from twitch.websocket.websocketEvent import WebsocketEvent
     from twitch.websocket.websocketMessageType import WebsocketMessageType
     from twitch.websocket.websocketMetadata import WebsocketMetadata
+    from twitch.websocket.websocketNoticeType import WebsocketNoticeType
     from twitch.websocket.websocketPayload import WebsocketPayload
     from twitch.websocket.websocketReward import WebsocketReward
     from twitch.websocket.websocketSession import WebsocketSession
@@ -454,6 +457,10 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
         if 'tier' in eventJson and utils.isValidStr(eventJson.get('tier')):
             tier = TwitchSubscriberTier.fromStr(utils.getStrFromDict(eventJson, 'tier'))
 
+        noticeType: Optional[WebsocketNoticeType] = None
+        if 'notice_type' in eventJson and utils.isValidStr(eventJson.get('notice_type')):
+            noticeType = WebsocketNoticeType.fromStr(utils.getStrFromDict(eventJson, 'notice_type'))
+
         reward: Optional[WebsocketReward] = None
         if 'reward' in eventJson:
             reward = await self.parseWebsocketReward(eventJson.get('reward'))
@@ -489,6 +496,7 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
             userLogin = userLogin,
             userName = userName,
             tier = tier,
+            noticeType = noticeType,
             reward = reward
         )
 
