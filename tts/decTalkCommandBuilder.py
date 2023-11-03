@@ -79,34 +79,34 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         return command
 
     def __buildBannedStrings(self) -> List[Pattern]:
-        bannedPhrases: List[Pattern] = list()
+        bannedStrings: List[Pattern] = list()
 
         # purge potentially dangerous/tricky characters
-        bannedPhrases.append(re.compile(r'\&|\%|\;|\=|\'|\"|\||\^|\~', re.IGNORECASE))
+        bannedStrings.append(re.compile(r'\&|\%|\;|\=|\'|\"|\||\^|\~', re.IGNORECASE))
 
         # purge what might be directory traversal sequences
-        bannedPhrases.append(re.compile(r'\.{2,}', re.IGNORECASE))
+        bannedStrings.append(re.compile(r'\.{2,}', re.IGNORECASE))
 
         # purge various help flags
-        bannedPhrases.append(re.compile(r'(^|\s+)-h', re.IGNORECASE))
-        bannedPhrases.append(re.compile(r'(^|\s+)-\?', re.IGNORECASE))
+        bannedStrings.append(re.compile(r'(^|\s+)-h', re.IGNORECASE))
+        bannedStrings.append(re.compile(r'(^|\s+)-\?', re.IGNORECASE))
 
         # purge various input flags
-        bannedPhrases.append(re.compile(r'(^|\s+)-pre', re.IGNORECASE))
-        bannedPhrases.append(re.compile(r'(^|\s+)-post', re.IGNORECASE))
-        bannedPhrases.append(re.compile(r'^\s*text', re.IGNORECASE))
+        bannedStrings.append(re.compile(r'(^|\s+)-pre', re.IGNORECASE))
+        bannedStrings.append(re.compile(r'(^|\s+)-post', re.IGNORECASE))
+        bannedStrings.append(re.compile(r'^\s*text', re.IGNORECASE))
 
         # purge user dictionary flag
-        bannedPhrases.append(re.compile(r'(^|\s+)-d', re.IGNORECASE))
+        bannedStrings.append(re.compile(r'(^|\s+)-d', re.IGNORECASE))
 
         # purge version information flag
-        bannedPhrases.append(re.compile(r'(^|\s+)-v', re.IGNORECASE))
+        bannedStrings.append(re.compile(r'(^|\s+)-v', re.IGNORECASE))
 
         # purge language flag
-        bannedPhrases.append(re.compile(r'(^|\s+)-lang(\s+\w+)?', re.IGNORECASE))
+        bannedStrings.append(re.compile(r'(^|\s+)-lang(\s+\w+)?', re.IGNORECASE))
 
         # purge various output flags
-        bannedPhrases.append(re.compile(r'(^|\s+)-w', re.IGNORECASE))
-        bannedPhrases.append(re.compile(r'(^|\s+)-l((\[\w+\])|\w+)?', re.IGNORECASE))
+        bannedStrings.append(re.compile(r'(^|\s+)-w', re.IGNORECASE))
+        bannedStrings.append(re.compile(r'(^|\s+)-l((\[\w+\])|\w+)?', re.IGNORECASE))
 
-        return bannedPhrases
+        return bannedStrings
