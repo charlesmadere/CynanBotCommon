@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 try:
     import CynanBotCommon.utils as utils
@@ -20,6 +20,10 @@ try:
         WebsocketMetadata
     from CynanBotCommon.twitch.websocket.websocketNoticeType import \
         WebsocketNoticeType
+    from CynanBotCommon.twitch.websocket.websocketOutcome import \
+        WebsocketOutcome
+    from CynanBotCommon.twitch.websocket.websocketOutcomeColor import \
+        WebsocketOutcomeColor
     from CynanBotCommon.twitch.websocket.websocketPayload import \
         WebsocketPayload
     from CynanBotCommon.twitch.websocket.websocketReward import WebsocketReward
@@ -49,6 +53,8 @@ except:
     from twitch.websocket.websocketMessageType import WebsocketMessageType
     from twitch.websocket.websocketMetadata import WebsocketMetadata
     from twitch.websocket.websocketNoticeType import WebsocketNoticeType
+    from twitch.websocket.websocketOutcome import WebsocketOutcome
+    from twitch.websocket.websocketOutcomeColor import WebsocketOutcomeColor
     from twitch.websocket.websocketPayload import WebsocketPayload
     from twitch.websocket.websocketReward import WebsocketReward
     from twitch.websocket.websocketSession import WebsocketSession
@@ -461,6 +467,22 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
         if 'notice_type' in eventJson and utils.isValidStr(eventJson.get('notice_type')):
             noticeType = WebsocketNoticeType.fromStr(utils.getStrFromDict(eventJson, 'notice_type'))
 
+        outcomes: Optional[List[WebsocketOutcome]] = None
+        if 'outcomes' in eventJson:
+            outcomesItem: Any = eventJson.get('outcomes')
+
+            if isinstance(outcomesItem, List) and utils.hasItems(outcomesItem):
+                outcomes = list()
+
+                for outcomeItem in outcomesItem:
+                    outcome = await self.parseWebsocketOutcome(outcomeItem)
+
+                    if outcome is not None:
+                        outcomes.append(outcome)
+
+                if len(outcomes) == 0:
+                    outcomes = None
+
         reward: Optional[WebsocketReward] = None
         if 'reward' in eventJson:
             reward = await self.parseWebsocketReward(eventJson.get('reward'))
@@ -497,7 +519,26 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
             userName = userName,
             tier = tier,
             noticeType = noticeType,
+            outcomes = outcomes,
             reward = reward
+        )
+
+    async def parseWebsocketOutcome(self, outcomeJson: Optional[Dict[str, Any]]) -> Optional[WebsocketOutcome]:
+        if not isinstance(outcomeJson, Dict) or not utils.hasItems(outcomeJson):
+            return None
+
+        channelPoints = utils.getIntFromDict(outcomeJson, 'channel_points')
+        users = utils.getIntFromDict(outcomeJson, 'users')
+        outcomeId = utils.getStrFromDict(outcomeJson, 'id')
+        title = utils.getStrFromDict(outcomeJson, 'title')
+        color = WebsocketOutcomeColor.fromStr(utils.getStrFromDict(outcomeJson, 'color'))
+
+        return WebsocketOutcome(
+            channelPoints = channelPoints,
+            users = users,
+            outcomeId = outcomeId,
+            title = title,
+            color = color
         )
 
     async def parseWebsocketReward(self, rewardJson: Optional[Dict[str, Any]]) -> Optional[WebsocketReward]:

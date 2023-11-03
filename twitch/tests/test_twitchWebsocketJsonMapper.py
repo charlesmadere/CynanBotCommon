@@ -110,6 +110,16 @@ class TestTwitchWebsocketJsonMapper():
         assert result is None
 
     @pytest.mark.asyncio
+    async def test_parseWebsocketOutcome_withEmptyDictionary(self):
+        result = await self.jsonMapper.parseWebsocketOutcome(dict())
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_parseWebsocketOutcome_withNone(self):
+        result = await self.jsonMapper.parseWebsocketOutcome(None)
+        assert result is None
+
+    @pytest.mark.asyncio
     async def test_parseWebsocketReward_withEmptyDictionary(self):
         result = await self.jsonMapper.parseWebsocketReward(dict())
         assert result is None

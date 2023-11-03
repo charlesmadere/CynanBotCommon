@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 try:
     import CynanBotCommon.utils as utils
@@ -6,6 +6,8 @@ try:
     from CynanBotCommon.twitch.twitchSubscriberTier import TwitchSubscriberTier
     from CynanBotCommon.twitch.websocket.websocketNoticeType import \
         WebsocketNoticeType
+    from CynanBotCommon.twitch.websocket.websocketOutcome import \
+        WebsocketOutcome
     from CynanBotCommon.twitch.websocket.websocketReward import WebsocketReward
 except:
     import utils
@@ -13,6 +15,7 @@ except:
 
     from twitch.twitchSubscriberTier import TwitchSubscriberTier
     from twitch.websocket.websocketNoticeType import WebsocketNoticeType
+    from twitch.websocket.websocketOutcome import WebsocketOutcome
     from twitch.websocket.websocketReward import WebsocketReward
 
 
@@ -51,6 +54,7 @@ class WebsocketEvent():
         userName: Optional[str] = None,
         tier: Optional[TwitchSubscriberTier] = None,
         noticeType: Optional[WebsocketNoticeType] = None,
+        outcomes: Optional[List[WebsocketOutcome]] = None,
         reward: Optional[WebsocketReward] = None
     ):
         if isAnonymous is not None and not utils.isValidBool(isAnonymous):
@@ -115,6 +119,8 @@ class WebsocketEvent():
             raise ValueError(f'tier argument is malformed: \"{tier}\"')
         elif noticeType is not None and not isinstance(noticeType, WebsocketNoticeType):
             raise ValueError(f'noticeType argument is malformed: \"{noticeType}\"')
+        elif outcomes is not None and not isinstance(outcomes, List):
+            raise ValueError(f'outcomes argument is malformed: \"{outcomes}\"')
         elif reward is not None and not isinstance(reward, WebsocketReward):
             raise ValueError(f'reward argument is malformed: \"{reward}\"')
 
@@ -149,6 +155,7 @@ class WebsocketEvent():
         self.__userName: Optional[str] = userName
         self.__tier: Optional[TwitchSubscriberTier] = tier
         self.__noticeType: Optional[WebsocketNoticeType] = noticeType
+        self.__outcomes: Optional[List[WebsocketOutcome]] = outcomes
         self.__reward: Optional[WebsocketReward] = reward
 
     def getBits(self) -> Optional[int]:
@@ -195,6 +202,9 @@ class WebsocketEvent():
 
     def getNoticeType(self) -> Optional[WebsocketNoticeType]:
         return self.__noticeType
+
+    def getOutcomes(self) -> Optional[List[WebsocketOutcome]]:
+        return self.__outcomes
 
     def getRedeemedAt(self) -> Optional[SimpleDateTime]:
         return self.__redeemedAt
