@@ -105,7 +105,7 @@ class TestDecTalkCommandBuilder():
         assert result == 'say.exe userDict'
 
     @pytest.mark.asyncio
-    async def test_buildAndCleanCommand_withDecTalkFlagsString7(self):
+    async def test_buildAndCleanCommand_withDecTalkFlagsString8(self):
         result = await self.decTalkCommandBuilder.buildAndCleanCommand('-lang uk hello world')
         assert result == 'say.exe hello world'
 
