@@ -11,6 +11,22 @@ class TestTwitchWebsocketSubscriptionType():
         result = WebsocketSubscriptionType.fromStr('channel.channel_points_custom_reward_redemption.add')
         assert result is WebsocketSubscriptionType.CHANNEL_POINTS_REDEMPTION
 
+    def test_fromStr_withChannelPredictionBeginString(self):
+        result = WebsocketSubscriptionType.fromStr('channel.prediction.begin')
+        assert result is WebsocketSubscriptionType.CHANNEL_PREDICTION_BEGIN
+
+    def test_fromStr_withChannelPredictionEndString(self):
+        result = WebsocketSubscriptionType.fromStr('channel.prediction.end')
+        assert result is WebsocketSubscriptionType.CHANNEL_PREDICTION_END
+
+    def test_fromStr_withChannelPredictionLockString(self):
+        result = WebsocketSubscriptionType.fromStr('channel.prediction.lock')
+        assert result is WebsocketSubscriptionType.CHANNEL_PREDICTION_LOCK
+
+    def test_fromStr_withChannelPredictionProgressString(self):
+        result = WebsocketSubscriptionType.fromStr('channel.prediction.progress')
+        assert result is WebsocketSubscriptionType.CHANNEL_PREDICTION_PROGRESS
+
     def test_fromStr_withChannelCheerString(self):
         result = WebsocketSubscriptionType.fromStr('channel.cheer')
         assert result is WebsocketSubscriptionType.CHEER
@@ -55,6 +71,22 @@ class TestTwitchWebsocketSubscriptionType():
         version = WebsocketSubscriptionType.CHANNEL_POINTS_REDEMPTION.getVersion()
         assert version == '1'
 
+    def test_getVersion_withChannelPredictionBegin(self):
+        version = WebsocketSubscriptionType.CHANNEL_PREDICTION_BEGIN.getVersion()
+        assert version == '1'
+
+    def test_getVersion_withChannelPredictionEnd(self):
+        version = WebsocketSubscriptionType.CHANNEL_PREDICTION_END.getVersion()
+        assert version == '1'
+
+    def test_getVersion_withChannelPredictionLock(self):
+        version = WebsocketSubscriptionType.CHANNEL_PREDICTION_LOCK.getVersion()
+        assert version == '1'
+
+    def test_getVersion_withChannelPredictionProgress(self):
+        version = WebsocketSubscriptionType.CHANNEL_PREDICTION_PROGRESS.getVersion()
+        assert version == '1'
+
     def test_getVersion_withChannelUpdate(self):
         version = WebsocketSubscriptionType.CHANNEL_UPDATE.getVersion()
         assert version == '2'
@@ -86,6 +118,22 @@ class TestTwitchWebsocketSubscriptionType():
     def test_toStr_withChannelPointsRedemption(self):
         string = WebsocketSubscriptionType.CHANNEL_POINTS_REDEMPTION.toStr()
         assert string == 'channel.channel_points_custom_reward_redemption.add'
+
+    def test_toStr_withChannelPredictionBegin(self):
+        string = WebsocketSubscriptionType.CHANNEL_PREDICTION_BEGIN.getVersion()
+        assert string == 'channel.prediction.begin'
+
+    def test_toStr_withChannelPredictionEnd(self):
+        string = WebsocketSubscriptionType.CHANNEL_PREDICTION_END.getVersion()
+        assert string == 'channel.prediction.end'
+
+    def test_toStr_withChannelPredictionLock(self):
+        string = WebsocketSubscriptionType.CHANNEL_PREDICTION_LOCK.toStr()
+        assert string == 'channel.prediction.lock'
+
+    def test_toStr_withChannelPredictionProgress(self):
+        string = WebsocketSubscriptionType.CHANNEL_PREDICTION_PROGRESS.toStr()
+        assert string == 'channel.prediction.progress'
 
     def test_toStr_withCheer(self):
         string = WebsocketSubscriptionType.CHEER.toStr()

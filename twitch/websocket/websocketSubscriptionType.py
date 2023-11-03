@@ -10,6 +10,10 @@ except:
 class WebsocketSubscriptionType(Enum):
 
     CHANNEL_POINTS_REDEMPTION = auto()
+    CHANNEL_PREDICTION_BEGIN = auto()
+    CHANNEL_PREDICTION_END = auto()
+    CHANNEL_PREDICTION_LOCK = auto()
+    CHANNEL_PREDICTION_PROGRESS = auto()
     CHANNEL_UPDATE = auto()
     CHEER = auto()
     FOLLOW = auto()
@@ -25,10 +29,18 @@ class WebsocketSubscriptionType(Enum):
 
         text = text.lower()
 
-        if text == 'channel.cheer':
-            return WebsocketSubscriptionType.CHEER
-        elif text == 'channel.channel_points_custom_reward_redemption.add':
+        if text == 'channel.channel_points_custom_reward_redemption.add':
             return WebsocketSubscriptionType.CHANNEL_POINTS_REDEMPTION
+        elif text == 'channel.cheer':
+            return WebsocketSubscriptionType.CHEER
+        elif text == 'channel.prediction.begin':
+            return WebsocketSubscriptionType.CHANNEL_PREDICTION_BEGIN
+        elif text == 'channel.prediction.end':
+            return WebsocketSubscriptionType.CHANNEL_PREDICTION_END
+        elif text == 'channel.prediction.lock':
+            return WebsocketSubscriptionType.CHANNEL_PREDICTION_LOCK
+        elif text == 'channel.prediction.progress':
+            return WebsocketSubscriptionType.CHANNEL_PREDICTION_PROGRESS
         elif text == 'channel.update':
             return WebsocketSubscriptionType.CHANNEL_UPDATE
         elif text == 'channel.follow':
@@ -47,6 +59,14 @@ class WebsocketSubscriptionType(Enum):
     def getVersion(self) -> str:
         if self is WebsocketSubscriptionType.CHANNEL_POINTS_REDEMPTION:
             return '1'
+        elif self is WebsocketSubscriptionType.CHANNEL_PREDICTION_BEGIN:
+            return '1'
+        elif self is WebsocketSubscriptionType.CHANNEL_PREDICTION_END:
+            return '1'
+        elif self is WebsocketSubscriptionType.CHANNEL_PREDICTION_LOCK:
+            return '1'
+        elif self is WebsocketSubscriptionType.CHANNEL_PREDICTION_PROGRESS:
+            return '1'
         elif self is WebsocketSubscriptionType.CHANNEL_UPDATE:
             return '2'
         elif self is WebsocketSubscriptionType.CHEER:
@@ -62,15 +82,23 @@ class WebsocketSubscriptionType(Enum):
         elif self is WebsocketSubscriptionType.SUBSCRIPTION_MESSAGE:
             return '1'
         else:
-            raise RuntimeError(f'unknown subscriptionType: \"{self}\"')
+            raise RuntimeError(f'unknown WebsocketSubscriptionType: \"{self}\"')
 
     def toStr(self) -> str:
-        if self is WebsocketSubscriptionType.CHEER:
-            return 'channel.cheer'
-        elif self is WebsocketSubscriptionType.CHANNEL_POINTS_REDEMPTION:
+        if self is WebsocketSubscriptionType.CHANNEL_POINTS_REDEMPTION:
             return 'channel.channel_points_custom_reward_redemption.add'
+        elif self is WebsocketSubscriptionType.CHANNEL_PREDICTION_BEGIN:
+            return 'channel.prediction.begin'
+        elif self is WebsocketSubscriptionType.CHANNEL_PREDICTION_END:
+            return 'channel.prediction.end'
+        elif self is WebsocketSubscriptionType.CHANNEL_PREDICTION_LOCK:
+            return 'channel.prediction.lock'
+        elif self is WebsocketSubscriptionType.CHANNEL_PREDICTION_PROGRESS:
+            return 'channel.prediction.progress'
         elif self is WebsocketSubscriptionType.CHANNEL_UPDATE:
             return 'channel.update'
+        elif self is WebsocketSubscriptionType.CHEER:
+            return 'channel.cheer'
         elif self is WebsocketSubscriptionType.FOLLOW:
             return 'channel.follow'
         elif self is WebsocketSubscriptionType.RAID:
