@@ -50,7 +50,11 @@ class TestDecTalkCommandBuilder():
     )
 
     ttsSettingsRepository: TtsSettingsRepositoryInterface = TtsSettingsRepository(
-        settingsJsonReader = JsonStaticReader(dict())
+        settingsJsonReader = JsonStaticReader(
+            jsonContents = {
+                'isEnabled': True
+            }
+        )
     )
 
     decTalkCommandBuilder: TtsCommandBuilderInterface = DecTalkCommandBuilder(
