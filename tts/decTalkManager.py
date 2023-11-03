@@ -1,9 +1,8 @@
 import asyncio
-import os
 import queue
 import traceback
 from queue import SimpleQueue
-from typing import List, Optional
+from typing import Optional
 
 try:
     import CynanBotCommon.utils as utils
