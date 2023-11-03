@@ -155,7 +155,7 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         elif donation.getType() is not TtsDonationType.CHEER:
             raise ValueError(f'TtsDonationType is not {TtsDonationType.CHEER}: \"{donation.getType()}\"')
 
-        return f'{event.getUserName()} cheered {donation.getBits()}'
+        return f'{event.getUserName()} cheered {donation.getBits()}!'
 
     async def __processDonationPrefix(self, event: TtsEvent) -> Optional[str]:
         if not isinstance(event, TtsEvent):
