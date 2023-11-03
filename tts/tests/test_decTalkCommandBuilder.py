@@ -64,81 +64,81 @@ class TestDecTalkCommandBuilder():
     )
 
     @pytest.mark.asyncio
-    async def test_buildAndCleanCommand_withEmptyString(self):
-        result = await self.decTalkCommandBuilder.buildAndCleanCommand('')
+    async def test_buildAndCleanMessage_withEmptyString(self):
+        result = await self.decTalkCommandBuilder.buildAndCleanMessage('')
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_buildAndCleanCommand_withBannedWord(self):
-        result = await self.decTalkCommandBuilder.buildAndCleanCommand('have you tried hydroxychloroquine?')
+    async def test_buildAndCleanMessage_withBannedWord(self):
+        result = await self.decTalkCommandBuilder.buildAndCleanMessage('have you tried hydroxychloroquine?')
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_buildAndCleanCommand_withDangerousCharactersString(self):
-        result = await self.decTalkCommandBuilder.buildAndCleanCommand('& cd C:\\ & dir')
+    async def test_buildAndCleanMessage_withDangerousCharactersString(self):
+        result = await self.decTalkCommandBuilder.buildAndCleanMessage('& cd C:\\ & dir')
         assert result == 'cd C:\\ dir'
 
     @pytest.mark.asyncio
-    async def test_buildAndCleanCommand_withDecTalkFlagsString1(self):
-        result = await self.decTalkCommandBuilder.buildAndCleanCommand('-post hello')
+    async def test_buildAndCleanMessage_withDecTalkFlagsString1(self):
+        result = await self.decTalkCommandBuilder.buildAndCleanMessage('-post hello')
         assert result == 'hello'
 
     @pytest.mark.asyncio
-    async def test_buildAndCleanCommand_withDecTalkFlagsString2(self):
-        result = await self.decTalkCommandBuilder.buildAndCleanCommand('-pre hello')
+    async def test_buildAndCleanMessage_withDecTalkFlagsString2(self):
+        result = await self.decTalkCommandBuilder.buildAndCleanMessage('-pre hello')
         assert result == 'hello'
 
     @pytest.mark.asyncio
-    async def test_buildAndCleanCommand_withDecTalkFlagsString3(self):
-        result = await self.decTalkCommandBuilder.buildAndCleanCommand('-l hello')
+    async def test_buildAndCleanMessage_withDecTalkFlagsString3(self):
+        result = await self.decTalkCommandBuilder.buildAndCleanMessage('-l hello')
         assert result == 'hello'
 
     @pytest.mark.asyncio
-    async def test_buildAndCleanCommand_withDecTalkFlagsString4(self):
-        result = await self.decTalkCommandBuilder.buildAndCleanCommand('-lw hello')
+    async def test_buildAndCleanMessage_withDecTalkFlagsString4(self):
+        result = await self.decTalkCommandBuilder.buildAndCleanMessage('-lw hello')
         assert result == 'hello'
 
     @pytest.mark.asyncio
-    async def test_buildAndCleanCommand_withDecTalkFlagsString5(self):
-        result = await self.decTalkCommandBuilder.buildAndCleanCommand('-l[t] hello')
+    async def test_buildAndCleanMessage_withDecTalkFlagsString5(self):
+        result = await self.decTalkCommandBuilder.buildAndCleanMessage('-l[t] hello')
         assert result == 'hello'
 
     @pytest.mark.asyncio
-    async def test_buildAndCleanCommand_withDecTalkFlagsString6(self):
-        result = await self.decTalkCommandBuilder.buildAndCleanCommand('-v show version information')
+    async def test_buildAndCleanMessage_withDecTalkFlagsString6(self):
+        result = await self.decTalkCommandBuilder.buildAndCleanMessage('-v show version information')
         assert result == 'show version information'
 
     @pytest.mark.asyncio
-    async def test_buildAndCleanCommand_withDecTalkFlagsString7(self):
-        result = await self.decTalkCommandBuilder.buildAndCleanCommand('-d userDict')
+    async def test_buildAndCleanMessage_withDecTalkFlagsString7(self):
+        result = await self.decTalkCommandBuilder.buildAndCleanMessage('-d userDict')
         assert result == 'userDict'
 
     @pytest.mark.asyncio
-    async def test_buildAndCleanCommand_withDecTalkFlagsString8(self):
-        result = await self.decTalkCommandBuilder.buildAndCleanCommand('-lang uk hello world')
+    async def test_buildAndCleanMessage_withDecTalkFlagsString8(self):
+        result = await self.decTalkCommandBuilder.buildAndCleanMessage('-lang uk hello world')
         assert result == 'hello world'
 
     @pytest.mark.asyncio
-    async def test_buildAndCleanCommand_withDirectoryTraversalString(self):
-        result = await self.decTalkCommandBuilder.buildAndCleanCommand('& cd .. & dir')
+    async def test_buildAndCleanMessage_withDirectoryTraversalString(self):
+        result = await self.decTalkCommandBuilder.buildAndCleanMessage('& cd .. & dir')
         assert result == 'cd dir'
 
     @pytest.mark.asyncio
-    async def test_buildAndCleanCommand_withExtraneousSpacesString(self):
-        result = await self.decTalkCommandBuilder.buildAndCleanCommand('  Hello,    World! ')
+    async def test_buildAndCleanMessage_withExtraneousSpacesString(self):
+        result = await self.decTalkCommandBuilder.buildAndCleanMessage('  Hello,    World! ')
         assert result == 'Hello, World!'
 
     @pytest.mark.asyncio
-    async def test_buildAndCleanCommand_withHelloWorldString(self):
-        result = await self.decTalkCommandBuilder.buildAndCleanCommand('Hello, World!')
+    async def test_buildAndCleanMessage_withHelloWorldString(self):
+        result = await self.decTalkCommandBuilder.buildAndCleanMessage('Hello, World!')
         assert result == 'Hello, World!'
 
     @pytest.mark.asyncio
-    async def test_buildAndCleanCommand_withNone(self):
-        result = await self.decTalkCommandBuilder.buildAndCleanCommand(None)
+    async def test_buildAndCleanMessage_withNone(self):
+        result = await self.decTalkCommandBuilder.buildAndCleanMessage(None)
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_buildAndCleanCommand_withWhitespaceString(self):
-        result = await self.decTalkCommandBuilder.buildAndCleanCommand(' ')
+    async def test_buildAndCleanMessage_withWhitespaceString(self):
+        result = await self.decTalkCommandBuilder.buildAndCleanMessage(' ')
         assert result is None

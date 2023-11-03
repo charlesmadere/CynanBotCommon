@@ -7,18 +7,27 @@ try:
     from CynanBotCommon.contentScanner.contentScannerInterface import \
         ContentScannerInterface
     from CynanBotCommon.timber.timberInterface import TimberInterface
+    from CynanBotCommon.tts.ttsCheerDonation import TtsCheerDonation
     from CynanBotCommon.tts.ttsCommandBuilderInterface import \
         TtsCommandBuilderInterface
+    from CynanBotCommon.tts.ttsDonation import TtsDonation
+    from CynanBotCommon.tts.ttsEvent import TtsEvent
     from CynanBotCommon.tts.ttsSettingsRepositoryInterface import \
         TtsSettingsRepositoryInterface
+    from CynanBotCommon.tts.ttsSubscriptionDonation import \
+        TtsSubscriptionDonation
 except:
     import utils
     from contentScanner.contentCode import ContentCode
     from contentScanner.contentScannerInterface import ContentScannerInterface
     from timber.timberInterface import TimberInterface
+    from tts.ttsCheerDonation import TtsCheerDonation
     from tts.ttsCommandBuilderInterface import TtsCommandBuilderInterface
+    from tts.ttsDonation import TtsDonation
+    from tts.ttsEvent import TtsEvent
     from tts.ttsSettingsRepositoryInterface import \
         TtsSettingsRepositoryInterface
+    from tts.ttsSubscriptionDonation import TtsSubscriptionDonation
 
 
 class DecTalkCommandBuilder(TtsCommandBuilderInterface):
@@ -43,40 +52,57 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         self.__bannedStrings: List[Pattern] = self.__buildBannedStrings()
         self.__whiteSpaceRegEx: Pattern = re.compile(r'\s{2,}', re.IGNORECASE)
 
-    async def buildAndCleanCommand(self, command: Optional[str]) -> Optional[str]:
-        if not utils.isValidStr(command):
+    async def buildAndCleanEvent(self, event: Optional[TtsEvent]) -> Optional[str]:
+        if event is None:
+            return None
+        if not isinstance(event, TtsEvent):
+            raise ValueError(f'event argument is malformed: \"{event}\"')
+
+        message = event.getMessage()
+
+        if utils.isValidStr(message):
+            message = await self.buildAndCleanMessage(message)
+
+            if utils.isValidStr(message):
+                return message
+
+        # TODO
+        pass
+
+    async def buildAndCleanMessage(self, message: Optional[str]) -> Optional[str]:
+        if not utils.isValidStr(message):
             return None
 
         for bannedString in self.__bannedStrings:
-            command = bannedString.sub('', command)
+            message = bannedString.sub('', message)
 
-            if not utils.isValidStr(command):
+            if not utils.isValidStr(message):
                 return None
 
-        if not utils.isValidStr(command):
+        if not utils.isValidStr(message):
             return None
 
-        command = command.strip()
-        contentCode = await self.__contentScanner.scan(command)
+        message = message.strip()
+        contentCode = await self.__contentScanner.scan(message)
 
         if contentCode is not ContentCode.OK:
-            self.__timber.log('DecTalkCommandBuilder', f'TTS command \"{command}\" returned a bad content code: \"{contentCode}\"')
+            self.__timber.log('DecTalkCommandBuilder', f'TTS command \"{message}\" returned a bad content code: \"{contentCode}\"')
             return None
 
         maxMessageSize = await self.__ttsSettingsRepository.getMaximumMessageSize()
 
-        if len(command) > maxMessageSize:
-            self.__timber.log('DecTalkCommandBuilder', f'Chopping down TTS command \"{command}\" as it is too long (len={len(command)}) ({maxMessageSize=}) ({command})')
-            command = command[:maxMessageSize]
+        if len(message) > maxMessageSize:
+            self.__timber.log('DecTalkCommandBuilder', f'Chopping down TTS command \"{message}\" as it is too long (len={len(message)}) ({maxMessageSize=}) ({message})')
+            message = message[:maxMessageSize]
 
         # remove extranneous whitespace
-        command = self.__whiteSpaceRegEx.sub(' ', command)
-        command = command.strip()
+        message = self.__whiteSpaceRegEx.sub(' ', message)
+        message = message.strip()
 
-        if not utils.isValidStr(command):
+        if not utils.isValidStr(message):
             return None
 
-        return command
+        return message
 
     def __buildBannedStrings(self) -> List[Pattern]:
         bannedStrings: List[Pattern] = list()

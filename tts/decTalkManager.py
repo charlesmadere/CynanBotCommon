@@ -109,7 +109,7 @@ class DecTalkManager(TtsManagerInterface):
         message = event.getMessage()
 
         if utils.isValidStr(message):
-            command = await self.__ttsCommandBuilder.buildAndCleanCommand(message)
+            command = await self.__ttsCommandBuilder.buildAndCleanMessage(message)
 
             if utils.isValidStr(command):
                 return command
