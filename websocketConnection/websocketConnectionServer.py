@@ -37,7 +37,8 @@ class WebsocketConnectionServer(WebsocketConnectionServerInterface):
         port: int = 8765,
         host: str = '0.0.0.0',
         websocketSettingsFile: str = 'CynanBotCommon/websocketConnection/websocketSettings.json',
-        eventTimeToLive: timedelta = timedelta(seconds = 30)
+        eventTimeToLive: timedelta = timedelta(seconds = 30),
+        timeZone: timezone = timezone.utc
     ):
         if not isinstance(backgroundTaskHelper, BackgroundTaskHelper):
             raise ValueError(f'backgroundTaskHelper argument is malformed: \"{backgroundTaskHelper}\"')
@@ -57,6 +58,8 @@ class WebsocketConnectionServer(WebsocketConnectionServerInterface):
             raise ValueError(f'websocketSettingsFile argument is malformed: \"{websocketSettingsFile}\"')
         elif not isinstance(eventTimeToLive, timedelta):
             raise ValueError(f'eventTimeToLive argument is malformed: \"{eventTimeToLive}\"')
+        elif not isinstance(timeZone, timezone):
+            raise ValueError(f'timeZone argument is malformed: \"{timeZone}\"')
 
         self.__backgroundTaskHelper: BackgroundTaskHelper = backgroundTaskHelper
         self.__timber: TimberInterface = timber
@@ -65,6 +68,7 @@ class WebsocketConnectionServer(WebsocketConnectionServerInterface):
         self.__host: str = host
         self.__websocketSettingsFile: str = websocketSettingsFile
         self.__eventTimeToLive: timedelta = eventTimeToLive
+        self.__timeZone: timezone = timeZone
 
         self.__isStarted: bool = False
         self.__cache: Optional[Dict[str, Any]] = None
@@ -101,7 +105,7 @@ class WebsocketConnectionServer(WebsocketConnectionServerInterface):
         self,
         twitchChannel: str,
         eventType: str,
-        eventData: Dict
+        eventData: Dict[Any, Any]
     ):
         if not utils.isValidStr(twitchChannel):
             raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
@@ -169,7 +173,7 @@ class WebsocketConnectionServer(WebsocketConnectionServerInterface):
                 try:
                     event = self.__eventQueue.get_nowait()
 
-                    if event.getEventTime() + self.__eventTimeToLive >= datetime.now(timezone.utc):
+                    if event.getEventTime() + self.__eventTimeToLive >= datetime.now(self.__timeZone):
                         eventJson = json.dumps(event.getEventData(), sort_keys = True)
                         await websocket.send(eventJson)
 
