@@ -69,6 +69,11 @@ class TestDecTalkCommandBuilder():
         assert result is None
 
     @pytest.mark.asyncio
+    async def test_buildAndCleanCommand_withBannedWord(self):
+        result = await self.decTalkCommandBuilder.buildAndCleanCommand('have you tried hydroxychloroquine?')
+        assert result is None
+
+    @pytest.mark.asyncio
     async def test_buildAndCleanCommand_withDangerousCharactersString(self):
         result = await self.decTalkCommandBuilder.buildAndCleanCommand('& cd C:\\ & dir')
         assert result == 'say.exe cd C:\\ dir'
