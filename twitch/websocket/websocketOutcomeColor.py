@@ -16,7 +16,7 @@ class WebsocketOutcomeColor(Enum):
         if not utils.isValidStr(text):
             raise ValueError(f'text argument is malformed: \"{text}\"')
 
-        text = text.lower
+        text = text.lower()
 
         if text == 'blue':
             return WebsocketOutcomeColor.BLUE
