@@ -39,7 +39,7 @@ class TestDecTalkCommandBuilder():
 
     bannedWordsRepository: BannedWordsRepositoryInterface = BannedWordsRepository(
         bannedWordsLinesReader = LinesStaticReader(
-            lines = list('hydroxychloroquine')
+            lines = [ 'hydroxychloroquine' ]
         ),
         timber = timber
     )
