@@ -161,7 +161,7 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         if not isinstance(event, TtsEvent):
             raise ValueError(f'event argument is malformed: \"{event}\"')
 
-        donation = event.getDonation()
+        donation: Optional[TtsDonation] = event.getDonation()
 
         if donation is None:
             return None
