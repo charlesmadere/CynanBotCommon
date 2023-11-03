@@ -1,5 +1,4 @@
 from enum import Enum, auto
-from typing import Optional
 
 try:
     import CynanBotCommon.utils as utils
@@ -12,7 +11,8 @@ class WebsocketOutcomeColor(Enum):
     BLUE = auto()
     PINK = auto()
 
-    def fromStr(cls, text: Optional[str]):
+    @classmethod
+    def fromStr(cls, text: str):
         if not utils.isValidStr(text):
             raise ValueError(f'text argument is malformed: \"{text}\"')
 
