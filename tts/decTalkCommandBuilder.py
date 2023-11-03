@@ -11,6 +11,7 @@ try:
     from CynanBotCommon.tts.ttsCommandBuilderInterface import \
         TtsCommandBuilderInterface
     from CynanBotCommon.tts.ttsDonation import TtsDonation
+    from CynanBotCommon.tts.ttsDonationType import TtsDonationType
     from CynanBotCommon.tts.ttsEvent import TtsEvent
     from CynanBotCommon.tts.ttsSettingsRepositoryInterface import \
         TtsSettingsRepositoryInterface
@@ -24,6 +25,7 @@ except:
     from tts.ttsCheerDonation import TtsCheerDonation
     from tts.ttsCommandBuilderInterface import TtsCommandBuilderInterface
     from tts.ttsDonation import TtsDonation
+    from tts.ttsDonationType import TtsDonationType
     from tts.ttsEvent import TtsEvent
     from tts.ttsSettingsRepositoryInterface import \
         TtsSettingsRepositoryInterface
@@ -58,16 +60,20 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         if not isinstance(event, TtsEvent):
             raise ValueError(f'event argument is malformed: \"{event}\"')
 
+        prefix = await self.__processDonationPrefix(event)
         message = event.getMessage()
 
         if utils.isValidStr(message):
             message = await self.buildAndCleanMessage(message)
 
-            if utils.isValidStr(message):
-                return message
-
-        # TODO
-        pass
+        if utils.isValidStr(prefix) and utils.isValidStr(message):
+            return f'{prefix}! {message}'
+        elif utils.isValidStr(prefix):
+            return prefix
+        elif utils.isValidStr(message):
+            return message
+        else:
+            return None
 
     async def buildAndCleanMessage(self, message: Optional[str]) -> Optional[str]:
         if not utils.isValidStr(message):
@@ -136,3 +142,60 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         bannedStrings.append(re.compile(r'(^|\s+)-l((\[\w+\])|\w+)?', re.IGNORECASE))
 
         return bannedStrings
+
+    async def __processCheerDonationPrefix(
+        self,
+        event: TtsEvent,
+        donation: TtsCheerDonation
+    ) -> Optional[str]:
+        if not isinstance(event, TtsEvent):
+            raise ValueError(f'event argument is malformed: \"{event}\"')
+        elif not isinstance(donation, TtsCheerDonation):
+            raise ValueError(f'donation argument is malformed: \"{donation}\"')
+        elif donation.getType() is not TtsDonationType.CHEER:
+            raise ValueError(f'TtsDonationType is not {TtsDonationType.CHEER}: \"{donation.getType()}\"')
+
+        return f'{event.getUserName()} cheered {donation.getBits()}'
+
+    async def __processDonationPrefix(self, event: TtsEvent) -> Optional[str]:
+        if not isinstance(event, TtsEvent):
+            raise ValueError(f'event argument is malformed: \"{event}\"')
+
+        donation = event.getDonation()
+
+        if donation is None:
+            return None
+
+        donationType = donation.getType()
+
+        if donationType is TtsDonationType.CHEER:
+            return await self.__processCheerDonationPrefix(
+                event = event,
+                donation = donation
+            )
+        elif donationType is TtsDonationType.SUBSCRIPTION:
+            return await self.__processSusbcriptionDonationPrefix(
+                event = event,
+                donation = donation
+            )
+        else:
+            raise RuntimeError(f'donationType is unknown: \"{donationType}\"')
+
+    async def __processSusbcriptionDonationPrefix(
+        self,
+        event: TtsEvent,
+        donation: TtsSubscriptionDonation
+    ) -> Optional[str]:
+        if not isinstance(event, TtsEvent):
+            raise ValueError(f'event argument is malformed: \"{event}\"')
+        elif not isinstance(donation, TtsSubscriptionDonation):
+            raise ValueError(f'donation argument is malformed: \"{donation}\"')
+        elif donation.getType() is not TtsDonationType.SUBSCRIPTION:
+            raise ValueError(f'TtsDonationType is not {TtsDonationType.SUBSCRIPTION}: \"{donation.getType()}\"')
+
+        if donation.isAnonymous() and donation.isGift():
+            return f'anonymous gifted a sub'
+        elif donation.isGift():
+            return f'{event.getUserName()} gifted a sub'
+        else:
+            return f'{event.getUserName()} subscribed'
