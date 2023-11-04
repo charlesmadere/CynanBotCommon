@@ -48,16 +48,21 @@ class EmojiHelper(EmojiHelperInterface):
         replacementMade = False
 
         for index, split in enumerate(splits):
-            if not emoji.is_emoji(split):
+            distinctEmojis = emoji.distinct_emoji_list(split)
+
+            if not utils.hasItems(distinctEmojis):
                 continue
 
-            replacementMade = True
-            humanName = await self.getHumanNameForEmoji(split)
+            replacementString = ''
 
-            if humanName is None:
-                splits[index] = ''
-            else:
-                splits[index] = humanName
+            for distinctEmoji in distinctEmojis:
+                humanName = await self.getHumanNameForEmoji(distinctEmoji)
+
+                if humanName is not None:
+                    replacementString = f'{replacementString} {humanName}'
+
+            splits[index] = replacementString
+            replacementMade = True
 
         if replacementMade:
             return ' '.join(splits).strip()
