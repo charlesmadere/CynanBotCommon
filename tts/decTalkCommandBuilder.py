@@ -108,7 +108,8 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         if not utils.isValidStr(message):
             return None
 
-        return message
+        # DECTalk requires Windows-1252 encoding
+        return message.encode().decode('windows-1252')
 
     def __buildBannedStrings(self) -> List[Pattern]:
         bannedStrings: List[Pattern] = list()
