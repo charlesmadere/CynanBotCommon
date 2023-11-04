@@ -12,7 +12,6 @@ try:
     from ...emojiHelper.emojiRepository import EmojiRepository
     from ...emojiHelper.emojiRepositoryInterface import \
         EmojiRepositoryInterface
-    from ...storage.jsonFileReader import JsonFileReader
     from ...storage.jsonStaticReader import JsonStaticReader
     from ...storage.linesStaticReader import LinesStaticReader
     from ...timber.timberInterface import TimberInterface
@@ -32,7 +31,6 @@ except:
     from emojiHelper.emojiHelperInterface import EmojiHelperInterface
     from emojiHelper.emojiRepository import EmojiRepository
     from emojiHelper.emojiRepositoryInterface import EmojiRepositoryInterface
-    from storage.jsonFileReader import JsonFileReader
     from storage.jsonStaticReader import JsonStaticReader
     from storage.linesStaticReader import LinesStaticReader
     from timber.timberInterface import TimberInterface
@@ -61,7 +59,40 @@ class TestDecTalkCommandBuilder():
     )
 
     emojiRepository: EmojiRepositoryInterface = EmojiRepository(
-        emojiJsonReader = JsonFileReader('emojiHelper/emojiRepository.json'),
+        emojiJsonReader = JsonStaticReader(
+            jsonContents = {
+                'emojis': [
+                    {
+                        'code': [
+                            "1F600"
+                        ],
+                        'emoji': '😀',
+                        'name': 'grinning face',
+                        'category': 'Smileys & Emotion',
+                        'subcategory': 'face-smiling',
+                        'support': {
+                            'apple': True,
+                            'google': True,
+                            'windows': True
+                        }
+                    },
+                    {
+                        'code': [
+                            "1F988"
+                        ],
+                        'emoji': '🦈',
+                        'name': 'shark',
+                        'category': 'Animals & Nature',
+                        'subcategory': 'animal-marine',
+                        'support': {
+                            'apple': True,
+                            'google': True,
+                            'windows': True
+                        }
+                    }
+                ]
+            }
+        ),
         timber = timber
     )
 
