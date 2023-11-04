@@ -323,6 +323,9 @@ class TriviaAnswerCompiler():
         return list(set(''.join(item) for item in utils.permuteSubArrays(split)))
 
     async def compileTextAnswerToMultipleChoiceOrdinal(self, answer: Optional[str]) -> int:
+        if not utils.isValidStr(answer):
+            raise BadTriviaAnswerException(f'answer is null/empty: \"{answer}\"')
+
         # first check to see if the user inputted an answer like "[A]"
         bracedAnswerMatch = self.__multipleChoiceBracedAnswerRegEx.fullmatch(answer)
 
