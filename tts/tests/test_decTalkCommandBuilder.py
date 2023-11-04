@@ -7,6 +7,12 @@ try:
     from ...contentScanner.contentScanner import ContentScanner
     from ...contentScanner.contentScannerInterface import \
         ContentScannerInterface
+    from ...emojiHelper.emojiHelper import EmojiHelper
+    from ...emojiHelper.emojiHelperInterface import EmojiHelperInterface
+    from ...emojiHelper.emojiRepository import EmojiRepository
+    from ...emojiHelper.emojiRepositoryInterface import \
+        EmojiRepositoryInterface
+    from ...storage.jsonFileReader import JsonFileReader
     from ...storage.jsonStaticReader import JsonStaticReader
     from ...storage.linesStaticReader import LinesStaticReader
     from ...timber.timberInterface import TimberInterface
@@ -22,6 +28,11 @@ except:
         BannedWordsRepositoryInterface
     from contentScanner.contentScanner import ContentScanner
     from contentScanner.contentScannerInterface import ContentScannerInterface
+    from emojiHelper.emojiHelper import EmojiHelper
+    from emojiHelper.emojiHelperInterface import EmojiHelperInterface
+    from emojiHelper.emojiRepository import EmojiRepository
+    from emojiHelper.emojiRepositoryInterface import EmojiRepositoryInterface
+    from storage.jsonFileReader import JsonFileReader
     from storage.jsonStaticReader import JsonStaticReader
     from storage.linesStaticReader import LinesStaticReader
     from timber.timberInterface import TimberInterface
@@ -49,6 +60,15 @@ class TestDecTalkCommandBuilder():
         timber = timber
     )
 
+    emojiRepository: EmojiRepositoryInterface = EmojiRepository(
+        emojiJsonReader = JsonFileReader('emojiHelper/emojiRepository.json'),
+        timber = timber
+    )
+
+    emojiHelper: EmojiHelperInterface = EmojiHelper(
+        emojiRepository = emojiRepository
+    )
+
     ttsSettingsRepository: TtsSettingsRepositoryInterface = TtsSettingsRepository(
         settingsJsonReader = JsonStaticReader(
             jsonContents = {
@@ -59,6 +79,7 @@ class TestDecTalkCommandBuilder():
 
     decTalkCommandBuilder: TtsCommandBuilderInterface = DecTalkCommandBuilder(
         contentScanner = contentScanner,
+        emojiHelper = emojiHelper,
         timber = timber,
         ttsSettingsRepository = ttsSettingsRepository
     )

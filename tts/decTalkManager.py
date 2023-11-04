@@ -11,15 +11,12 @@ try:
         SystemCommandHelperInterface
     from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.tts.decTalkCommandBuilder import DecTalkCommandBuilder
-    from CynanBotCommon.tts.ttsCheerDonation import TtsCheerDonation
     from CynanBotCommon.tts.ttsCommandBuilderInterface import \
         TtsCommandBuilderInterface
     from CynanBotCommon.tts.ttsEvent import TtsEvent
     from CynanBotCommon.tts.ttsManagerInterface import TtsManagerInterface
     from CynanBotCommon.tts.ttsSettingsRepositoryInterface import \
         TtsSettingsRepositoryInterface
-    from CynanBotCommon.tts.ttsSubscriptionDonation import \
-        TtsSubscriptionDonation
 except:
     import utils
     from backgroundTaskHelper import BackgroundTaskHelper
@@ -27,13 +24,11 @@ except:
         SystemCommandHelperInterface
     from timber.timberInterface import TimberInterface
     from tts.decTalkCommandBuilder import DecTalkCommandBuilder
-    from tts.ttsCheerDonation import TtsCheerDonation
     from tts.ttsCommandBuilderInterface import TtsCommandBuilderInterface
     from tts.ttsEvent import TtsEvent
     from tts.ttsManagerInterface import TtsManagerInterface
     from tts.ttsSettingsRepositoryInterface import \
         TtsSettingsRepositoryInterface
-    from tts.ttsSubscriptionDonation import TtsSubscriptionDonation
 
 
 class DecTalkManager(TtsManagerInterface):

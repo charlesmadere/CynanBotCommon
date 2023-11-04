@@ -6,6 +6,8 @@ try:
     from CynanBotCommon.contentScanner.contentCode import ContentCode
     from CynanBotCommon.contentScanner.contentScannerInterface import \
         ContentScannerInterface
+    from CynanBotCommon.emojiHelper.emojiHelperInterface import \
+        EmojiHelperInterface
     from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.tts.ttsCheerDonation import TtsCheerDonation
     from CynanBotCommon.tts.ttsCommandBuilderInterface import \
@@ -21,6 +23,7 @@ except:
     import utils
     from contentScanner.contentCode import ContentCode
     from contentScanner.contentScannerInterface import ContentScannerInterface
+    from emojiHelper.emojiHelperInterface import EmojiHelperInterface
     from timber.timberInterface import TimberInterface
     from tts.ttsCheerDonation import TtsCheerDonation
     from tts.ttsCommandBuilderInterface import TtsCommandBuilderInterface
@@ -37,17 +40,21 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
     def __init__(
         self,
         contentScanner: ContentScannerInterface,
+        emojiHelper: EmojiHelperInterface,
         timber: TimberInterface,
         ttsSettingsRepository: TtsSettingsRepositoryInterface
     ):
         if not isinstance(contentScanner, ContentScannerInterface):
             raise ValueError(f'contentScanner argument is malformed: \"{contentScanner}\"')
+        elif not isinstance(emojiHelper, EmojiHelperInterface):
+            raise ValueError(f'emojiHelper argument is malformed: \"{emojiHelper}\"')
         elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(ttsSettingsRepository, TtsSettingsRepositoryInterface):
             raise ValueError(f'ttsSettingsRepository argument is malformed: \"{ttsSettingsRepository}\"')
 
         self.__contentScanner: ContentScannerInterface = contentScanner
+        self.__emojiHelper: EmojiHelperInterface = emojiHelper
         self.__timber: TimberInterface = timber
         self.__ttsSettingsRepository: TtsSettingsRepositoryInterface = ttsSettingsRepository
 
