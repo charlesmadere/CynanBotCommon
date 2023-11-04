@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 import pytest
 
@@ -111,6 +111,64 @@ class TestTriviaAnswerCompiler():
         assert result == 1
 
     @pytest.mark.asyncio
+    async def test_compileMultipleChoiceAnswer_withBracedA(self):
+        result = await self.triviaAnswerCompiler.compileTextAnswerToMultipleChoiceOrdinal('[A]')
+        assert result == 0
+
+        result = await self.triviaAnswerCompiler.compileTextAnswerToMultipleChoiceOrdinal('[a]')
+        assert result == 0
+
+    @pytest.mark.asyncio
+    async def test_compileMultipleChoiceAnswer_withBracedB(self):
+        result = await self.triviaAnswerCompiler.compileTextAnswerToMultipleChoiceOrdinal('[B]')
+        assert result == 1
+
+        result = await self.triviaAnswerCompiler.compileTextAnswerToMultipleChoiceOrdinal('[b]')
+        assert result == 1
+
+    @pytest.mark.asyncio
+    async def test_compileMultipleChoiceAnswer_withBracedDigit(self):
+        result: Optional[int] = None
+        exception: Optional[Exception] = None
+
+        try:
+            result = await self.triviaAnswerCompiler.compileTextAnswerToMultipleChoiceOrdinal('[1]')
+        except Exception as e:
+            exception = e
+
+        assert result is None
+        assert isinstance(exception, Exception)
+
+        try:
+            result = await self.triviaAnswerCompiler.compileTextAnswerToMultipleChoiceOrdinal('[0]')
+        except Exception as e:
+            exception = e
+
+        assert result is None
+        assert isinstance(exception, Exception)
+
+    @pytest.mark.asyncio
+    async def test_compileMultipleChoiceAnswer_withBracedWord(self):
+        result: Optional[int] = None
+        exception: Optional[Exception] = None
+
+        try:
+            result = await self.triviaAnswerCompiler.compileTextAnswerToMultipleChoiceOrdinal('[hello]')
+        except Exception as e:
+            exception = e
+
+        assert result is None
+        assert isinstance(exception, Exception)
+
+        try:
+            result = await self.triviaAnswerCompiler.compileTextAnswerToMultipleChoiceOrdinal('[world]')
+        except Exception as e:
+            exception = e
+
+        assert result is None
+        assert isinstance(exception, Exception)
+
+    @pytest.mark.asyncio
     async def test_compileMultipleChoiceAnswer_withC(self):
         result: int = await self.triviaAnswerCompiler.compileTextAnswerToMultipleChoiceOrdinal('C')
         assert result == 2
@@ -146,6 +204,27 @@ class TestTriviaAnswerCompiler():
 
         result = await self.triviaAnswerCompiler.compileTextAnswerToMultipleChoiceOrdinal('e')
         assert result == 4
+
+    @pytest.mark.asyncio
+    async def test_compileMultipleChoiceAnswer_withEmptyBraces(self):
+        result: Optional[int] = None
+        exception: Optional[Exception] = None
+
+        try:
+            result = await self.triviaAnswerCompiler.compileTextAnswerToMultipleChoiceOrdinal('[]')
+        except Exception as e:
+            exception = e
+
+        assert result is None
+        assert isinstance(exception, Exception)
+
+        try:
+            result = await self.triviaAnswerCompiler.compileTextAnswerToMultipleChoiceOrdinal('[]')
+        except Exception as e:
+            exception = e
+
+        assert result is None
+        assert isinstance(exception, Exception)
 
     @pytest.mark.asyncio
     async def test_compileMultipleChoiceAnswer_withF(self):

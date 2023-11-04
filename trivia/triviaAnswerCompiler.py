@@ -32,6 +32,7 @@ class TriviaAnswerCompiler():
         self.__honoraryPrefixRegEx: Pattern = re.compile(r'^(bishop|brother|captain|chancellor|chief|colonel|corporal|dean|director|doctor|dr\.?|duke|earl|esq|esquire|executive|father|general|judge|king|lady|lieutenant|lord|madam|madame|master|miss|missus|mister|mistress|mother|mr\.?|mrs\.?|ms\.?|mx\.?|officer|priest|president|principal|private|professor|queen|rabbi|representative|reverend|saint|secretary|senator|senior|sister|sir|sire|teacher|warden)\s+', re.IGNORECASE)
         self.__japaneseHonorarySuffixRegEx: Pattern = re.compile(r'(\s|-)(chan|kohai|kouhai|kun|sama|san|senpai|sensei|tan)$', re.IGNORECASE)
         self.__multipleChoiceAnswerRegEx: Pattern = re.compile(r'[a-z]', re.IGNORECASE)
+        self.__multipleChoiceBracedAnswerRegEx: Pattern = re.compile(r'^\[([a-z])\]$', re.IGNORECASE)
         self.__newLineRegEx: Pattern = re.compile(r'(\n)+', re.IGNORECASE)
         self.__parenGroupRegEx: Pattern = re.compile(r'(\(.*?\))', re.IGNORECASE)
         self.__phraseAnswerRegEx: Pattern = re.compile(r'[^A-Za-z0-9 ]|(?<=\s)\s+', re.IGNORECASE)
@@ -325,7 +326,13 @@ class TriviaAnswerCompiler():
         cleanedAnswer = await self.compileTextAnswer(answer)
 
         if not utils.isValidStr(cleanedAnswer) or len(cleanedAnswer) != 1 or self.__multipleChoiceAnswerRegEx.fullmatch(cleanedAnswer) is None:
-            raise BadTriviaAnswerException(f'answer can\'t be compiled to multiple choice ordinal (answer=\"{answer}\") (cleanedAnswer=\"{cleanedAnswer}\")')
+            # check to see if the user inputted an answer like "[A]"
+            bracedAnswerMatch = self.__multipleChoiceBracedAnswerRegEx.fullmatch(cleanedAnswer)
+
+            if bracedAnswerMatch is None or not utils.isValidStr(bracedAnswerMatch.group(1)):
+                raise BadTriviaAnswerException(f'answer can\'t be compiled to multiple choice ordinal (answer=\"{answer}\") (cleanedAnswer=\"{cleanedAnswer}\")')
+
+            cleanedAnswer = bracedAnswerMatch.group(1)
 
         # this converts the answer 'A' into 0, 'B' into 1, 'C' into 2, and so on...
         return ord(cleanedAnswer.upper()) % 65
