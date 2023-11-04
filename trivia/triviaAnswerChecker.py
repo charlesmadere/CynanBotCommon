@@ -60,7 +60,7 @@ class TriviaAnswerChecker():
         self.__triviaAnswerCompiler: TriviaAnswerCompiler = triviaAnswerCompiler
         self.__triviaSettingsRepository: TriviaSettingsRepositoryInterface = triviaSettingsRepository
 
-        self.__whitespacePattern: Pattern = re.compile(r'\s\s+')
+        self.__whitespacePattern: Pattern = re.compile(r'\s\s+', re.IGNORECASE)
 
         self.__irregular_nouns: Dict[str, str] = {
             'child': 'children',
