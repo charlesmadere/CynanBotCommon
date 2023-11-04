@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Dict, Optional
 
 try:
     import CynanBotCommon.utils as utils
@@ -51,8 +51,13 @@ class TtsEvent():
         return self.__userName
 
     def __repr__(self) -> str:
+        donationValue: Optional[Dict[str, Any]] = None
+
+        if self.__donation is not None:
+            donationValue = self.__donation.toDictionary()
+
         dictionary = {
-            'donation': self.__donation.toDictionary(),
+            'donation': donationValue,
             'message': self.__message,
             'twitchChannel': self.__twitchChannel,
             'userId': self.__userId,
