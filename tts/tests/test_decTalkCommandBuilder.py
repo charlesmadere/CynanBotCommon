@@ -176,6 +176,11 @@ class TestDecTalkCommandBuilder():
         assert result == 'cd dir'
 
     @pytest.mark.asyncio
+    async def test_buildAndCleanMessage_withEmojiString(self):
+        result = await self.decTalkCommandBuilder.buildAndCleanMessage('shark 🦈 shark 😀 🤔')
+        assert result == 'shark shark shark grinning face'
+
+    @pytest.mark.asyncio
     async def test_buildAndCleanMessage_withExtraneousSpacesString(self):
         result = await self.decTalkCommandBuilder.buildAndCleanMessage('  Hello,    World! ')
         assert result == 'Hello, World!'

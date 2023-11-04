@@ -33,3 +33,28 @@ class EmojiHelper(EmojiHelperInterface):
             return None
         else:
             return emojiInfo.getName()
+
+    async def replaceEmojisWithHumanNames(self, text: str) -> str:
+        if not utils.isValidStr(text):
+            raise ValueError(f'text argument is malformed: \"{text}\"')
+
+        splits = utils.getCleanedSplits(text)
+
+        if len(splits) == 0:
+            return text
+
+        replacementsMade = False
+
+        for index, split in enumerate(splits):
+            humanName = await self.getHumanNameForEmoji(split)
+
+            if humanName is None:
+                continue
+
+            replacementsMade = True
+            splits[index] = humanName
+
+        if replacementsMade:
+            return ' '.join(splits)
+        else:
+            return text
