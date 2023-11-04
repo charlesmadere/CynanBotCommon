@@ -41,9 +41,15 @@ class EmojiRepository(EmojiRepositoryInterface):
             raise ValueError(f'emoji argument is malformed: \"{emoji}\"')
         elif not utils.isValidStr(emoji):
             return None
+        else:
+            return await self.__fetchEmojiInfo(emoji)
 
-        emojiInfoData = await self.__readJson()
-        return emojiInfoData.get(emoji)
+    async def __fetchEmojiInfo(self, emoji: Optional[str]) -> Optional[EmojiInfo]:
+        if not utils.isValidStr(emoji):
+            raise ValueError(f'emoji argument is malformed: \"{emoji}\"')
+
+        await self.__readJson()
+        return self.__emojiInfoData.get(emoji)
 
     async def __parseDictToEmojiInfo(
         self,
@@ -69,9 +75,9 @@ class EmojiRepository(EmojiRepositoryInterface):
             subCategory = subCategory
         )
 
-    async def __readJson(self) -> Dict[str, Optional[EmojiInfo]]:
+    async def __readJson(self):
         if self.__isLoaded:
-            return self.__emojiInfoData
+            return
 
         self.__isLoaded = True
         self.__timber.log('EmojiRepository', f'Reading in emoji info data...')
@@ -79,16 +85,16 @@ class EmojiRepository(EmojiRepositoryInterface):
 
         if jsonContents is None or not utils.hasItems(jsonContents):
             self.__timber.log('EmojiRepository', f'Read in no data from emojiJsonReader: \"{jsonContents}\"')
-            return self.__emojiInfoData
+            return
         elif 'emojis' not in jsonContents:
             self.__timber.log('EmojiRepository', f'\"emojis\" field not in jsonContents!')
-            return self.__emojiInfoData
+            return
 
         emojisList: Optional[List[Dict[str, Any]]] = jsonContents['emojis']
 
         if not isinstance(emojisList, List) or not utils.hasItems(emojisList):
             self.__timber.log('EmojiRepository', f'\"emojis\" field is either malformed or empty!')
-            return self.__emojiInfoData
+            return
 
         for index, emojiDict in enumerate(emojisList):
             emojiInfo: Optional[EmojiInfo] = None
