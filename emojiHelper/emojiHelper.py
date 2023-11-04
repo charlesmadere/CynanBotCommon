@@ -1,5 +1,7 @@
 from typing import Optional
 
+import emoji
+
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.emojiHelper.emojiHelperInterface import \
@@ -43,18 +45,21 @@ class EmojiHelper(EmojiHelperInterface):
         if len(splits) == 0:
             return text
 
-        replacementsMade = False
+        replacementMade = False
 
         for index, split in enumerate(splits):
+            if not emoji.is_emoji(split):
+                continue
+
+            replacementMade = True
             humanName = await self.getHumanNameForEmoji(split)
 
             if humanName is None:
-                continue
+                splits[index] = ''
+            else:
+                splits[index] = humanName
 
-            replacementsMade = True
-            splits[index] = humanName
-
-        if replacementsMade:
+        if replacementMade:
             return ' '.join(splits)
         else:
             return text
