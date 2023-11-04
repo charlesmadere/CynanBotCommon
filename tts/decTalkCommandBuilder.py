@@ -101,21 +101,20 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         if not utils.isValidStr(message):
             return None
 
-        message = message.strip()
-        maxMessageSize = await self.__ttsSettingsRepository.getMaximumMessageSize()
-
-        if len(message) > maxMessageSize:
-            self.__timber.log('DecTalkCommandBuilder', f'Chopping down TTS command \"{message}\" as it is too long (len={len(message)}) ({maxMessageSize=}) ({message})')
-            message = message[:maxMessageSize]
+        message = await self.__emojiHelper.replaceEmojisWithHumanNames(message)
 
         # remove extranneous whitespace
         message = self.__whiteSpaceRegEx.sub(' ', message)
         message = message.strip()
 
+        maxMessageSize = await self.__ttsSettingsRepository.getMaximumMessageSize()
+
+        if len(message) > maxMessageSize:
+            self.__timber.log('DecTalkCommandBuilder', f'Chopping down TTS command \"{message}\" as it is too long (len={len(message)}) ({maxMessageSize=}) ({message})')
+            message = message[:maxMessageSize].strip()
+
         if not utils.isValidStr(message):
             return None
-
-        message = await self.__emojiHelper.replaceEmojisWithHumanNames(message)
 
         # DECTalk requires Windows-1252 encoding
         return message.encode().decode('windows-1252')
