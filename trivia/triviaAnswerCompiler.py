@@ -323,16 +323,20 @@ class TriviaAnswerCompiler():
         return list(set(''.join(item) for item in utils.permuteSubArrays(split)))
 
     async def compileTextAnswerToMultipleChoiceOrdinal(self, answer: Optional[str]) -> int:
-        cleanedAnswer = await self.compileTextAnswer(answer)
+        # first check to see if the user inputted an answer like "[A]"
+        bracedAnswerMatch = self.__multipleChoiceBracedAnswerRegEx.fullmatch(answer)
 
-        if not utils.isValidStr(cleanedAnswer) or len(cleanedAnswer) != 1 or self.__multipleChoiceAnswerRegEx.fullmatch(cleanedAnswer) is None:
-            # check to see if the user inputted an answer like "[A]"
-            bracedAnswerMatch = self.__multipleChoiceBracedAnswerRegEx.fullmatch(cleanedAnswer)
+        cleanedAnswer: Optional[str] = None
 
-            if bracedAnswerMatch is None or not utils.isValidStr(bracedAnswerMatch.group(1)):
-                raise BadTriviaAnswerException(f'answer can\'t be compiled to multiple choice ordinal (answer=\"{answer}\") (cleanedAnswer=\"{cleanedAnswer}\")')
-
+        if bracedAnswerMatch is not None and utils.isValidStr(bracedAnswerMatch.group(1)):
             cleanedAnswer = bracedAnswerMatch.group(1)
+
+        if not utils.isValidStr(cleanedAnswer):
+            # proceed with standard answer cleaning
+            cleanedAnswer = await self.compileTextAnswer(answer)
+
+            if not utils.isValidStr(cleanedAnswer) or len(cleanedAnswer) != 1 or self.__multipleChoiceAnswerRegEx.fullmatch(cleanedAnswer) is None:
+                raise BadTriviaAnswerException(f'answer can\'t be compiled to multiple choice ordinal (answer=\"{answer}\") (cleanedAnswer=\"{cleanedAnswer}\")')
 
         # this converts the answer 'A' into 0, 'B' into 1, 'C' into 2, and so on...
         return ord(cleanedAnswer.upper()) % 65
