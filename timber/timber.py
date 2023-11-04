@@ -152,7 +152,7 @@ class Timber(TimberInterface):
                 await aiofiles.os.makedirs(timberDirectory)
 
             for timberFile, entriesList in timberFileToEntriesDict.items():
-                async with aiofiles.open(timberFile, mode = 'a') as file:
+                async with aiofiles.open(timberFile, mode = 'a', encoding = 'utf-8') as file:
                     for entry in entriesList:
                         logStatement = self.__getLogStatement(True, entry)
                         await file.write(logStatement)
@@ -162,7 +162,7 @@ class Timber(TimberInterface):
                 await aiofiles.os.makedirs(timberErrorDirectory)
 
             for timberErrorFile, entriesList in timberErrorFileToEntriesDict.items():
-                async with aiofiles.open(timberErrorFile, mode = 'a') as file:
+                async with aiofiles.open(timberErrorFile, mode = 'a', encoding = 'utf-8') as file:
                     for entry in entriesList:
                         errorStatement = self.__getErrorStatement(True, entry)
 

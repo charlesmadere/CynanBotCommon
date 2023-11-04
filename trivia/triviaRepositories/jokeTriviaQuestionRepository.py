@@ -154,7 +154,7 @@ class JokeTriviaQuestionRepository(AbsTriviaQuestionRepository):
         if not await aiofiles.ospath.exists(self.__triviaDatabaseFile):
             raise FileNotFoundError(f'Joke trivia database file not found: \"{self.__triviaDatabaseFile}\"')
 
-        async with aiofiles.open(self.__triviaDatabaseFile, mode = 'r') as file:
+        async with aiofiles.open(self.__triviaDatabaseFile, mode = 'r', encoding = 'utf-8') as file:
             data = await file.read()
             jsonContents = json.loads(data)
 

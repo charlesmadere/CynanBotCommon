@@ -42,7 +42,7 @@ class SystemCommandHelper(SystemCommandHelperInterface):
         outputString: Optional[str] = None
 
         if outputBytes is not None:
-            outputString = outputBytes.decode('utf8')
+            outputString = outputBytes.decode('utf-8')
 
         if utils.isValidStr(outputString):
             self.__timber.log('SystemCommandHelper', f'Ran system command ({command}): \"{outputString}\"')

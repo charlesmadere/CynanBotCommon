@@ -156,7 +156,7 @@ class ChatLogger(ChatLoggerInterface):
                 await aiofiles.os.makedirs(messageDirectory)
 
             for messageFile, messagesList in messageFileToMessagesDict.items():
-                async with aiofiles.open(messageFile, mode = 'a') as file:
+                async with aiofiles.open(messageFile, mode = 'a', encoding = 'utf-8') as file:
                     for message in messagesList:
                         logStatement = self.__getLogStatement(message)
                         await file.write(logStatement)

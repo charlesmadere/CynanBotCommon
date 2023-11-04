@@ -88,7 +88,7 @@ class MigrationHelper():
         if not await aiofiles.ospath.exists(self.__migrationsFile):
             raise FileNotFoundError(f'Migrations file not found: \"{self.__migrationsFile}\"')
 
-        async with aiofiles.open(self.__migrationsFile, mode = 'r') as file:
+        async with aiofiles.open(self.__migrationsFile, mode = 'r', encoding = 'utf-8') as file:
             data = await file.read()
             jsonContents = json.loads(data)
 

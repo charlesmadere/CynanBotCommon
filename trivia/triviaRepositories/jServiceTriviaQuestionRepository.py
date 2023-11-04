@@ -120,10 +120,10 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
             self.__timber.log('JServiceTriviaQuestionRepository', f'Rejecting jService\'s JSON data due to null/empty contents: {jsonResponse}')
             raise MalformedTriviaJsonException(f'Rejecting jService\'s JSON data due to null/empty contents: {jsonResponse}')
 
-        category = utils.getStrFromDict(triviaJson['category'], 'title', fallback = '').encode('latin1').decode('utf8')
+        category = utils.getStrFromDict(triviaJson['category'], 'title', fallback = '').encode('latin1').decode('utf-8')
         category = await self.__triviaQuestionCompiler.compileCategory(category)
 
-        question = utils.getStrFromDict(triviaJson, 'question').encode('latin1').decode('utf8')
+        question = utils.getStrFromDict(triviaJson, 'question').encode('latin1').decode('utf-8')
         question = await self.__triviaQuestionCompiler.compileQuestion(question)
 
         triviaId = utils.getStrFromDict(triviaJson, 'id', fallback = '')
@@ -135,7 +135,7 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
             )
 
         correctAnswers: List[str] = list()
-        correctAnswers.append(utils.getStrFromDict(triviaJson, 'answer').encode('latin1').decode('utf8'))
+        correctAnswers.append(utils.getStrFromDict(triviaJson, 'answer').encode('latin1').decode('utf-8'))
 
         if await self.__additionalTriviaAnswersRepository.addAdditionalTriviaAnswers(
             currentAnswers = correctAnswers,
@@ -148,7 +148,7 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
         correctAnswers = await self.__triviaQuestionCompiler.compileResponses(correctAnswers)
 
         cleanedCorrectAnswers: List[str] = list()
-        cleanedCorrectAnswers.append(utils.getStrFromDict(triviaJson, 'answer').encode('latin1').decode('utf8'))
+        cleanedCorrectAnswers.append(utils.getStrFromDict(triviaJson, 'answer').encode('latin1').decode('utf-8'))
 
         await self.__additionalTriviaAnswersRepository.addAdditionalTriviaAnswers(
             currentAnswers = cleanedCorrectAnswers,

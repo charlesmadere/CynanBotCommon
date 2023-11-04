@@ -27,7 +27,7 @@ class LinesFileReader(LinesReaderInterface):
 
         lines: Optional[List[str]] = None
 
-        with open(self.__fileName, 'r') as file:
+        with open(self.__fileName, mode = 'r', encoding = 'utf-8') as file:
             lines = file.readlines()
 
         return lines
@@ -38,7 +38,7 @@ class LinesFileReader(LinesReaderInterface):
 
         lines: Optional[List[str]] = None
 
-        async with aiofiles.open(self.__fileName, 'r') as file:
+        async with aiofiles.open(self.__fileName, mode = 'r', encoding = 'utf-8') as file:
             lines = await file.readlines()
 
         return lines

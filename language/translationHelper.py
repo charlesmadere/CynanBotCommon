@@ -178,7 +178,7 @@ class TranslationHelper():
         jsonContents: Optional[Dict[str, Any]] = None
         exception: Optional[JSONDecodeError] = None
 
-        async with aiofiles.open(self.__googleServiceAccountFile, mode = 'r') as file:
+        async with aiofiles.open(self.__googleServiceAccountFile, mode = 'r', encoding = 'utf-8') as file:
             data = await file.read()
 
             try:

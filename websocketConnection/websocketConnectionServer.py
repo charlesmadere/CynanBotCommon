@@ -89,7 +89,7 @@ class WebsocketConnectionServer(WebsocketConnectionServerInterface):
         if not await aiofiles.ospath.exists(self.__websocketSettingsFile):
             raise FileNotFoundError(f'Websocket settings file not found: \"{self.__websocketSettingsFile}\"')
 
-        async with aiofiles.open(self.__websocketSettingsFile, 'r') as file:
+        async with aiofiles.open(self.__websocketSettingsFile, mode = 'r', encoding = 'utf-8') as file:
             data = await file.read()
             jsonContents = json.loads(data)
 
