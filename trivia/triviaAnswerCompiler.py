@@ -13,7 +13,6 @@ try:
 except:
     import utils
     from timber.timberInterface import TimberInterface
-
     from trivia.triviaExceptions import BadTriviaAnswerException
 
 
