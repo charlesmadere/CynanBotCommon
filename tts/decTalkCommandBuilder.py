@@ -104,8 +104,7 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         message = await self.__emojiHelper.replaceEmojisWithHumanNames(message)
 
         # remove extranneous whitespace
-        message = self.__whiteSpaceRegEx.sub(' ', message)
-        message = message.strip()
+        message = self.__whiteSpaceRegEx.sub(' ', message).strip()
 
         maxMessageSize = await self.__ttsSettingsRepository.getMaximumMessageSize()
 

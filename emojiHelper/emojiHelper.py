@@ -60,6 +60,6 @@ class EmojiHelper(EmojiHelperInterface):
                 splits[index] = humanName
 
         if replacementMade:
-            return ' '.join(splits)
+            return ' '.join(splits).strip()
         else:
             return text
