@@ -64,7 +64,7 @@ class BannedTriviaGameControllersRepository(BannedTriviaGameControllersRepositor
         self.__administratorProvider: AdministratorProviderInterface = administratorProvider
         self.__backingDatabase: BackingDatabase = backingDatabase
         self.__timber: TimberInterface = timber
-        self.__twitchTokensRepositoryInterface: TwitchTokensRepositoryInterface = twitchTokensRepository
+        self.__twitchTokensRepository: TwitchTokensRepositoryInterface = twitchTokensRepository
         self.__userIdsRepository: UserIdsRepositoryInterface = userIdsRepository
 
         self.__isDatabaseReady: bool = False
@@ -74,7 +74,7 @@ class BannedTriviaGameControllersRepository(BannedTriviaGameControllersRepositor
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
 
         administrator = await self.__administratorProvider.getAdministratorUserName()
-        twitchAccessToken = await self.__twitchTokensRepositoryInterface.getAccessToken(administrator)
+        twitchAccessToken = await self.__twitchTokensRepository.getAccessToken(administrator)
 
         userId = await self.__userIdsRepository.fetchUserId(
             userName = userName,

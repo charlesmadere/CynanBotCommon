@@ -243,7 +243,7 @@ class TriviaGameMachine(TriviaGameMachineInterface):
         self.__triviaGameStore: TriviaGameStoreInterface = triviaGameStore
         self.__triviaRepository: TriviaRepositoryInterface = triviaRepository
         self.__triviaScoreRepository: TriviaScoreRepository = triviaScoreRepository
-        self.__twitchTokensRepositoryInterface: TwitchTokensRepositoryInterface = twitchTokensRepository
+        self.__twitchTokensRepository: TwitchTokensRepositoryInterface = twitchTokensRepository
         self.__userIdsRepository: UserIdsRepositoryInterface = userIdsRepository
         self.__sleepTimeSeconds: float = sleepTimeSeconds
         self.__queueTimeoutSeconds: int = queueTimeoutSeconds
@@ -277,7 +277,7 @@ class TriviaGameMachine(TriviaGameMachineInterface):
         if action is not None:
             del answeredUserIds[action.getUserId()]
 
-        twitchAccessToken = await self.__twitchTokensRepositoryInterface.getAccessToken(state.getTwitchChannel())
+        twitchAccessToken = await self.__twitchTokensRepository.getAccessToken(state.getTwitchChannel())
         toxicTriviaPunishments: List[ToxicTriviaPunishment] = list()
         totalPointsStolen = 0
 

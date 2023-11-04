@@ -38,21 +38,21 @@ class TriviaGameControllersRepository():
         self,
         backingDatabase: BackingDatabase,
         timber: TimberInterface,
-        twitchTokensRepositoryInterface: TwitchTokensRepositoryInterface,
+        twitchTokensRepository: TwitchTokensRepositoryInterface,
         userIdsRepository: UserIdsRepositoryInterface
     ):
         if not isinstance(backingDatabase, BackingDatabase):
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
         elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
-        elif not isinstance(twitchTokensRepositoryInterface, TwitchTokensRepositoryInterface):
-            raise ValueError(f'twitchTokensRepositoryInterface argument is malformed: \"{twitchTokensRepositoryInterface}\"')
+        elif not isinstance(twitchTokensRepository, TwitchTokensRepositoryInterface):
+            raise ValueError(f'twitchTokensRepositoryInterface argument is malformed: \"{twitchTokensRepository}\"')
         elif not isinstance(userIdsRepository, UserIdsRepositoryInterface):
             raise ValueError(f'userIdsRepository argument is malformed: \"{userIdsRepository}\"')
 
         self.__backingDatabase: BackingDatabase = backingDatabase
         self.__timber: TimberInterface = timber
-        self.__twitchTokensRepositoryInterface: TwitchTokensRepositoryInterface = twitchTokensRepositoryInterface
+        self.__twitchTokensRepository: TwitchTokensRepositoryInterface = twitchTokensRepository
         self.__userIdsRepository: UserIdsRepositoryInterface = userIdsRepository
 
         self.__isDatabaseReady: bool = False
@@ -67,7 +67,7 @@ class TriviaGameControllersRepository():
         elif not utils.isValidStr(userName):
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
 
-        twitchAccessToken = await self.__twitchTokensRepositoryInterface.getAccessToken(twitchChannel)
+        twitchAccessToken = await self.__twitchTokensRepository.getAccessToken(twitchChannel)
 
         userId = await self.__userIdsRepository.fetchUserId(
             userName = userName,

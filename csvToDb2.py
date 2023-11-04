@@ -33,9 +33,9 @@ except:
 
 
 timber: TimberInterface = Timber(eventLoop = asyncio.get_event_loop())
-bannedWordsRepositoryInterface: BannedWordsRepositoryInterface = BannedWordsRepository(timber = timber)
+bannedWordsRepository: BannedWordsRepositoryInterface = BannedWordsRepository(timber = timber)
 triviaContentScanner = TriviaContentScanner(
-    bannedWordsRepository = bannedWordsRepositoryInterface,
+    bannedWordsRepository = bannedWordsRepository,
     timber = timber,
     triviaSettingsRepository = TriviaSettingsRepository(
         settingsJsonReader = JsonFileReader('CynanBotCommon/trivia/triviaSettingsRepository.json')
@@ -46,7 +46,7 @@ def readInCsvRows(fileName: str) -> List[List[str]]:
     if not utils.isValidStr(fileName):
         raise ValueError(f'fileName argument is malformed: \"{fileName}\"')
 
-    bannedWords = bannedWordsRepositoryInterface.getBannedWords()
+    bannedWords = bannedWordsRepository.getBannedWords()
     rows: List[List[str]] = list()
 
     with open(fileName) as file:
