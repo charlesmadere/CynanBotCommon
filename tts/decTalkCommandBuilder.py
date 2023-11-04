@@ -79,6 +79,12 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         if not utils.isValidStr(message):
             return None
 
+        contentCode = await self.__contentScanner.scan(message)
+
+        if contentCode is not ContentCode.OK:
+            self.__timber.log('DecTalkCommandBuilder', f'TTS command \"{message}\" returned a bad content code: \"{contentCode}\"')
+            return None
+
         for bannedString in self.__bannedStrings:
             message = bannedString.sub('', message)
 
@@ -89,12 +95,6 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
             return None
 
         message = message.strip()
-        contentCode = await self.__contentScanner.scan(message)
-
-        if contentCode is not ContentCode.OK:
-            self.__timber.log('DecTalkCommandBuilder', f'TTS command \"{message}\" returned a bad content code: \"{contentCode}\"')
-            return None
-
         maxMessageSize = await self.__ttsSettingsRepository.getMaximumMessageSize()
 
         if len(message) > maxMessageSize:
