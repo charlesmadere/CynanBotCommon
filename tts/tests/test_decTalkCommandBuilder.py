@@ -126,6 +126,11 @@ class TestDecTalkCommandBuilder():
         assert result is None
 
     @pytest.mark.asyncio
+    async def test_buildAndCleanMessage_withCheerText(self):
+        result = await self.decTalkCommandBuilder.buildAndCleanMessage('cheer100 hello world')
+        assert result == 'hello world'
+
+    @pytest.mark.asyncio
     async def test_buildAndCleanMessage_withDangerousCharactersString(self):
         result = await self.decTalkCommandBuilder.buildAndCleanMessage('& cd C:\\ & dir')
         assert result == 'cd C:\\ dir'

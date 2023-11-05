@@ -59,6 +59,7 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         self.__ttsSettingsRepository: TtsSettingsRepositoryInterface = ttsSettingsRepository
 
         self.__bannedStrings: List[Pattern] = self.__buildBannedStrings()
+        self.__cheerTextRegEx: Pattern = re.compile(r'^\s*cheer\d+\s*', re.IGNORECASE)
         self.__whiteSpaceRegEx: Pattern = re.compile(r'\s{2,}', re.IGNORECASE)
 
     async def buildAndCleanEvent(self, event: Optional[TtsEvent]) -> Optional[str]:
@@ -90,6 +91,11 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
 
         if contentCode is not ContentCode.OK:
             self.__timber.log('DecTalkCommandBuilder', f'TTS command \"{message}\" returned a bad content code: \"{contentCode}\"')
+            return None
+
+        message = self.__cheerTextRegEx.sub('', message)
+
+        if not utils.isValidStr(message):
             return None
 
         for bannedString in self.__bannedStrings:
