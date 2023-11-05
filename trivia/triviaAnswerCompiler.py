@@ -31,7 +31,7 @@ class TriviaAnswerCompiler():
         self.__hashRegEx: Pattern = re.compile(r'(#)')
         self.__honoraryPrefixRegEx: Pattern = re.compile(r'^(bishop|brother|captain|chancellor|chief|colonel|corporal|dean|director|doctor|dr\.?|duke|earl|esq|esquire|executive|father|general|judge|king|lady|lieutenant|lord|madam|madame|master|miss|missus|mister|mistress|mother|mr\.?|mrs\.?|ms\.?|mx\.?|officer|priest|president|principal|private|professor|queen|rabbi|representative|reverend|saint|secretary|senator|senior|sister|sir|sire|teacher|warden)\s+', re.IGNORECASE)
         self.__japaneseHonorarySuffixRegEx: Pattern = re.compile(r'(\s|-)(chan|kohai|kouhai|kun|sama|san|senpai|sensei|tan)$', re.IGNORECASE)
-        self.__multipleChoiceAnswerRegEx: Pattern = re.compile(r'[a-z]', re.IGNORECASE)
+        self.__multipleChoiceAnswerRegEx: Pattern = re.compile(r'^[a-z]$', re.IGNORECASE)
         self.__multipleChoiceBracedAnswerRegEx: Pattern = re.compile(r'^\[([a-z])\]$', re.IGNORECASE)
         self.__newLineRegEx: Pattern = re.compile(r'(\n)+', re.IGNORECASE)
         self.__parenGroupRegEx: Pattern = re.compile(r'(\(.*?\))', re.IGNORECASE)
@@ -324,22 +324,24 @@ class TriviaAnswerCompiler():
 
     async def compileTextAnswerToMultipleChoiceOrdinal(self, answer: Optional[str]) -> int:
         if not utils.isValidStr(answer):
-            raise BadTriviaAnswerException(f'answer is null/empty: \"{answer}\"')
+            raise BadTriviaAnswerException(f'answer can\'t be compiled to multiple choice ordinal (answer=\"{answer}\")')
 
-        # first check to see if the user inputted an answer like "[A]"
-        bracedAnswerMatch = self.__multipleChoiceBracedAnswerRegEx.fullmatch(answer)
-
+        answer = answer.strip()
         cleanedAnswer: Optional[str] = None
 
-        if bracedAnswerMatch is not None and utils.isValidStr(bracedAnswerMatch.group(1)):
-            cleanedAnswer = bracedAnswerMatch.group(1)
+        # check if the answer is just an alphabetical character from A to Z
+        if self.__multipleChoiceAnswerRegEx.fullmatch(answer) is not None:
+            cleanedAnswer = answer
 
         if not utils.isValidStr(cleanedAnswer):
-            # proceed with standard answer cleaning
-            cleanedAnswer = await self.compileTextAnswer(answer)
+            # check if the answer is an alphabetical character that is surrounded by braces, like "[A]" or "[B]"
+            bracedAnswerMatch = self.__multipleChoiceBracedAnswerRegEx.fullmatch(answer)
 
-            if not utils.isValidStr(cleanedAnswer) or len(cleanedAnswer) != 1 or self.__multipleChoiceAnswerRegEx.fullmatch(cleanedAnswer) is None:
-                raise BadTriviaAnswerException(f'answer can\'t be compiled to multiple choice ordinal (answer=\"{answer}\") (cleanedAnswer=\"{cleanedAnswer}\")')
+            if bracedAnswerMatch is not None and utils.isValidStr(bracedAnswerMatch.group(1)):
+                cleanedAnswer = bracedAnswerMatch.group(1)
+
+        if not utils.isValidStr(cleanedAnswer) or len(cleanedAnswer) != 1  or self.__multipleChoiceAnswerRegEx.fullmatch(cleanedAnswer) is None:
+            raise BadTriviaAnswerException(f'answer can\'t be compiled to multiple choice ordinal ({answer=}) ({cleanedAnswer=})')
 
         # this converts the answer 'A' into 0, 'B' into 1, 'C' into 2, and so on...
         return ord(cleanedAnswer.upper()) % 65
