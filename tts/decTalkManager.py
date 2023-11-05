@@ -84,7 +84,7 @@ class DecTalkManager(TtsManagerInterface):
         if not await self.__ttsSettingsRepository.isTtsEnabled():
             return
 
-        command = await self.__processTtsEventIntoCommandString(event)
+        command = await self.__ttsCommandBuilder.buildAndCleanEvent(event)
 
         if not utils.isValidStr(command):
             self.__timber.log('DecTalkManager', f'Failed to parse TTS message in \"{event.getTwitchChannel()}\" into a valid command: \"{event}\"')
@@ -93,23 +93,6 @@ class DecTalkManager(TtsManagerInterface):
         command = f'{self.__pathToDecTalk} {command}'
         self.__timber.log('DecTalkManager', f'Executing TTS message in \"{event.getTwitchChannel()}\": \"{command}\"...')
         await self.__systemCommandHelper.executeCommand(command)
-
-    async def __processTtsEventIntoCommandString(
-        self,
-        event: TtsEvent
-    ) -> Optional[str]:
-        if not isinstance(event, TtsEvent):
-            raise ValueError(f'event argument is malformed: \"{event}\"')
-
-        message = event.getMessage()
-
-        if utils.isValidStr(message):
-            command = await self.__ttsCommandBuilder.buildAndCleanMessage(message)
-
-            if utils.isValidStr(command):
-                return command
-
-        return None
 
     def start(self):
         if self.__isStarted:
