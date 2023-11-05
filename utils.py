@@ -1,5 +1,6 @@
 import html
 import math
+import os
 import random
 import re
 from datetime import datetime
@@ -52,11 +53,11 @@ def boolToNum(b: bool) -> int:
     else:
         return 0
 
-def cToF(celsius: float) -> float:
-    if not isValidNum(celsius):
-        raise ValueError(f'celsius argument is malformed: \"{celsius}\"')
+def cleanPath(path: str) -> str:
+    if not isValidStr(path):
+        raise ValueError(f'path argument is malformed: \"{path}\"')
 
-    return (celsius * (9 / 5)) + 32
+    return os.path.normcase(os.path.normpath(path))
 
 carrotRemovalRegEx: Pattern = re.compile(r'<\/?\w+>', re.IGNORECASE)
 
@@ -99,13 +100,19 @@ def containsUrl(s: Optional[str]) -> bool:
 
     return False
 
-def copyList(l: List) -> List:
+def copyList(l: List[Any]) -> List:
     newList = list()
 
     if hasItems(l):
         newList.extend(l)
 
     return newList
+
+def cToF(celsius: float) -> float:
+    if not isValidNum(celsius):
+        raise ValueError(f'celsius argument is malformed: \"{celsius}\"')
+
+    return (celsius * (9 / 5)) + 32
 
 def formatTime(time) -> str:
     if time is None:

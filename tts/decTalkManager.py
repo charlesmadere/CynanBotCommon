@@ -72,7 +72,7 @@ class DecTalkManager(TtsManagerInterface):
         self.__ttsSettingsRepository: TtsSettingsRepositoryInterface = ttsSettingsRepository
         self.__queueSleepTimeSeconds: float = queueSleepTimeSeconds
         self.__queueTimeoutSeconds: int = queueTimeoutSeconds
-        self.__pathToDecTalk: str = pathToDecTalk
+        self.__pathToDecTalk: str = utils.cleanPath(pathToDecTalk)
 
         self.__isStarted: bool = False
         self.__eventQueue: SimpleQueue[TtsEvent] = SimpleQueue()
