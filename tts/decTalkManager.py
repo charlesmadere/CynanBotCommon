@@ -2,7 +2,6 @@ import asyncio
 import queue
 import traceback
 from queue import SimpleQueue
-from typing import Optional
 
 try:
     import CynanBotCommon.utils as utils
