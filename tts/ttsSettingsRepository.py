@@ -38,7 +38,7 @@ class TtsSettingsRepository(TtsSettingsRepositoryInterface):
             fallback = 3
         )
 
-        if ttsDelayBetweenSeconds < 0 or ttsDelayBetweenSeconds > 16:
+        if ttsDelayBetweenSeconds < 0 or ttsDelayBetweenSeconds > 30:
             raise ValueError(f'ttsDelayBetweenSeconds is out of bounds: \"{ttsDelayBetweenSeconds}\"')
 
         return ttsDelayBetweenSeconds
