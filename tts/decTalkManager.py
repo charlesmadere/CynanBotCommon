@@ -42,7 +42,7 @@ class DecTalkManager(TtsManagerInterface):
         ttsSettingsRepository: TtsSettingsRepositoryInterface,
         queueSleepTimeSeconds: float = 3,
         queueTimeoutSeconds: int = 3,
-        pathToDecTalk: str = 'say'
+        pathToDecTalk: str = 'say.exe'
     ):
         if not isinstance(backgroundTaskHelper, BackgroundTaskHelper):
             raise ValueError(f'backgroundTaskHelper argument is malformed: \"{backgroundTaskHelper}\"')
