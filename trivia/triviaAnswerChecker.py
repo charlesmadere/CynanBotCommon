@@ -1,7 +1,7 @@
 import math
 import re
 import traceback
-from typing import Any, Dict, Generator, List, Optional, Pattern
+from typing import Any, Dict, Generator, List, Optional, Pattern, Set
 
 import polyleven
 
@@ -76,7 +76,7 @@ class TriviaAnswerChecker():
             'index': 'indices',
         }
 
-        self.__stopwords: List[str] = (
+        self.__stopwords: Set[str] = {
             'i', 'me', 'my', 'myself', 'we', 'ourselves', 'you', 'he', 'him', 'his', 'she', 'they', 'them',  'what',
             'which', 'who', 'whom', 'this', 'that', 'these', 'those', 'am', 'is', 'are', 'was', 'were', 'be', 'been',
             'being', 'have', 'has', 'had', 'having', 'do', 'does', 'did', 'doing', 'a', 'an', 'the', 'and', 'but', 'if',
@@ -85,7 +85,7 @@ class TriviaAnswerChecker():
             'on', 'off', 'over', 'under', 'again', 'further', 'then', 'once', 'here', 'there', 'when', 'where', 'why',
             'how', 'all', 'any', 'both', 'each', 'few', 'more', 'most', 'some', 'such', 'nor', 'not', 'only',
             'own', 'same', 'so', 'than', 'too', 'very', 'can', 'will', 'just', 'dont', 'should', 'now',
-        )
+        }
 
     async def checkAnswer(
         self,
