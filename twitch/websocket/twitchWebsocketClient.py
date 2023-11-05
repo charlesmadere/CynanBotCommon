@@ -1,7 +1,7 @@
 import asyncio
 import queue
 import traceback
-from collections import defaultdict
+from collections import OrderedDict, defaultdict
 from datetime import datetime, timedelta, timezone
 from queue import SimpleQueue
 from typing import Any, Dict, List, Optional, Set
@@ -163,8 +163,9 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
 
         await self.__twitchTokensRepository.validateAndRefreshAccessToken(user.getUserName())
         twitchAccessToken = await self.__twitchTokensRepository.requireAccessToken(user.getUserName())
+        results: Dict[WebsocketSubscriptionType, Optional[Exception]] = OrderedDict()
 
-        for index, subscriptionType in enumerate(self.__subscriptionTypes):
+        for subscriptionType in self.__subscriptionTypes:
             condition = await self.__createWebsocketCondition(
                 user = user,
                 subscriptionType = subscriptionType
@@ -176,23 +177,19 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
                 transport = transport
             )
 
-            response: Optional[TwitchEventSubResponse] = None
             exception: Optional[Exception] = None
 
             try:
-                response = await self.__twitchApiService.createEventSubSubscription(
+                await self.__twitchApiService.createEventSubSubscription(
                     twitchAccessToken = twitchAccessToken,
                     eventSubRequest = eventSubRequest
                 )
             except Exception as e:
                 exception = e
 
-            if exception is not None:
-                self.__timber.log('TwitchWebsocketClient', f'Encountered exception when attempting to create EventSub subscription #{(index + 1)} for {user} (\"{subscriptionType}\"): {response}', exception, traceback.format_exc())
-            elif response is None:
-                self.__timber.log('TwitchWebsocketClient', f'Attempted to create EventSub subscription #{(index + 1)} for {user} (\"{subscriptionType}\"), but no response was returned')
-            else:
-                self.__timber.log('TwitchWebsocketClient', f'Created EventSub subscription #{(index + 1)} for {user} (\"{subscriptionType}\"): {response}')
+            results[subscriptionType] = exception
+
+        self.__timber.log('TwitchWebsocketClient', f'Finished creating EventSub subscription(s) for {user}: {results}')
 
     async def __createWebsocketCondition(
         self,
