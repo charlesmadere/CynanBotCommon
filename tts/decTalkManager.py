@@ -89,7 +89,7 @@ class DecTalkManager(TtsManagerInterface):
             self.__timber.log('DecTalkManager', f'Failed to parse TTS message in \"{event.getTwitchChannel()}\" into a valid command: \"{event}\"')
             return
 
-        command = f'{self.__pathToDecTalk} -pre "[:phone on]" \"{command}\"'
+        command = f'{self.__pathToDecTalk} -pre \"[:phone on]\" \"{command}\"'
         self.__timber.log('DecTalkManager', f'Executing TTS message in \"{event.getTwitchChannel()}\": \"{command}\"...')
         await self.__systemCommandHelper.executeCommand(command)
 
