@@ -35,7 +35,7 @@ class TtsSettingsRepository(TtsSettingsRepositoryInterface):
         ttsDelayBetweenSeconds = utils.getFloatFromDict(
             d = jsonContents,
             key = 'ttsDelayBetweenSeconds',
-            fallback = 3
+            fallback = 1
         )
 
         if ttsDelayBetweenSeconds < 0 or ttsDelayBetweenSeconds > 30:
