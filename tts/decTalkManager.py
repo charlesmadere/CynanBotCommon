@@ -92,7 +92,7 @@ class DecTalkManager(TtsManagerInterface):
         fileName: Optional[str] = None
 
         async with aiofiles.tempfile.TemporaryDirectory() as directory:
-            fileName = os.path.join(directory, f'dectalk_{randomUuid}.txt')
+            fileName = utils.cleanPath(os.path.join(directory, f'dectalk_{randomUuid}.txt'))
 
         return fileName
 
