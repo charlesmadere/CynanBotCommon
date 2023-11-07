@@ -59,18 +59,19 @@ class SystemCommandHelper(SystemCommandHelperInterface):
                 loop = self.__backgroundTaskHelper.getEventLoop()
             )
         except TimeoutError as e:
-            if process is not None:
-                self.__timber.log('SystemCommandHelper', f'Process for command ({command}) has run too long ({timeoutSeconds=}) and will be killed')
-                process.kill()
-
             exception = e
         except Exception as e:
             exception = e
 
-        process = None
-
         if exception is not None and not isinstance(exception, TimeoutError):
-            self.__timber.log('SystemCommandHelper', f'Encountered exception when attempting to run system command ({command}): {exception}', exception, traceback.format_exc())
+            if process is not None:
+                process.kill()
+
+            if isinstance(exception, TimeoutError):
+                self.__timber.log('SystemCommandHelper', f'Encountered timeout exception ({timeoutSeconds=}) when attempting to run system command ({command}): {exception}', exception, traceback.format_exc())
+            else:
+                self.__timber.log('SystemCommandHelper', f'Encountered unknown exception when attempting to run system command ({command}): {exception}', exception, traceback.format_exc())
+
             return
 
         outputString: Optional[str] = None
