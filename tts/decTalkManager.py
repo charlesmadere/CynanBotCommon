@@ -81,7 +81,7 @@ class DecTalkManager(TtsManagerInterface):
             raise ValueError(f'command argument is malformed: \"{command}\"')
 
         # DECTalk requires Windows-1252 encoding
-        async with aiofiles.tempfile.NamedTemporaryFile(encoding = 'windows-1252') as file:
+        async with aiofiles.tempfile.NamedTemporaryFile(mode = 'w+t', encoding = 'windows-1252') as file:
             await file.write(command)
 
         randomUuid = str(uuid.uuid4())
@@ -117,7 +117,7 @@ class DecTalkManager(TtsManagerInterface):
         self.__timber.log('DecTalkManager', f'Executing TTS message in \"{event.getTwitchChannel()}\"')
 
         await self.__systemCommandHelper.executeCommand(
-            command = f'{self.__pathToDecTalk} -pre \"[:phone on]\" -post \"[:phone off]\" < {fileName}',
+            command = f'{self.__pathToDecTalk} -pre \"[:phone on]\" -post \"[:phone off]\" < \"{fileName}\"',
             timeoutSeconds = await self.__ttsSettingsRepository.getTtsTimeoutSeconds()
         )
 

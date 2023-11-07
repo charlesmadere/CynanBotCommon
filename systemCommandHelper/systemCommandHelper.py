@@ -33,6 +33,8 @@ class SystemCommandHelper(SystemCommandHelperInterface):
 
         outputBytes: Optional[ByteString] = None
         exception: Optional[Exception] = None
+        proc: Optional[Any] = None
+        outputBytes: Optional[Any] = None
 
         try:
             proc = await asyncio.create_subprocess_shell(
@@ -50,6 +52,10 @@ class SystemCommandHelper(SystemCommandHelperInterface):
         except Exception as e:
             exception = e
 
+        print('===============================')
+        print(f'{proc=} {outputBytes=}')
+        print('===============================')
+
         # try:
         #     outputBytes = check_output(command, shell = True)
         # except Exception as e:
@@ -61,8 +67,8 @@ class SystemCommandHelper(SystemCommandHelperInterface):
 
         outputString: Optional[str] = None
 
-        if outputBytes is not None:
-            outputString = outputBytes.decode('utf-8')
+        if outputBytes is not None and len(outputBytes) >= 2:
+            outputString = outputBytes[1].decode('utf-8')
 
         if utils.isValidStr(outputString):
             self.__timber.log('SystemCommandHelper', f'Ran system command ({command}): \"{outputString}\"')
