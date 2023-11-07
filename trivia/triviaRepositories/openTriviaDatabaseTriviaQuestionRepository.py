@@ -191,10 +191,10 @@ class OpenTriviaDatabaseTriviaQuestionRepository(AbsTriviaQuestionRepository, Cl
             htmlUnescape = True
         )
 
-        triviaId = await self.__triviaIdGenerator.generate(
+        triviaId = await self.__triviaIdGenerator.generateQuestionId(
+            question = question,
             category = category,
-            difficulty = triviaDifficulty.toStr(),
-            question = question
+            difficulty = triviaDifficulty.toStr()
         )
 
         if triviaType is TriviaType.MULTIPLE_CHOICE:

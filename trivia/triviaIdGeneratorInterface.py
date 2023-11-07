@@ -5,7 +5,15 @@ from typing import Optional
 class TriviaIdGeneratorInterface(ABC):
 
     @abstractmethod
-    async def generate(
+    async def generateActionId(self) -> str:
+        pass
+
+    @abstractmethod
+    async def generateEventId(self) -> str:
+        pass
+
+    @abstractmethod
+    async def generateQuestionId(
         self,
         question: str,
         category: Optional[str] = None,

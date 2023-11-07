@@ -420,7 +420,7 @@ class PkmnTriviaQuestionRepository(AbsTriviaQuestionRepository):
         triviaType: TriviaType = triviaDict['triviaType']
         question = utils.getStrFromDict(triviaDict, 'question')
 
-        triviaId = await self.__triviaIdGenerator.generate(
+        triviaId = await self.__triviaIdGenerator.generateQuestionId(
             question = question,
             category = category,
             difficulty = triviaDifficulty.toStr()

@@ -129,9 +129,9 @@ class JServiceTriviaQuestionRepository(AbsTriviaQuestionRepository):
         triviaId = utils.getStrFromDict(triviaJson, 'id', fallback = '')
 
         if not utils.isValidStr(triviaId):
-            triviaId = await self.__triviaIdGenerator.generate(
-                category = category,
-                question = question
+            triviaId = await self.__triviaIdGenerator.generateQuestionId(
+                question = question,
+                category = category
             )
 
         correctAnswers: List[str] = list()

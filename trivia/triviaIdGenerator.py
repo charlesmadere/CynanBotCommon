@@ -1,5 +1,7 @@
 import hashlib
-from typing import Optional
+import re
+import uuid
+from typing import Optional, Pattern
 
 try:
     import CynanBotCommon.utils as utils
@@ -13,9 +15,16 @@ except:
 class TriviaIdGenerator(TriviaIdGeneratorInterface):
 
     def __init__(self):
-        pass
+        self.__actionIdRegEx: Pattern = re.compile(r'[^a-z0-9]', re.IGNORECASE)
 
-    async def generate(
+    async def generateActionId(self) -> str:
+        actionId = str(uuid.uuid4())
+        return self.__actionIdRegEx.sub('', actionId)
+
+    async def generateEventId(self) -> str:
+        return await self.generateActionId()
+
+    async def generateQuestionId(
         self,
         question: str,
         category: Optional[str] = None,
