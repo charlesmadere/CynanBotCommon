@@ -8,6 +8,7 @@ from queue import SimpleQueue
 from typing import Optional
 
 import aiofiles
+import aiofiles.ospath
 
 try:
     import CynanBotCommon.utils as utils
@@ -97,10 +98,16 @@ class DecTalkManager(TtsManagerInterface):
         ) as directory:
             fileName = utils.cleanPath(os.path.join(directory, f'dectalk_{randomUuid}.txt'))
 
+        if not await aiofiles.ospath.exists(fileName):
+            self.__timber.log('DecTalkManager', f'Somehow failed to create temporary TTS file (\"{fileName}\")')
+            return None
+
         return fileName
 
     async def __deleteTtsTempFile(self, fileName: Optional[str]):
         if not utils.isValidStr(fileName):
+            return
+        elif not await aiofiles.ospath.exists(fileName):
             return
 
         try:
@@ -121,25 +128,25 @@ class DecTalkManager(TtsManagerInterface):
             self.__timber.log('DecTalkManager', f'Failed to parse TTS message in \"{event.getTwitchChannel()}\" into a valid command: \"{event}\"')
             return
 
-        # fileName = await self.__createTtsTempFile(command)
+        fileName = await self.__createTtsTempFile(command)
 
-        # if not utils.isValidStr(fileName):
-        #     self.__timber.log('DecTalkManager', f'Failed to write TTS message in \"{event.getTwitchChannel()}\" to temporary file ({command=})')
-        #     return
+        if not utils.isValidStr(fileName):
+            self.__timber.log('DecTalkManager', f'Failed to write TTS message in \"{event.getTwitchChannel()}\" to temporary file ({command=})')
+            return
 
         self.__timber.log('DecTalkManager', f'Executing TTS message in \"{event.getTwitchChannel()}\"...')
 
-        # await self.__systemCommandHelper.executeCommand(
-        #     command = f'{self.__pathToDecTalk} -pre \"[:phone on]\" -post \"[:phone off]\" < \"{fileName}\"',
-        #     timeoutSeconds = await self.__ttsSettingsRepository.getTtsTimeoutSeconds()
-        # )
-
         await self.__systemCommandHelper.executeCommand(
-            command = f'{self.__pathToDecTalk} -pre \"[:phone on]\" \"{command}\"',
+            command = f'{self.__pathToDecTalk} -pre \"[:phone on]\" < \"{fileName}\"',
             timeoutSeconds = await self.__ttsSettingsRepository.getTtsTimeoutSeconds()
         )
 
-        # await self.__deleteTtsTempFile(fileName)
+        # await self.__systemCommandHelper.executeCommand(
+        #     command = f'{self.__pathToDecTalk} -pre \"[:phone on]\" \"{command}\"',
+        #     timeoutSeconds = await self.__ttsSettingsRepository.getTtsTimeoutSeconds()
+        # )
+
+        await self.__deleteTtsTempFile(fileName)
 
     def start(self):
         if self.__isStarted:
