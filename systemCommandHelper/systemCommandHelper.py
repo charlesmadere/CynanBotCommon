@@ -1,6 +1,6 @@
 import asyncio
 import traceback
-from typing import ByteString, Optional
+from typing import Any, ByteString, Optional, Tuple
 
 try:
     import CynanBotCommon.utils as utils
@@ -31,10 +31,9 @@ class SystemCommandHelper(SystemCommandHelperInterface):
         elif timeoutSeconds < 3 or timeoutSeconds > utils.getIntMaxSafeSize():
             raise ValueError(f'timeoutSeconds argument is out of bounds: {timeoutSeconds}')
 
-        outputBytes: Optional[ByteString] = None
-        exception: Optional[Exception] = None
         proc: Optional[Any] = None
-        outputBytes: Optional[Any] = None
+        outputBytes: Optional[Tuple[ByteString]] = None
+        exception: Optional[Exception] = None
 
         try:
             proc = await asyncio.create_subprocess_shell(
