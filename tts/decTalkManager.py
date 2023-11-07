@@ -166,7 +166,10 @@ class DecTalkManager(TtsManagerInterface):
                     self.__timber.log('DecTalkManager', f'Encountered queue.Empty when grabbing event from queue (queue size: {self.__eventQueue.qsize()}): {e}', e, traceback.format_exc())
 
             if event is not None:
-                await self.__processTtsEvent(event)
+                try:
+                    await self.__processTtsEvent(event)
+                except Exception as e:
+                    self.__timber.log('DecTalkManager', f'Encountered unexpected exception when processing TTS event (event: {event}) (queue size: {self.__eventQueue.qsize()}): {e}', e, traceback.format_exc())
 
             await asyncio.sleep(await self.__ttsSettingsRepository.getTtsDelayBetweenSeconds())
 
