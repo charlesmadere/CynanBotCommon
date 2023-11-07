@@ -4,11 +4,13 @@ from typing import Any, ByteString, Optional, Tuple
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.backgroundTaskHelper import BackgroundTaskHelper
     from CynanBotCommon.systemCommandHelper.systemCommandHelperInterface import \
         SystemCommandHelperInterface
     from CynanBotCommon.timber.timberInterface import TimberInterface
 except:
     import utils
+    from backgroundTaskHelper import BackgroundTaskHelper
     from systemCommandHelper.systemCommandHelperInterface import \
         SystemCommandHelperInterface
     from timber.timberInterface import TimberInterface
@@ -16,10 +18,17 @@ except:
 
 class SystemCommandHelper(SystemCommandHelperInterface):
 
-    def __init__(self, timber: TimberInterface):
-        if not isinstance(timber, TimberInterface):
+    def __init__(
+        self,
+        backgroundTaskHelper: BackgroundTaskHelper,
+        timber: TimberInterface
+    ):
+        if not isinstance(backgroundTaskHelper, BackgroundTaskHelper):
+            raise ValueError(f'backgroundTaskHelper argument is malformed: \"{backgroundTaskHelper}\"')
+        elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
 
+        self.__backgroundTaskHelper: BackgroundTaskHelper = backgroundTaskHelper
         self.__timber: TimberInterface = timber
 
     async def executeCommand(self, command: str, timeoutSeconds: float = 10):
@@ -38,12 +47,14 @@ class SystemCommandHelper(SystemCommandHelperInterface):
             proc = await asyncio.create_subprocess_shell(
                 cmd = command,
                 stdout = asyncio.subprocess.PIPE,
-                stderr = asyncio.subprocess.PIPE
+                stderr = asyncio.subprocess.PIPE,
+                loop = self.__backgroundTaskHelper.getEventLoop()
             )
 
             outputBytes = await asyncio.wait_for(
                 fut = proc.communicate(),
-                timeout = timeoutSeconds
+                timeout = timeoutSeconds,
+                loop = self.__backgroundTaskHelper.getEventLoop()
             )
         except TimeoutError as e:
             exception = e
