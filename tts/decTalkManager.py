@@ -100,7 +100,10 @@ class DecTalkManager(TtsManagerInterface):
         if not utils.isValidStr(fileName):
             return
 
-        os.remove(fileName)
+        try:
+            os.remove(fileName)
+        except Exception as e:
+            self.__timber.log('DecTalkManager', f'Unable to delete temporary TTS file (\"{fileName}\"): {e}', e, traceback.format_exc())
 
     async def __processTtsEvent(self, event: TtsEvent):
         if not isinstance(event, TtsEvent):
