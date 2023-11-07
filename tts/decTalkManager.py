@@ -105,10 +105,6 @@ class DecTalkManager(TtsManagerInterface):
         ) as file:
             await file.write(command)
 
-        if not await aiofiles.ospath.exists(fileName):
-            self.__timber.log('DecTalkManager', f'Somehow failed to create temporary TTS file (\"{fileName}\")')
-            return None
-
         return fileName
 
     async def __deleteTtsTempFile(self, fileName: Optional[str]):
@@ -147,11 +143,6 @@ class DecTalkManager(TtsManagerInterface):
             command = f'{self.__pathToDecTalk} -pre \"[:phone on]\" < \"{fileName}\"',
             timeoutSeconds = await self.__ttsSettingsRepository.getTtsTimeoutSeconds()
         )
-
-        # await self.__systemCommandHelper.executeCommand(
-        #     command = f'{self.__pathToDecTalk} -pre \"[:phone on]\" \"{command}\"',
-        #     timeoutSeconds = await self.__ttsSettingsRepository.getTtsTimeoutSeconds()
-        # )
 
         await self.__deleteTtsTempFile(fileName)
 
