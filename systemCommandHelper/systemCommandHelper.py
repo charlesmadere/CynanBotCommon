@@ -54,7 +54,7 @@ class SystemCommandHelper(SystemCommandHelperInterface):
         if exception is not None:
             if isinstance(exception, AsyncioTimeoutError) or isinstance(exception, TimeoutError):
                 if process is not None:
-                    process.kill()
+                    process.terminate()
 
                 self.__timber.log('SystemCommandHelper', f'Encountered timeout exception ({timeoutSeconds=}) when attempting to run system command ({command}): {exception}', exception, traceback.format_exc())
             else:
