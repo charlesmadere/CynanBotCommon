@@ -83,6 +83,7 @@ class DecTalkManager(TtsManagerInterface):
         # DECTalk requires Windows-1252 encoding
         async with aiofiles.tempfile.NamedTemporaryFile(mode = 'w+t', encoding = 'windows-1252') as file:
             await file.write(command)
+            await file.seek(0)
 
         randomUuid = str(uuid.uuid4())
         fileName: Optional[str] = None
