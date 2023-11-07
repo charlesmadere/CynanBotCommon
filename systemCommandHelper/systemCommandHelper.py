@@ -48,10 +48,6 @@ class SystemCommandHelper(SystemCommandHelperInterface):
                 fut = process.communicate(),
                 timeout = timeoutSeconds
             )
-        except AsyncioTimeoutError as e:
-            exception = e
-        except TimeoutError as e:
-            exception = e
         except Exception as e:
             exception = e
 
