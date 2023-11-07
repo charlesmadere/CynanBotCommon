@@ -1,7 +1,6 @@
 import asyncio
 import os
 import queue
-import random
 import traceback
 import uuid
 from queue import SimpleQueue
@@ -47,7 +46,8 @@ class DecTalkManager(TtsManagerInterface):
         timber: TimberInterface,
         ttsSettingsRepository: TtsSettingsRepositoryInterface,
         queueTimeoutSeconds: int = 3,
-        pathToDecTalk: str = '../dectalk/say.exe'
+        pathToDecTalk: str = '../dectalk/say.exe',
+        tempFileDirectory: str = 'temp'
     ):
         if not isinstance(backgroundTaskHelper, BackgroundTaskHelper):
             raise ValueError(f'backgroundTaskHelper argument is malformed: \"{backgroundTaskHelper}\"')
@@ -65,6 +65,8 @@ class DecTalkManager(TtsManagerInterface):
             raise ValueError(f'queueTimeoutSeconds argument is out of bounds: {queueTimeoutSeconds}')
         elif not utils.isValidStr(pathToDecTalk):
             raise ValueError(f'pathToDecTalk argument is malformed: \"{pathToDecTalk}\"')
+        elif not utils.isValidStr(tempFileDirectory):
+            raise ValueError(f'tempFileDirectory argument is malformed: \"{tempFileDirectory}\"')
 
         self.__backgroundTaskHelper: BackgroundTaskHelper = backgroundTaskHelper
         self.__systemCommandHelper: SystemCommandHelperInterface = systemCommandHelper
@@ -73,6 +75,7 @@ class DecTalkManager(TtsManagerInterface):
         self.__ttsSettingsRepository: TtsSettingsRepositoryInterface = ttsSettingsRepository
         self.__queueTimeoutSeconds: int = queueTimeoutSeconds
         self.__pathToDecTalk: str = utils.cleanPath(pathToDecTalk)
+        self.__tempFileDirectory: str = utils.cleanPath(tempFileDirectory)
 
         self.__isStarted: bool = False
         self.__eventQueue: SimpleQueue[TtsEvent] = SimpleQueue()
@@ -81,22 +84,16 @@ class DecTalkManager(TtsManagerInterface):
         if not utils.isValidStr(command):
             raise ValueError(f'command argument is malformed: \"{command}\"')
 
+        fileName = utils.cleanPath(f'{self.__tempFileDirectory}/dectalk_{uuid.uuid4()}.txt')
+
         # DECTalk requires Windows-1252 encoding
-        async with aiofiles.tempfile.NamedTemporaryFile(
+        async with aiofiles.open(
+            file = fileName,
             mode = 'w',
             encoding = 'windows-1252',
-            delete = False,
             loop = self.__backgroundTaskHelper.getEventLoop()
         ) as file:
             await file.write(command)
-
-        randomUuid = str(uuid.uuid4())
-        fileName: Optional[str] = None
-
-        async with aiofiles.tempfile.TemporaryDirectory(
-            loop = self.__backgroundTaskHelper.getEventLoop()
-        ) as directory:
-            fileName = utils.cleanPath(os.path.join(directory, f'dectalk_{randomUuid}.txt'))
 
         if not await aiofiles.ospath.exists(fileName):
             self.__timber.log('DecTalkManager', f'Somehow failed to create temporary TTS file (\"{fileName}\")')

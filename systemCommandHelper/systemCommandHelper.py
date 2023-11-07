@@ -40,7 +40,7 @@ class SystemCommandHelper(SystemCommandHelperInterface):
         elif timeoutSeconds < 3 or timeoutSeconds > utils.getIntMaxSafeSize():
             raise ValueError(f'timeoutSeconds argument is out of bounds: {timeoutSeconds}')
 
-        outputBytes: Optional[Tuple[ByteString]] = None
+        outputTuple: Optional[Tuple[ByteString]] = None
         exception: Optional[Exception] = None
 
         try:
@@ -51,7 +51,7 @@ class SystemCommandHelper(SystemCommandHelperInterface):
                 loop = self.__backgroundTaskHelper.getEventLoop()
             )
 
-            outputBytes = await asyncio.wait_for(
+            outputTuple = await asyncio.wait_for(
                 fut = proc.communicate(),
                 timeout = timeoutSeconds,
                 loop = self.__backgroundTaskHelper.getEventLoop()
@@ -72,8 +72,8 @@ class SystemCommandHelper(SystemCommandHelperInterface):
 
         outputString: Optional[str] = None
 
-        if outputBytes is not None and len(outputBytes) >= 2:
-            outputString = outputBytes[1].decode('utf-8')
+        if outputTuple is not None and len(outputTuple) >= 2:
+            outputString = outputTuple[1].decode('utf-8').strip()
 
         if utils.isValidStr(outputString):
             self.__timber.log('SystemCommandHelper', f'Ran system command ({command}): \"{outputString}\"')
