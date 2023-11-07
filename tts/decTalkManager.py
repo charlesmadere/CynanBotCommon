@@ -81,9 +81,12 @@ class DecTalkManager(TtsManagerInterface):
             raise ValueError(f'command argument is malformed: \"{command}\"')
 
         # DECTalk requires Windows-1252 encoding
-        async with aiofiles.tempfile.NamedTemporaryFile(mode = 'w+t', encoding = 'windows-1252') as file:
+        async with aiofiles.tempfile.NamedTemporaryFile(
+            mode = 'w',
+            encoding = 'windows-1252',
+            delete = False
+        ) as file:
             await file.write(command)
-            await file.seek(0)
 
         randomUuid = str(uuid.uuid4())
         fileName: Optional[str] = None
@@ -92,6 +95,12 @@ class DecTalkManager(TtsManagerInterface):
             fileName = os.path.join(directory, f'dectalk_{randomUuid}.txt')
 
         return fileName
+
+    async def __deleteTtsTempFile(self, fileName: Optional[str]):
+        if not utils.isValidStr(fileName):
+            return
+
+        os.remove(fileName)
 
     async def __processTtsEvent(self, event: TtsEvent):
         if not isinstance(event, TtsEvent):
@@ -121,6 +130,8 @@ class DecTalkManager(TtsManagerInterface):
             command = f'{self.__pathToDecTalk} -pre \"[:phone on]\" -post \"[:phone off]\" < \"{fileName}\"',
             timeoutSeconds = await self.__ttsSettingsRepository.getTtsTimeoutSeconds()
         )
+
+        await self.__deleteTtsTempFile(command)
 
     def start(self):
         if self.__isStarted:
