@@ -7,6 +7,7 @@ from queue import SimpleQueue
 from typing import Optional
 
 import aiofiles
+import aiofiles.os
 import aiofiles.ospath
 
 try:
@@ -89,6 +90,9 @@ class DecTalkManager(TtsManagerInterface):
     async def __createTtsTempFile(self, command: str) -> Optional[str]:
         if not utils.isValidStr(command):
             raise ValueError(f'command argument is malformed: \"{command}\"')
+
+        if not await aiofiles.ospath.exists(self.__tempFileDirectory):
+            await aiofiles.os.makedirs(self.__tempFileDirectory)
 
         fileName = utils.cleanPath(f'{self.__tempFileDirectory}/dectalk_{uuid.uuid4()}.txt')
 
