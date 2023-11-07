@@ -31,7 +31,6 @@ class SystemCommandHelper(SystemCommandHelperInterface):
         elif timeoutSeconds < 3 or timeoutSeconds > utils.getIntMaxSafeSize():
             raise ValueError(f'timeoutSeconds argument is out of bounds: {timeoutSeconds}')
 
-        proc: Optional[Any] = None
         outputBytes: Optional[Tuple[ByteString]] = None
         exception: Optional[Exception] = None
 
@@ -50,10 +49,6 @@ class SystemCommandHelper(SystemCommandHelperInterface):
             exception = e
         except Exception as e:
             exception = e
-
-        print('===============================')
-        print(f'{proc=} {outputBytes=}')
-        print('===============================')
 
         # try:
         #     outputBytes = check_output(command, shell = True)
