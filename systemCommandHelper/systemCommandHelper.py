@@ -1,9 +1,10 @@
 import asyncio
-import traceback
 from asyncio import CancelledError as AsyncioCancelledError
 from asyncio import TimeoutError as AsyncioTimeoutError
 from asyncio.subprocess import Process
 from typing import ByteString, Optional, Tuple
+
+import psutil
 
 try:
     import CynanBotCommon.utils as utils
@@ -52,23 +53,27 @@ class SystemCommandHelper(SystemCommandHelperInterface):
         except (AsyncioCancelledError, Exception) as e:
             exception = e
 
-        if exception is not None:
-            if isinstance(exception, AsyncioTimeoutError) or isinstance(exception, TimeoutError):
-                if process is not None:
-                    process.terminate()
-
-                self.__timber.log('SystemCommandHelper', f'Encountered timeout exception ({timeoutSeconds=}) when attempting to run system command ({command}): {exception}', exception, traceback.format_exc())
-            else:
-                self.__timber.log('SystemCommandHelper', f'Encountered unknown exception when attempting to run system command ({command}): {exception}', exception, traceback.format_exc())
-
-            return
+        if isinstance(exception, AsyncioTimeoutError) or isinstance(exception, AsyncioCancelledError) or isinstance(exception, TimeoutError):
+            await self.__killProcess(process)
 
         outputString: Optional[str] = None
 
         if outputTuple is not None and len(outputTuple) >= 2:
             outputString = outputTuple[1].decode('utf-8').strip()
 
-        if utils.isValidStr(outputString):
-            self.__timber.log('SystemCommandHelper', f'Ran system command ({command}): \"{outputString}\"')
-        else:
-            self.__timber.log('SystemCommandHelper', f'Ran system command ({command})')
+        self.__timber.log('SystemCommandHelper', f'Ran system command ({command}) ({outputString=}) ({exception=})')
+
+    async def __killProcess(self, process: Optional[Process]):
+        if process is None:
+            return
+        elif not isinstance(process, Process):
+            raise ValueError(f'process argument is malformed: \"{process}\"')
+        elif process.returncode is not None:
+            return
+
+        parent = psutil.Process(process.pid)
+
+        for child in parent.children(recursive = True): 
+            child.terminate()
+
+        parent.terminate()
