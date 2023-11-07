@@ -1,5 +1,5 @@
+import asyncio
 import traceback
-from subprocess import check_output
 from typing import ByteString, Optional
 
 try:
@@ -22,18 +22,38 @@ class SystemCommandHelper(SystemCommandHelperInterface):
 
         self.__timber: TimberInterface = timber
 
-    async def executeCommand(self, command: str):
+    async def executeCommand(self, command: str, timeoutSeconds: float = 10):
         if not utils.isValidStr(command):
             self.__timber.log('SystemCommandHelper', f'Received malformed command argument: \"{command}\"')
             return
+        elif not utils.isValidNum(timeoutSeconds):
+            raise ValueError(f'timeoutSeconds argument is malformed: \"{timeoutSeconds}\"')
+        elif timeoutSeconds < 3 or timeoutSeconds > utils.getIntMaxSafeSize():
+            raise ValueError(f'timeoutSeconds argument is out of bounds: {timeoutSeconds}')
 
         outputBytes: Optional[ByteString] = None
         exception: Optional[Exception] = None
 
         try:
-            outputBytes = check_output(command, shell = True)
+            proc = await asyncio.create_subprocess_shell(
+                cmd = command,
+                stdout = asyncio.subprocess.PIPE,
+                stderr = asyncio.subprocess.PIPE
+            )
+
+            outputBytes = await asyncio.wait_for(
+                fut = proc.communicate(),
+                timeout = timeoutSeconds
+            )
+        except TimeoutError as e:
+            exception = e
         except Exception as e:
             exception = e
+
+        # try:
+        #     outputBytes = check_output(command, shell = True)
+        # except Exception as e:
+        #     exception = e
 
         if exception is not None:
             self.__timber.log('SystemCommandHelper', f'Encountered exception when attempting to run system command ({command}): {exception}', exception, traceback.format_exc())

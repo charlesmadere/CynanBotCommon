@@ -17,5 +17,9 @@ class TtsSettingsRepositoryInterface(Clearable):
         pass
 
     @abstractmethod
+    async def getTtsTimeoutSeconds(self) -> float:
+        pass
+
+    @abstractmethod
     async def isTtsEnabled(self) -> bool:
         pass

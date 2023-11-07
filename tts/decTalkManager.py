@@ -1,7 +1,13 @@
 import asyncio
+import os
 import queue
+import random
 import traceback
+import uuid
 from queue import SimpleQueue
+from typing import Optional
+
+import aiofiles
 
 try:
     import CynanBotCommon.utils as utils
@@ -39,7 +45,6 @@ class DecTalkManager(TtsManagerInterface):
         systemCommandHelper: SystemCommandHelperInterface,
         timber: TimberInterface,
         ttsSettingsRepository: TtsSettingsRepositoryInterface,
-        queueSleepTimeSeconds: float = 3,
         queueTimeoutSeconds: int = 3,
         pathToDecTalk: str = '../dectalk/say.exe'
     ):
@@ -53,10 +58,6 @@ class DecTalkManager(TtsManagerInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(ttsSettingsRepository, TtsSettingsRepositoryInterface):
             raise ValueError(f'ttsSettingsRepository argument is malformed: \"{ttsSettingsRepository}\"')
-        elif not utils.isValidNum(queueSleepTimeSeconds):
-            raise ValueError(f'queueSleepTimeSeconds argument is malformed: \"{queueSleepTimeSeconds}\"')
-        elif queueSleepTimeSeconds < 1 or queueSleepTimeSeconds > 15:
-            raise ValueError(f'queueSleepTimeSeconds argument is out of bounds: {queueSleepTimeSeconds}')
         elif not utils.isValidNum(queueTimeoutSeconds):
             raise ValueError(f'queueTimeoutSeconds argument is malformed: \"{queueTimeoutSeconds}\"')
         elif queueTimeoutSeconds < 1 or queueTimeoutSeconds > 5:
@@ -69,12 +70,27 @@ class DecTalkManager(TtsManagerInterface):
         self.__timber: TimberInterface = timber
         self.__ttsCommandBuilder: TtsCommandBuilderInterface = ttsCommandBuilder
         self.__ttsSettingsRepository: TtsSettingsRepositoryInterface = ttsSettingsRepository
-        self.__queueSleepTimeSeconds: float = queueSleepTimeSeconds
         self.__queueTimeoutSeconds: int = queueTimeoutSeconds
         self.__pathToDecTalk: str = utils.cleanPath(pathToDecTalk)
 
         self.__isStarted: bool = False
         self.__eventQueue: SimpleQueue[TtsEvent] = SimpleQueue()
+
+    async def __createTtsTempFile(self, command: str) -> Optional[str]:
+        if not utils.isValidStr(command):
+            raise ValueError(f'command argument is malformed: \"{command}\"')
+
+        # DECTalk requires Windows-1252 encoding
+        async with aiofiles.tempfile.NamedTemporaryFile(encoding = 'windows-1252') as file:
+            await file.write(command)
+
+        randomUuid = str(uuid.uuid4())
+        fileName: Optional[str] = None
+
+        async with aiofiles.tempfile.TemporaryDirectory() as directory:
+            fileName = os.path.join(directory, f'dectalk_{randomUuid}.txt')
+
+        return fileName
 
     async def __processTtsEvent(self, event: TtsEvent):
         if not isinstance(event, TtsEvent):
@@ -89,9 +105,21 @@ class DecTalkManager(TtsManagerInterface):
             self.__timber.log('DecTalkManager', f'Failed to parse TTS message in \"{event.getTwitchChannel()}\" into a valid command: \"{event}\"')
             return
 
-        command = f'{self.__pathToDecTalk} -pre \"[:phone on]\" \"{command}\"'
-        self.__timber.log('DecTalkManager', f'Executing TTS message in \"{event.getTwitchChannel()}\": \"{command}\"...')
-        await self.__systemCommandHelper.executeCommand(command)
+        # command = f'{self.__pathToDecTalk} -pre \"[:phone on]\" \"{command}\"'
+        # command = f'-pre \"[:phone on]\" \"{command}\"'
+
+        fileName = await self.__createTtsTempFile(command)
+
+        if not utils.isValidStr(fileName):
+            self.__timber.log('DecTalkManager', f'Failed to write TTS message in \"{event.getTwitchChannel()}\" to temporary file ({command=})')
+            return
+
+        self.__timber.log('DecTalkManager', f'Executing TTS message in \"{event.getTwitchChannel()}\"')
+
+        await self.__systemCommandHelper.executeCommand(
+            command = f'{self.__pathToDecTalk} -pre \"[:phone on]\" -post \"[:phone off]\" < {fileName}',
+            timeoutSeconds = await self.__ttsSettingsRepository.getTtsTimeoutSeconds()
+        )
 
     def start(self):
         if self.__isStarted:
@@ -105,19 +133,18 @@ class DecTalkManager(TtsManagerInterface):
 
     async def __startEventLoop(self):
         while True:
-            try:
-                while not self.__eventQueue.empty():
+            event: Optional[TtsEvent] = None
+
+            if not self.__eventQueue.empty():
+                try:
                     event = self.__eventQueue.get_nowait()
+                except queue.Empty as e:
+                    self.__timber.log('DecTalkManager', f'Encountered queue.Empty when grabbing event from queue (queue size: {self.__eventQueue.qsize()}): {e}', e, traceback.format_exc())
 
-                    try:
-                        await self.__processTtsEvent(event)
-                        await asyncio.sleep(await self.__ttsSettingsRepository.getTtsDelayBetweenSeconds())
-                    except Exception as e:
-                        self.__timber.log('DecTalkManager', f'Encountered unknown Exception when looping through events (queue size: {self.__eventQueue.qsize()}) (event=\"{event}\"): {e}', e, traceback.format_exc())
-            except queue.Empty as e:
-                self.__timber.log('DecTalkManager', f'Encountered queue.Empty when grabbing event from queue (queue size: {self.__eventQueue.qsize()}): {e}', e, traceback.format_exc())
+            if event is not None:
+                await self.__processTtsEvent(event)
 
-            await asyncio.sleep(self.__queueSleepTimeSeconds)
+            await asyncio.sleep(await self.__ttsSettingsRepository.getTtsDelayBetweenSeconds())
 
     def submitTtsEvent(self, event: TtsEvent):
         if not isinstance(event, TtsEvent):
