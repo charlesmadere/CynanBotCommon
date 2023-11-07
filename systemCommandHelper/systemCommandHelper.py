@@ -1,5 +1,6 @@
 import asyncio
 import traceback
+from asyncio import CancelledError as AsyncioCancelledError
 from asyncio import TimeoutError as AsyncioTimeoutError
 from asyncio.subprocess import Process
 from typing import ByteString, Optional, Tuple
@@ -48,7 +49,7 @@ class SystemCommandHelper(SystemCommandHelperInterface):
                 fut = process.communicate(),
                 timeout = timeoutSeconds
             )
-        except Exception as e:
+        except (AsyncioCancelledError, Exception) as e:
             exception = e
 
         if exception is not None:
