@@ -121,23 +121,25 @@ class DecTalkManager(TtsManagerInterface):
             self.__timber.log('DecTalkManager', f'Failed to parse TTS message in \"{event.getTwitchChannel()}\" into a valid command: \"{event}\"')
             return
 
-        # command = f'{self.__pathToDecTalk} -pre \"[:phone on]\" \"{command}\"'
-        # command = f'-pre \"[:phone on]\" \"{command}\"'
+        # fileName = await self.__createTtsTempFile(command)
 
-        fileName = await self.__createTtsTempFile(command)
+        # if not utils.isValidStr(fileName):
+        #     self.__timber.log('DecTalkManager', f'Failed to write TTS message in \"{event.getTwitchChannel()}\" to temporary file ({command=})')
+        #     return
 
-        if not utils.isValidStr(fileName):
-            self.__timber.log('DecTalkManager', f'Failed to write TTS message in \"{event.getTwitchChannel()}\" to temporary file ({command=})')
-            return
+        self.__timber.log('DecTalkManager', f'Executing TTS message in \"{event.getTwitchChannel()}\"...')
 
-        self.__timber.log('DecTalkManager', f'Executing TTS message in \"{event.getTwitchChannel()}\"')
+        # await self.__systemCommandHelper.executeCommand(
+        #     command = f'{self.__pathToDecTalk} -pre \"[:phone on]\" -post \"[:phone off]\" < \"{fileName}\"',
+        #     timeoutSeconds = await self.__ttsSettingsRepository.getTtsTimeoutSeconds()
+        # )
 
         await self.__systemCommandHelper.executeCommand(
-            command = f'{self.__pathToDecTalk} -pre \"[:phone on]\" -post \"[:phone off]\" < \"{fileName}\"',
+            command = f'{self.__pathToDecTalk} -pre \"[:phone on]\" \"{command}\" -post \"[:phone off]\"',
             timeoutSeconds = await self.__ttsSettingsRepository.getTtsTimeoutSeconds()
         )
 
-        await self.__deleteTtsTempFile(fileName)
+        # await self.__deleteTtsTempFile(fileName)
 
     def start(self):
         if self.__isStarted:
