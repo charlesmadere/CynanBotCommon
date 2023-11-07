@@ -1,7 +1,8 @@
 import asyncio
 import traceback
+from asyncio import TimeoutError as AsyncioTimeoutError
 from asyncio.subprocess import Process
-from typing import Any, ByteString, Optional, Tuple
+from typing import ByteString, Optional, Tuple
 
 try:
     import CynanBotCommon.utils as utils
@@ -58,16 +59,18 @@ class SystemCommandHelper(SystemCommandHelperInterface):
                 timeout = timeoutSeconds,
                 loop = self.__backgroundTaskHelper.getEventLoop()
             )
+        except AsyncioTimeoutError as e:
+            exception = e
         except TimeoutError as e:
             exception = e
         except Exception as e:
             exception = e
 
-        if exception is not None and not isinstance(exception, TimeoutError):
+        if exception is not None:
             if process is not None:
                 process.kill()
 
-            if isinstance(exception, TimeoutError):
+            if isinstance(exception, AsyncioTimeoutError) or isinstance(exception, TimeoutError):
                 self.__timber.log('SystemCommandHelper', f'Encountered timeout exception ({timeoutSeconds=}) when attempting to run system command ({command}): {exception}', exception, traceback.format_exc())
             else:
                 self.__timber.log('SystemCommandHelper', f'Encountered unknown exception when attempting to run system command ({command}): {exception}', exception, traceback.format_exc())
