@@ -131,7 +131,7 @@ class DecTalkManager(TtsManagerInterface):
             timeoutSeconds = await self.__ttsSettingsRepository.getTtsTimeoutSeconds()
         )
 
-        await self.__deleteTtsTempFile(command)
+        await self.__deleteTtsTempFile(fileName)
 
     def start(self):
         if self.__isStarted:
