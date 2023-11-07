@@ -207,7 +207,7 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         elif donation.getType() is not TtsDonationType.SUBSCRIPTION:
             raise ValueError(f'TtsDonationType is not {TtsDonationType.SUBSCRIPTION}: \"{donation.getType()}\"')
 
-        # I don't think it makes sense for a subscription to be anonymous, but not a gift?
+        # I don't think it makes sense for a subscription to be anonymous, and also not a gift?
 
         if donation.isAnonymous() and donation.isGift():
             return f'anonymous gifted a sub!'

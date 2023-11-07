@@ -3,9 +3,11 @@ from typing import Any, Dict, Optional
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.tts.ttsDonation import TtsDonation
+    from CynanBotCommon.tts.ttsRaidInfo import TtsRaidInfo
 except:
     import utils
     from tts.ttsDonation import TtsDonation
+    from tts.ttsRaidInfo import TtsRaidInfo
 
 
 class TtsEvent():
@@ -16,7 +18,8 @@ class TtsEvent():
         twitchChannel: str,
         userId: str,
         userName: str,
-        donation: Optional[TtsDonation]
+        donation: Optional[TtsDonation],
+        raidInfo: Optional[TtsRaidInfo]
     ):
         if message is not None and not isinstance(message, str):
             raise ValueError(f'message argument is malformed: \"{message}\"')
@@ -28,18 +31,24 @@ class TtsEvent():
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
         elif donation is not None and not isinstance(donation, TtsDonation):
             raise ValueError(f'donation argument is malformed: \"{donation}\"')
+        elif raidInfo is not None and not isinstance(raidInfo, TtsRaidInfo):
+            raise ValueError(f'raidInfo argument is malformed: \"{raidInfo}\"')
 
         self.__message: Optional[str] = message
         self.__twitchChannel: str = twitchChannel
         self.__userId: str = userId
         self.__userName: str = userName
         self.__donation: Optional[TtsDonation] = donation
+        self.__raidInfo: Optional[TtsRaidInfo] = raidInfo
 
     def getDonation(self) -> Optional[TtsDonation]:
         return self.__donation
 
     def getMessage(self) -> Optional[str]:
         return self.__message
+
+    def getRaidInfo(self) -> Optional[TtsRaidInfo]:
+        return self.__raidInfo
 
     def getTwitchChannel(self) -> str:
         return self.__twitchChannel
@@ -51,17 +60,17 @@ class TtsEvent():
         return self.__userName
 
     def __repr__(self) -> str:
-        donationValue: Optional[Dict[str, Any]] = None
-
-        if self.__donation is not None:
-            donationValue = self.__donation.toDictionary()
-
-        dictionary = {
-            'donation': donationValue,
+        dictionary: Dict[str, Any] = {
             'message': self.__message,
             'twitchChannel': self.__twitchChannel,
             'userId': self.__userId,
             'userName': self.__userName
         }
+
+        if self.__donation is not None:
+            dictionary['donation'] = self.__donation.toDictionary()
+
+        if self.__raidInfo is not None:
+            dictionary['raidInfo'] = self.__raidInfo.toDictionary()
 
         return f'{dictionary}'
