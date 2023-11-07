@@ -1,5 +1,6 @@
 import asyncio
 import traceback
+from asyncio.subprocess import Process
 from typing import Any, ByteString, Optional, Tuple
 
 try:
@@ -40,11 +41,12 @@ class SystemCommandHelper(SystemCommandHelperInterface):
         elif timeoutSeconds < 3 or timeoutSeconds > utils.getIntMaxSafeSize():
             raise ValueError(f'timeoutSeconds argument is out of bounds: {timeoutSeconds}')
 
+        process: Optional[Process] = None
         outputTuple: Optional[Tuple[ByteString]] = None
         exception: Optional[Exception] = None
 
         try:
-            proc = await asyncio.create_subprocess_shell(
+            process = await asyncio.create_subprocess_shell(
                 cmd = command,
                 stdout = asyncio.subprocess.PIPE,
                 stderr = asyncio.subprocess.PIPE,
@@ -52,21 +54,22 @@ class SystemCommandHelper(SystemCommandHelperInterface):
             )
 
             outputTuple = await asyncio.wait_for(
-                fut = proc.communicate(),
+                fut = process.communicate(),
                 timeout = timeoutSeconds,
                 loop = self.__backgroundTaskHelper.getEventLoop()
             )
         except TimeoutError as e:
+            if process is not None:
+                self.__timber.log('SystemCommandHelper', f'Process for command ({command}) has run too long ({timeoutSeconds=}) and will be killed')
+                process.kill()
+
             exception = e
         except Exception as e:
             exception = e
 
-        # try:
-        #     outputBytes = check_output(command, shell = True)
-        # except Exception as e:
-        #     exception = e
+        process = None
 
-        if exception is not None:
+        if exception is not None and not isinstance(exception, TimeoutError):
             self.__timber.log('SystemCommandHelper', f'Encountered exception when attempting to run system command ({command}): {exception}', exception, traceback.format_exc())
             return
 
