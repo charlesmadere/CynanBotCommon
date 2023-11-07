@@ -135,7 +135,7 @@ class DecTalkManager(TtsManagerInterface):
         # )
 
         await self.__systemCommandHelper.executeCommand(
-            command = f'{self.__pathToDecTalk} -pre \"[:phone on]\" -post \"[:phone off]\" \"{command}\"',
+            command = f'{self.__pathToDecTalk} -pre \"[:phone on]\" \"{command}\"',
             timeoutSeconds = await self.__ttsSettingsRepository.getTtsTimeoutSeconds()
         )
 
