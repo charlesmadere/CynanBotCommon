@@ -18,3 +18,6 @@ class BackgroundTaskHelper():
         task = self.__eventLoop.create_task(coro)
         self.__backgroundTasks.add(task)
         task.add_done_callback(self.__backgroundTasks.discard)
+
+    def getEventLoop(self) -> AbstractEventLoop:
+        return self.__eventLoop

@@ -84,14 +84,17 @@ class DecTalkManager(TtsManagerInterface):
         async with aiofiles.tempfile.NamedTemporaryFile(
             mode = 'w',
             encoding = 'windows-1252',
-            delete = False
+            delete = False,
+            loop = self.__backgroundTaskHelper.getEventLoop()
         ) as file:
             await file.write(command)
 
         randomUuid = str(uuid.uuid4())
         fileName: Optional[str] = None
 
-        async with aiofiles.tempfile.TemporaryDirectory() as directory:
+        async with aiofiles.tempfile.TemporaryDirectory(
+            loop = self.__backgroundTaskHelper.getEventLoop()
+        ) as directory:
             fileName = utils.cleanPath(os.path.join(directory, f'dectalk_{randomUuid}.txt'))
 
         return fileName
