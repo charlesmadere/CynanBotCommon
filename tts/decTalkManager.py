@@ -45,7 +45,8 @@ class DecTalkManager(TtsManagerInterface):
         systemCommandHelper: SystemCommandHelperInterface,
         timber: TimberInterface,
         ttsSettingsRepository: TtsSettingsRepositoryInterface,
-        queueTimeoutSeconds: int = 3,
+        queueSleepTimeSeconds: float = 3,
+        queueTimeoutSeconds: float = 3,
         pathToDecTalk: str = '../dectalk/say.exe',
         tempFileDirectory: str = 'temp'
     ):
@@ -59,9 +60,13 @@ class DecTalkManager(TtsManagerInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(ttsSettingsRepository, TtsSettingsRepositoryInterface):
             raise ValueError(f'ttsSettingsRepository argument is malformed: \"{ttsSettingsRepository}\"')
-        elif not utils.isValidNum(queueTimeoutSeconds):
+        elif not utils.isValidInt(queueSleepTimeSeconds):
+            raise ValueError(f'queueSleepTimeSeconds argument is malformed: \"{queueSleepTimeSeconds}\"')
+        elif queueSleepTimeSeconds < 1 or queueSleepTimeSeconds > 10:
+            raise ValueError(f'queueSleepTimeSeconds argument is out of bounds: {queueSleepTimeSeconds}')
+        elif not utils.isValidInt(queueTimeoutSeconds):
             raise ValueError(f'queueTimeoutSeconds argument is malformed: \"{queueTimeoutSeconds}\"')
-        elif queueTimeoutSeconds < 1 or queueTimeoutSeconds > 5:
+        elif queueTimeoutSeconds < 1 or queueTimeoutSeconds > 3:
             raise ValueError(f'queueTimeoutSeconds argument is out of bounds: {queueTimeoutSeconds}')
         elif not utils.isValidStr(pathToDecTalk):
             raise ValueError(f'pathToDecTalk argument is malformed: \"{pathToDecTalk}\"')
@@ -73,7 +78,8 @@ class DecTalkManager(TtsManagerInterface):
         self.__timber: TimberInterface = timber
         self.__ttsCommandBuilder: TtsCommandBuilderInterface = ttsCommandBuilder
         self.__ttsSettingsRepository: TtsSettingsRepositoryInterface = ttsSettingsRepository
-        self.__queueTimeoutSeconds: int = queueTimeoutSeconds
+        self.__queueSleepTimeSeconds: float = queueSleepTimeSeconds
+        self.__queueTimeoutSeconds: float = queueTimeoutSeconds
         self.__pathToDecTalk: str = utils.cleanPath(pathToDecTalk)
         self.__tempFileDirectory: str = utils.cleanPath(tempFileDirectory)
 
@@ -165,11 +171,14 @@ class DecTalkManager(TtsManagerInterface):
                 except queue.Empty as e:
                     self.__timber.log('DecTalkManager', f'Encountered queue.Empty when grabbing event from queue (queue size: {self.__eventQueue.qsize()}): {e}', e, traceback.format_exc())
 
-            if event is not None:
-                try:
-                    await self.__processTtsEvent(event)
-                except Exception as e:
-                    self.__timber.log('DecTalkManager', f'Encountered unexpected exception when processing TTS event (event: {event}) (queue size: {self.__eventQueue.qsize()}): {e}', e, traceback.format_exc())
+            if event is None:
+                await asyncio.sleep(self.__queueSleepTimeSeconds)
+                continue
+
+            try:
+                await self.__processTtsEvent(event)
+            except Exception as e:
+                self.__timber.log('DecTalkManager', f'Encountered unexpected exception when processing TTS event (event: {event}) (queue size: {self.__eventQueue.qsize()}): {e}', e, traceback.format_exc())
 
             await asyncio.sleep(await self.__ttsSettingsRepository.getTtsDelayBetweenSeconds())
 
