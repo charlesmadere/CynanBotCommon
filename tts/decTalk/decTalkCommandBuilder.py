@@ -168,6 +168,12 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         bannedStrings.append(re.compile(r'(^|\s+)-w', re.IGNORECASE))
         bannedStrings.append(re.compile(r'(^|\s+)-l((\[\w+\])|\w+)?', re.IGNORECASE))
 
+        # purge dial inline command
+        bannedStrings.append(re.compile(r'\[\:dial.*\]', re.IGNORECASE))
+
+        # purge design voice inline command
+        bannedStrings.append(re.compile(r'\[\:dv.*\]', re.IGNORECASE))
+
         # purge error inline command
         bannedStrings.append(re.compile(r'\[\:erro.*\]', re.IGNORECASE))
 
@@ -176,9 +182,6 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
 
         # purge sync mode inline command
         bannedStrings.append(re.compile(r'\[\:mode.*\]', re.IGNORECASE))
-
-        # purge dial inline command
-        bannedStrings.append(re.compile(r'\[\:dial.*\]', re.IGNORECASE))
 
         # purge period pause inline command
         bannedStrings.append(re.compile(r'\[\:peri.*\]', re.IGNORECASE))
