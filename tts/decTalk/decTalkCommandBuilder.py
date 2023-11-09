@@ -1,5 +1,5 @@
 import re
-from typing import List, Optional, Pattern
+from typing import List, Match, Optional, Pattern
 
 try:
     import CynanBotCommon.utils as utils
@@ -60,7 +60,7 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
 
         self.__bannedStrings: List[Pattern] = self.__buildBannedStrings()
         self.__cheerStrings: List[Pattern] = self.__buildCheerStrings()
-        self.__toneRegEx: Pattern = re.compile(r'\[\:(dial|tone).*\]', re.IGNORECASE)
+        self.__toneRegEx: Pattern = re.compile(r'\[\:(dial|tone).*?\]', re.IGNORECASE)
         self.__whiteSpaceRegEx: Pattern = re.compile(r'\s{2,}', re.IGNORECASE)
 
     async def buildAndCleanEvent(self, event: Optional[TtsEvent]) -> Optional[str]:
@@ -112,6 +112,7 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         if not utils.isValidStr(message):
             return None
 
+        message = await self.__insertVolumeInlineCommands(message)
         message = await self.__emojiHelper.replaceEmojisWithHumanNames(message)
 
         # remove extranneous whitespace
@@ -197,6 +198,32 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         cheerStrings.append(re.compile(r'(^|\s+)uni\d+(\s+|$)', re.IGNORECASE))
 
         return cheerStrings
+
+    async def __insertVolumeInlineCommands(self, message: str) -> str:
+        if not utils.isValidStr(message):
+            raise ValueError(f'message argument is malformed: \"{message}\"')
+
+        firstSearch = True
+        searchResult: Optional[Match] = None
+
+        # input: "hello world [:dial 423]"
+        # output: "hello world [:volume 1] [:dial 423] [:volume 9]"
+
+        while firstSearch or searchResult is not None:
+            if firstSearch:
+                firstSearch = False
+
+            searchResult = self.__toneRegEx.search(message)
+
+            if searchResult is None:
+                continue
+
+            beginning = message[:searchResult.start()]
+            middle = message[searchResult.start():searchResult.end()]
+            end = message[searchResult.end():]
+            message = f'{beginning} [:volume 10] {middle} [:volume 75] {end}'
+
+        return message
 
     async def __processCheerDonationPrefix(
         self,
