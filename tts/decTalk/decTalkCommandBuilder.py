@@ -60,6 +60,7 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
 
         self.__bannedStrings: List[Pattern] = self.__buildBannedStrings()
         self.__cheerStrings: List[Pattern] = self.__buildCheerStrings()
+        self.__toneRegEx: Pattern = re.compile(r'\[\:(dial|tone).*\]', re.IGNORECASE)
         self.__whiteSpaceRegEx: Pattern = re.compile(r'\s{2,}', re.IGNORECASE)
 
     async def buildAndCleanEvent(self, event: Optional[TtsEvent]) -> Optional[str]:
