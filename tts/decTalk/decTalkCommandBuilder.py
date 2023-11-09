@@ -112,17 +112,17 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         if not utils.isValidStr(message):
             return None
 
-        message = await self.__insertVolumeInlineCommands(message)
-        message = await self.__emojiHelper.replaceEmojisWithHumanNames(message)
-
-        # remove extranneous whitespace
-        message = self.__whiteSpaceRegEx.sub(' ', message).strip()
-
         maxMessageSize = await self.__ttsSettingsRepository.getMaximumMessageSize()
 
         if len(message) > maxMessageSize:
             self.__timber.log('DecTalkCommandBuilder', f'Chopping down TTS command \"{message}\" as it is too long (len={len(message)}) ({maxMessageSize=}) ({message})')
             message = message[:maxMessageSize].strip()
+
+        message = await self.__insertVolumeInlineCommands(message)
+        message = await self.__emojiHelper.replaceEmojisWithHumanNames(message)
+
+        # remove extranneous whitespace
+        message = self.__whiteSpaceRegEx.sub(' ', message).strip()
 
         if not utils.isValidStr(message):
             return None
