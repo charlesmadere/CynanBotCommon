@@ -42,7 +42,9 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         contentScanner: ContentScannerInterface,
         emojiHelper: EmojiHelperInterface,
         timber: TimberInterface,
-        ttsSettingsRepository: TtsSettingsRepositoryInterface
+        ttsSettingsRepository: TtsSettingsRepositoryInterface,
+        toneLowerVolume: str = '[:volume 10]',
+        toneHigherVolume: str =  '[:volume 75]'
     ):
         if not isinstance(contentScanner, ContentScannerInterface):
             raise ValueError(f'contentScanner argument is malformed: \"{contentScanner}\"')
@@ -52,11 +54,17 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(ttsSettingsRepository, TtsSettingsRepositoryInterface):
             raise ValueError(f'ttsSettingsRepository argument is malformed: \"{ttsSettingsRepository}\"')
+        elif not utils.isValidStr(toneLowerVolume):
+            raise ValueError(f'toneLowerVolume argument is malformed: \"{toneLowerVolume}\"')
+        elif not utils.isValidStr(toneHigherVolume):
+            raise ValueError(f'toneHigherVolume argument is malformed: \"{toneHigherVolume}\"')
 
         self.__contentScanner: ContentScannerInterface = contentScanner
         self.__emojiHelper: EmojiHelperInterface = emojiHelper
         self.__timber: TimberInterface = timber
         self.__ttsSettingsRepository: TtsSettingsRepositoryInterface = ttsSettingsRepository
+        self.__toneLowerVolume: str = toneLowerVolume
+        self.__toneHigherVolume: str = toneHigherVolume
 
         self.__bannedStrings: List[Pattern] = self.__buildBannedStrings()
         self.__cheerStrings: List[Pattern] = self.__buildCheerStrings()
@@ -204,6 +212,7 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
             raise ValueError(f'message argument is malformed: \"{message}\"')
 
         firstSearch = True
+        startPosition = 0
         searchResult: Optional[Match] = None
 
         # input: "hello world [:dial 423]"
@@ -213,7 +222,7 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
             if firstSearch:
                 firstSearch = False
 
-            searchResult = self.__toneRegEx.search(message)
+            searchResult = self.__toneRegEx.search(message, startPosition)
 
             if searchResult is None:
                 continue
@@ -222,6 +231,8 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
             middle = message[searchResult.start():searchResult.end()]
             end = message[searchResult.end():]
             message = f'{beginning} [:volume 10] {middle} [:volume 75] {end}'
+
+            startPosition = searchResult.start() + len(self.__toneLowerVolume) + len(middle) + len(self.__toneHigherVolume) + 4
 
         return message
 
