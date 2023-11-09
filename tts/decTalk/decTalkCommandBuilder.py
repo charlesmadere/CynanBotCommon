@@ -43,8 +43,8 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         emojiHelper: EmojiHelperInterface,
         timber: TimberInterface,
         ttsSettingsRepository: TtsSettingsRepositoryInterface,
-        toneLowerVolume: str = '[:volume set 1]',
-        toneHigherVolume: str =  '[:volume set 99]'
+        toneLowerVolume: str = '[:volume down 1]',
+        toneHigherVolume: str =  '[:volume up 99]'
     ):
         if not isinstance(contentScanner, ContentScannerInterface):
             raise ValueError(f'contentScanner argument is malformed: \"{contentScanner}\"')
@@ -126,7 +126,6 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
             self.__timber.log('DecTalkCommandBuilder', f'Chopping down TTS command \"{message}\" as it is too long (len={len(message)}) ({maxMessageSize=}) ({message})')
             message = message[:maxMessageSize].strip()
 
-        message = await self.__insertVolumeInlineCommands(message)
         message = await self.__emojiHelper.replaceEmojisWithHumanNames(message)
 
         # remove extranneous whitespace
@@ -175,21 +174,27 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         # purge log inline command
         bannedStrings.append(re.compile(r'\[\:log.*\]', re.IGNORECASE))
 
-        # purge sync mode command
+        # purge sync mode inline command
         bannedStrings.append(re.compile(r'\[\:mode.*\]', re.IGNORECASE))
 
-        # purge period pause command
+        # purge dial inline command
+        bannedStrings.append(re.compile(r'\[\:dial.*\]', re.IGNORECASE))
+
+        # purge period pause inline command
         bannedStrings.append(re.compile(r'\[\:peri.*\]', re.IGNORECASE))
         bannedStrings.append(re.compile(r'\[\:pp.*\]', re.IGNORECASE))
 
-        # purge pitch command
+        # purge pitch inline command
         bannedStrings.append(re.compile(r'\[\:pitch.*\]', re.IGNORECASE))
 
-        # purge play command
+        # purge play inline command
         bannedStrings.append(re.compile(r'\[\:play.*\]', re.IGNORECASE))
 
         # purge sync inline command
         bannedStrings.append(re.compile(r'\[\:sync.*\]', re.IGNORECASE))
+
+        # purge tone inline command
+        bannedStrings.append(re.compile(r'\[\:tone.*\]', re.IGNORECASE))
 
         # purge volume inline command
         bannedStrings.append(re.compile(r'\[\:volu.*\]', re.IGNORECASE))
