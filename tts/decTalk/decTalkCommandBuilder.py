@@ -43,8 +43,8 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         emojiHelper: EmojiHelperInterface,
         timber: TimberInterface,
         ttsSettingsRepository: TtsSettingsRepositoryInterface,
-        toneLowerVolume: str = '[:volume 10]',
-        toneHigherVolume: str =  '[:volume 75]'
+        toneLowerVolume: str = '[:volume set 10]',
+        toneHigherVolume: str =  '[:volume set 75]'
     ):
         if not isinstance(contentScanner, ContentScannerInterface):
             raise ValueError(f'contentScanner argument is malformed: \"{contentScanner}\"')
@@ -230,9 +230,8 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
             beginning = message[:searchResult.start()]
             middle = message[searchResult.start():searchResult.end()]
             end = message[searchResult.end():]
-            message = f'{beginning} [:volume 10] {middle} [:volume 75] {end}'
-
-            startPosition = searchResult.start() + len(self.__toneLowerVolume) + len(middle) + len(self.__toneHigherVolume) + 4
+            message = f'{beginning}{self.__toneLowerVolume}{middle}{self.__toneHigherVolume}{end}'
+            startPosition = searchResult.start() + len(self.__toneLowerVolume) + len(middle) + len(self.__toneHigherVolume)
 
         return message
 
