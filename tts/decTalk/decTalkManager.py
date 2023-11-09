@@ -1,14 +1,9 @@
 import asyncio
-import os
 import queue
 import traceback
-import uuid
 from queue import SimpleQueue
 from typing import Optional
 
-import aiofiles
-import aiofiles.os
-import aiofiles.ospath
 
 try:
     import CynanBotCommon.utils as utils
@@ -16,25 +11,28 @@ try:
     from CynanBotCommon.systemCommandHelper.systemCommandHelperInterface import \
         SystemCommandHelperInterface
     from CynanBotCommon.timber.timberInterface import TimberInterface
-    from CynanBotCommon.tts.decTalkCommandBuilder import DecTalkCommandBuilder
+    from CynanBotCommon.tts.decTalk.decTalkCommandBuilder import \
+        DecTalkCommandBuilder
     from CynanBotCommon.tts.ttsCommandBuilderInterface import \
         TtsCommandBuilderInterface
     from CynanBotCommon.tts.ttsEvent import TtsEvent
     from CynanBotCommon.tts.ttsManagerInterface import TtsManagerInterface
     from CynanBotCommon.tts.ttsSettingsRepositoryInterface import \
         TtsSettingsRepositoryInterface
+    from CynanBotCommon.tts.decTalk.decTalkFileManagerInterface import DecTalkFileManagerInterface
 except:
     import utils
     from backgroundTaskHelper import BackgroundTaskHelper
     from systemCommandHelper.systemCommandHelperInterface import \
         SystemCommandHelperInterface
     from timber.timberInterface import TimberInterface
-    from tts.decTalkCommandBuilder import DecTalkCommandBuilder
+    from tts.decTalk.decTalkCommandBuilder import DecTalkCommandBuilder
     from tts.ttsCommandBuilderInterface import TtsCommandBuilderInterface
     from tts.ttsEvent import TtsEvent
     from tts.ttsManagerInterface import TtsManagerInterface
     from tts.ttsSettingsRepositoryInterface import \
         TtsSettingsRepositoryInterface
+    from tts.decTalk.decTalkFileManagerInterface import DecTalkFileManagerInterface
 
 
 class DecTalkManager(TtsManagerInterface):
@@ -43,6 +41,7 @@ class DecTalkManager(TtsManagerInterface):
         self,
         backgroundTaskHelper: BackgroundTaskHelper,
         ttsCommandBuilder: DecTalkCommandBuilder,
+        decTalkFileManager: DecTalkFileManagerInterface,
         systemCommandHelper: SystemCommandHelperInterface,
         timber: TimberInterface,
         ttsSettingsRepository: TtsSettingsRepositoryInterface,
@@ -55,6 +54,8 @@ class DecTalkManager(TtsManagerInterface):
             raise ValueError(f'backgroundTaskHelper argument is malformed: \"{backgroundTaskHelper}\"')
         elif not isinstance(ttsCommandBuilder, DecTalkCommandBuilder):
             raise ValueError(f'ttsCommandBuilder argument is malformed: \"{ttsCommandBuilder}\"')
+        elif not isinstance(decTalkFileManager, DecTalkFileManagerInterface):
+            raise ValueError(f'decTalkFileManager argument is malformed: \"{decTalkFileManager}\"')
         elif not isinstance(systemCommandHelper, SystemCommandHelperInterface):
             raise ValueError(f'systemCommandHelper argument is malformed: \"{systemCommandHelper}\"')
         elif not isinstance(timber, TimberInterface):
@@ -75,6 +76,7 @@ class DecTalkManager(TtsManagerInterface):
             raise ValueError(f'tempFileDirectory argument is malformed: \"{tempFileDirectory}\"')
 
         self.__backgroundTaskHelper: BackgroundTaskHelper = backgroundTaskHelper
+        self.__decTalkFileManager: DecTalkFileManagerInterface = decTalkFileManager
         self.__systemCommandHelper: SystemCommandHelperInterface = systemCommandHelper
         self.__timber: TimberInterface = timber
         self.__ttsCommandBuilder: TtsCommandBuilderInterface = ttsCommandBuilder
@@ -82,41 +84,9 @@ class DecTalkManager(TtsManagerInterface):
         self.__queueSleepTimeSeconds: float = queueSleepTimeSeconds
         self.__queueTimeoutSeconds: float = queueTimeoutSeconds
         self.__pathToDecTalk: str = utils.cleanPath(pathToDecTalk)
-        self.__tempFileDirectory: str = utils.cleanPath(tempFileDirectory)
 
         self.__isStarted: bool = False
         self.__eventQueue: SimpleQueue[TtsEvent] = SimpleQueue()
-
-    async def __createTtsTempFile(self, command: str) -> Optional[str]:
-        if not utils.isValidStr(command):
-            raise ValueError(f'command argument is malformed: \"{command}\"')
-
-        if not await aiofiles.ospath.exists(self.__tempFileDirectory):
-            await aiofiles.os.makedirs(self.__tempFileDirectory)
-
-        fileName = utils.cleanPath(f'{self.__tempFileDirectory}/dectalk_{uuid.uuid4()}.txt')
-
-        # DECTalk requires Windows-1252 encoding
-        async with aiofiles.open(
-            file = fileName,
-            mode = 'w',
-            encoding = 'windows-1252',
-            loop = self.__backgroundTaskHelper.getEventLoop()
-        ) as file:
-            await file.write(command)
-
-        return fileName
-
-    async def __deleteTtsTempFile(self, fileName: Optional[str]):
-        if not utils.isValidStr(fileName):
-            return
-        elif not await aiofiles.ospath.exists(fileName):
-            return
-
-        try:
-            os.remove(fileName)
-        except Exception as e:
-            self.__timber.log('DecTalkManager', f'Unable to delete temporary TTS file (\"{fileName}\"): {e}', e, traceback.format_exc())
 
     async def __processTtsEvent(self, event: TtsEvent):
         if not isinstance(event, TtsEvent):
@@ -131,7 +101,7 @@ class DecTalkManager(TtsManagerInterface):
             self.__timber.log('DecTalkManager', f'Failed to parse TTS message in \"{event.getTwitchChannel()}\" into a valid command: \"{event}\"')
             return
 
-        fileName = await self.__createTtsTempFile(command)
+        fileName = await self.__decTalkFileManager.writeCommandToNewFile(command)
 
         if not utils.isValidStr(fileName):
             self.__timber.log('DecTalkManager', f'Failed to write TTS message in \"{event.getTwitchChannel()}\" to temporary file ({command=})')
@@ -144,7 +114,7 @@ class DecTalkManager(TtsManagerInterface):
             timeoutSeconds = await self.__ttsSettingsRepository.getTtsTimeoutSeconds()
         )
 
-        await self.__deleteTtsTempFile(fileName)
+        await self.__decTalkFileManager.deleteFile(fileName)
 
     def start(self):
         if self.__isStarted:

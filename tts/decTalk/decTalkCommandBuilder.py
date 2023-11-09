@@ -59,7 +59,7 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         self.__ttsSettingsRepository: TtsSettingsRepositoryInterface = ttsSettingsRepository
 
         self.__bannedStrings: List[Pattern] = self.__buildBannedStrings()
-        self.__cheerTextRegEx: Pattern = re.compile(r'(^|\s+)cheer\d+(\s+|$)', re.IGNORECASE)
+        self.__cheerStrings: List[Pattern] = self.__buildCheerStrings()
         self.__whiteSpaceRegEx: Pattern = re.compile(r'\s{2,}', re.IGNORECASE)
 
     async def buildAndCleanEvent(self, event: Optional[TtsEvent]) -> Optional[str]:
@@ -93,7 +93,11 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
             self.__timber.log('DecTalkCommandBuilder', f'TTS command \"{message}\" returned a bad content code: \"{contentCode}\"')
             return None
 
-        message = self.__cheerTextRegEx.sub(' ', message)
+        for cheerString in self.__cheerStrings:
+            message = cheerString.sub(' ', message)
+
+            if not utils.isValidStr(message):
+                return None
 
         if not utils.isValidStr(message):
             return None
@@ -156,6 +160,17 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         bannedStrings.append(re.compile(r'(^|\s+)-l((\[\w+\])|\w+)?', re.IGNORECASE))
 
         return bannedStrings
+
+    def __buildCheerStrings(self) -> List[Pattern]:
+        cheerStrings: List[Pattern] = list()
+
+        # purge "cheer100"
+        cheerStrings.append(re.compile(r'(^|\s+)cheer\d+(\s+|$)', re.IGNORECASE))
+
+        # purge "uni100"
+        cheerStrings.append(re.compile(r'(^|\s+)uni\d+(\s+|$)', re.IGNORECASE))
+
+        return cheerStrings
 
     async def __processCheerDonationPrefix(
         self,
