@@ -64,7 +64,7 @@ class DecTalkFileManager(DecTalkFileManagerInterface):
         fileName: Optional[str] = None
 
         while not utils.isValidStr(fileName) or await aiofiles.ospath.exists(fileName):
-            randomUuid = self.__fileNameRegEx.sub('', uuid.uuid4())
+            randomUuid = self.__fileNameRegEx.sub('', str(uuid.uuid4()))
             fileName = utils.cleanPath(f'{self.__directory}/dectalk-{randomUuid}.txt')
 
         try:
