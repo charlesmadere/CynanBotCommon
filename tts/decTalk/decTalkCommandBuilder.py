@@ -159,6 +159,31 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         bannedStrings.append(re.compile(r'(^|\s+)-w', re.IGNORECASE))
         bannedStrings.append(re.compile(r'(^|\s+)-l((\[\w+\])|\w+)?', re.IGNORECASE))
 
+        # purge error inline command
+        bannedStrings.append(re.compile(r'\[\:erro.*\]', re.IGNORECASE))
+
+        # purge log inline command
+        bannedStrings.append(re.compile(r'\[\:log.*\]', re.IGNORECASE))
+
+        # purge sync mode command
+        bannedStrings.append(re.compile(r'\[\:mode.*\]', re.IGNORECASE))
+
+        # purge period pause command
+        bannedStrings.append(re.compile(r'\[\:peri.*\]', re.IGNORECASE))
+        bannedStrings.append(re.compile(r'\[\:pp.*\]', re.IGNORECASE))
+
+        # purge pitch command
+        bannedStrings.append(re.compile(r'\[\:pitch.*\]', re.IGNORECASE))
+
+        # purge play command
+        bannedStrings.append(re.compile(r'\[\:play.*\]', re.IGNORECASE))
+
+        # purge sync inline command
+        bannedStrings.append(re.compile(r'\[\:sync.*\]', re.IGNORECASE))
+
+        # purge volume inline command
+        bannedStrings.append(re.compile(r'\[\:volu.*\]', re.IGNORECASE))
+
         return bannedStrings
 
     def __buildCheerStrings(self) -> List[Pattern]:
