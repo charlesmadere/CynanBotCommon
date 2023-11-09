@@ -4,7 +4,6 @@ import traceback
 from queue import SimpleQueue
 from typing import Optional
 
-
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.backgroundTaskHelper import BackgroundTaskHelper
@@ -13,13 +12,14 @@ try:
     from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.tts.decTalk.decTalkCommandBuilder import \
         DecTalkCommandBuilder
+    from CynanBotCommon.tts.decTalk.decTalkFileManagerInterface import \
+        DecTalkFileManagerInterface
     from CynanBotCommon.tts.ttsCommandBuilderInterface import \
         TtsCommandBuilderInterface
     from CynanBotCommon.tts.ttsEvent import TtsEvent
     from CynanBotCommon.tts.ttsManagerInterface import TtsManagerInterface
     from CynanBotCommon.tts.ttsSettingsRepositoryInterface import \
         TtsSettingsRepositoryInterface
-    from CynanBotCommon.tts.decTalk.decTalkFileManagerInterface import DecTalkFileManagerInterface
 except:
     import utils
     from backgroundTaskHelper import BackgroundTaskHelper
@@ -27,12 +27,13 @@ except:
         SystemCommandHelperInterface
     from timber.timberInterface import TimberInterface
     from tts.decTalk.decTalkCommandBuilder import DecTalkCommandBuilder
+    from tts.decTalk.decTalkFileManagerInterface import \
+        DecTalkFileManagerInterface
     from tts.ttsCommandBuilderInterface import TtsCommandBuilderInterface
     from tts.ttsEvent import TtsEvent
     from tts.ttsManagerInterface import TtsManagerInterface
     from tts.ttsSettingsRepositoryInterface import \
         TtsSettingsRepositoryInterface
-    from tts.decTalk.decTalkFileManagerInterface import DecTalkFileManagerInterface
 
 
 class DecTalkManager(TtsManagerInterface):

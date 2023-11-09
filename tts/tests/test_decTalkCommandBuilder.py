@@ -19,7 +19,7 @@ try:
     from ...tts.ttsSettingsRepository import TtsSettingsRepository
     from ...tts.ttsSettingsRepositoryInterface import \
         TtsSettingsRepositoryInterface
-    from ..decTalkCommandBuilder import DecTalkCommandBuilder
+    from ..decTalk.decTalkCommandBuilder import DecTalkCommandBuilder
     from ..ttsCommandBuilderInterface import TtsCommandBuilderInterface
 except:
     from contentScanner.bannedWordsRepository import BannedWordsRepository
@@ -35,7 +35,7 @@ except:
     from storage.linesStaticReader import LinesStaticReader
     from timber.timberInterface import TimberInterface
     from timber.timberStub import TimberStub
-    from tts.decTalkCommandBuilder import DecTalkCommandBuilder
+    from tts.decTalk.decTalkCommandBuilder import DecTalkCommandBuilder
     from tts.ttsCommandBuilderInterface import TtsCommandBuilderInterface
     from tts.ttsSettingsRepository import TtsSettingsRepository
     from tts.ttsSettingsRepositoryInterface import \

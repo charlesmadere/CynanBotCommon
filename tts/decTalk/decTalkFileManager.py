@@ -1,25 +1,23 @@
-from typing import Optional
-import uuid
 import os
+import re
 import traceback
+import uuid
+from typing import Optional, Pattern
 
 import aiofiles
 import aiofiles.os
 import aiofiles.ospath
 
-import re
-from typing import Pattern
-
 try:
-    from CynanBotCommon.tts.decTalk.decTalkFileManagerInterface import \
-        DecTalkFileManagerInterface
     import CynanBotCommon.utils as utils
     from CynanBotCommon.backgroundTaskHelper import BackgroundTaskHelper
     from CynanBotCommon.timber.timberInterface import TimberInterface
+    from CynanBotCommon.tts.decTalk.decTalkFileManagerInterface import \
+        DecTalkFileManagerInterface
 except:
     import utils
-    from timber.timberInterface import TimberInterface
     from backgroundTaskHelper import BackgroundTaskHelper
+    from timber.timberInterface import TimberInterface
     from tts.decTalk.decTalkFileManagerInterface import \
         DecTalkFileManagerInterface
 
