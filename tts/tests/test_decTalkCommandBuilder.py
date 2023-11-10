@@ -271,6 +271,11 @@ class TestDecTalkCommandBuilder():
         assert result == 'hello world'
 
     @pytest.mark.asyncio
+    async def test_buildAndCleanMessage_withWildNestedInlineCommands(self):
+        result = await self.decTalkCommandBuilder.buildAndCleanMessage('hello [[[:play \"C:\\song.wav\"]:volume set 10]: dv qwerty] world uni5')
+        assert result == 'hello world'
+
+    @pytest.mark.asyncio
     async def test_buildAndCleanMessage_withVolumeInlineCommand(self):
         result = await self.decTalkCommandBuilder.buildAndCleanMessage('this is a volume inline command [:vol set 99]')
         assert result == 'this is a volume inline command'
