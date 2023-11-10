@@ -256,6 +256,11 @@ class TestDecTalkCommandBuilder():
         assert result is None
 
     @pytest.mark.asyncio
+    async def test_buildAndCleanMessage_withRateInlineCommand(self):
+        result = await self.decTalkCommandBuilder.buildAndCleanMessage('rate [:rate0]?')
+        assert result == 'rate?'
+
+    @pytest.mark.asyncio
     async def test_buildAndCleanMessage_withSyncInlineCommand(self):
         result = await self.decTalkCommandBuilder.buildAndCleanMessage('time to [:sync 1] ok')
         assert result == 'time to ok'
@@ -264,6 +269,9 @@ class TestDecTalkCommandBuilder():
     async def test_buildAndCleanMessage_withToneInlineCommand(self):
         result = await self.decTalkCommandBuilder.buildAndCleanMessage('this is a tone inline command [:tone]')
         assert result == 'this is a tone inline command'
+
+        result = await self.decTalkCommandBuilder.buildAndCleanMessage('this is a different tone inline command: [:t]')
+        assert result == 'this is a different one inline command:'
 
     @pytest.mark.asyncio
     async def test_buildAndCleanMessage_withUniText(self):

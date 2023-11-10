@@ -162,11 +162,14 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         # purge play inline command
         inlineCommandStrings.append(re.compile(r'\[\s*\:\s*play.*?\]', re.IGNORECASE))
 
+        # purge rate inline command
+        inlineCommandStrings.append(re.compile(r'\[\s*\:\s*rate.*?\]', re.IGNORECASE))
+
         # purge sync inline command
         inlineCommandStrings.append(re.compile(r'\[\s*\:\s*sync.*?\]', re.IGNORECASE))
 
         # purge tone inline command
-        inlineCommandStrings.append(re.compile(r'\[\s*\:\s*tone.*?\]', re.IGNORECASE))
+        inlineCommandStrings.append(re.compile(r'\[\s*\:\s*t.*?\]', re.IGNORECASE))
 
         # purge volume inline command
         inlineCommandStrings.append(re.compile(r'\[\s*\:\s*vol.*?\]', re.IGNORECASE))
@@ -177,7 +180,7 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         inputFlagStrings: List[Pattern] = list()
 
         # purge potentially dangerous/tricky characters
-        inputFlagStrings.append(re.compile(r'\&|\%|\;|\=|\'|\"|\||\^|\~', re.IGNORECASE))
+        inputFlagStrings.append(re.compile(r'\&|\%|\;|\=|\'|\"|\||\^|\~|\<|\>', re.IGNORECASE))
 
         # purge what might be directory traversal sequences
         inputFlagStrings.append(re.compile(r'\.{2}', re.IGNORECASE))
