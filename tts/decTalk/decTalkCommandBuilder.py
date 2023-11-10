@@ -331,9 +331,10 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
                 repeat = False
 
             for inputFlagRegEx in self.__inputFlagRegExes:
-                if inputFlagRegEx.search(message) is not None:
-                    repeat = True
+                if inputFlagRegEx.search(message) is None:
+                    continue
 
+                repeat = True
                 message = inputFlagRegEx.sub('', message)
 
                 if not utils.isValidStr(message):
