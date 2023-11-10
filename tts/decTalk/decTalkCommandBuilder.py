@@ -145,7 +145,7 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         inlineCommandStrings.append(re.compile(r'\[\s*\:\s*dv.*?\]', re.IGNORECASE))
 
         # purge error inline command
-        inlineCommandStrings.append(re.compile(r'\[\s*\:\s*erro.*?\]', re.IGNORECASE))
+        inlineCommandStrings.append(re.compile(r'\[\s*\:\s*err.*?\]', re.IGNORECASE))
 
         # purge log inline command
         inlineCommandStrings.append(re.compile(r'\[\s*\:\s*log.*?\]', re.IGNORECASE))
