@@ -288,8 +288,6 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
             user = user
         )
 
-        self.__timber.log('TwitchWebsocketClient', f'Finished creating EventSub subscription(s) for \"{user}\"')
-
     async def __handleNewTwitchWebsocketUrlFor(
         self,
         newTwitchWebsocketUrl: str,
