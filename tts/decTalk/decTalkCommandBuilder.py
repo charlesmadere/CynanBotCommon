@@ -132,7 +132,7 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
 
         return cheerStrings
 
-    async def __buildInlineCommandStrings(self) -> List[Pattern]:
+    def __buildInlineCommandStrings(self) -> List[Pattern]:
         inlineCommandStrings: List[Pattern] = list()
 
         # purge comma pause inline command
