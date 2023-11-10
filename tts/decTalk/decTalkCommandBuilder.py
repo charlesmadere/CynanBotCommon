@@ -299,11 +299,20 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         if not utils.isValidStr(message):
             return None
 
-        for inlineCommandRegEx in self.__inlineCommandRegExes:
-            message = inlineCommandRegEx.sub(' ', message)
+        repeat = True
 
-            if not utils.isValidStr(message):
-                return None
+        while repeat:
+            if repeat:
+                repeat = False
+
+            for inlineCommandRegEx in self.__inlineCommandRegExes:
+                if inlineCommandRegEx.search(message) is not None:
+                    repeat = True
+
+                message = inlineCommandRegEx.sub(' ', message)
+
+                if not utils.isValidStr(message):
+                    return None
 
         if not utils.isValidStr(message):
             return None
@@ -314,11 +323,20 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         if not utils.isValidStr(message):
             return None
 
-        for inputFlagRegEx in self.__inputFlagRegExes:
-            message = inputFlagRegEx.sub('', message)
+        repeat = True
 
-            if not utils.isValidStr(message):
-                return None
+        while repeat:
+            if repeat:
+                repeat = False
+
+            for inputFlagRegEx in self.__inputFlagRegExes:
+                if inputFlagRegEx.search(message) is not None:
+                    repeat = True
+
+                message = inputFlagRegEx.sub('', message)
+
+                if not utils.isValidStr(message):
+                    return None
 
         if not utils.isValidStr(message):
             return None
