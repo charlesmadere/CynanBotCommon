@@ -105,6 +105,8 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         if not utils.isValidStr(message):
             return None
 
+        message = await self.__emojiHelper.replaceEmojisWithHumanNames(message)
+
         # remove extranneous whitespace
         message = self.__whiteSpaceRegEx.sub(' ', message)
         message = message.strip()
@@ -115,8 +117,6 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         message = await self.__cropMessageIfNecessary(message)
         if not utils.isValidStr(message):
             return None
-
-        message = await self.__emojiHelper.replaceEmojisWithHumanNames(message)
 
         # DECTalk requires Windows-1252 encoding
         return message.encode().decode('windows-1252')
