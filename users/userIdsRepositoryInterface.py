@@ -5,6 +5,14 @@ from typing import Optional
 class UserIdsRepositoryInterface(ABC):
 
     @abstractmethod
+    async def fetchAnonymousUserId(self, twitchAccessToken: str) -> Optional[str]:
+        pass
+
+    @abstractmethod
+    async def fetchAnonymousUserName(self, twitchAccessToken: str) -> Optional[str]:
+        pass
+
+    @abstractmethod
     async def fetchUserId(
         self,
         userName: str,
@@ -26,6 +34,14 @@ class UserIdsRepositoryInterface(ABC):
         userId: str,
         twitchAccessToken: Optional[str] = None
     ) -> Optional[str]:
+        pass
+
+    @abstractmethod
+    async def requireAnonymousUserId(self, twitchAccessToken: str) -> str:
+        pass
+
+    @abstractmethod
+    async def requireAnonymousUserName(self, twitchAccessToken: str) -> str:
         pass
 
     @abstractmethod

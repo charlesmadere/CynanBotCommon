@@ -49,6 +49,24 @@ class UserIdsRepository(UserIdsRepositoryInterface):
 
         self.__isDatabaseReady: bool = False
 
+    async def fetchAnonymousUserId(self, twitchAccessToken: str) -> Optional[str]:
+        if not utils.isValidStr(twitchAccessToken):
+            raise ValueError(f'twitchAccessToken argument is malformed: \"{twitchAccessToken}\"')
+
+        # this is hardcoded to the ID of the "AnAnonymousGifter" account on Twitch
+        return '274598607'
+
+    async def fetchAnonymousUserName(self, twitchAccessToken: str) -> Optional[str]:
+        if not utils.isValidStr(twitchAccessToken):
+            raise ValueError(f'twitchAccessToken argument is malformed: \"{twitchAccessToken}\"')
+
+        anonymousUserId = await self.fetchAnonymousUserId()
+
+        return await self.fetchUserName(
+            userId = anonymousUserId,
+            twitchAccessToken = twitchAccessToken
+        )
+
     async def fetchUserId(
         self,
         userName: str,
@@ -205,6 +223,28 @@ class UserIdsRepository(UserIdsRepositoryInterface):
             raise RuntimeError(f'Encountered unexpected DatabaseType when trying to create tables: \"{connection.getDatabaseType()}\"')
 
         await connection.close()
+
+    async def requireAnonymousUserId(self, twitchAccessToken: str) -> str:
+        if not utils.isValidStr(twitchAccessToken):
+            raise ValueError(f'twitchAccessToken argument is malformed: \"{twitchAccessToken}\"')
+
+        anonymousUserId = await self.fetchAnonymousUserId(twitchAccessToken)
+
+        if not utils.isValidStr(anonymousUserId):
+            raise NoSuchUserException(f'Unable to fetch Twitch user ID for anonymous user')
+
+        return anonymousUserId
+
+    async def requireAnonymousUserName(self, twitchAccessToken: str) -> str:
+        if not utils.isValidStr(twitchAccessToken):
+            raise ValueError(f'twitchAccessToken argument is malformed: \"{twitchAccessToken}\"')
+
+        anonymousUserName = await self.fetchAnonymousUserName(twitchAccessToken)
+
+        if not utils.isValidStr(anonymousUserName):
+            raise NoSuchUserException(f'Unable to fetch Twitch user name for anonymous user')
+
+        return anonymousUserName
 
     async def requireUserId(
         self,

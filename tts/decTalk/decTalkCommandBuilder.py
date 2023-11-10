@@ -42,9 +42,7 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         contentScanner: ContentScannerInterface,
         emojiHelper: EmojiHelperInterface,
         timber: TimberInterface,
-        ttsSettingsRepository: TtsSettingsRepositoryInterface,
-        toneLowerVolume: str = '[:volume down 1]',
-        toneHigherVolume: str =  '[:volume up 99]'
+        ttsSettingsRepository: TtsSettingsRepositoryInterface
     ):
         if not isinstance(contentScanner, ContentScannerInterface):
             raise ValueError(f'contentScanner argument is malformed: \"{contentScanner}\"')
@@ -54,21 +52,15 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(ttsSettingsRepository, TtsSettingsRepositoryInterface):
             raise ValueError(f'ttsSettingsRepository argument is malformed: \"{ttsSettingsRepository}\"')
-        elif not utils.isValidStr(toneLowerVolume):
-            raise ValueError(f'toneLowerVolume argument is malformed: \"{toneLowerVolume}\"')
-        elif not utils.isValidStr(toneHigherVolume):
-            raise ValueError(f'toneHigherVolume argument is malformed: \"{toneHigherVolume}\"')
 
         self.__contentScanner: ContentScannerInterface = contentScanner
         self.__emojiHelper: EmojiHelperInterface = emojiHelper
         self.__timber: TimberInterface = timber
         self.__ttsSettingsRepository: TtsSettingsRepositoryInterface = ttsSettingsRepository
-        self.__toneLowerVolume: str = toneLowerVolume
-        self.__toneHigherVolume: str = toneHigherVolume
 
-        self.__bannedStrings: List[Pattern] = self.__buildBannedStrings()
-        self.__cheerStrings: List[Pattern] = self.__buildCheerStrings()
-        self.__toneRegEx: Pattern = re.compile(r'\[\:(dial|tone).*?\]', re.IGNORECASE)
+        self.__cheerRegExes: List[Pattern] = self.__buildCheerStrings()
+        self.__inlineCommandRegExes: List[Pattern] = self.__buildInlineCommandStrings()
+        self.__inputFlagRegExes: List[Pattern] = self.__buildInputFlagStrings()
         self.__whiteSpaceRegEx: Pattern = re.compile(r'\s{2,}', re.IGNORECASE)
 
     async def buildAndCleanEvent(self, event: Optional[TtsEvent]) -> Optional[str]:
@@ -97,112 +89,37 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
             return None
 
         contentCode = await self.__contentScanner.scan(message)
-
         if contentCode is not ContentCode.OK:
             self.__timber.log('DecTalkCommandBuilder', f'TTS command \"{message}\" returned a bad content code: \"{contentCode}\"')
             return None
 
-        for cheerString in self.__cheerStrings:
-            message = cheerString.sub(' ', message)
+        message = await self.__purgeInputFlags(message)
+        if not utils.isValidStr(message):
+            return None
 
-            if not utils.isValidStr(message):
-                return None
+        message = await self.__purgeCheers(message)
+        if not utils.isValidStr(message):
+            return None
+
+        message = await self.__purgeInlineCommands(message)
+        if not utils.isValidStr(message):
+            return None
+
+        # remove extranneous whitespace
+        message = self.__whiteSpaceRegEx.sub(' ', message)
+        message = message.strip()
 
         if not utils.isValidStr(message):
             return None
 
-        for bannedString in self.__bannedStrings:
-            message = bannedString.sub('', message)
-
-            if not utils.isValidStr(message):
-                return None
-
+        message = await self.__cropMessageIfNecessary(message)
         if not utils.isValidStr(message):
             return None
-
-        maxMessageSize = await self.__ttsSettingsRepository.getMaximumMessageSize()
-
-        if len(message) > maxMessageSize:
-            self.__timber.log('DecTalkCommandBuilder', f'Chopping down TTS command \"{message}\" as it is too long (len={len(message)}) ({maxMessageSize=}) ({message})')
-            message = message[:maxMessageSize].strip()
 
         message = await self.__emojiHelper.replaceEmojisWithHumanNames(message)
 
-        # remove extranneous whitespace
-        message = self.__whiteSpaceRegEx.sub(' ', message).strip()
-
-        if not utils.isValidStr(message):
-            return None
-
         # DECTalk requires Windows-1252 encoding
         return message.encode().decode('windows-1252')
-
-    def __buildBannedStrings(self) -> List[Pattern]:
-        bannedStrings: List[Pattern] = list()
-
-        # purge potentially dangerous/tricky characters
-        bannedStrings.append(re.compile(r'\&|\%|\;|\=|\'|\"|\||\^|\~', re.IGNORECASE))
-
-        # purge what might be directory traversal sequences
-        bannedStrings.append(re.compile(r'\.{2,}', re.IGNORECASE))
-
-        # purge various help flags
-        bannedStrings.append(re.compile(r'(^|\s+)-h', re.IGNORECASE))
-        bannedStrings.append(re.compile(r'(^|\s+)-\?', re.IGNORECASE))
-
-        # purge various input flags
-        bannedStrings.append(re.compile(r'(^|\s+)-pre', re.IGNORECASE))
-        bannedStrings.append(re.compile(r'(^|\s+)-post', re.IGNORECASE))
-        bannedStrings.append(re.compile(r'^\s*text', re.IGNORECASE))
-
-        # purge user dictionary flag
-        bannedStrings.append(re.compile(r'(^|\s+)-d', re.IGNORECASE))
-
-        # purge version information flag
-        bannedStrings.append(re.compile(r'(^|\s+)-v', re.IGNORECASE))
-
-        # purge language flag
-        bannedStrings.append(re.compile(r'(^|\s+)-lang(\s+\w+)?', re.IGNORECASE))
-
-        # purge various output flags
-        bannedStrings.append(re.compile(r'(^|\s+)-w', re.IGNORECASE))
-        bannedStrings.append(re.compile(r'(^|\s+)-l((\[\w+\])|\w+)?', re.IGNORECASE))
-
-        # purge dial inline command
-        bannedStrings.append(re.compile(r'\[\:dial.*\]', re.IGNORECASE))
-
-        # purge design voice inline command
-        bannedStrings.append(re.compile(r'\[\:dv.*\]', re.IGNORECASE))
-
-        # purge error inline command
-        bannedStrings.append(re.compile(r'\[\:erro.*\]', re.IGNORECASE))
-
-        # purge log inline command
-        bannedStrings.append(re.compile(r'\[\:log.*\]', re.IGNORECASE))
-
-        # purge sync mode inline command
-        bannedStrings.append(re.compile(r'\[\:mode.*\]', re.IGNORECASE))
-
-        # purge period pause inline command
-        bannedStrings.append(re.compile(r'\[\:peri.*\]', re.IGNORECASE))
-        bannedStrings.append(re.compile(r'\[\:pp.*\]', re.IGNORECASE))
-
-        # purge pitch inline command
-        bannedStrings.append(re.compile(r'\[\:pitch.*\]', re.IGNORECASE))
-
-        # purge play inline command
-        bannedStrings.append(re.compile(r'\[\:play.*\]', re.IGNORECASE))
-
-        # purge sync inline command
-        bannedStrings.append(re.compile(r'\[\:sync.*\]', re.IGNORECASE))
-
-        # purge tone inline command
-        bannedStrings.append(re.compile(r'\[\:tone.*\]', re.IGNORECASE))
-
-        # purge volume inline command
-        bannedStrings.append(re.compile(r'\[\:volu.*\]', re.IGNORECASE))
-
-        return bannedStrings
 
     def __buildCheerStrings(self) -> List[Pattern]:
         cheerStrings: List[Pattern] = list()
@@ -215,31 +132,92 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
 
         return cheerStrings
 
-    async def __insertVolumeInlineCommands(self, message: str) -> str:
+    async def __buildInlineCommandStrings(self) -> List[Pattern]:
+        inlineCommandStrings: List[Pattern] = list()
+
+        # purge comma pause inline command
+        inlineCommandStrings.append(re.compile(r'\[\:(comm|cp).*\]', re.IGNORECASE))
+
+        # purge dial inline command
+        inlineCommandStrings.append(re.compile(r'\[\:dial.*\]', re.IGNORECASE))
+
+        # purge design voice inline command
+        inlineCommandStrings.append(re.compile(r'\[\:dv.*\]', re.IGNORECASE))
+
+        # purge error inline command
+        inlineCommandStrings.append(re.compile(r'\[\:erro.*\]', re.IGNORECASE))
+
+        # purge log inline command
+        inlineCommandStrings.append(re.compile(r'\[\:log.*\]', re.IGNORECASE))
+
+        # purge sync mode inline command
+        inlineCommandStrings.append(re.compile(r'\[\:mode.*\]', re.IGNORECASE))
+
+        # purge period pause inline command
+        inlineCommandStrings.append(re.compile(r'\[\:(peri|pp).*\]', re.IGNORECASE))
+
+        # purge pitch inline command
+        inlineCommandStrings.append(re.compile(r'\[\:pitch.*\]', re.IGNORECASE))
+
+        # purge play inline command
+        inlineCommandStrings.append(re.compile(r'\[\:play.*\]', re.IGNORECASE))
+
+        # purge sync inline command
+        inlineCommandStrings.append(re.compile(r'\[\:sync.*\]', re.IGNORECASE))
+
+        # purge tone inline command
+        inlineCommandStrings.append(re.compile(r'\[\:tone.*\]', re.IGNORECASE))
+
+        # purge volume inline command
+        inlineCommandStrings.append(re.compile(r'\[\:vol.*\]', re.IGNORECASE))
+
+        return inlineCommandStrings
+
+    def __buildInputFlagStrings(self) -> List[Pattern]:
+        inputFlagStrings: List[Pattern] = list()
+
+        # purge potentially dangerous/tricky characters
+        inputFlagStrings.append(re.compile(r'\&|\%|\;|\=|\'|\"|\||\^|\~', re.IGNORECASE))
+
+        # purge what might be directory traversal sequences
+        inputFlagStrings.append(re.compile(r'\.{2}', re.IGNORECASE))
+
+        # purge various help flags
+        inputFlagStrings.append(re.compile(r'(^|\s+)-h', re.IGNORECASE))
+        inputFlagStrings.append(re.compile(r'(^|\s+)-\?', re.IGNORECASE))
+
+        # purge various input flags
+        inputFlagStrings.append(re.compile(r'(^|\s+)-pre', re.IGNORECASE))
+        inputFlagStrings.append(re.compile(r'(^|\s+)-post', re.IGNORECASE))
+        inputFlagStrings.append(re.compile(r'^\s*text', re.IGNORECASE))
+
+        # purge user dictionary flag
+        inputFlagStrings.append(re.compile(r'(^|\s+)-d', re.IGNORECASE))
+
+        # purge version information flag
+        inputFlagStrings.append(re.compile(r'(^|\s+)-v', re.IGNORECASE))
+
+        # purge language flag
+        inputFlagStrings.append(re.compile(r'(^|\s+)-lang(\s+\w+)?', re.IGNORECASE))
+
+        # purge various output flags
+        inputFlagStrings.append(re.compile(r'(^|\s+)-w', re.IGNORECASE))
+        inputFlagStrings.append(re.compile(r'(^|\s+)-l((\[\w+\])|\w+)?', re.IGNORECASE))
+
+        return inputFlagStrings
+
+    async def __cropMessageIfNecessary(self, message: Optional[str]) -> Optional[str]:
         if not utils.isValidStr(message):
-            raise ValueError(f'message argument is malformed: \"{message}\"')
+            return None
 
-        firstSearch = True
-        startPosition = 0
-        searchResult: Optional[Match] = None
+        maxMessageSize = await self.__ttsSettingsRepository.getMaximumMessageSize()
 
-        # input: "hello world [:dial 423]"
-        # output: "hello world [:volume 1] [:dial 423] [:volume 9]"
+        if len(message) > maxMessageSize:
+            self.__timber.log('DecTalkCommandBuilder', f'Chopping down TTS command \"{message}\" as it is too long (len={len(message)}) ({maxMessageSize=}) ({message})')
+            message = message[:maxMessageSize].strip()
 
-        while firstSearch or searchResult is not None:
-            if firstSearch:
-                firstSearch = False
-
-            searchResult = self.__toneRegEx.search(message, startPosition)
-
-            if searchResult is None:
-                continue
-
-            beginning = message[:searchResult.start()]
-            middle = message[searchResult.start():searchResult.end()]
-            end = message[searchResult.end():]
-            message = f'{beginning}{self.__toneLowerVolume}{middle}{self.__toneHigherVolume}{end}'
-            startPosition = searchResult.start() + len(self.__toneLowerVolume) + len(middle) + len(self.__toneHigherVolume)
+        if not utils.isValidStr(message):
+            return None
 
         return message
 
@@ -301,3 +279,48 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
             return f'{event.getUserName()} gifted a sub!'
         else:
             return f'{event.getUserName()} subscribed!'
+
+    async def __purgeCheers(self, message: Optional[str]) -> Optional[str]:
+        if not utils.isValidStr(message):
+            return None
+
+        for cheerRegEx in self.__cheerRegExes:
+            message = cheerRegEx.sub(' ', message)
+
+            if not utils.isValidStr(message):
+                return None
+
+        if not utils.isValidStr(message):
+            return None
+
+        return message.strip()
+
+    async def __purgeInlineCommands(self, message: Optional[str]) -> Optional[str]:
+        if not utils.isValidStr(message):
+            return None
+
+        for inlineCommandRegEx in self.__inlineCommandRegExes:
+            message = inlineCommandRegEx.sub(' ', message)
+
+            if not utils.isValidStr(message):
+                return None
+
+        if not utils.isValidStr(message):
+            return None
+
+        return message.strip()
+
+    async def __purgeInputFlags(self, message: Optional[str]) -> Optional[str]:
+        if not utils.isValidStr(message):
+            return None
+
+        for inputFlagRegEx in self.__inputFlagRegExes:
+            message = inputFlagRegEx.sub('', message)
+
+            if not utils.isValidStr(message):
+                return None
+
+        if not utils.isValidStr(message):
+            return None
+
+        return message.strip()

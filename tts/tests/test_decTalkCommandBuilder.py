@@ -131,6 +131,14 @@ class TestDecTalkCommandBuilder():
         assert result == 'hello world'
 
     @pytest.mark.asyncio
+    async def test_buildAndCleanMessage_withCommaPauseInlineCommand(self):
+        result = await self.decTalkCommandBuilder.buildAndCleanMessage('hello world [:comma 50]')
+        assert result == 'hello world'
+
+        result = await self.decTalkCommandBuilder.buildAndCleanMessage('hello world [:cp 1000,10000] blah')
+        assert result == 'hello world blah'
+
+    @pytest.mark.asyncio
     async def test_buildAndCleanMessage_withDangerousCharactersString(self):
         result = await self.decTalkCommandBuilder.buildAndCleanMessage('& cd C:\\ & dir')
         assert result == 'cd C:\\ dir'
@@ -176,6 +184,11 @@ class TestDecTalkCommandBuilder():
         assert result == 'hello world'
 
     @pytest.mark.asyncio
+    async def test_buildAndCleanMessage_withDesignVoiceInlineCommand(self):
+        result = await self.decTalkCommandBuilder.buildAndCleanMessage('hello world [:dv] qwerty')
+        assert result == 'hello world qwerty'
+
+    @pytest.mark.asyncio
     async def test_buildAndCleanMessage_withDirectoryTraversalString(self):
         result = await self.decTalkCommandBuilder.buildAndCleanMessage('& cd .. & dir')
         assert result == 'cd dir'
@@ -184,6 +197,14 @@ class TestDecTalkCommandBuilder():
     async def test_buildAndCleanMessage_withEmojiString(self):
         result = await self.decTalkCommandBuilder.buildAndCleanMessage('shark 🦈 shark 😀 🤔')
         assert result == 'shark shark shark grinning face'
+
+    @pytest.mark.asyncio
+    async def test_buildAndCleanMessage_withErrorInlineCommand(self):
+        result = await self.decTalkCommandBuilder.buildAndCleanMessage('hello world [:error] qwerty')
+        assert result == 'hello world qwerty'
+
+        result = await self.decTalkCommandBuilder.buildAndCleanMessage('azerty   [:erro C:\\log.txt]  qwerty ')
+        assert result == 'azerty qwerty'
 
     @pytest.mark.asyncio
     async def test_buildAndCleanMessage_withExtraneousSpacesString(self):
@@ -196,9 +217,66 @@ class TestDecTalkCommandBuilder():
         assert result == 'Hello, World!'
 
     @pytest.mark.asyncio
+    async def test_buildAndCleanMessage_withLogInlineCommand(self):
+        result = await self.decTalkCommandBuilder.buildAndCleanMessage('apple [:log] google')
+        assert result == 'apple google'
+
+        result = await self.decTalkCommandBuilder.buildAndCleanMessage(' microsoft[:log C:\\log.txt]  twitch ')
+        assert result == 'microsoft twitch'
+
+    @pytest.mark.asyncio
+    async def test_buildAndCleanMessage_withModeInlineCommand(self):
+        result = await self.decTalkCommandBuilder.buildAndCleanMessage('KEKW [:mode 7] LUL')
+        assert result == 'KEKW LUL'
+
+    @pytest.mark.asyncio
     async def test_buildAndCleanMessage_withNone(self):
         result = await self.decTalkCommandBuilder.buildAndCleanMessage(None)
         assert result is None
+
+    @pytest.mark.asyncio
+    async def test_buildAndCleanMessage_withPeriodPauseInlineCommand(self):
+        result = await self.decTalkCommandBuilder.buildAndCleanMessage('apple [:period] google')
+        assert result == 'apple google'
+
+        result = await self.decTalkCommandBuilder.buildAndCleanMessage('oatsngoats[:peri 123]imyt')
+        assert result == 'oatsngoats imyt'
+
+        result = await self.decTalkCommandBuilder.buildAndCleanMessage('[:pp]')
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_buildAndCleanMessage_withPitchInlineCommand(self):
+        result = await self.decTalkCommandBuilder.buildAndCleanMessage('[:pitch] hello')
+        assert result == 'hello'
+
+    @pytest.mark.asyncio
+    async def test_buildAndCleanMessage_withPlayInlineCommand(self):
+        result = await self.decTalkCommandBuilder.buildAndCleanMessage('[:play \"C:\\song.wav\"]')
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_buildAndCleanMessage_withSyncInlineCommand(self):
+        result = await self.decTalkCommandBuilder.buildAndCleanMessage('time to [:sync 1] ok')
+        assert result == 'time to ok'
+
+    @pytest.mark.asyncio
+    async def test_buildAndCleanMessage_withToneInlineCommand(self):
+        result = await self.decTalkCommandBuilder.buildAndCleanMessage('this is a tone inline command [:tone]')
+        assert result == 'this is a tone inline command'
+
+    @pytest.mark.asyncio
+    async def test_buildAndCleanMessage_withUniText(self):
+        result = await self.decTalkCommandBuilder.buildAndCleanMessage('hello world uni5')
+        assert result == 'hello world'
+
+    @pytest.mark.asyncio
+    async def test_buildAndCleanMessage_withVolumeInlineCommand(self):
+        result = await self.decTalkCommandBuilder.buildAndCleanMessage('this is a volume inline command [:vol set 99]')
+        assert result == 'this is a volume inline command'
+
+        result = await self.decTalkCommandBuilder.buildAndCleanMessage('[:volume something]1')
+        assert result == '1'
 
     @pytest.mark.asyncio
     async def test_buildAndCleanMessage_withWhitespaceString(self):
