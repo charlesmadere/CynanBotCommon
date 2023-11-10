@@ -136,40 +136,40 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         inlineCommandStrings: List[Pattern] = list()
 
         # purge comma pause inline command
-        inlineCommandStrings.append(re.compile(r'\[\:(comm|cp).*\]', re.IGNORECASE))
+        inlineCommandStrings.append(re.compile(r'\[\s*\:\s*(comm|cp).*\]', re.IGNORECASE))
 
         # purge dial inline command
-        inlineCommandStrings.append(re.compile(r'\[\:dial.*\]', re.IGNORECASE))
+        inlineCommandStrings.append(re.compile(r'\[\s*\:\s*dial.*\]', re.IGNORECASE))
 
         # purge design voice inline command
-        inlineCommandStrings.append(re.compile(r'\[\:dv.*\]', re.IGNORECASE))
+        inlineCommandStrings.append(re.compile(r'\[\s*\:\s*dv.*\]', re.IGNORECASE))
 
         # purge error inline command
-        inlineCommandStrings.append(re.compile(r'\[\:erro.*\]', re.IGNORECASE))
+        inlineCommandStrings.append(re.compile(r'\[\s*\:\s*erro.*\]', re.IGNORECASE))
 
         # purge log inline command
-        inlineCommandStrings.append(re.compile(r'\[\:log.*\]', re.IGNORECASE))
+        inlineCommandStrings.append(re.compile(r'\[\s*\:\s*log.*\]', re.IGNORECASE))
 
         # purge sync mode inline command
-        inlineCommandStrings.append(re.compile(r'\[\:mode.*\]', re.IGNORECASE))
+        inlineCommandStrings.append(re.compile(r'\[\s*\:\s*mode.*\]', re.IGNORECASE))
 
         # purge period pause inline command
-        inlineCommandStrings.append(re.compile(r'\[\:(peri|pp).*\]', re.IGNORECASE))
+        inlineCommandStrings.append(re.compile(r'\[\s*\:\s*(peri|pp).*\]', re.IGNORECASE))
 
         # purge pitch inline command
-        inlineCommandStrings.append(re.compile(r'\[\:pitch.*\]', re.IGNORECASE))
+        inlineCommandStrings.append(re.compile(r'\[\s*\:\s*pitch.*\]', re.IGNORECASE))
 
         # purge play inline command
-        inlineCommandStrings.append(re.compile(r'\[\:play.*\]', re.IGNORECASE))
+        inlineCommandStrings.append(re.compile(r'\[\s*\:\s*play.*\]', re.IGNORECASE))
 
         # purge sync inline command
-        inlineCommandStrings.append(re.compile(r'\[\:sync.*\]', re.IGNORECASE))
+        inlineCommandStrings.append(re.compile(r'\[\s*\:\s*sync.*\]', re.IGNORECASE))
 
         # purge tone inline command
-        inlineCommandStrings.append(re.compile(r'\[\:tone.*\]', re.IGNORECASE))
+        inlineCommandStrings.append(re.compile(r'\[\s*\:\s*tone.*\]', re.IGNORECASE))
 
         # purge volume inline command
-        inlineCommandStrings.append(re.compile(r'\[\:vol.*\]', re.IGNORECASE))
+        inlineCommandStrings.append(re.compile(r'\[\s*\:\s*vol.*\]', re.IGNORECASE))
 
         return inlineCommandStrings
 
