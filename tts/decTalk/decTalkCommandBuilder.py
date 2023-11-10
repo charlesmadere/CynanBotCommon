@@ -1,5 +1,5 @@
 import re
-from typing import List, Match, Optional, Pattern
+from typing import List, Optional, Pattern
 
 try:
     import CynanBotCommon.utils as utils
@@ -306,9 +306,10 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
                 repeat = False
 
             for inlineCommandRegEx in self.__inlineCommandRegExes:
-                if inlineCommandRegEx.search(message) is not None:
-                    repeat = True
+                if inlineCommandRegEx.search(message) is None:
+                    continue
 
+                repeat = True
                 message = inlineCommandRegEx.sub(' ', message)
 
                 if not utils.isValidStr(message):
