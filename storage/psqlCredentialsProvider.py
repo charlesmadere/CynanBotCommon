@@ -36,9 +36,19 @@ class PsqlCredentialsProvider(Clearable):
         jsonContents = await self.__readJsonAsync()
         return utils.getStrFromDict(jsonContents, 'databaseName')
 
-    async def requireMaxConnectionsSize(self) -> int:
+    async def requireMaxConnections(self) -> int:
         jsonContents = await self.__readJsonAsync()
-        return utils.getIntFromDict(jsonContents, 'maxConnectionsSize', fallback = 100)
+
+        maxConnections = utils.getIntFromDict(
+            d = jsonContents,
+            key = 'maxConnections',
+            fallback = 100
+        )
+
+        if maxConnections < 1 or maxConnections > utils.getIntMaxSafeSize():
+            raise ValueError(f'\"maxConnections\" value is malformed: \"{maxConnections}\"')
+
+        return maxConnections
 
     async def requireUser(self) -> str:
         jsonContents = await self.__readJsonAsync()
