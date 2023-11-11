@@ -4,7 +4,6 @@ try:
     from CynanBotCommon.trivia.triviaEventType import TriviaEventType
 except:
     import utils
-
     from trivia.absTriviaEvent import AbsTriviaEvent
     from trivia.triviaEventType import TriviaEventType
 
