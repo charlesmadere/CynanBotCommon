@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Dict, Optional
 
 try:
     import CynanBotCommon.utils as utils
@@ -55,6 +55,15 @@ class WebsocketSession():
     def getStatus(self) -> WebsocketConnectionStatus:
         return self.__status
 
-    def __str__(self) -> str:
-        return f'connectedAt=\"{self.__connectedAt}\", keepAliveTimeoutSeconds=\"{self.__keepAliveTimeoutSeconds}\", \
-            reconnectUrl=\"{self.__reconnectUrl}\", sessionId=\"{self.__sessionId}\", status=\"{self.__status}\"'
+    def __repr__(self) -> str:
+        dictionary = self.toDictionary()
+        return str(dictionary)
+
+    def toDictionary(self) -> Dict[str, Any]:
+        return {
+            'connectedAt': self.__connectedAt,
+            'keepAliveTimeoutSeconds': self.__keepAliveTimeoutSeconds,
+            'reconnectUrl': self.__reconnectUrl,
+            'sessionId': self.__sessionId,
+            'status': self.__status
+        }

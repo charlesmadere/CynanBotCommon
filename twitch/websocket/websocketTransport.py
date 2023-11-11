@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Dict, Optional
 
 try:
     import CynanBotCommon.utils as utils
@@ -55,6 +55,10 @@ class WebsocketTransport():
     def getSessionId(self) -> Optional[str]:
         return self.__sessionId
 
+    def __repr__(self) -> str:
+        dictionary = self.toDictionary()
+        return str(dictionary)
+
     def requireSessionId(self) -> str:
         sessionId = self.__sessionId
 
@@ -63,7 +67,12 @@ class WebsocketTransport():
 
         return sessionId
 
-    def __str__(self) -> str:
-        return f'connectedAt=\"{self.__connectedAt}\", disconnectedAt=\"{self.__disconnectedAt}\", \
-            secret=\"{self.__secret}\", sessionId=\"{self.__sessionId}\", method=\"{self.__method}\"'
+    def toDictionary(self) -> Dict[str, Any]:
+        return {
+            'connectedAt': self.__connectedAt,
+            'disconnectedAt': self.__disconnectedAt,
+            'method': self.__method,
+            'secret': self.__secret,
+            'sesssionId': self.__sessionId
+        }
     

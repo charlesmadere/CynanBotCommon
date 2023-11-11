@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Dict, Optional
 
 try:
     import CynanBotCommon.utils as utils
@@ -42,4 +42,13 @@ class WebsocketReward():
         return self.__title
 
     def __repr__(self) -> str:
-        return f'({self.__cost=}, {self.__prompt=}, {self.__rewardId=}, {self.__title=})'
+        dictionary = self.toDictionary()
+        return str(dictionary)
+
+    def toDictionary(self) -> Dict[str, Any]:
+        return {
+            'cost': self.__cost,
+            'prompt': self.__prompt,
+            'rewardId': self.__rewardId,
+            'title': self.__title
+        }

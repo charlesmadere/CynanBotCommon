@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Dict, Optional
 
 try:
     from CynanBotCommon.twitch.websocket.websocketEvent import WebsocketEvent
@@ -42,3 +42,27 @@ class WebsocketPayload():
 
     def isEmpty(self) -> bool:
         return self.__event is None and self.__session is None and self.__subscription is None
+
+    def __repr__(self) -> str:
+        dictionary = self.toDictionary()
+        return str(dictionary)
+
+    def toDictionary(self) -> Dict[str, Any]:
+        dictionary: Dict[str, Any] = dict()
+
+        if self.__event is None:
+            dictionary['event'] = None
+        else:
+            dictionary['event'] = self.__event.toDictionary()
+
+        if self.__session is None:
+            dictionary['session'] = None
+        else:
+            dictionary['session'] = self.__session.toDictionary()
+
+        if self.__subscription is None:
+            dictionary['subscription'] = None
+        else:
+            dictionary['subscription'] = self.__subscription.toDictionary()
+
+        return dictionary

@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 try:
     import CynanBotCommon.utils as utils
@@ -64,5 +64,19 @@ class WebsocketOutcome():
     def getTopPredictors(self) -> Optional[List[WebsocketOutcomePredictor]]:
         return self.__topPredictors
 
-    def getUsers(self) -> str:
+    def getUsers(self) -> int:
         return self.__users
+
+    def __repr__(self) -> str:
+        dictionary = self.toDictionary()
+        return str(dictionary)
+
+    def toDictionary(self) -> Dict[str, Any]:
+        return {
+            'channelPoints': self.__channelPoints,
+            'color': self.__color,
+            'outcomeId': self.__outcomeId,
+            'title': self.__title,
+            'topPredictors': self.__topPredictors,
+            'users': self.__users
+        }

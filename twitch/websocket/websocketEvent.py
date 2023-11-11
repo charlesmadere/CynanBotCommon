@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 try:
     import CynanBotCommon.utils as utils
@@ -256,3 +256,44 @@ class WebsocketEvent():
 
     def isGift(self) -> Optional[bool]:
         return self.__isGift
+
+    def __repr__(self) -> str:
+        dictionary = self.toDictionary()
+        return str(dictionary)
+
+    def toDictionary(self) -> Dict[str, Any]:
+        return {
+            'bits': self.__bits,
+            'broadcasterUserId': self.__broadcasterUserId,
+            'broadcasterUserLogin': self.__broadcasterUserLogin,
+            'broadcasterUserName': self.__broadcasterUserName,
+            'categoryId': self.__categoryId,
+            'categoryName': self.__categoryName,
+            'communitySubTotal': self.__communitySubTotal,
+            'cumulativeMonths': self.__cumulativeMonths,
+            'eventId': self.__eventId,
+            'followedAt': self.__followedAt,
+            'fromBroadcasterUserId': self.__fromBroadcasterUserId,
+            'fromBroadcasterUserLogin': self.__fromBroadcasterUserLogin,
+            'fromBroadcasterUserName': self.__fromBroadcasterUserName,
+            'message': self.__message,
+            'notice_type': self.__noticeType,
+            'outcomes': self.__outcomes,
+            'redeemedAt': self.__redeemedAt,
+            'reward': self.__reward,
+            'rewardId': self.__rewardId,
+            'text': self.__text,
+            'tier': self.__tier,
+            'title': self.__title,
+            'toBroadcasterUserId': self.__toBroadcasterUserId,
+            'toBroadcasterUserLogin': self.__toBroadcasterUserLogin,
+            'toBroadcasterUserName': self.__toBroadcasterUserName,
+            'total': self.__total,
+            'userId': self.__userId,
+            'userInput': self.__userInput,
+            'userLogin': self.__userLogin,
+            'userName': self.__userName,
+            'viewers': self.__viewers,
+            'isAnonymous': self.__isAnonymous,
+            'isGift': self.__isGift
+        }

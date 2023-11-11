@@ -1,3 +1,5 @@
+from typing import Any, Dict
+
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.simpleDateTime import SimpleDateTime
@@ -13,9 +15,9 @@ except:
     import utils
     from simpleDateTime import SimpleDateTime
 
-    from twitch.websocket.websocketCondition import WebsocketCondition
     from CynanBotCommon.twitch.websocket.websocketConnectionStatus import \
         WebsocketConnectionStatus
+    from twitch.websocket.websocketCondition import WebsocketCondition
     from twitch.websocket.websocketSubscriptionType import \
         WebsocketSubscriptionType
     from twitch.websocket.websocketTransport import WebsocketTransport
@@ -83,3 +85,19 @@ class WebsocketSubscription():
 
     def getVersion(self) -> str:
         return self.__version
+
+    def __repr__(self) -> str:
+        dictionary = self.toDictionary()
+        return str(dictionary)
+
+    def toDictionary(self) -> Dict[str, Any]:
+        return {
+            'condition': self.__condition,
+            'cost': self.__cost,
+            'createdAt': self.__createdAt,
+            'status': self.__status,
+            'subscriptionId': self.__subscriptionId,
+            'subscriptionType': self.__subscriptionType,
+            'transport': self.__transport.toDictionary(),
+            'version': self.__version
+        }

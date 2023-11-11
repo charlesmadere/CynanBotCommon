@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Dict, Optional
 
 try:
     import CynanBotCommon.utils as utils
@@ -57,3 +57,16 @@ class WebsocketMetadata():
 
     def getSubscriptionVersion(self) -> Optional[str]:
         return self.__subscriptionVersion
+
+    def __repr__(self) -> str:
+        dictionary = self.toDictionary()
+        return str(dictionary)
+
+    def toDictionary(self) -> Dict[str, Any]:
+        return {
+            'messageId': self.__messageId,
+            'messageTimestamp': self.__messageTimestamp,
+            'messageType': self.__messageType,
+            'subscriptionType': self.__subscriptionType,
+            'subscriptionVersion': self.__subscriptionVersion
+        }
