@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Dict
 
 try:
     import CynanBotCommon.utils as utils
@@ -38,3 +38,9 @@ class TwitchWebsocketUser():
 
     def __repr__(self) -> str:
         return self.getUserName()
+
+    def toDictionary(self) -> Dict[str, Any]:
+        return {
+            'userId': self.__userId,
+            'userName': self.__userName
+        }
