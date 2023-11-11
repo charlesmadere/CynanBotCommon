@@ -48,7 +48,6 @@ class DecTalkManager(TtsManagerInterface):
         ttsSettingsRepository: TtsSettingsRepositoryInterface,
         queueSleepTimeSeconds: float = 3,
         queueTimeoutSeconds: float = 3,
-        pathToDecTalk: str = '../dectalk/say.exe',
         tempFileDirectory: str = 'temp'
     ):
         if not isinstance(backgroundTaskHelper, BackgroundTaskHelper):
@@ -71,8 +70,6 @@ class DecTalkManager(TtsManagerInterface):
             raise ValueError(f'queueTimeoutSeconds argument is malformed: \"{queueTimeoutSeconds}\"')
         elif queueTimeoutSeconds < 1 or queueTimeoutSeconds > 3:
             raise ValueError(f'queueTimeoutSeconds argument is out of bounds: {queueTimeoutSeconds}')
-        elif not utils.isValidStr(pathToDecTalk):
-            raise ValueError(f'pathToDecTalk argument is malformed: \"{pathToDecTalk}\"')
         elif not utils.isValidStr(tempFileDirectory):
             raise ValueError(f'tempFileDirectory argument is malformed: \"{tempFileDirectory}\"')
 
@@ -84,7 +81,6 @@ class DecTalkManager(TtsManagerInterface):
         self.__ttsSettingsRepository: TtsSettingsRepositoryInterface = ttsSettingsRepository
         self.__queueSleepTimeSeconds: float = queueSleepTimeSeconds
         self.__queueTimeoutSeconds: float = queueTimeoutSeconds
-        self.__pathToDecTalk: str = utils.cleanPath(pathToDecTalk)
 
         self.__isStarted: bool = False
         self.__eventQueue: SimpleQueue[TtsEvent] = SimpleQueue()
@@ -109,9 +105,10 @@ class DecTalkManager(TtsManagerInterface):
             return
 
         self.__timber.log('DecTalkManager', f'Executing TTS message in \"{event.getTwitchChannel()}\"...')
+        pathToDecTalk = utils.cleanPath(await self.__ttsSettingsRepository.requireDecTalkPath())
 
         await self.__systemCommandHelper.executeCommand(
-            command = f'{self.__pathToDecTalk} -pre \"[:phone on]\" < \"{fileName}\"',
+            command = f'{pathToDecTalk} -pre \"[:phone on]\" < \"{fileName}\"',
             timeoutSeconds = await self.__ttsSettingsRepository.getTtsTimeoutSeconds()
         )
 
