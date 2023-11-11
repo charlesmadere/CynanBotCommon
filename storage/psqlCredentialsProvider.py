@@ -23,6 +23,10 @@ class PsqlCredentialsProvider(Clearable):
     async def clearCaches(self):
         self.__jsonCache = None
 
+    async def getPassword(self) -> Optional[str]:
+        jsonContents = await self.__readJsonAsync()
+        return utils.getStrFromDict(jsonContents, 'password', fallback = '')
+
     async def __readJsonAsync(self) -> Dict[str, Any]:
         if self.__jsonCache is not None:
             return self.__jsonCache
