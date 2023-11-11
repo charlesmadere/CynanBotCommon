@@ -180,7 +180,7 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         inputFlagStrings: List[Pattern] = list()
 
         # purge potentially dangerous/tricky characters
-        inputFlagStrings.append(re.compile(r'\&|\%|\;|\=|\'|\"|\||\^|\~|\<|\>', re.IGNORECASE))
+        inputFlagStrings.append(re.compile(r'\&|\%|\;|\=|\'|\"|\||\^|\~', re.IGNORECASE))
 
         # purge what might be directory traversal sequences
         inputFlagStrings.append(re.compile(r'\.{2}', re.IGNORECASE))
