@@ -41,7 +41,10 @@ class PsqlDatabaseConnection(DatabaseConnection):
 
         self.__requireNotClosed()
 
-        # intentionally ignoring this call, as we can't create PSQL tables
+        if utils.hasItems(args):
+            await self.execute(query, args)
+        else:
+            await self.execute(query)
 
     async def execute(self, query: str, *args: Optional[Any]):
         if not utils.isValidStr(query):

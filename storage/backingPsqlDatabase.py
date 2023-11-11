@@ -36,8 +36,17 @@ class BackingPsqlDatabase(BackingDatabase):
 
         self.__connectionPool: Optional[asyncpg.Pool] = None
 
+    async def __createCollations(self, databaseConnection: DatabaseConnection):
+        if not isinstance(databaseConnection, DatabaseConnection):
+            raise ValueError(f'databaseConnection argument is malformed: \"{databaseConnection}\"')
+
+        await databaseConnection.execute('CREATE EXTENSION IF NOT EXISTS citext')
+
     async def getConnection(self) -> DatabaseConnection:
+        connectionPoolCreated = False
+
         if self.__connectionPool is None:
+            connectionPoolCreated = True
             databaseName = await self.__psqlCredentialsProvider.requireDatabaseName()
             maxConnections = await self.__psqlCredentialsProvider.requireMaxConnections()
             password = await self.__psqlCredentialsProvider.getPassword()
@@ -53,10 +62,15 @@ class BackingPsqlDatabase(BackingDatabase):
 
         connection = await self.__connectionPool.acquire()
 
-        return PsqlDatabaseConnection(
+        databaseConnection: DatabaseConnection = PsqlDatabaseConnection(
             connection = connection,
             pool = self.__connectionPool
         )
+
+        if connectionPoolCreated:
+            await self.__createCollations(databaseConnection)
+
+        return databaseConnection
 
     def getDatabaseType(self) -> DatabaseType:
         return DatabaseType.POSTGRESQL
