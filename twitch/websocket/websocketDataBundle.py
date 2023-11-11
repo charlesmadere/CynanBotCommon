@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Dict, Optional
 
 try:
     from CynanBotCommon.twitch.websocket.websocketMetadata import \
@@ -30,3 +30,19 @@ class WebsocketDataBundle():
 
     def getPayload(self) -> Optional[WebsocketPayload]:
         return self.__payload
+
+    def __repr__(self) -> str:
+        dictionary = self.toDictionary()
+        return str(dictionary)
+
+    def toDictionary(self) -> Dict[str, Any]:
+        dictionary: Dict[str, Any] = {
+            'metadata': self.__metadata.toDictionary()
+        }
+
+        if self.__payload is None:
+            dictionary['payload'] = None
+        else:
+            dictionary['payload'] = self.__payload.toDictionary()
+
+        return dictionary
