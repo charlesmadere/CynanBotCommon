@@ -18,8 +18,6 @@ try:
         TwitchApiServiceInterface
     from CynanBotCommon.twitch.twitchEventSubRequest import \
         TwitchEventSubRequest
-    from CynanBotCommon.twitch.twitchEventSubResponse import \
-        TwitchEventSubResponse
     from CynanBotCommon.twitch.twitchTokensRepositoryInterface import \
         TwitchTokensRepositoryInterface
     from CynanBotCommon.twitch.websocket.twitchWebsocketAllowedUsersRepositoryInterface import \
@@ -51,7 +49,6 @@ except:
 
     from twitch.twitchApiServiceInterface import TwitchApiServiceInterface
     from twitch.twitchEventSubRequest import TwitchEventSubRequest
-    from twitch.twitchEventSubResponse import TwitchEventSubResponse
     from twitch.twitchTokensRepositoryInterface import \
         TwitchTokensRepositoryInterface
     from twitch.websocket.twitchWebsocketAllowedUsersRepositoryInterface import \
@@ -86,7 +83,19 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
         websocketCreationDelayTimeSeconds: float = 0.25,
         websocketSleepTimeSeconds: float = 3,
         queueTimeoutSeconds: int = 3,
-        subscriptionTypes: Set[WebsocketSubscriptionType] = { WebsocketSubscriptionType.CHANNEL_POINTS_REDEMPTION },
+        subscriptionTypes: Set[WebsocketSubscriptionType] = {
+            WebsocketSubscriptionType.CHANNEL_POINTS_REDEMPTION,
+            WebsocketSubscriptionType.CHANNEL_PREDICTION_BEGIN,
+            WebsocketSubscriptionType.CHANNEL_PREDICTION_END,
+            WebsocketSubscriptionType.CHANNEL_PREDICTION_LOCK,
+            WebsocketSubscriptionType.CHANNEL_PREDICTION_PROGRESS,
+            WebsocketSubscriptionType.CHANNEL_UPDATE,
+            WebsocketSubscriptionType.CHEER,
+            WebsocketSubscriptionType.RAID,
+            WebsocketSubscriptionType.SUBSCRIBE,
+            WebsocketSubscriptionType.SUBSCRIPTION_GIFT,
+            WebsocketSubscriptionType.SUBSCRIPTION_MESSAGE
+        },
         twitchWebsocketUrl: str = 'wss://eventsub.wss.twitch.tv/ws',
         maxMessageAge: timedelta = timedelta(minutes = 10),
         timeZone: timezone = timezone.utc
@@ -119,7 +128,7 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
             raise ValueError(f'queueTimeoutSeconds argument is malformed: \"{queueTimeoutSeconds}\"')
         elif queueTimeoutSeconds < 1 or queueTimeoutSeconds > 5:
             raise ValueError(f'queueTimeoutSeconds argument is out of bounds: {queueTimeoutSeconds}')
-        elif not isinstance(subscriptionTypes, Set) or not utils.hasItems(subscriptionTypes):
+        elif not isinstance(subscriptionTypes, Set):
             raise ValueError(f'subscriptionTypes argument is malformed: \"{subscriptionTypes}\"')
         elif not utils.isValidUrl(twitchWebsocketUrl):
             raise ValueError(f'twitchWebsocketUrl argument is malformed: \"{twitchWebsocketUrl}\"')
@@ -202,6 +211,17 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
             raise ValueError(f'subscriptionType argument is malformed: \"{subscriptionType}\"')
 
         if subscriptionType is WebsocketSubscriptionType.CHANNEL_POINTS_REDEMPTION:
+            return WebsocketCondition(
+                broadcasterUserId = user.getUserId()
+            )
+        elif subscriptionType is WebsocketSubscriptionType.CHANNEL_PREDICTION_BEGIN or \
+                subscriptionType is WebsocketSubscriptionType.CHANNEL_PREDICTION_END or \
+                subscriptionType is WebsocketSubscriptionType.CHANNEL_PREDICTION_LOCK or \
+                subscriptionType is WebsocketSubscriptionType.CHANNEL_PREDICTION_PROGRESS:
+            return WebsocketCondition(
+                broadcasterUserId = user.getUserId()
+            )
+        elif subscriptionType is WebsocketSubscriptionType.CHANNEL_UPDATE:
             return WebsocketCondition(
                 broadcasterUserId = user.getUserId()
             )
