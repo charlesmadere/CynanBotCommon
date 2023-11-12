@@ -184,7 +184,7 @@ def getCleanedSplits(s: Optional[str]) -> List[str]:
 digitsAfterDecimalRegEx: Pattern = re.compile(r'^(\d{4}.+T.+)\.\d+(.+)$', re.IGNORECASE)
 endsWithZRegEx: Pattern = re.compile(r'^(\d{4}.+T.+)Z$', re.IGNORECASE)
 endsWithZAndPlusRegEx: Pattern = re.compile(r'^(\d{4}.+T.+)Z\+\d{1,2}\:\d{2}$', re.IGNORECASE)
-naiveTimeZoneRegEx: Pattern = re.compile(r'^(\d{4}.+T.+)\+\d{2}\:\d{2}$', re.IGNORECASE)
+naiveTimeZoneRegEx: Pattern = re.compile(r'^\d{4}.+T.+\d{1,2}\:\d{2}$', re.IGNORECASE)
 
 def getDateTimeFromStr(text: Optional[str]) -> Optional[datetime]:
     if not isValidStr(text):
@@ -203,9 +203,8 @@ def getDateTimeFromStr(text: Optional[str]) -> Optional[datetime]:
         if endsWithZAndPlusMatch is not None:
             text = endsWithZAndPlusMatch.group(1)
 
-    naiveTimeZoneMatch = naiveTimeZoneRegEx.fullmatch(text)
     if naiveTimeZoneRegEx.fullmatch(text) is not None:
-        text = f'{naiveTimeZoneMatch.group(1)}+00:00'
+        text = f'{text}+00:00'
 
     return datetime.fromisoformat(text)
 
