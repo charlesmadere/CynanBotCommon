@@ -260,7 +260,7 @@ class TestUtils():
         assert result.day == 21
         assert result.hour == 14
         assert result.minute == 11
-        assert result.second == 33
+        assert result.second == 45
 
     def test_getDateTimeFromStr_withZPlusDateTimeString(self):
         result = utils.getDateTimeFromStr('2023-11-11T17:13:41Z+00:00')
@@ -270,7 +270,7 @@ class TestUtils():
         assert result.day == 11
         assert result.hour == 17
         assert result.minute == 13
-        assert result.second == 0
+        assert result.second == 41
 
     def test_getFloatFromDict_withEmptyDict(self):
         d: Dict[str, Any] = dict()
