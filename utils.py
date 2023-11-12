@@ -181,23 +181,31 @@ def getCleanedSplits(s: Optional[str]) -> List[str]:
 
     return words
 
-naiveTimeZoneRegEx: Pattern = re.compile(r'.+\+00:00$', re.IGNORECASE)
-twitchDateTimeRegEx: Pattern = re.compile(r'^(\d{4}.+)T\.\d+Z$', re.IGNORECASE)
-zPlusDateTimeRegEx: Pattern = re.compile(r'(^\d{4}.+T.+\:\d{1,2})Z(\+00\:00$)', re.IGNORECASE)
+digitsAfterDecimalRegEx: Pattern = re.compile(r'^(\d{4}.+T.+)\.\d+(.+)$', re.IGNORECASE)
+endsWithZRegEx: Pattern = re.compile(r'^(\d{4}.+T.+)Z$', re.IGNORECASE)
+endsWithZAndPlusRegEx: Pattern = re.compile(r'^(\d{4}.+T.+)Z\+\d{1,2}\:\d{2}$', re.IGNORECASE)
+naiveTimeZoneRegEx: Pattern = re.compile(r'^(\d{4}.+T.+)\+\d{2}\:\d{2}$', re.IGNORECASE)
 
 def getDateTimeFromStr(text: Optional[str]) -> Optional[datetime]:
     if not isValidStr(text):
         return None
 
-    twitchDateTimeRegExMatch = twitchDateTimeRegEx.fullmatch(text)
-    zPlusDateTimeRegExMatch =  zPlusDateTimeRegEx.fullmatch(text)
+    digitsAfterDecimalMatch = digitsAfterDecimalRegEx.fullmatch(text)
+    if digitsAfterDecimalMatch is not None:
+        text = f'{digitsAfterDecimalMatch.group(1)}{digitsAfterDecimalMatch.group(2)}'
 
-    if twitchDateTimeRegExMatch is not None:
-        text = f'{twitchDateTimeRegExMatch.group(1)}+00:00'
-    elif zPlusDateTimeRegExMatch is not None:
-        text = f'{zPlusDateTimeRegExMatch.group(1)}{zPlusDateTimeRegExMatch.group(2)}'
-    elif naiveTimeZoneRegEx.fullmatch(text) is None:
-        text = f'{text}+00:00'
+    endsWithZMatch = endsWithZRegEx.fullmatch(text)
+    if endsWithZMatch is not None:
+        text = endsWithZMatch.group(1)
+    else:
+        endsWithZAndPlusMatch = endsWithZAndPlusRegEx.fullmatch(text)
+
+        if endsWithZAndPlusMatch is not None:
+            text = endsWithZAndPlusMatch.group(1)
+
+    naiveTimeZoneMatch = naiveTimeZoneRegEx.fullmatch(text)
+    if naiveTimeZoneRegEx.fullmatch(text) is not None:
+        text = f'{naiveTimeZoneMatch.group(1)}+00:00'
 
     return datetime.fromisoformat(text)
 
