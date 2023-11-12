@@ -182,16 +182,20 @@ def getCleanedSplits(s: Optional[str]) -> List[str]:
     return words
 
 naiveTimeZoneRegEx: Pattern = re.compile(r'.+\+00:00$', re.IGNORECASE)
-twitchDateTimeRegEx: Pattern = re.compile(r'^(.+)\.\d+Z$', re.IGNORECASE)
+twitchDateTimeRegEx: Pattern = re.compile(r'^(\d{4}.+)T\.\d+Z$', re.IGNORECASE)
+zPlusDateTimeRegEx: Pattern = re.compile(r'(^\d{4}.+T.+\:\d{1,2})Z(\+00\:00$)', re.IGNORECASE)
 
 def getDateTimeFromStr(text: Optional[str]) -> Optional[datetime]:
     if not isValidStr(text):
         return None
 
     twitchDateTimeRegExMatch = twitchDateTimeRegEx.fullmatch(text)
+    zPlusDateTimeRegExMatch =  zPlusDateTimeRegEx.fullmatch(text)
 
     if twitchDateTimeRegExMatch is not None:
         text = f'{twitchDateTimeRegExMatch.group(1)}+00:00'
+    elif zPlusDateTimeRegExMatch is not None:
+        text = f'{zPlusDateTimeRegExMatch.group(1)}{zPlusDateTimeRegExMatch.group(2)}'
     elif naiveTimeZoneRegEx.fullmatch(text) is None:
         text = f'{text}+00:00'
 
