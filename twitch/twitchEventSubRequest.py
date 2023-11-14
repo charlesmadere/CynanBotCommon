@@ -1,6 +1,7 @@
 from typing import Any, Dict
 
 try:
+    import CynanBotCommon.utils as utils
     from CynanBotCommon.twitch.websocket.websocketCondition import \
         WebsocketCondition
     from CynanBotCommon.twitch.websocket.websocketSubscriptionType import \
@@ -8,6 +9,8 @@ try:
     from CynanBotCommon.twitch.websocket.websocketTransport import \
         WebsocketTransport
 except:
+    import utils
+
     from twitch.websocket.websocketCondition import WebsocketCondition
     from twitch.websocket.websocketSubscriptionType import \
         WebsocketSubscriptionType
@@ -45,14 +48,18 @@ class TwitchEventSubRequest():
         return self.__transport
 
     def __repr__(self) -> str:
-        jsonDictionary = self.toJson()
-        return f'{jsonDictionary}'
+        dictionary = self.toDictionary()
+        return str(dictionary)
 
-    def toJson(self) -> Dict[Any, Any]:
+    def toDictionary(self) -> Dict[str, Any]:
         return {
-            'condition': {
-                'broadcaster_user_id': self.__condition.requireBroadcasterUserId()
-            },
+            'condition': self.__condition.toDictionary(),
+            'subscriptionType': self.__subscriptionType,
+            'transport': self.__transport.toDictionary(),
+        }
+
+    def toJson(self) -> Dict[str, Any]:
+        dictionary: Dict[str, Any] = {
             'transport': {
                 'method': self.__transport.getMethod().toStr(),
                 'session_id': self.__transport.requireSessionId()
@@ -60,3 +67,29 @@ class TwitchEventSubRequest():
             'type': self.__subscriptionType.toStr(),
             'version': self.__subscriptionType.getVersion()
         }
+
+        condition: Dict[str, Any] = dict()
+        dictionary['condition'] = condition
+
+        if utils.isValidStr(self.__condition.getBroadcasterUserId()):
+            condition['broadcaster_user_id'] = self.__condition.requireBroadcasterUserId()
+
+        if utils.isValidStr(self.__condition.requireClientId()):
+            condition['client_id'] = self.__condition.requireClientId()
+
+        if utils.isValidStr(self.__condition.getFromBroadcasterUserId()):
+            condition['from_broadcaster_user_id'] = self.__condition.requireFromBroadcasterUserId()
+
+        if utils.isValidStr(self.__condition.getModeratorUserId()):
+            condition['moderator_user_id'] = self.__condition.requireModeratorUserId()
+
+        if utils.isValidStr(self.__condition.getRewardId()):
+            condition['reward_id'] = self.__condition.requireRewardId()
+
+        if utils.isValidStr(self.__condition.getToBroadcasterUserId()):
+            condition['to_broadcaster_user_id'] = self.__condition.requireToBroadcasterUserId()
+
+        if utils.isValidStr(self.__condition.getUserId()):
+            condition['user_id'] = self.__condition.requireUserId()
+
+        return dictionary

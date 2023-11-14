@@ -152,6 +152,7 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
         self.__timeZone: timezone = timeZone
 
         self.__isStarted: bool = False
+        self.__badSubscriptionTypesFor: Dict[TwitchWebsocketUser, Set[WebsocketSubscriptionType]] = defaultdict(lambda: set())
         self.__jsonBuilderFor: Dict[TwitchWebsocketUser, IncrementalJsonBuilder] = defaultdict(lambda: IncrementalJsonBuilder())
         self.__sessionIdFor: Dict[TwitchWebsocketUser, Optional[str]] = defaultdict(lambda: '')
         self.__twitchWebsocketUrlFor: Dict[TwitchWebsocketUser, str] = defaultdict(lambda: twitchWebsocketUrl)
@@ -175,6 +176,10 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
         results: Dict[WebsocketSubscriptionType, Optional[Exception]] = OrderedDict()
 
         for subscriptionType in self.__subscriptionTypes:
+            if subscriptionType in self.__badSubscriptionTypesFor[user]:
+                self.__timber.log('TwitchWebsocketClient', f'Skipping {subscriptionType} for \"{user}\"')
+                continue
+
             condition = await self.__createWebsocketCondition(
                 user = user,
                 subscriptionType = subscriptionType
@@ -197,6 +202,9 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
                 exception = e
 
             results[subscriptionType] = exception
+
+            if exception is not None:
+                self.__badSubscriptionTypesFor[user].add(subscriptionType)
 
         self.__timber.log('TwitchWebsocketClient', f'Finished creating EventSub subscription(s) for {user}: {results}')
 

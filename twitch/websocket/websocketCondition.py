@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Dict, Optional
 
 try:
     import CynanBotCommon.utils as utils
@@ -242,6 +242,10 @@ class WebsocketCondition():
     def isPermanent(self) -> Optional[bool]:
         return self.__isPermanent
 
+    def __repr__(self) -> str:
+        dictionary = self.toDictionary()
+        return str(dictionary)
+
     def requireBroadcasterUserId(self) -> str:
         broadcasterUserId = self.__broadcasterUserId
 
@@ -250,103 +254,91 @@ class WebsocketCondition():
 
         return broadcasterUserId
 
-    def __str__(self) -> str:
-        string = ''
+    def requireClientId(self) -> str:
+        clientId = self.__clientId
 
-        if self.__bits is not None:
-            string = f'{string} bits={self.__bits}'
+        if not utils.isValidStr(clientId):
+            raise ValueError(f'clientId has not been set: \"{clientId}\"')
 
-        if self.__broadcasterUserId is not None:
-            string = f'{string} broadcasterUserId={self.__broadcasterUserId}'
+        return clientId
 
-        if self.__broadcasterUserLogin is not None:
-            string = f'{string} broadcasterUserLogin={self.__broadcasterUserLogin}'
+    def requireFromBroadcasterUserId(self) -> str:
+        fromBroadcasterUserId = self.__fromBroadcasterUserId
 
-        if self.__broadcasterUserName is not None:
-            string = f'{string} broadcasterUserName={self.__broadcasterUserName}'
+        if not utils.isValidStr(fromBroadcasterUserId):
+            raise ValueError(f'fromBroadcasterUserId has not been set: \"{fromBroadcasterUserId}\"')
 
-        if self.__categoryId is not None:
-            string = f'{string} categoryId={self.__categoryId}'
+        return fromBroadcasterUserId
 
-        if self.__categoryName is not None:
-            string = f'{string} categoryName={self.__categoryName}'
+    def requireModeratorUserId(self) -> str:
+        moderatorUserId = self.__moderatorUserId
 
-        if self.__clientId is not None:
-            string = f'{string} clientId={self.__clientId}'
+        if not utils.isValidStr(moderatorUserId):
+            raise ValueError(f'moderatorUserId has not been set: \"{moderatorUserId}\"')
 
-        if self.__cumulativeTotal is not None:
-            string = f'{string} cumulativeTotal={self.__cumulativeTotal}'
+        return moderatorUserId
 
-        if self.__fromBroadcasterUserId is not None:
-            string = f'{string} fromBroadcasterUserId={self.__fromBroadcasterUserId}'
+    def requireRewardId(self) -> str:
+        rewardId = self.__rewardId
 
-        if self.__fromBroadcasterUserLogin is not None:
-            string = f'{string} fromBroadcasterUserLogin={self.__fromBroadcasterUserLogin}'
+        if not utils.isValidStr(rewardId):
+            raise ValueError(f'rewardId has not been set: \"{rewardId}\"')
 
-        if self.__fromBroadcasterUserName is not None:
-            string = f'{string} fromBroadcasterUserName={self.__fromBroadcasterUserName}'
+        return rewardId
 
-        if self.__message is not None:
-            string = f'{string} message={self.__message}'
+    def requireToBroadcasterUserId(self) -> str:
+        toBroadcasterUserId = self.__toBroadcasterUserId
 
-        if self.__moderatorUserId is not None:
-            string = f'{string} moderatorUserId={self.__moderatorUserId}'
+        if not utils.isValidStr(toBroadcasterUserId):
+            raise ValueError(f'toBroadcasterUserId has not been set: \"{toBroadcasterUserId}\"')
 
-        if self.__moderatorUserLogin is not None:
-            string = f'{string} moderatorUserLogin={self.__moderatorUserLogin}'
+        return toBroadcasterUserId
 
-        if self.__moderatorUserName is not None:
-            string = f'{string} moderatorUserName={self.__moderatorUserName}'
+    def requireUserId(self) -> str:
+        userId = self.__userId
 
-        if self.__reason is not None:
-            string = f'{string} reason={self.__reason}'
+        if not utils.isValidStr(userId):
+            raise ValueError(f'userId has not been set: \"{userId}\"')
 
-        if self.__reward is not None:
-            string = f'{string} reward={self.__reward}'
+        return userId
 
-        if self.__rewardId is not None:
-            string = f'{string} rewardId={self.__rewardId}'
+    def toDictionary(self) -> Dict[str, Any]:
+        dictionary: Dict[str, Any] = {
+            'bits': self.__bits,
+            'isAnonymous': self.__isAnonymous,
+            'isGift': self.__isGift,
+            'isPermanent': self.__isPermanent,
+            'broadcasterUserId': self.__broadcasterUserId,
+            'broadcasterUserLogin': self.__broadcasterUserLogin,
+            'categoryId': self.__categoryId,
+            'categoryName': self.__categoryName,
+            'clientId': self.__clientId,
+            'cumulativeTotal': self.__cumulativeTotal,
+            'fromBroadcasterUserId': self.__fromBroadcasterUserId,
+            'fromBroadcasterUserLogin': self.__fromBroadcasterUserLogin,
+            'fromBroadcasterUserName': self.__fromBroadcasterUserName,
+            'message': self.__message,
+            'moderatorUserId': self.__moderatorUserId,
+            'moderatorUserLogin': self.__moderatorUserLogin,
+            'moderatorUserName': self.__moderatorUserName,
+            'reason': self.__reason,
+            'rewardId': self.__rewardId,
+            'tier': self.__tier,
+            'title': self.__title,
+            'toBroadcasterUserId': self.__toBroadcasterUserId,
+            'toBroadcasterUserLogin': self.__toBroadcasterUserLogin,
+            'toBroadcasterUserName': self.__toBroadcasterUserName,
+            'total': self.__total,
+            'userId': self.__userId,
+            'userInput': self.__userInput,
+            'userLogin': self.__userLogin,
+            'userName': self.__userName,
+            'viewers': self.__viewers
+        }
 
-        if self.__tier is not None:
-            string = f'{string} tier={self.__tier}'
+        if self.__reward is None:
+            dictionary['reward'] = None
+        else:
+            dictionary['reward'] = self.__reward.toDictionary()
 
-        if self.__title is not None:
-            string = f'{string} title={self.__title}'
-
-        if self.__toBroadcasterUserId is not None:
-            string = f'{string} toBroadcasterUserId={self.__toBroadcasterUserId}'
-
-        if self.__toBroadcasterUserLogin is not None:
-            string = f'{string} toBroadcasterUserLogin={self.__toBroadcasterUserLogin}'
-
-        if self.__toBroadcasterUserName is not None:
-            string = f'{string} toBroadcasterUserName={self.__toBroadcasterUserName}'
-
-        if self.__total is not None:
-            string = f'{string} total={self.__total}'
-
-        if self.__userId is not None:
-            string = f'{string} userId={self.__userId}'
-
-        if self.__userInput is not None:
-            string = f'{string} userInput={self.__userInput}'
-
-        if self.__userLogin is not None:
-            string = f'{string} userLogin={self.__userLogin}'
-
-        if self.__userName is not None:
-            string = f'{string} userName={self.__userName}'
-
-        if self.__viewers is not None:
-            string = f'{string} viewers={self.__viewers}'
-
-        if self.__isAnonymous is not None:
-            string = f'{string} isAnonymous={self.__isAnonymous}'
-
-        if self.__isGift is not None:
-            string = f'{string} isGift={self.__isGift}'
-
-        if self.__isPermanent is not None:
-            string = f'{string} isPermanent={self.__isPermanent}'
-
-        return string.strip()
+        return dictionary
