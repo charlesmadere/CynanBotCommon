@@ -74,7 +74,7 @@ class TwitchEventSubRequest():
         if utils.isValidStr(self.__condition.getBroadcasterUserId()):
             condition['broadcaster_user_id'] = self.__condition.requireBroadcasterUserId()
 
-        if utils.isValidStr(self.__condition.requireClientId()):
+        if utils.isValidStr(self.__condition.getClientId()):
             condition['client_id'] = self.__condition.requireClientId()
 
         if utils.isValidStr(self.__condition.getFromBroadcasterUserId()):
