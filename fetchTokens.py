@@ -15,7 +15,7 @@ TWITCH_CLIENT_ID: str = None
 TWITCH_CLIENT_SECRET: str = None
 
 # This code is derived from clicking this URL and then authenticating:
-# https://id.twitch.tv/oauth2/authorize?response_type=code&client_id=CLIENT_ID_HERE&redirect_uri=http://localhost&scope=channel:bot+chat:read+chat:edit+channel:moderate+whispers:read+whispers:edit+channel_editor+channel:read:redemptions+channel:manage:redemptions+channel:read:subscriptions+channel:read:polls+channel:read:predictions+channel:manage:predictions+moderator:read:chatters+user:read:chat+bits:read+moderator:read:followers
+# https://id.twitch.tv/oauth2/authorize?response_type=code&client_id=CLIENT_ID_HERE&redirect_uri=http://localhost&scope=channel:bot+chat:read+chat:edit+channel:moderate+whispers:read+whispers:edit+channel_editor+channel:read:redemptions+channel:manage:redemptions+channel:read:subscriptions+channel:read:polls+channel:read:predictions+channel:manage:predictions+moderator:read:chatters+user:read:chat+bits:read+moderator:read:followers+moderation:read+moderator:manage:banned_users
 TWITCH_CODE_SECRET: str = None
 
 if TWITCH_CLIENT_SECRET is None or TWITCH_CLIENT_SECRET is None or TWITCH_CODE_SECRET is None:
