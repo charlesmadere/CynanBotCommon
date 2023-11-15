@@ -7,6 +7,7 @@ try:
     from CynanBotCommon.network.exceptions import GenericNetworkException
     from CynanBotCommon.network.networkClientProvider import \
         NetworkClientProvider
+    from CynanBotCommon.network.networkResponse import NetworkResponse
     from CynanBotCommon.simpleDateTime import SimpleDateTime
     from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.twitch.exceptions import (
@@ -16,6 +17,8 @@ try:
         TwitchTokenIsExpiredException)
     from CynanBotCommon.twitch.twitchApiServiceInterface import \
         TwitchApiServiceInterface
+    from CynanBotCommon.twitch.twitchBanRequest import TwitchBanRequest
+    from CynanBotCommon.twitch.twitchBanResponse import TwitchBanResponse
     from CynanBotCommon.twitch.twitchBroadcasterType import \
         TwitchBroadcasterType
     from CynanBotCommon.twitch.twitchCredentialsProviderInterface import \
@@ -34,6 +37,7 @@ try:
     from CynanBotCommon.twitch.twitchStreamType import TwitchStreamType
     from CynanBotCommon.twitch.twitchSubscriberTier import TwitchSubscriberTier
     from CynanBotCommon.twitch.twitchTokensDetails import TwitchTokensDetails
+    from CynanBotCommon.twitch.twitchUnbanRequest import TwitchUnbanRequest
     from CynanBotCommon.twitch.twitchUserDetails import TwitchUserDetails
     from CynanBotCommon.twitch.twitchUserSubscriptionDetails import \
         TwitchUserSubscriptionDetails
@@ -52,6 +56,7 @@ except:
     import utils
     from network.exceptions import GenericNetworkException
     from network.networkClientProvider import NetworkClientProvider
+    from network.networkResponse import NetworkResponse
     from simpleDateTime import SimpleDateTime
     from timber.timberInterface import TimberInterface
 
@@ -62,6 +67,8 @@ except:
                                    TwitchStatusCodeException,
                                    TwitchTokenIsExpiredException)
     from twitch.twitchApiServiceInterface import TwitchApiServiceInterface
+    from twitch.twitchBanRequest import TwitchBanRequest
+    from twitch.twitchBanResponse import TwitchBanResponse
     from twitch.twitchBroadcasterType import TwitchBroadcasterType
     from twitch.twitchCredentialsProviderInterface import \
         TwitchCredentialsProviderInterface
@@ -75,6 +82,7 @@ except:
     from twitch.twitchStreamType import TwitchStreamType
     from twitch.twitchSubscriberTier import TwitchSubscriberTier
     from twitch.twitchTokensDetails import TwitchTokensDetails
+    from twitch.twitchUnbanRequest import TwitchUnbanRequest
     from twitch.twitchUserDetails import TwitchUserDetails
     from twitch.twitchUserSubscriptionDetails import \
         TwitchUserSubscriptionDetails
@@ -116,6 +124,21 @@ class TwitchApiService(TwitchApiServiceInterface):
         self.__twitchCredentialsProvider: TwitchCredentialsProviderInterface = twitchCredentialsProvider
         self.__twitchWebsocketJsonMapper: TwitchWebsocketJsonMapperInterface = twitchWebsocketJsonMapper
         self.__timeZone: timezone = timeZone
+
+    async def banUser(
+        self,
+        twitchAccessToken: str,
+        banRequest: TwitchBanRequest
+    ) -> TwitchBanResponse:
+        if not utils.isValidStr(twitchAccessToken):
+            raise ValueError(f'twitchAccessToken argument is malformed: \"{twitchAccessToken}\"')
+        elif not isinstance(banRequest, TwitchBanRequest):
+            raise ValueError(f'banRequest argument is malformed: \"{banRequest}\"')
+
+        self.__timber.log('TwitchApiService', f'Banning user... ({twitchAccessToken=}) ({banRequest=})')
+
+        # TODO
+        pass
 
     async def __calculateExpirationTime(self, expiresInSeconds: Optional[int]) -> datetime:
         nowDateTime = datetime.now(self.__timeZone)
@@ -601,6 +624,51 @@ class TwitchApiService(TwitchApiServiceInterface):
             accessToken = accessToken,
             refreshToken = refreshToken
         )
+
+    async def unbanUser(
+        self,
+        twitchAccessToken: str,
+        unbanRequest: TwitchUnbanRequest
+    ) -> bool:
+        if not utils.isValidStr(twitchAccessToken):
+            raise ValueError(f'twitchAccessToken argument is malformed: \"{twitchAccessToken}\"')
+        elif not isinstance(unbanRequest, TwitchUnbanRequest):
+            raise ValueError(f'unbanRequest argument is malformed: \"{unbanRequest}\"')
+
+        self.__timber.log('TwitchApiService', f'Unbanning user... ({twitchAccessToken=}) ({unbanRequest=})')
+
+        clientSession = await self.__networkClientProvider.get()
+        twitchClientId = await self.__twitchCredentialsProvider.getTwitchClientId()
+        response: Optional[NetworkResponse] = None
+
+        try:
+            response = await clientSession.delete(
+                url = f'https://id.twitch.tv/helix/moderation/bans?broadcaster_id={unbanRequest.getBroadcasterUserId()}&moderator_id={unbanRequest.getModeratorUserId()}&user_id={unbanRequest.getUserIdToBan()}',
+                json = {
+                    'Authorization': f'Bearer {twitchAccessToken}',
+                    'Client-Id': twitchClientId
+                }
+            )
+        except GenericNetworkException as e:
+            self.__timber.log('TwitchApiService', f'Encountered network error when unbanning user ({unbanRequest=}) ({response=}): {e}', e, traceback.format_exc())
+            raise GenericNetworkException(f'TwitchApiService encountered network error when unbanning user ({unbanRequest=}) ({response=}): {e}')
+
+        if response is None:
+            self.__timber.log('TwitchApiService', f'Encountered unknown network error when unbanning user ({unbanRequest=}) ({response=})')
+            raise GenericNetworkException(f'TwitchApiService encountered unknown network error when unbanning user ({unbanRequest=}) ({response=})')
+
+        responseStatusCode = response.getStatusCode()
+        await response.close()
+
+        if responseStatusCode == 204:
+            # means that the given user ID had been banned
+            return True
+        elif responseStatusCode == 400:
+            # probably means that the given user ID had not been banned
+            return False
+
+        self.__timber.log('TwitchApiService', f'Encountered network error when unbanning user ({unbanRequest=}) ({response=}): {responseStatusCode}')
+        raise GenericNetworkException(f'TwitchApiService encountered network error when unbanning user ({unbanRequest=}) ({response=}): {responseStatusCode}')
 
     async def validateTokens(self, twitchAccessToken: str) -> Optional[datetime]:
         if not utils.isValidStr(twitchAccessToken):

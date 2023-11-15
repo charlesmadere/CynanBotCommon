@@ -11,6 +11,7 @@ try:
     from CynanBotCommon.twitch.twitchLiveUserDetails import \
         TwitchLiveUserDetails
     from CynanBotCommon.twitch.twitchTokensDetails import TwitchTokensDetails
+    from CynanBotCommon.twitch.twitchUnbanRequest import TwitchUnbanRequest
     from CynanBotCommon.twitch.twitchUserDetails import TwitchUserDetails
     from CynanBotCommon.twitch.twitchUserSubscriptionDetails import \
         TwitchUserSubscriptionDetails
@@ -20,6 +21,7 @@ except:
     from twitch.twitchEventSubResponse import TwitchEventSubResponse
     from twitch.twitchLiveUserDetails import TwitchLiveUserDetails
     from twitch.twitchTokensDetails import TwitchTokensDetails
+    from twitch.twitchUnbanRequest import TwitchUnbanRequest
     from twitch.twitchUserDetails import TwitchUserDetails
     from twitch.twitchUserSubscriptionDetails import \
         TwitchUserSubscriptionDetails
@@ -74,6 +76,14 @@ class TwitchApiServiceInterface(ABC):
 
     @abstractmethod
     async def refreshTokens(self, twitchRefreshToken: str) -> TwitchTokensDetails:
+        pass
+
+    @abstractmethod
+    async def unbanUser(
+        self,
+        twitchAccessToken: str,
+        unbanRequest: TwitchUnbanRequest
+    ) -> bool:
         pass
 
     @abstractmethod

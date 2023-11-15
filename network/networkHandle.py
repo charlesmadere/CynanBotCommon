@@ -12,6 +12,14 @@ except:
 class NetworkHandle(ABC):
 
     @abstractmethod
+    async def delete(
+        self,
+        url: str,
+        headers: Optional[Dict[str, Any]] = None
+    ) -> NetworkResponse:
+        pass
+
+    @abstractmethod
     async def get(
         self,
         url: str,

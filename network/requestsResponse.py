@@ -12,11 +12,10 @@ try:
     from CynanBotCommon.timber.timberInterface import TimberInterface
 except:
     import utils
-    from timber.timberInterface import TimberInterface
-
     from network.exceptions import NetworkResponseIsClosedException
     from network.networkClientType import NetworkClientType
     from network.networkResponse import NetworkResponse
+    from timber.timberInterface import TimberInterface
 
 
 class RequestsResponse(NetworkResponse):
