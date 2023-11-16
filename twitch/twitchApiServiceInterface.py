@@ -3,6 +3,8 @@ from datetime import datetime
 from typing import List, Optional
 
 try:
+    from CynanBotCommon.twitch.twitchBanRequest import TwitchBanRequest
+    from CynanBotCommon.twitch.twitchBanResponse import TwitchBanResponse
     from CynanBotCommon.twitch.twitchEmoteDetails import TwitchEmoteDetails
     from CynanBotCommon.twitch.twitchEventSubRequest import \
         TwitchEventSubRequest
@@ -16,6 +18,8 @@ try:
     from CynanBotCommon.twitch.twitchUserSubscriptionDetails import \
         TwitchUserSubscriptionDetails
 except:
+    from twitch.twitchBanRequest import TwitchBanRequest
+    from twitch.twitchBanResponse import TwitchBanResponse
     from twitch.twitchEmoteDetails import TwitchEmoteDetails
     from twitch.twitchEventSubRequest import TwitchEventSubRequest
     from twitch.twitchEventSubResponse import TwitchEventSubResponse
@@ -28,6 +32,14 @@ except:
 
 
 class TwitchApiServiceInterface(ABC):
+
+    @abstractmethod
+    async def banUser(
+        self,
+        twitchAccessToken: str,
+        banRequest: TwitchBanRequest
+    ) -> TwitchBanResponse:
+        pass
 
     @abstractmethod
     async def createEventSubSubscription(

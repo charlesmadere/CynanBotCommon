@@ -136,9 +136,55 @@ class TwitchApiService(TwitchApiServiceInterface):
             raise ValueError(f'banRequest argument is malformed: \"{banRequest}\"')
 
         self.__timber.log('TwitchApiService', f'Banning user... ({twitchAccessToken=}) ({banRequest=})')
+        clientSession = await self.__networkClientProvider.get()
+        twitchClientId = await self.__twitchCredentialsProvider.getTwitchClientId()
 
-        # TODO
-        pass
+        try:
+            response = await clientSession.post(
+                url = f'https://api.twitch.tv/helix/moderation/bans?broadcaster_id={banRequest.getBroadcasterUserId()}&moderator_id={banRequest.getModeratorUserId()}',
+                json = {
+                    'Authorization': f'Bearer {twitchAccessToken}',
+                    'Client-Id': twitchClientId
+                }
+            )
+        except GenericNetworkException as e:
+            self.__timber.log('TwitchApiService', f'Encountered network error when banning user ({banRequest=}): {e}', e, traceback.format_exc())
+            raise GenericNetworkException(f'TwitchApiService encountered network when banning user ({banRequest=}): {e}')
+
+        if response is None:
+            self.__timber.log('TwitchApiService', f'Encountered unknown network error when banning user ({banRequest=}) ({response=})')
+            raise GenericNetworkException(f'TwitchApiService encountered unknown network error when banning user ({banRequest=}) ({response=})')
+
+        responseStatusCode = response.getStatusCode()
+        jsonResponse: Optional[Dict[str, Any]] = await response.json()
+        await response.close()
+
+        if responseStatusCode != 200:
+            self.__timber.log('TwitchApiService', f'Encountered non-200 HTTP status code when banning user ({banRequest=}) ({responseStatusCode=}) ({jsonResponse=})')
+            raise GenericNetworkException(f'Encountered non-200 HTTP status code when banning user ({banRequest=}) ({responseStatusCode=}) ({jsonResponse=})')
+        elif not utils.hasItems(jsonResponse):
+            self.__timber.log('TwitchApiService', f'Received a null/empty JSON response when banning user ({banRequest=}) ({jsonResponse=})')
+            raise GenericNetworkException(f'Recieved a null/empty JSON response when banning user ({banRequest=}) ({jsonResponse=})')
+
+        data: Optional[List[Dict[str, Any]]] = jsonResponse.get('data')
+
+        if not utils.hasItems(data) or not utils.hasItems(data[0]):
+            self.__timber.log('TwitchApiService', f'Received a null/empty \"data\" field in JSON response when banning user ({banRequest=}) ({jsonResponse=})')
+            raise GenericNetworkException(f'Received a null/empty \"data\" field in JSON response when banning user ({banRequest=}) ({jsonResponse=})')
+
+        entry = data[0]
+
+        endTime: Optional[SimpleDateTime] = None
+        if 'end_time' in entry and utils.isValidStr(entry.get('end_time')):
+            endTime = SimpleDateTime(utils.getDateTimeFromStr(utils.getStrFromDict(entry, 'end_time')))
+
+        return TwitchBanResponse(
+            createdAt = SimpleDateTime(utils.getDateTimeFromStr(utils.getStrFromDict(entry, 'created_at'))),
+            endTime = endTime,
+            broadcasterUserId = utils.getStrFromDict(entry, 'broadcaster_id'),
+            moderatorUserId = utils.getStrFromDict(entry, 'moderator_id'),
+            userId = utils.getStrFromDict(entry, 'user_id')
+        )
 
     async def __calculateExpirationTime(self, expiresInSeconds: Optional[int]) -> datetime:
         nowDateTime = datetime.now(self.__timeZone)
@@ -650,8 +696,8 @@ class TwitchApiService(TwitchApiServiceInterface):
                 }
             )
         except GenericNetworkException as e:
-            self.__timber.log('TwitchApiService', f'Encountered network error when unbanning user ({unbanRequest=}) ({response=}): {e}', e, traceback.format_exc())
-            raise GenericNetworkException(f'TwitchApiService encountered network error when unbanning user ({unbanRequest=}) ({response=}): {e}')
+            self.__timber.log('TwitchApiService', f'Encountered network error when unbanning user ({unbanRequest=}): {e}', e, traceback.format_exc())
+            raise GenericNetworkException(f'TwitchApiService encountered network error when unbanning user ({unbanRequest=}): {e}')
 
         if response is None:
             self.__timber.log('TwitchApiService', f'Encountered unknown network error when unbanning user ({unbanRequest=}) ({response=})')
