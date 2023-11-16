@@ -183,7 +183,7 @@ class CheerActionHelper(CheerActionHelperInterface):
         )
 
         if not utils.isValidStr(userIdToTimeout):
-            self.__timber.log('CheerActionHelper', f'Unable to find user ID for \"{userIdToTimeout}\" ({message=})')
+            self.__timber.log('CheerActionHelper', f'Unable to find user ID for \"{userNameToTimeout}\" ({message=})')
             return
         elif userIdToTimeout.lower() == broadcasterUserId.lower():
             self.__timber.log('CheerActionHelper', f'Unable to timeout the broadcaster themself ({userIdToTimeout=}) ({broadcasterUserId=}) ({message=})')
