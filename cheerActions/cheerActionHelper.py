@@ -214,7 +214,7 @@ class CheerActionHelper(CheerActionHelperInterface):
                 )
 
                 await self.__twitchApiService.banUser(
-                    twitchAccessToken = await self.__getTwitchAccessToken(user),
+                    twitchAccessToken = twitchAccessToken,
                     banRequest = banRequest
                 )
                 return
