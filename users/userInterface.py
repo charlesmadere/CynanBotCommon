@@ -11,6 +11,10 @@ except:
 class UserInterface(ABC):
 
     @abstractmethod
+    def areCheerActionsEnabled(self) -> bool:
+        pass
+
+    @abstractmethod
     def areRecurringActionsEnabled(self) -> bool:
         pass
 
