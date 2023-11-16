@@ -48,6 +48,6 @@ class TestCheerActionType():
         assert result is None
         assert isinstance(exception, Exception)
 
-    def test_toStr_withTimeoutString(self):
+    def test_toStr_withTimeout(self):
         result = CheerActionType.TIMEOUT.toStr()
         assert result == 'timeout'
