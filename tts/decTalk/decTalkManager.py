@@ -47,8 +47,7 @@ class DecTalkManager(TtsManagerInterface):
         timber: TimberInterface,
         ttsSettingsRepository: TtsSettingsRepositoryInterface,
         queueSleepTimeSeconds: float = 3,
-        queueTimeoutSeconds: float = 3,
-        tempFileDirectory: str = 'temp'
+        queueTimeoutSeconds: float = 3
     ):
         if not isinstance(backgroundTaskHelper, BackgroundTaskHelper):
             raise ValueError(f'backgroundTaskHelper argument is malformed: \"{backgroundTaskHelper}\"')
@@ -70,8 +69,6 @@ class DecTalkManager(TtsManagerInterface):
             raise ValueError(f'queueTimeoutSeconds argument is malformed: \"{queueTimeoutSeconds}\"')
         elif queueTimeoutSeconds < 1 or queueTimeoutSeconds > 3:
             raise ValueError(f'queueTimeoutSeconds argument is out of bounds: {queueTimeoutSeconds}')
-        elif not utils.isValidStr(tempFileDirectory):
-            raise ValueError(f'tempFileDirectory argument is malformed: \"{tempFileDirectory}\"')
 
         self.__backgroundTaskHelper: BackgroundTaskHelper = backgroundTaskHelper
         self.__decTalkFileManager: DecTalkFileManagerInterface = decTalkFileManager
