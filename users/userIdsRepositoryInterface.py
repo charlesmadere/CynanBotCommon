@@ -1,8 +1,13 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import Optional
 
+try:
+    from CynanBotCommon.clearable import Clearable
+except:
+    from clearable import Clearable
 
-class UserIdsRepositoryInterface(ABC):
+
+class UserIdsRepositoryInterface(Clearable):
 
     @abstractmethod
     async def fetchAnonymousUserId(self, twitchAccessToken: str) -> Optional[str]:

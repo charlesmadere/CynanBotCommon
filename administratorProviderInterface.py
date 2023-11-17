@@ -1,7 +1,12 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
+
+try:
+    from CynanBotCommon.clearable import Clearable
+except:
+    from clearable import Clearable
 
 
-class AdministratorProviderInterface(ABC):
+class AdministratorProviderInterface(Clearable):
 
     @abstractmethod
     async def getAdministratorUserId(self) -> str:

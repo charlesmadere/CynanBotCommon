@@ -1,4 +1,5 @@
 import re
+import traceback
 from typing import List, Optional, Pattern
 
 try:
@@ -17,6 +18,7 @@ try:
     from CynanBotCommon.twitch.twitchApiServiceInterface import \
         TwitchApiServiceInterface
     from CynanBotCommon.twitch.twitchBanRequest import TwitchBanRequest
+    from CynanBotCommon.twitch.twitchBanResponse import TwitchBanResponse
     from CynanBotCommon.twitch.twitchHandleProviderInterface import \
         TwitchHandleProviderInterface
     from CynanBotCommon.twitch.twitchTokensRepositoryInterface import \
@@ -38,6 +40,7 @@ except:
 
     from twitch.twitchApiServiceInterface import TwitchApiServiceInterface
     from twitch.twitchBanRequest import TwitchBanRequest
+    from twitch.twitchBanResponse import TwitchBanResponse
     from twitch.twitchHandleProviderInterface import \
         TwitchHandleProviderInterface
     from twitch.twitchTokensRepositoryInterface import \
@@ -105,6 +108,7 @@ class CheerActionHelper(CheerActionHelperInterface):
     async def handleCheerAction(
         self,
         bits: int,
+        cheerUserId: str,
         message: str,
         user: UserInterface
     ):
@@ -112,6 +116,8 @@ class CheerActionHelper(CheerActionHelperInterface):
             raise ValueError(f'bits argument is malformed: \"{bits}\"')
         elif bits < 0 or bits > utils.getIntMaxSafeSize():
             raise ValueError(f'bits argument is out of bounds: {bits}')
+        elif not utils.isValidStr(cheerUserId):
+            raise ValueError(f'cheerUserId argument is malformed: \"{cheerUserId}\"')
         elif not utils.isValidStr(message):
             raise ValueError(f'message argument is malformed: \"{message}\"')
         elif not isinstance(user, UserInterface):
@@ -133,6 +139,7 @@ class CheerActionHelper(CheerActionHelperInterface):
             bits = bits,
             actions = actions,
             broadcasterUserId = broadcasterUserId,
+            cheerUserId = cheerUserId,
             message = message,
             twitchAccessToken = twitchAccessToken,
             user = user
@@ -143,6 +150,7 @@ class CheerActionHelper(CheerActionHelperInterface):
         bits: int,
         actions: List[CheerAction],
         broadcasterUserId: str,
+        cheerUserId: str,
         message: str,
         twitchAccessToken: str,
         user: UserInterface
@@ -155,12 +163,23 @@ class CheerActionHelper(CheerActionHelperInterface):
             raise ValueError(f'actions argument is malformed: \"{actions}\"')
         elif not utils.isValidStr(broadcasterUserId):
             raise ValueError(f'broadcasterUserId argument is malformed: \"{broadcasterUserId}\"')
+        elif not utils.isValidStr(cheerUserId):
+            raise ValueError(f'cheerUserId argument is malformed: \"{cheerUserId}\"')
         elif not utils.isValidStr(message):
             raise ValueError(f'message argument is malformed: \"{message}\"')
         elif not utils.isValidStr(twitchAccessToken):
             raise ValueError(f'twitchAccessToken argument is malformed: \"{twitchAccessToken}\"')
         elif not isinstance(user, UserInterface):
             raise ValueError(f'user argument is malformed: \"{user}\"')
+
+        timeoutActions: List[CheerAction] = list()
+
+        for action in actions:
+            if action.getActionType() is CheerActionType.TIMEOUT:
+                timeoutActions.append(action)
+
+        if len(timeoutActions) == 0:
+            return
 
         messageWithCheerRemoved = self.__cheerMessageRegEx.sub('', message)
         if not utils.isValidStr(messageWithCheerRemoved):
@@ -186,35 +205,92 @@ class CheerActionHelper(CheerActionHelperInterface):
             self.__timber.log('CheerActionHelper', f'Unable to find user ID for \"{userNameToTimeout}\" ({message=})')
             return
         elif userIdToTimeout.lower() == broadcasterUserId.lower():
-            self.__timber.log('CheerActionHelper', f'Unable to timeout the broadcaster themself ({userIdToTimeout=}) ({broadcasterUserId=}) ({message=})')
-            return
-
-        timeoutActions: List[CheerAction] = list()
-
-        for action in actions:
-            if action.getActionType() is CheerActionType.TIMEOUT:
-                timeoutActions.append(action)
-
-        if len(timeoutActions) == 0:
+            userIdToTimeout = cheerUserId
+            self.__timber.log('CheerActionHelper', f'Attempted to timeout the broadcaster themself ({userIdToTimeout=}) ({broadcasterUserId=}) ({message=}), so will instead time out the user')
             return
 
         for action in timeoutActions:
             if action.getActionRequirement() is CheerActionRequirement.EXACT and action.getAmount() == bits:
-                timeoutDurationSeconds = action.getDurationSeconds()
-
-                if timeoutDurationSeconds is None:
-                    timeoutDurationSeconds = self.__defaultTimeoutDurationSeconds
-
-                banRequest = TwitchBanRequest(
-                    duration = timeoutActions,
+                await self.__timeoutUser(
+                    action = action,
                     broadcasterUserId = broadcasterUserId,
                     moderatorUserId = moderatorUserId,
-                    reason = None,
-                    userIdToBan = userIdToTimeout
+                    userIdToTimeout = userIdToTimeout,
+                    user = user
                 )
 
-                await self.__twitchApiService.banUser(
-                    twitchAccessToken = twitchAccessToken,
-                    banRequest = banRequest
-                )
                 return
+
+        greaterThanOrEqualToActions: List[CheerAction] = list()
+
+        for action in timeoutActions:
+            if action.getActionRequirement() is CheerActionRequirement.GREATER_THAN_OR_EQUAL_TO:
+                greaterThanOrEqualToActions.append(action)
+
+        greaterThanOrEqualToActions.sort(key = lambda action: action.getAmount(), reverse = True)
+
+        for action in greaterThanOrEqualToActions:
+            if bits >= action.getAmount():
+                await self.__timeoutUser(
+                    action = action,
+                    broadcasterUserId = broadcasterUserId,
+                    moderatorUserId = moderatorUserId,
+                    twitchAccessToken = twitchAccessToken,
+                    userIdToTimeout = userIdToTimeout,
+                    user = user
+                )
+
+                return
+
+        self.__timber.log('CheerActionHelper', f'Unable to find a matching timeout cheer value in \"{user.getHandle()}\" ({userIdToTimeout=}) ({broadcasterUserId=}) ({moderatorUserId=}) ({message=}) ({bits=}) ({timeoutActions=}) ({greaterThanOrEqualToActions=})')
+
+    async def __timeoutUser(
+        self,
+        action: CheerAction,
+        broadcasterUserId: str,
+        moderatorUserId: str,
+        twitchAccessToken: str,
+        userIdToTimeout: str,
+        user: UserInterface
+    ):
+        if not isinstance(action, CheerAction):
+            raise ValueError(f'action argument is malformed: \"{action}\"')
+        elif not utils.isValidStr(broadcasterUserId):
+            raise ValueError(f'broadcasterUserId argument is malformed: \"{broadcasterUserId}\"')
+        elif not utils.isValidStr(moderatorUserId):
+            raise ValueError(f'moderatorUserId argument is malformed: \"{moderatorUserId}\"')
+        elif not utils.isValidStr(twitchAccessToken):
+            raise ValueError(f'twitchAccessToken argument is malformed: \"{twitchAccessToken}\"')
+        elif not utils.isValidStr(userIdToTimeout):
+            raise ValueError(f'userIdToTimeout argument is malformed: \"{userIdToTimeout}\"')
+        elif not isinstance(user, UserInterface):
+            raise ValueError(f'user argument is malformed: \"{user}\"')
+
+        timeoutDurationSeconds = action.getDurationSeconds()
+
+        if timeoutDurationSeconds is None:
+            timeoutDurationSeconds = self.__defaultTimeoutDurationSeconds
+
+        banRequest = TwitchBanRequest(
+            duration = timeoutDurationSeconds,
+            broadcasterUserId = broadcasterUserId,
+            moderatorUserId = moderatorUserId,
+            reason = None,
+            userIdToBan = userIdToTimeout
+        )
+
+        response: Optional[TwitchBanResponse] = None
+        exception: Optional[Exception] = None
+
+        try:
+            response = await self.__twitchApiService.banUser(
+                twitchAccessToken = twitchAccessToken,
+                banRequest = banRequest
+            )
+        except Exception as e:
+            exception = e
+
+        if exception is not None or response is None:
+            self.__timber.log('CheerActionHelper', f'Failed to timeout {userIdToTimeout=} in \"{user.getHandle()}\": {exception}', exception, traceback.format_exc())
+        else:
+            self.__timber.log('CheerActionHelper', f'Timed out {userIdToTimeout=} in \"{user.getHandle()}\": {response}')

@@ -31,21 +31,21 @@ class LruCache():
             raise ValueError(f'capacity argument is out of bounds: {capacity}')
 
         self.__capacity: int = capacity
-        self.__lookup: Dict[str, LinkedNode] = dict()
+        self.__lookup: Dict[str, Optional[LinkedNode]] = dict()
         self.__stub: LinkedNode = LinkedNode("stub")
-        self.head: Optional[LinkedNode] = self.__stub.next
-        self.tail: Optional[LinkedNode] = self.__stub.next
+        self.__head: Optional[LinkedNode] = self.__stub.next
+        self.__tail: Optional[LinkedNode] = self.__stub.next
 
     def __append_new_node(self, newNode: LinkedNode):
         """  add the new node to the tail end
         """
-        if not self.tail:
-            self.head = newNode
-            self.tail = newNode
+        if not self.__tail:
+            self.__head = newNode
+            self.__tail = newNode
         else:
-            self.tail.next = newNode
-            newNode.prev = self.tail
-            self.tail = self.tail.next
+            self.__tail.next = newNode
+            newNode.prev = self.__tail
+            self.__tail = self.__tail.next
 
     def contains(self, key: str) -> bool:
         if not utils.isValidStr(key) or key not in self.__lookup:
@@ -53,7 +53,7 @@ class LruCache():
 
         node = self.__lookup[key]
 
-        if node is not self.tail:
+        if node is not self.__tail:
             self.__unlink_cur_node(node)
             self.__append_new_node(node)
 
@@ -69,7 +69,7 @@ class LruCache():
 
         if len(self.__lookup) == self.__capacity:
             # remove head node and corresponding key
-            self.__lookup.pop(self.head.key)
+            self.__lookup.pop(self.__head.key)
             self.__remove_head_node()
 
         # add new node and hash key
@@ -78,22 +78,22 @@ class LruCache():
         self.__append_new_node(newNode)
 
     def __remove_head_node(self):
-        if not self.head:
+        if not self.__head:
             return
 
-        prev = self.head
-        self.head = self.head.next
+        prev = self.__head
+        self.__head = self.__head.next
 
-        if self.head:
-            self.head.prev = None
+        if self.__head:
+            self.__head.prev = None
 
         del prev
 
     def __unlink_cur_node(self, node: LinkedNode):
         """ unlink current linked node
         """
-        if self.head is node:
-            self.head = node.next
+        if self.__head is node:
+            self.__head = node.next
 
             if node.next:
                 node.next.prev = None

@@ -1,13 +1,15 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import List, Optional
 
 try:
     from CynanBotCommon.cheerActions.cheerAction import CheerAction
+    from CynanBotCommon.clearable import Clearable
 except:
     from cheerActions.cheerAction import CheerAction
+    from clearable import Clearable
 
 
-class CheerActionsRepositoryInterface(ABC):
+class CheerActionsRepositoryInterface(Clearable):
 
     @abstractmethod
     async def addAction(self, action: CheerAction):

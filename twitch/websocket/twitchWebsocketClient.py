@@ -436,7 +436,7 @@ class TwitchWebsocketClient(TwitchWebsocketClientInterface):
                     try:
                         await dataBundleListener.onNewWebsocketDataBundle(dataBundle)
                     except Exception as e:
-                        self.__timber.log('RecurringActionsMachine', f'Encountered unknown Exception when looping through dataBundles (queue size: {self.__dataBundleQueue.qsize()}) (dataBundle: {dataBundle}): {e}', e, traceback.format_exc())
+                        self.__timber.log('RecurringActionsMachine', f'Encountered unknown Exception when looping through dataBundles (queue size: {self.__dataBundleQueue.qsize()}) ({dataBundle=}): {e}', e, traceback.format_exc())
 
             await asyncio.sleep(self.__queueSleepTimeSeconds)
 

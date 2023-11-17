@@ -12,6 +12,7 @@ class CheerActionHelperInterface(ABC):
     async def handleCheerAction(
         self,
         bits: int,
+        cheerUserId: str,
         message: str,
         user: UserInterface
     ):

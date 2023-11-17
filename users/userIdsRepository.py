@@ -3,6 +3,7 @@ from typing import Optional
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.lruCache import LruCache
     from CynanBotCommon.network.exceptions import GenericNetworkException
     from CynanBotCommon.storage.backingDatabase import BackingDatabase
     from CynanBotCommon.storage.databaseConnection import DatabaseConnection
@@ -16,6 +17,7 @@ try:
         UserIdsRepositoryInterface
 except:
     import utils
+    from lruCache import LruCache
     from network.exceptions import GenericNetworkException
     from storage.backingDatabase import BackingDatabase
     from storage.databaseConnection import DatabaseConnection
@@ -48,6 +50,10 @@ class UserIdsRepository(UserIdsRepositoryInterface):
         self.__twitchApiService: TwitchApiServiceInterface = twitchApiService
 
         self.__isDatabaseReady: bool = False
+
+    async def clearCaches(self):
+        # TODO
+        self.__timber.log('UserIdsRepository', 'Caches cleared')
 
     async def fetchAnonymousUserId(self, twitchAccessToken: str) -> Optional[str]:
         if not utils.isValidStr(twitchAccessToken):

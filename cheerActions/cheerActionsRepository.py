@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 try:
     import CynanBotCommon.utils as utils
@@ -52,6 +52,7 @@ class CheerActionsRepository(CheerActionsRepositoryInterface):
         self.__timber: TimberInterface = timber
 
         self.__isDatabaseReady: bool = False
+        self.__cache: Dict[str, Optional[List[CheerAction]]] = dict()
 
     async def addAction(self, action: CheerAction):
         if not isinstance(action, CheerAction):
@@ -62,7 +63,12 @@ class CheerActionsRepository(CheerActionsRepositoryInterface):
         if action in actions:
             raise CheerActionAlreadyExistsException(f'Attempted to add {action=} but it already exists for this user ({actions=})')
 
-        actionId = await self.__cheerActionIdGenerator.generateActionId()
+        actionId: Optional[str] = None
+        action: Optional[CheerAction] = None
+
+        while actionId is None or action is None:
+            actionId = await self.__cheerActionIdGenerator.generateActionId()
+            action = await self.getAction(actionId)
 
         connection = await self.__getDatabaseConnection()
         await connection.execute(
@@ -74,7 +80,12 @@ class CheerActionsRepository(CheerActionsRepositoryInterface):
         )
 
         await connection.close()
+        self.__cache.pop(action.getUserId(), None)
         self.__timber.log('CheerActionsRepository', f'Added new cheer action ({action=})')
+
+    async def clearCaches(self):
+        self.__cache.clear()
+        self.__timber.log('CheerActionsRepository', 'Caches cleared')
 
     async def deleteAction(self, actionId: str) -> Optional[CheerAction]:
         if not utils.isValidStr(actionId):
@@ -84,7 +95,7 @@ class CheerActionsRepository(CheerActionsRepositoryInterface):
 
         if action is None:
             self.__timber.log('CheerActionsRepository', f'Attempted to delete cheer action ID \"{actionId}\", but it does not exist in the database')
-            return
+            return None
 
         connection = await self.__getDatabaseConnection()
         await connection.execute(
@@ -96,7 +107,10 @@ class CheerActionsRepository(CheerActionsRepositoryInterface):
         )
 
         await connection.close()
+        self.__cache.pop(action.getUserId(), None)
         self.__timber.log('CheerActionsRepository', f'Deleted cheer action ({actionId=}) ({action=})')
+
+        return action
 
     async def getAction(self, actionId: str) -> Optional[CheerAction]:
         if not utils.isValidStr(actionId):
@@ -131,12 +145,16 @@ class CheerActionsRepository(CheerActionsRepositoryInterface):
         if not utils.isValidStr(userId):
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
 
+        if userId in self.__cache:
+            return self.__cache[userId]
+
         connection = await self.__getDatabaseConnection()
         records = await connection.fetchRows(
             '''
                 SELECT cheeractions.actiontype, cheeractions.amount, cheeractions.durationseconds, cheeractions.userid, userids.username FROM cheeractions
                 INNER JOIN userids ON cheeractions.userid = userids.userid
                 WHERE cheeractions.userid = $1
+                ORDER BY cheeractions.amount DESC
             ''',
             userId
         )
@@ -154,6 +172,7 @@ class CheerActionsRepository(CheerActionsRepositoryInterface):
                 userName = record[5]
             ))
 
+        self.__cache[userId] = actions
         return actions
 
     async def __getDatabaseConnection(self) -> DatabaseConnection:

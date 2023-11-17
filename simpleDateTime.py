@@ -127,8 +127,8 @@ class SimpleDateTime():
         else:
             raise ValueError(f'`other` is an unsupported type: \"{other}\"')
 
-    def __str__(self) -> str:
-        return f'{self.__now}'
+    def __repr__(self) -> str:
+        return str(self.__now)
 
     def __sub__(self, other: Any):
         if isinstance(other, SimpleDateTime):
