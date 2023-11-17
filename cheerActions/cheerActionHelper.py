@@ -93,6 +93,9 @@ class CheerActionHelper(CheerActionHelperInterface):
         self.__cheerMessageRegEx: Pattern = re.compile(r'(^|\s+)[a-z]+[0-9]+(\s+|$)', re.IGNORECASE)
         self.__userNameRegEx: Pattern = re.compile(r'^\s*@?(\w+)\s*$', re.IGNORECASE)
 
+    def getDefaultTimeoutDurationSeconds(self) -> int:
+        return self.__defaultTimeoutDurationSeconds
+
     async def __getTwitchAccessToken(self, user: UserInterface) -> Optional[str]:
         if not isinstance(user, UserInterface):
             raise ValueError(f'user argument is malformed: \"{user}\"')

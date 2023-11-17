@@ -10,8 +10,8 @@ try:
     from CynanBotCommon.cheerActions.cheerActionsRepositoryInterface import \
         CheerActionsRepositoryInterface
     from CynanBotCommon.cheerActions.cheerActionType import CheerActionType
-    from CynanBotCommon.cheerActions.exceptions import \
-        CheerActionAlreadyExistsException
+    from CynanBotCommon.cheerActions.exceptions import (
+        CheerActionAlreadyExistsException, TooManyCheerActionsException)
     from CynanBotCommon.storage.backingDatabase import BackingDatabase
     from CynanBotCommon.storage.databaseConnection import DatabaseConnection
     from CynanBotCommon.storage.databaseType import DatabaseType
@@ -25,7 +25,8 @@ except:
     from cheerActions.cheerActionsRepositoryInterface import \
         CheerActionsRepositoryInterface
     from cheerActions.cheerActionType import CheerActionType
-    from cheerActions.exceptions import CheerActionAlreadyExistsException
+    from cheerActions.exceptions import (CheerActionAlreadyExistsException,
+                                         TooManyCheerActionsException)
     from storage.backingDatabase import BackingDatabase
     from storage.databaseConnection import DatabaseConnection
     from storage.databaseType import DatabaseType
@@ -38,7 +39,8 @@ class CheerActionsRepository(CheerActionsRepositoryInterface):
         self,
         backingDatabase: BackingDatabase,
         cheerActionIdGenerator: CheerActionIdGeneratorInterface,
-        timber: TimberInterface
+        timber: TimberInterface,
+        maximumPerUser: int = 8
     ):
         if not isinstance(backingDatabase, BackingDatabase):
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
@@ -46,10 +48,15 @@ class CheerActionsRepository(CheerActionsRepositoryInterface):
             raise ValueError(f'cheerActionIdGenerator argument is malformed: \"{cheerActionIdGenerator}\"')
         elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
+        elif not utils.isValidInt(maximumPerUser):
+            raise ValueError(f'maximumPerUser argument is malformed: \"{maximumPerUser}\"')
+        elif maximumPerUser < 1 or maximumPerUser > 12:
+            raise ValueError(f'maximumPerUser argument is out of bounds: {maximumPerUser}')
 
         self.__backingDatabase: BackingDatabase = backingDatabase
         self.__cheerActionIdGenerator: CheerActionIdGeneratorInterface = cheerActionIdGenerator
         self.__timber: TimberInterface = timber
+        self.__maximumPerUser: int = maximumPerUser
 
         self.__isDatabaseReady: bool = False
         self.__cache: Dict[str, Optional[List[CheerAction]]] = dict()
@@ -62,6 +69,8 @@ class CheerActionsRepository(CheerActionsRepositoryInterface):
 
         if action in actions:
             raise CheerActionAlreadyExistsException(f'Attempted to add {action=} but it already exists for this user ({actions=})')
+        elif len(actions) + 1 > self.__maximumPerUser:
+            raise TooManyCheerActionsException(f'Attempted to add {action=} but this user already has the maximum number of cheer actions (actions len: {len(actions)}) ({self.__maximumPerUser=})')
 
         actionId: Optional[str] = None
         action: Optional[CheerAction] = None
