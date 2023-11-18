@@ -91,7 +91,11 @@ class CheerActionsRepository(CheerActionsRepositoryInterface):
         actions = await self.getActions(userId)
 
         if len(actions) + 1 > self.__maximumPerUser:
-            raise TooManyCheerActionsException(f'Attempted to new cheer action for {userId=} but they already have the maximum number of cheer actions (actions len: {len(actions)}) ({self.__maximumPerUser=})')
+            raise TooManyCheerActionsException(f'Attempted to add new cheer action for {userId=} but they already have the maximum number of cheer actions (actions len: {len(actions)}) ({self.__maximumPerUser=})')
+
+        for action in actions:
+            if action.getAmount() == amount:
+                raise CheerActionAlreadyExistsException(f'Attempted to add new cheer action for {userId=} but they already have a cheer action that requires the given amount ({amount}): {action=}')
 
         actionId: Optional[str] = None
         action: Optional[CheerAction] = None
