@@ -23,8 +23,7 @@ class CheerActionsRepositoryInterface(Clearable):
         actionType: CheerActionType,
         amount: int,
         durationSeconds: Optional[int],
-        userId: str,
-        userName: str
+        userId: str
     ):
         pass
 
