@@ -11,7 +11,8 @@ try:
         CheerActionsRepositoryInterface
     from CynanBotCommon.cheerActions.cheerActionType import CheerActionType
     from CynanBotCommon.cheerActions.exceptions import (
-        CheerActionAlreadyExistsException, TooManyCheerActionsException)
+        CheerActionAlreadyExistsException,
+        TimeoutDurationSecondsTooLongException, TooManyCheerActionsException)
     from CynanBotCommon.storage.backingDatabase import BackingDatabase
     from CynanBotCommon.storage.databaseConnection import DatabaseConnection
     from CynanBotCommon.storage.databaseType import DatabaseType
@@ -25,8 +26,9 @@ except:
     from cheerActions.cheerActionsRepositoryInterface import \
         CheerActionsRepositoryInterface
     from cheerActions.cheerActionType import CheerActionType
-    from cheerActions.exceptions import (CheerActionAlreadyExistsException,
-                                         TooManyCheerActionsException)
+    from cheerActions.exceptions import (
+        CheerActionAlreadyExistsException,
+        TimeoutDurationSecondsTooLongException, TooManyCheerActionsException)
     from storage.backingDatabase import BackingDatabase
     from storage.databaseConnection import DatabaseConnection
     from storage.databaseType import DatabaseType
@@ -40,7 +42,7 @@ class CheerActionsRepository(CheerActionsRepositoryInterface):
         backingDatabase: BackingDatabase,
         cheerActionIdGenerator: CheerActionIdGeneratorInterface,
         timber: TimberInterface,
-        maximumPerUser: int = 8
+        maximumPerUser: int = 5
     ):
         if not isinstance(backingDatabase, BackingDatabase):
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
@@ -50,7 +52,7 @@ class CheerActionsRepository(CheerActionsRepositoryInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not utils.isValidInt(maximumPerUser):
             raise ValueError(f'maximumPerUser argument is malformed: \"{maximumPerUser}\"')
-        elif maximumPerUser < 1 or maximumPerUser > 12:
+        elif maximumPerUser < 1 or maximumPerUser > 16:
             raise ValueError(f'maximumPerUser argument is out of bounds: {maximumPerUser}')
 
         self.__backingDatabase: BackingDatabase = backingDatabase
@@ -61,21 +63,40 @@ class CheerActionsRepository(CheerActionsRepositoryInterface):
         self.__isDatabaseReady: bool = False
         self.__cache: Dict[str, Optional[List[CheerAction]]] = dict()
 
-    async def addAction(self, action: CheerAction):
-        if not isinstance(action, CheerAction):
-            raise ValueError(f'action argument is malformed: \"{action}\"')
+    async def addAction(
+        self,
+        actionRequirement: CheerActionRequirement,
+        actionType: CheerActionType,
+        amount: int,
+        durationSeconds: int,
+        userId: str
+    ):
+        if not isinstance(actionRequirement, CheerActionRequirement):
+            raise ValueError(f'actionRequirement argument is malformed: \"{actionRequirement}\"')
+        elif not isinstance(actionType, CheerActionType):
+            raise ValueError(f'cheerActionType argument is malformed: \"{actionType}\"')
+        elif not utils.isValidInt(amount):
+            raise ValueError(f'amount argument is malformed: \"{amount}\"')
+        elif amount < 1 or amount > utils.getIntMaxSafeSize():
+            raise ValueError(f'amount argument is out of bounds: {amount}')
+        elif not utils.isValidInt(durationSeconds):
+            raise ValueError(f'durationSeconds argument is malformed: \"{durationSeconds}\"')
+        elif durationSeconds < 1:
+            raise ValueError(f'durationSeconds argument is out of bounds: {durationSeconds}')
+        elif durationSeconds > 1209600:
+            raise TimeoutDurationSecondsTooLongException(f'durationSeconds argument is out of bounds: {durationSeconds}')
+        elif not utils.isValidStr(userId):
+            raise ValueError(f'userId argument is malformed: \"{userId}\"')
 
-        actions = await self.getActions(action.getUserId())
+        actions = await self.getActions(userId)
 
-        if action in actions:
-            raise CheerActionAlreadyExistsException(f'Attempted to add {action=} but it already exists for this user ({actions=})')
-        elif len(actions) + 1 > self.__maximumPerUser:
-            raise TooManyCheerActionsException(f'Attempted to add {action=} but this user already has the maximum number of cheer actions (actions len: {len(actions)}) ({self.__maximumPerUser=})')
+        if len(actions) + 1 > self.__maximumPerUser:
+            raise TooManyCheerActionsException(f'Attempted to new cheer action for {userId=} but they already have the maximum number of cheer actions (actions len: {len(actions)}) ({self.__maximumPerUser=})')
 
         actionId: Optional[str] = None
         action: Optional[CheerAction] = None
 
-        while actionId is None or action is None:
+        while actionId is None or action is not None:
             actionId = await self.__cheerActionIdGenerator.generateActionId()
             action = await self.getAction(actionId)
 
@@ -85,22 +106,27 @@ class CheerActionsRepository(CheerActionsRepositoryInterface):
                 INSERT INTO cheeractions (actionid, actionrequirement, actiontype, amount, durationseconds, userid)
                 VALUES ($1, $2, $3, $4, $5, $6)
             ''',
-            actionId, action.getActionRequirement().toStr(), action.getActionType().toStr(), action.getAmount(), action.getDurationSeconds(), action.getUserId()
+            actionId, actionRequirement.toStr(), actionType.toStr(), amount, durationSeconds, userId
         )
 
         await connection.close()
-        self.__cache.pop(action.getUserId(), None)
+        self.__cache.pop(userId, None)
         self.__timber.log('CheerActionsRepository', f'Added new cheer action ({action=})')
 
     async def clearCaches(self):
         self.__cache.clear()
         self.__timber.log('CheerActionsRepository', 'Caches cleared')
 
-    async def deleteAction(self, actionId: str) -> Optional[CheerAction]:
+    async def deleteAction(self, actionId: str, userId: str) -> Optional[CheerAction]:
         if not utils.isValidStr(actionId):
             raise ValueError(f'actionId argument is malformed: \"{actionId}\"')
+        elif not utils.isValidStr(userId):
+            raise ValueError(f'userId argument is malformed: \"{userId}\"')
 
-        action = await self.getAction(actionId)
+        action = await self.getAction(
+            actionId = actionId,
+            userId = userId
+        )
 
         if action is None:
             self.__timber.log('CheerActionsRepository', f'Attempted to delete cheer action ID \"{actionId}\", but it does not exist in the database')
@@ -110,30 +136,32 @@ class CheerActionsRepository(CheerActionsRepositoryInterface):
         await connection.execute(
             '''
                 DELETE FROM cheeractions
-                WHERE actionid = $1
+                WHERE actionid = $1 AND userid = $2
             ''',
-            actionId
+            actionId, userId
         )
 
         await connection.close()
         self.__cache.pop(action.getUserId(), None)
-        self.__timber.log('CheerActionsRepository', f'Deleted cheer action ({actionId=}) ({action=})')
+        self.__timber.log('CheerActionsRepository', f'Deleted cheer action ({actionId=}) ({userId=}) ({action=})')
 
         return action
 
-    async def getAction(self, actionId: str) -> Optional[CheerAction]:
+    async def getAction(self, actionId: str, userId: str) -> Optional[CheerAction]:
         if not utils.isValidStr(actionId):
             raise ValueError(f'actionId argument is malformed: \"{actionId}\"')
+        elif not utils.isValidStr(userId):
+            raise ValueError(f'userId argument is malformed: \"{userId}\"')
 
         connection = await self.__getDatabaseConnection()
         record = await connection.fetchRow(
             '''
-                SELECT cheeractions.actionrequirement, cheeractions.actiontype, cheeractions.amount, cheeractions.durationseconds, cheeractions.userid, userids.username FROM cheeractions
+                SELECT cheeractions.actionid, cheeractions.actionrequirement, cheeractions.actiontype, cheeractions.amount, cheeractions.durationseconds, cheeractions.userid, userids.username FROM cheeractions
                 INNER JOIN userids ON cheeractions.userid = userids.userid
-                WHERE cheeractions.userid = $1
+                WHERE cheeractions.actionid = $1 AND cheeractions.userid = $2
                 LIMIT 1
             ''',
-            actionId
+            actionId, userId
         )
 
         await connection.close()
@@ -142,12 +170,13 @@ class CheerActionsRepository(CheerActionsRepositoryInterface):
             return None
 
         return CheerAction(
-            actionRequirement = CheerActionRequirement.fromStr(record[0]),
-            actionType = CheerActionType.fromStr(record[1]),
-            amount = record[2],
-            durationSeconds = record[3],
-            userId = record[4],
-            userName = record[5]
+            actionId = record[0],
+            actionRequirement = CheerActionRequirement.fromStr(record[1]),
+            actionType = CheerActionType.fromStr(record[2]),
+            amount = record[3],
+            durationSeconds = record[4],
+            userId = record[5],
+            userName = record[6]
         )
 
     async def getActions(self, userId: str) -> List[CheerAction]:
@@ -160,7 +189,7 @@ class CheerActionsRepository(CheerActionsRepositoryInterface):
         connection = await self.__getDatabaseConnection()
         records = await connection.fetchRows(
             '''
-                SELECT cheeractions.actiontype, cheeractions.amount, cheeractions.durationseconds, cheeractions.userid, userids.username FROM cheeractions
+                SELECT cheeractions.actionid, cheeractions.actiontype, cheeractions.amount, cheeractions.durationseconds, cheeractions.userid, userids.username FROM cheeractions
                 INNER JOIN userids ON cheeractions.userid = userids.userid
                 WHERE cheeractions.userid = $1
                 ORDER BY cheeractions.amount DESC
@@ -173,12 +202,13 @@ class CheerActionsRepository(CheerActionsRepositoryInterface):
 
         for record in records:
             actions.append(CheerAction(
-                actionRequirement = CheerActionRequirement.fromStr(record[0]),
-                actionType = CheerActionType.fromStr(record[1]),
-                amount = record[2],
-                durationSeconds = record[3],
-                userId = record[4],
-                userName = record[5]
+                actionId = record[0],
+                actionRequirement = CheerActionRequirement.fromStr(record[1]),
+                actionType = CheerActionType.fromStr(record[2]),
+                amount = record[3],
+                durationSeconds = record[4],
+                userId = record[5],
+                userName = record[6]
             ))
 
         self.__cache[userId] = actions
@@ -199,12 +229,13 @@ class CheerActionsRepository(CheerActionsRepositoryInterface):
             await connection.createTableIfNotExists(
                 '''
                     CREATE TABLE IF NOT EXISTS cheeractions (
-                        actionid public.citext NOT NULL PRIMARY KEY,
+                        actionid public.citext NOT NULL,
                         actionrequirement text NOT NULL,
                         actiontype text NOT NULL,
                         amount integer NOT NULL,
-                        durationseconds integer DEFAULT NULL,
-                        userid public.citext NOT NULL
+                        durationseconds integer NOT NULL,
+                        userid public.citext NOT NULL,
+                        PRIMARY KEY (actionid, userid)
                     )
                 '''
             )
@@ -212,12 +243,13 @@ class CheerActionsRepository(CheerActionsRepositoryInterface):
             await connection.createTableIfNotExists(
                 '''
                     CREATE TABLE IF NOT EXISTS cheeractions (
-                        actionid TEXT NOT NULL PRIMARY KEY COLLATE NOCASE,
+                        actionid TEXT NOT NULL COLLATE NOCASE,
                         actionrequirement TEXT NOT NULL,
                         actiontype TEXT NOT NULL,
                         amount INTEGER NOT NULL,
-                        durationseconds INTEGER DEFAULT NULL,
-                        userid TEXT NOT NULL COLLATE NOCASE
+                        durationseconds INTEGER NOT NULL,
+                        userid TEXT NOT NULL COLLATE NOCASE,
+                        PRIMARY KEY (actionid, userid)
                     )
                 '''
             )

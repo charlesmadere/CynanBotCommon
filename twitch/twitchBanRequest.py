@@ -2,8 +2,12 @@ from typing import Any, Dict, Optional
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.twitch.exceptions import \
+        TimeoutDurationSecondsTooLongException
 except:
     import utils
+
+    from twitch.exceptions import TimeoutDurationSecondsTooLongException
 
 
 # This class intends to directly correspond to Twitch's "Ban User" API:
@@ -20,8 +24,10 @@ class TwitchBanRequest():
     ):
         if duration is not None and not utils.isValidInt(duration):
             raise ValueError(f'duration argument is malformed: \"{duration}\"')
-        elif duration is not None and (duration < 1 or duration > 1209600):
+        elif duration is not None and duration < 1:
             raise ValueError(f'duration argument is out of bounds: {duration}')
+        elif duration is not None and duration > 1209600:
+            raise TimeoutDurationSecondsTooLongException(f'duration argument is out of bounds: {duration}')
         elif not utils.isValidStr(broadcasterUserId):
             raise ValueError(f'broadcasterUserId argument is malformed: \"{broadcasterUserId}\"')
         elif not utils.isValidStr(moderatorUserId):

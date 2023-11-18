@@ -59,8 +59,7 @@ class CheerActionHelper(CheerActionHelperInterface):
         twitchApiService: TwitchApiServiceInterface,
         twitchHandleProvider: TwitchHandleProviderInterface,
         twitchTokensRepository: TwitchTokensRepositoryInterface,
-        userIdsRepository: UserIdsRepositoryInterface,
-        defaultTimeoutDurationSeconds: int = 60
+        userIdsRepository: UserIdsRepositoryInterface
     ):
         if not isinstance(administratorProvider, AdministratorProviderInterface):
             raise ValueError(f'administratorProvider argument is malformed: \"{administratorProvider}\"')
@@ -76,10 +75,6 @@ class CheerActionHelper(CheerActionHelperInterface):
             raise ValueError(f'twitchTokensRepository argument is malformed: \"{twitchTokensRepository}\"')
         elif not isinstance(userIdsRepository, UserIdsRepositoryInterface):
             raise ValueError(f'userIdsRepository argument is malformed: \"{userIdsRepository}\"')
-        elif not utils.isValidInt(defaultTimeoutDurationSeconds):
-            raise ValueError(f'defaultTimeoutDurationSeconds argument is malformed: \"{defaultTimeoutDurationSeconds}\"')
-        elif defaultTimeoutDurationSeconds < 1 or defaultTimeoutDurationSeconds > 1209600:
-            raise ValueError(f'defaultTimeoutDurationSeconds argument is out of bounds: {defaultTimeoutDurationSeconds}')
 
         self.__administratorProvider: AdministratorProviderInterface = administratorProvider
         self.__cheerActionsRepository: CheerActionsRepositoryInterface = cheerActionsRepository
@@ -88,13 +83,9 @@ class CheerActionHelper(CheerActionHelperInterface):
         self.__twitchHandleProvider: TwitchHandleProviderInterface = twitchHandleProvider
         self.__twitchTokensRepository: TwitchTokensRepositoryInterface = twitchTokensRepository
         self.__userIdsRepository: UserIdsRepositoryInterface = userIdsRepository
-        self.__defaultTimeoutDurationSeconds: int = defaultTimeoutDurationSeconds
 
         self.__cheerMessageRegEx: Pattern = re.compile(r'(^|\s+)[a-z]+[0-9]+(\s+|$)', re.IGNORECASE)
         self.__userNameRegEx: Pattern = re.compile(r'^\s*@?(\w+)\s*$', re.IGNORECASE)
-
-    def getDefaultTimeoutDurationSeconds(self) -> int:
-        return self.__defaultTimeoutDurationSeconds
 
     async def __getTwitchAccessToken(self, user: UserInterface) -> Optional[str]:
         if not isinstance(user, UserInterface):
@@ -269,13 +260,8 @@ class CheerActionHelper(CheerActionHelperInterface):
         elif not isinstance(user, UserInterface):
             raise ValueError(f'user argument is malformed: \"{user}\"')
 
-        timeoutDurationSeconds = action.getDurationSeconds()
-
-        if timeoutDurationSeconds is None:
-            timeoutDurationSeconds = self.__defaultTimeoutDurationSeconds
-
         banRequest = TwitchBanRequest(
-            duration = timeoutDurationSeconds,
+            duration = action.getDurationSeconds(),
             broadcasterUserId = broadcasterUserId,
             moderatorUserId = moderatorUserId,
             reason = None,

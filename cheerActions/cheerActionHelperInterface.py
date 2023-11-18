@@ -9,10 +9,6 @@ except:
 class CheerActionHelperInterface(ABC):
 
     @abstractmethod
-    def getDefaultTimeoutDurationSeconds(self) -> int:
-        pass
-
-    @abstractmethod
     async def handleCheerAction(
         self,
         bits: int,
