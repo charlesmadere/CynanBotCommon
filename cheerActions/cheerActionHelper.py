@@ -19,6 +19,8 @@ try:
     from CynanBotCommon.tts.ttsManagerInterface import TtsManagerInterface
     from CynanBotCommon.twitch.twitchApiServiceInterface import \
         TwitchApiServiceInterface
+    from CynanBotCommon.twitch.twitchBannedUserRequest import \
+        TwitchBannedUserRequest
     from CynanBotCommon.twitch.twitchBanRequest import TwitchBanRequest
     from CynanBotCommon.twitch.twitchBanResponse import TwitchBanResponse
     from CynanBotCommon.twitch.twitchHandleProviderInterface import \
@@ -43,6 +45,7 @@ except:
     from tts.ttsManagerInterface import TtsManagerInterface
 
     from twitch.twitchApiServiceInterface import TwitchApiServiceInterface
+    from twitch.twitchBannedUserRequest import TwitchBannedUserRequest
     from twitch.twitchBanRequest import TwitchBanRequest
     from twitch.twitchBanResponse import TwitchBanResponse
     from twitch.twitchHandleProviderInterface import \
@@ -285,27 +288,26 @@ class CheerActionHelper(CheerActionHelperInterface):
         elif not isinstance(user, UserInterface):
             raise ValueError(f'user argument is malformed: \"{user}\"')
 
-        banRequest = TwitchBanRequest(
-            duration = action.getDurationSeconds(),
+        if not await self.__verifyUserCanBeTimedOut(
             broadcasterUserId = broadcasterUserId,
-            moderatorUserId = moderatorUserId,
-            reason = None,
-            userIdToBan = userIdToTimeout
-        )
-
-        response: Optional[TwitchBanResponse] = None
-        exception: Optional[Exception] = None
+            twitchAccessToken = twitchAccessToken,
+            userIdToTimeout = userIdToTimeout
+        ):
+            return
 
         try:
-            response = await self.__twitchApiService.banUser(
+            await self.__twitchApiService.banUser(
                 twitchAccessToken = twitchAccessToken,
-                banRequest = banRequest
+                banRequest = TwitchBanRequest(
+                    duration = action.getDurationSeconds(),
+                    broadcasterUserId = broadcasterUserId,
+                    moderatorUserId = moderatorUserId,
+                    reason = None,
+                    userIdToBan = userIdToTimeout
+                )
             )
         except Exception as e:
-            exception = e
-
-        if exception is not None or response is None:
-            self.__timber.log('CheerActionHelper', f'Failed to timeout {userIdToTimeout=} in \"{user.getHandle()}\": {exception}', exception, traceback.format_exc())
+            self.__timber.log('CheerActionHelper', f'Failed to timeout {userIdToTimeout=} in \"{user.getHandle()}\": {e}', e, traceback.format_exc())
             return
 
         userLoginToTimeout = await self.__userIdsRepository.requireUserName(
@@ -313,14 +315,55 @@ class CheerActionHelper(CheerActionHelperInterface):
             twitchAccessToken = twitchAccessToken
         )
 
-        self.__timber.log('CheerActionHelper', f'Timed out {userLoginToTimeout}:{userIdToTimeout} in \"{user.getHandle()}\" for {action.getDurationSeconds()} second(s): {response}')
+        self.__timber.log('CheerActionHelper', f'Timed out {userLoginToTimeout}:{userIdToTimeout} in \"{user.getHandle()}\" for {action.getDurationSeconds()} second(s)')
 
         if user.isTtsEnabled() and self.__ttsManager is not None:
             self.__ttsManager.submitTtsEvent(TtsEvent(
-                message = f'{cheerUserName} has timed out {userLoginToTimeout} for {action.getDurationSeconds()} seconds!',
+                message = f'{cheerUserName} timed out {userLoginToTimeout} for {action.getDurationSeconds()} seconds!',
                 twitchChannel = user.getHandle(),
                 userId = cheerUserId,
                 userName = cheerUserName,
                 donation = None,
                 raidInfo = None
             ))
+
+    async def __verifyUserCanBeTimedOut(
+        self,
+        broadcasterUserId: str,
+        twitchAccessToken: str,
+        userIdToTimeout: str
+    ) -> bool:
+        if not utils.isValidStr(broadcasterUserId):
+            raise ValueError(f'broadcasterUserId argument is malformed: \"{broadcasterUserId}\"')
+        elif not utils.isValidStr(twitchAccessToken):
+            raise ValueError(f'twitchAccessToken argument is malformed: \"{twitchAccessToken}\"')
+        elif not utils.isValidStr(userIdToTimeout):
+            raise ValueError(f'userIdToTimeout argument is malformed: \"{userIdToTimeout}\"')
+
+        try:
+            bannedUsersResponse = await self.__twitchApiService.fetchBannedUsers(
+                twitchAccessToken = twitchAccessToken,
+                bannedUserRequest = TwitchBannedUserRequest(
+                    broadcasterId = broadcasterUserId,
+                    requestedUserId = userIdToTimeout
+                )
+            )
+        except Exception as e:
+            self.__timber.log('CheerActionHelper', f'Failed to verify if the given user ID (\"{userIdToTimeout}\") can be timed out: {e}', e, traceback.format_exc())
+            return False
+
+        bannedUsers = bannedUsersResponse.getUsers()
+
+        if not utils.hasItems(bannedUsers):
+            return True
+
+        for bannedUser in bannedUsers:
+            if bannedUser.getUserId() == userIdToTimeout:
+                if bannedUser.getExpiresAt() is None:
+                    self.__timber.log('CheerActionHelper', f'The given user ID (\"{userIdToTimeout}\") will not be timed out as this user is banned: {bannedUser=}')
+                else:
+                    self.__timber.log('CheerActionHelper', f'The given user ID (\"{userIdToTimeout}\") will not be timed out as this user is already timed out: {bannedUser=}')
+
+                return False
+
+        return True
