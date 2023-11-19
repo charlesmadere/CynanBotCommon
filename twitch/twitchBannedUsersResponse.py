@@ -34,7 +34,7 @@ class TwitchBannedUsersResponse():
     def getRequestedUserId(self) -> Optional[str]:
         return self.__requestedUserId
 
-    def getUsers(self) -> Optional[TwitchBannedUser]:
+    def getUsers(self) -> Optional[List[TwitchBannedUser]]:
         return self.__users
 
     def __repr__(self) -> str:
