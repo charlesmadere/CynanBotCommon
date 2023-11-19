@@ -1,15 +1,20 @@
 from typing import Any, Dict, Optional
 
+try:
+    import CynanBotCommon.utils as utils
+except:
+    import utils
+
 
 class TwitchPaginationResponse():
 
     def __init__(self, cursor: Optional[str]):
-        if cursor is not None and not isinstance(cursor, str):
+        if not utils.isValidStr(cursor):
             raise ValueError(f'cursor argument is malformed: \"{cursor}\"')
 
-        self.__cursor: Optional[str] = cursor
+        self.__cursor: str = cursor
 
-    def getCursor(self) -> Optional[str]:
+    def getCursor(self) -> str:
         return self.__cursor
 
     def __repr__(self) -> str:
