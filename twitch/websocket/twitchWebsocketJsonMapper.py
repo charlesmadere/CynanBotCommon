@@ -531,7 +531,7 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
         if not isinstance(outcomeJson, Dict) or not utils.hasItems(outcomeJson):
             return None
 
-        channelPoints = utils.getIntFromDict(outcomeJson, 'channel_points')
+        channelPoints = utils.getIntFromDict(outcomeJson, 'channel_points', fallback = 0)
         users = utils.getIntFromDict(outcomeJson, 'users')
         outcomeId = utils.getStrFromDict(outcomeJson, 'id')
         title = utils.getStrFromDict(outcomeJson, 'title')
