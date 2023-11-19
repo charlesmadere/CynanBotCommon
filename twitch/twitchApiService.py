@@ -7,6 +7,7 @@ try:
     from CynanBotCommon.network.exceptions import GenericNetworkException
     from CynanBotCommon.network.networkClientProvider import \
         NetworkClientProvider
+    from CynanBotCommon.network.networkHandle import NetworkHandle
     from CynanBotCommon.network.networkResponse import NetworkResponse
     from CynanBotCommon.simpleDateTime import SimpleDateTime
     from CynanBotCommon.timber.timberInterface import TimberInterface
@@ -65,6 +66,7 @@ except:
     import utils
     from network.exceptions import GenericNetworkException
     from network.networkClientProvider import NetworkClientProvider
+    from network.networkHandle import NetworkHandle
     from network.networkResponse import NetworkResponse
     from simpleDateTime import SimpleDateTime
     from timber.timberInterface import TimberInterface
@@ -310,10 +312,69 @@ class TwitchApiService(TwitchApiServiceInterface):
         twitchClientId = await self.__twitchCredentialsProvider.getTwitchClientId()
         clientSession = await self.__networkClientProvider.get()
 
-        url = f'https://api.twitch.tv/helix/moderation/banned?broadcaster_id={bannedUserRequest.getBroadcasterId()}'
+        firstFetch = True
+        currentPagination: Optional[TwitchPaginationResponse] = None
+        pages: List[TwitchBannedUsersPageResponse] = list()
+
+        while firstFetch or currentPagination is not None:
+            if firstFetch:
+                firstFetch = False
+
+            page = await self.__fetchBannedUsers(
+                clientSession = clientSession,
+                twitchAccessToken = twitchAccessToken,
+                twitchClientId = twitchClientId,
+                bannedUserRequest = bannedUserRequest,
+                pagination = currentPagination
+            )
+
+            if page is None:
+                currentPagination = None
+            elif isinstance(page, TwitchBannedUsersPageResponse):
+                pages.append(page)
+                currentPagination = page.getPagination()
+            else:
+                raise RuntimeError(f'Python is stupid and this type check shouldn\'t be necessary ({bannedUserRequest=}) ({firstFetch=}) ({currentPagination=}) ({pages=}) ({page=})')
+
+        allUsers: List[TwitchBannedUser] = list()
+
+        for page in pages:
+            allUsers.extend(page.getUsers())
+
+        allUsers.sort(key = lambda user: user.getUserLogin().lower())
+
+        return TwitchBannedUsersResponse(
+            users = allUsers,
+            broadcasterId = bannedUserRequest.getBroadcasterId(),
+            requestedUserId = bannedUserRequest.getRequestedUserId()
+        )
+
+    async def __fetchBannedUsers(
+        self,
+        clientSession: NetworkHandle,
+        twitchAccessToken: str,
+        twitchClientId: str,
+        bannedUserRequest: TwitchBannedUserRequest,
+        currentPagination: Optional[TwitchPaginationResponse]
+    ) -> TwitchBannedUsersPageResponse:
+        if not isinstance(clientSession, NetworkHandle):
+            raise ValueError(f'clientSession argument is malformed: \"{clientSession}\"')
+        elif not utils.isValidStr(twitchAccessToken):
+            raise ValueError(f'twitchAccessToken argument is malformed: \"{twitchAccessToken}\"')
+        elif not utils.isValidStr(twitchClientId):
+            raise ValueError(f'twitchClientId argument is malformed: \"{twitchClientId}\"')
+        elif not isinstance(bannedUserRequest, TwitchBannedUserRequest):
+            raise ValueError(f'bannedUserRequest argument is malformed: \"{bannedUserRequest}\"')
+        elif currentPagination is not None and not isinstance(currentPagination, TwitchPaginationResponse):
+            raise ValueError(f'currentPagination argument is malformed: \"{currentPagination}\"')
+
+        url = f'https://api.twitch.tv/helix/moderation/banned?broadcaster_id={bannedUserRequest.getBroadcasterId()}&first=100'
 
         if utils.isValidStr(bannedUserRequest.getRequestedUserId()):
             url = f'{url}&user_id={bannedUserRequest.getRequestedUserId()}'
+
+        if currentPagination is not None:
+            url = f'{url}&first={currentPagination.getCursor()}'
 
         try:
             response = await clientSession.get(
@@ -343,12 +404,35 @@ class TwitchApiService(TwitchApiServiceInterface):
 
         data: Optional[List[Dict[str, Any]]] = jsonResponse.get('data')
         if not utils.hasItems(data):
-            # this means that this particular stream does not have any banned users
-            return TwitchBannedUsersResponse(
+            return TwitchBannedUsersPageResponse(
                 users = None,
-                broadcasterId = bannedUserRequest.getBroadcasterId(),
-                requestedUserId = bannedUserRequest.getRequestedUserId()
+                pagination = None
             )
+
+        users: List[TwitchBannedUser] = list()
+
+        for bannedUserJson in data:
+            expiresAt: Optional[SimpleDateTime] = None
+            if 'expires_at' in bannedUserJson and utils.isValidStr(bannedUserJson.get('expires_at')):
+                expiresAt = SimpleDateTime(utils.getDateTimeFromStr(utils.getStrFromDict(bannedUserJson, 'expires_at')))
+
+            reason: Optional[str] = None
+            if 'reason' in bannedUserJson and utils.isValidStr(bannedUserJson.get('reason')):
+                reason = utils.getStrFromDict(bannedUserJson, 'reason')
+
+            users.append(TwitchBannedUser(
+                createdAt = SimpleDateTime(utils.getDateTimeFromStr(utils.getStrFromDict(bannedUserJson, 'created_at'))),
+                expiresAt = expiresAt,
+                moderatorId = utils.getStrFromDict(bannedUserJson, 'moderator_id'),
+                moderatorLogin = utils.getStrFromDict(bannedUserJson, 'moderator_login'),
+                moderatorName = utils.getStrFromDict(bannedUserJson, 'moderator_name'),
+                reason = reason,
+                userId = utils.getStrFromDict(bannedUserJson, 'user_id'),
+                userLogin = utils.getStrFromDict(bannedUserJson, 'user_login'),
+                userName = utils.getStrFromDict(bannedUserJson, 'user_name')
+            ))
+
+        users.sort(key = lambda user: user.getUserLogin().lower())
 
         paginationJson: Optional[Dict[str, Any]] = jsonResponse.get('pagination')
         pagination: Optional[TwitchPaginationResponse] = None
@@ -358,27 +442,10 @@ class TwitchApiService(TwitchApiServiceInterface):
                 cursor = utils.getStrFromDict(paginationJson, 'cursor')
             )
 
-        # TODO
-
-        users: List[TwitchBannedUser] = list()
-
-        return TwitchBannedUsersResponse(
+        return TwitchBannedUsersPageResponse(
             users = users,
-            broadcasterId = bannedUserRequest.getBroadcasterId(),
-            requestedUserId = bannedUserRequest.getRequestedUserId()
+            pagination = pagination
         )
-
-    async def __fetchBannedUsersPage(
-        self,
-        twitchAccessToken: str,
-        pagination: Optional[TwitchPaginationResponse]
-    ) -> Optional[TwitchBannedUsersPageResponse]:
-        if not utils.isValidStr(twitchAccessToken):
-            raise ValueError(f'twitchAccessToken argument is malformed: \"{twitchAccessToken}\"')
-        elif pagination is not None and not isinstance(pagination, TwitchPaginationResponse):
-            raise ValueError(f'pagination argument is malformed: \"{pagination}\"')
-
-        return None
 
     async def fetchEmoteDetails(
         self,
