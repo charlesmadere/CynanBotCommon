@@ -22,7 +22,6 @@ try:
     from CynanBotCommon.twitch.twitchBannedUserRequest import \
         TwitchBannedUserRequest
     from CynanBotCommon.twitch.twitchBanRequest import TwitchBanRequest
-    from CynanBotCommon.twitch.twitchBanResponse import TwitchBanResponse
     from CynanBotCommon.twitch.twitchHandleProviderInterface import \
         TwitchHandleProviderInterface
     from CynanBotCommon.twitch.twitchTokensRepositoryInterface import \
@@ -47,7 +46,6 @@ except:
     from twitch.twitchApiServiceInterface import TwitchApiServiceInterface
     from twitch.twitchBannedUserRequest import TwitchBannedUserRequest
     from twitch.twitchBanRequest import TwitchBanRequest
-    from twitch.twitchBanResponse import TwitchBanResponse
     from twitch.twitchHandleProviderInterface import \
         TwitchHandleProviderInterface
     from twitch.twitchTokensRepositoryInterface import \
@@ -71,7 +69,7 @@ class CheerActionHelper(CheerActionHelperInterface):
     ):
         if not isinstance(administratorProvider, AdministratorProviderInterface):
             raise ValueError(f'administratorProvider argument is malformed: \"{administratorProvider}\"')
-        elif not isinstance(cheerActionsRepository, CheerActionHelperInterface):
+        elif not isinstance(cheerActionsRepository, CheerActionsRepositoryInterface):
             raise ValueError(f'cheerActionsRepository argument is malformed: \"{cheerActionsRepository}\"')
         elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
