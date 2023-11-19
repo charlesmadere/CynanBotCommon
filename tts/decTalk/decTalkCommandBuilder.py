@@ -279,7 +279,7 @@ class DecTalkCommandBuilder(TtsCommandBuilderInterface):
         if donation.isAnonymous() and donation.isGift():
             return f'anonymous gifted a sub!'
         elif donation.isGift():
-            return f'{event.getUserName()} gifted a sub!'
+            return f'{event.getUserName()} was gifted a sub!'
         else:
             return f'{event.getUserName()} subscribed!'
 
