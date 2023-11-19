@@ -191,7 +191,7 @@ class CheerActionsRepository(CheerActionsRepositoryInterface):
         connection = await self.__getDatabaseConnection()
         records = await connection.fetchRows(
             '''
-                SELECT cheeractions.actionid, cheeractions.actiontype, cheeractions.amount, cheeractions.durationseconds, cheeractions.userid, userids.username FROM cheeractions
+                SELECT cheeractions.actionid, cheeractions.actionrequirement, cheeractions.actiontype, cheeractions.amount, cheeractions.durationseconds, cheeractions.userid, userids.username FROM cheeractions
                 INNER JOIN userids ON cheeractions.userid = userids.userid
                 WHERE cheeractions.userid = $1
                 ORDER BY cheeractions.amount DESC
