@@ -70,7 +70,7 @@ class CheerActionsRepository(CheerActionsRepositoryInterface):
         amount: int,
         durationSeconds: int,
         userId: str
-    ):
+    ) -> CheerAction:
         if not isinstance(actionRequirement, CheerActionRequirement):
             raise ValueError(f'actionRequirement argument is malformed: \"{actionRequirement}\"')
         elif not isinstance(actionType, CheerActionType):
@@ -102,7 +102,10 @@ class CheerActionsRepository(CheerActionsRepositoryInterface):
 
         while actionId is None or action is not None:
             actionId = await self.__cheerActionIdGenerator.generateActionId()
-            action = await self.getAction(actionId)
+            action = await self.getAction(
+                actionId = actionId,
+                userId = userId
+            )
 
         connection = await self.__getDatabaseConnection()
         await connection.execute(
@@ -115,7 +118,17 @@ class CheerActionsRepository(CheerActionsRepositoryInterface):
 
         await connection.close()
         self.__cache.pop(userId, None)
+
+        action = await self.getAction(
+            actionId = actionId,
+            userId = userId
+        )
+
+        if action is None:
+            raise RuntimeError(f'Just finished creating a new action for user ID \"{userId}\", but it seems to not exist ({actionId})')
+
         self.__timber.log('CheerActionsRepository', f'Added new cheer action ({action=})')
+        return action
 
     async def clearCaches(self):
         self.__cache.clear()
@@ -157,31 +170,16 @@ class CheerActionsRepository(CheerActionsRepositoryInterface):
         elif not utils.isValidStr(userId):
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
 
-        connection = await self.__getDatabaseConnection()
-        record = await connection.fetchRow(
-            '''
-                SELECT cheeractions.actionid, cheeractions.actionrequirement, cheeractions.actiontype, cheeractions.amount, cheeractions.durationseconds, cheeractions.userid, userids.username FROM cheeractions
-                INNER JOIN userids ON cheeractions.userid = userids.userid
-                WHERE cheeractions.actionid = $1 AND cheeractions.userid = $2
-                LIMIT 1
-            ''',
-            actionId, userId
-        )
+        actions = await self.getActions(userId)
 
-        await connection.close()
-
-        if not utils.hasItems(record):
+        if not utils.hasItems(actions):
             return None
 
-        return CheerAction(
-            actionId = record[0],
-            actionRequirement = CheerActionRequirement.fromStr(record[1]),
-            actionType = CheerActionType.fromStr(record[2]),
-            amount = record[3],
-            durationSeconds = record[4],
-            userId = record[5],
-            userName = record[6]
-        )
+        for action in actions:
+            if action.getActionId() == actionId:
+                return action
+
+        return None
 
     async def getActions(self, userId: str) -> List[CheerAction]:
         if not utils.isValidStr(userId):

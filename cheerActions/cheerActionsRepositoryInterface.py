@@ -24,7 +24,7 @@ class CheerActionsRepositoryInterface(Clearable):
         amount: int,
         durationSeconds: Optional[int],
         userId: str
-    ):
+    ) -> CheerAction:
         pass
 
     @abstractmethod
