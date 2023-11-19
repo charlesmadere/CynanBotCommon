@@ -3,6 +3,10 @@ from datetime import datetime
 from typing import List, Optional
 
 try:
+    from CynanBotCommon.twitch.twitchBannedUserRequest import \
+        TwitchBannedUserRequest
+    from CynanBotCommon.twitch.twitchBannedUsersResponse import \
+        TwitchBannedUsersResponse
     from CynanBotCommon.twitch.twitchBanRequest import TwitchBanRequest
     from CynanBotCommon.twitch.twitchBanResponse import TwitchBanResponse
     from CynanBotCommon.twitch.twitchEmoteDetails import TwitchEmoteDetails
@@ -18,6 +22,8 @@ try:
     from CynanBotCommon.twitch.twitchUserSubscriptionDetails import \
         TwitchUserSubscriptionDetails
 except:
+    from twitch.twitchBannedUserRequest import TwitchBannedUserRequest
+    from twitch.twitchBannedUsersResponse import TwitchBannedUsersResponse
     from twitch.twitchBanRequest import TwitchBanRequest
     from twitch.twitchBanResponse import TwitchBanResponse
     from twitch.twitchEmoteDetails import TwitchEmoteDetails
@@ -47,6 +53,14 @@ class TwitchApiServiceInterface(ABC):
         twitchAccessToken: str,
         eventSubRequest: TwitchEventSubRequest
     ) -> TwitchEventSubResponse:
+        pass
+
+    @abstractmethod
+    async def fetchBannedUsers(
+        self,
+        twitchAccessToken: str,
+        bannedUserRequest: TwitchBannedUserRequest
+    ) -> TwitchBannedUsersResponse:
         pass
 
     @abstractmethod

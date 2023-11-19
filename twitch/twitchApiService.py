@@ -17,6 +17,13 @@ try:
         TwitchTokenIsExpiredException)
     from CynanBotCommon.twitch.twitchApiServiceInterface import \
         TwitchApiServiceInterface
+    from CynanBotCommon.twitch.twitchBannedUser import TwitchBannedUser
+    from CynanBotCommon.twitch.twitchBannedUserRequest import \
+        TwitchBannedUserRequest
+    from CynanBotCommon.twitch.twitchBannedUsersPageResponse import \
+        TwitchBannedUsersPageResponse
+    from CynanBotCommon.twitch.twitchBannedUsersResponse import \
+        TwitchBannedUsersResponse
     from CynanBotCommon.twitch.twitchBanRequest import TwitchBanRequest
     from CynanBotCommon.twitch.twitchBanResponse import TwitchBanResponse
     from CynanBotCommon.twitch.twitchBroadcasterType import \
@@ -34,6 +41,8 @@ try:
         TwitchEventSubResponse
     from CynanBotCommon.twitch.twitchLiveUserDetails import \
         TwitchLiveUserDetails
+    from CynanBotCommon.twitch.twitchPaginationResponse import \
+        TwitchPaginationResponse
     from CynanBotCommon.twitch.twitchStreamType import TwitchStreamType
     from CynanBotCommon.twitch.twitchSubscriberTier import TwitchSubscriberTier
     from CynanBotCommon.twitch.twitchTokensDetails import TwitchTokensDetails
@@ -67,6 +76,11 @@ except:
                                    TwitchStatusCodeException,
                                    TwitchTokenIsExpiredException)
     from twitch.twitchApiServiceInterface import TwitchApiServiceInterface
+    from twitch.twitchBannedUser import TwitchBannedUser
+    from twitch.twitchBannedUserRequest import TwitchBannedUserRequest
+    from twitch.twitchBannedUsersPageResponse import \
+        TwitchBannedUsersPageResponse
+    from twitch.twitchBannedUsersResponse import TwitchBannedUsersResponse
     from twitch.twitchBanRequest import TwitchBanRequest
     from twitch.twitchBanResponse import TwitchBanResponse
     from twitch.twitchBroadcasterType import TwitchBroadcasterType
@@ -79,6 +93,7 @@ except:
     from twitch.twitchEventSubRequest import TwitchEventSubRequest
     from twitch.twitchEventSubResponse import TwitchEventSubResponse
     from twitch.twitchLiveUserDetails import TwitchLiveUserDetails
+    from twitch.twitchPaginationResponse import TwitchPaginationResponse
     from twitch.twitchStreamType import TwitchStreamType
     from twitch.twitchSubscriberTier import TwitchSubscriberTier
     from twitch.twitchTokensDetails import TwitchTokensDetails
@@ -164,13 +179,13 @@ class TwitchApiService(TwitchApiServiceInterface):
             raise GenericNetworkException(f'Encountered non-200 HTTP status code when banning user ({banRequest=}) ({responseStatusCode=}) ({jsonResponse=})')
         elif not utils.hasItems(jsonResponse):
             self.__timber.log('TwitchApiService', f'Received a null/empty JSON response when banning user ({banRequest=}) ({jsonResponse=})')
-            raise GenericNetworkException(f'Recieved a null/empty JSON response when banning user ({banRequest=}) ({jsonResponse=})')
+            raise TwitchJsonException(f'Recieved a null/empty JSON response when banning user ({banRequest=}) ({jsonResponse=})')
 
         data: Optional[List[Dict[str, Any]]] = jsonResponse.get('data')
 
         if not utils.hasItems(data) or not utils.hasItems(data[0]):
             self.__timber.log('TwitchApiService', f'Received a null/empty \"data\" field in JSON response when banning user ({banRequest=}) ({jsonResponse=})')
-            raise GenericNetworkException(f'Received a null/empty \"data\" field in JSON response when banning user ({banRequest=}) ({jsonResponse=})')
+            raise TwitchJsonException(f'Received a null/empty \"data\" field in JSON response when banning user ({banRequest=}) ({jsonResponse=})')
 
         entry = data[0]
 
@@ -281,6 +296,90 @@ class TwitchApiService(TwitchApiServiceInterface):
             transport = transport
         )
 
+    async def fetchBannedUsers(
+        self,
+        twitchAccessToken: str,
+        bannedUserRequest: TwitchBannedUserRequest
+    ) -> TwitchBannedUsersResponse:
+        if not utils.isValidStr(twitchAccessToken):
+            raise ValueError(f'twitchAccessToken argument is malformed: \"{twitchAccessToken}\"')
+        elif not isinstance(bannedUserRequest, TwitchBannedUserRequest):
+            raise ValueError(f'bannedUserRequest argument is malformed: \"{bannedUserRequest}\"')
+
+        self.__timber.log('TwitchApiService', f'Fetching banned users... {bannedUserRequest=}')
+        twitchClientId = await self.__twitchCredentialsProvider.getTwitchClientId()
+        clientSession = await self.__networkClientProvider.get()
+
+        url = f'https://api.twitch.tv/helix/moderation/banned?broadcaster_id={bannedUserRequest.getBroadcasterId()}'
+
+        if utils.isValidStr(bannedUserRequest.getRequestedUserId()):
+            url = f'{url}&user_id={bannedUserRequest.getRequestedUserId()}'
+
+        try:
+            response = await clientSession.get(
+                url = url,
+                headers = {
+                    'Authorization': f'Bearer {twitchAccessToken}',
+                    'Client-Id': twitchClientId
+                }
+            )
+        except GenericNetworkException as e:
+            self.__timber.log('TwitchApiService', f'Encountered network error when fetching banned users ({twitchAccessToken=}) ({bannedUserRequest=}): {e}', e, traceback.format_exc())
+            raise GenericNetworkException(f'TwitchApiService encountered network error when fetching banned users ({twitchAccessToken=}) ({bannedUserRequest=}): {e}')
+
+        responseStatusCode = response.getStatusCode()
+        jsonResponse: Optional[Dict[str, Any]] = await response.json()
+        await response.close()
+
+        if not utils.hasItems(jsonResponse):
+            self.__timber.log('TwitchApiService', f'Received a null/empty JSON response when fetching banned users ({twitchAccessToken=}) ({bannedUserRequest=}): {jsonResponse}')
+            raise TwitchJsonException(f'TwitchApiService received a null/empty JSON response when fetching banned users ({twitchAccessToken=}) ({bannedUserRequest=}): {jsonResponse}')
+        elif responseStatusCode == 401 or ('error' in jsonResponse and len(jsonResponse['error']) >= 1):
+            self.__timber.log('TwitchApiService', f'Received an error ({responseStatusCode}) when fetching banned users ({twitchAccessToken=}) ({bannedUserRequest=}): {jsonResponse}')
+            raise TwitchTokenIsExpiredException(f'TwitchApiService received an error ({responseStatusCode}) when fetching banned users ({twitchAccessToken=}) ({bannedUserRequest=}): {jsonResponse}')
+        elif responseStatusCode != 200:
+            self.__timber.log('TwitchApiService', f'Encountered non-200 HTTP status code when fetching banned users ({twitchAccessToken=}) ({bannedUserRequest=}): {responseStatusCode}')
+            raise GenericNetworkException(f'TwitchApiService encountered non-200 HTTP status code when fetching banned users ({twitchAccessToken=}) ({bannedUserRequest=}): {responseStatusCode}')
+
+        data: Optional[List[Dict[str, Any]]] = jsonResponse.get('data')
+        if not utils.hasItems(data):
+            # this means that this particular stream does not have any banned users
+            return TwitchBannedUsersResponse(
+                users = None,
+                broadcasterId = bannedUserRequest.getBroadcasterId(),
+                requestedUserId = bannedUserRequest.getRequestedUserId()
+            )
+
+        paginationJson: Optional[Dict[str, Any]] = jsonResponse.get('pagination')
+        pagination: Optional[TwitchPaginationResponse] = None
+
+        if isinstance(paginationJson, Dict) and utils.isValidStr(paginationJson.get('cursor')):
+            pagination = TwitchPaginationResponse(
+                cursor = utils.getStrFromDict(paginationJson, 'cursor')
+            )
+
+        # TODO
+
+        users: List[TwitchBannedUser] = list()
+
+        return TwitchBannedUsersResponse(
+            users = users,
+            broadcasterId = bannedUserRequest.getBroadcasterId(),
+            requestedUserId = bannedUserRequest.getRequestedUserId()
+        )
+
+    async def __fetchBannedUsersPage(
+        self,
+        twitchAccessToken: str,
+        pagination: Optional[TwitchPaginationResponse]
+    ) -> Optional[TwitchBannedUsersPageResponse]:
+        if not utils.isValidStr(twitchAccessToken):
+            raise ValueError(f'twitchAccessToken argument is malformed: \"{twitchAccessToken}\"')
+        elif pagination is not None and not isinstance(pagination, TwitchPaginationResponse):
+            raise ValueError(f'pagination argument is malformed: \"{pagination}\"')
+
+        return None
+
     async def fetchEmoteDetails(
         self,
         broadcasterId: str,
@@ -291,7 +390,7 @@ class TwitchApiService(TwitchApiServiceInterface):
         if not utils.isValidStr(twitchAccessToken):
             raise ValueError(f'twitchAccessToken argument is malformed: \"{twitchAccessToken}\"')
 
-        self.__timber.log('TwitchApiService', f'Fetching emote details... (broadcasterId=\"{broadcasterId}\")')
+        self.__timber.log('TwitchApiService', f'Fetching emote details... ({broadcasterId=})')
         twitchClientId = await self.__twitchCredentialsProvider.getTwitchClientId()
         clientSession = await self.__networkClientProvider.get()
 
