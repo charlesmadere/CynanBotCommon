@@ -133,7 +133,7 @@ class CheerActionHelper(CheerActionHelperInterface):
 
         broadcasterUserId = await self.__userIdsRepository.requireUserId(
             userName = user.getHandle(),
-            twitchAccessToken = await self.__getTwitchAccessToken(user)
+            twitchAccessToken = twitchAccessToken
         )
 
         actions = await self.__cheerActionsRepository.getActions(broadcasterUserId)
