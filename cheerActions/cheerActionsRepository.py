@@ -202,16 +202,17 @@ class CheerActionsRepository(CheerActionsRepositoryInterface):
         await connection.close()
         actions: List[CheerAction] = list()
 
-        for record in records:
-            actions.append(CheerAction(
-                actionId = record[0],
-                actionRequirement = CheerActionRequirement.fromStr(record[1]),
-                actionType = CheerActionType.fromStr(record[2]),
-                amount = record[3],
-                durationSeconds = record[4],
-                userId = record[5],
-                userName = record[6]
-            ))
+        if utils.hasItems(records):
+            for record in records:
+                actions.append(CheerAction(
+                    actionId = record[0],
+                    actionRequirement = CheerActionRequirement.fromStr(record[1]),
+                    actionType = CheerActionType.fromStr(record[2]),
+                    amount = record[3],
+                    durationSeconds = record[4],
+                    userId = record[5],
+                    userName = record[6]
+                ))
 
         self.__cache[userId] = actions
         return actions
