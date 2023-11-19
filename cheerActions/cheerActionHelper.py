@@ -15,6 +15,8 @@ try:
         CheerActionsRepositoryInterface
     from CynanBotCommon.cheerActions.cheerActionType import CheerActionType
     from CynanBotCommon.timber.timberInterface import TimberInterface
+    from CynanBotCommon.tts.ttsEvent import TtsEvent
+    from CynanBotCommon.tts.ttsManagerInterface import TtsManagerInterface
     from CynanBotCommon.twitch.twitchApiServiceInterface import \
         TwitchApiServiceInterface
     from CynanBotCommon.twitch.twitchBanRequest import TwitchBanRequest
@@ -37,6 +39,8 @@ except:
         CheerActionsRepositoryInterface
     from cheerActions.cheerActionType import CheerActionType
     from timber.timberInterface import TimberInterface
+    from tts.ttsEvent import TtsEvent
+    from tts.ttsManagerInterface import TtsManagerInterface
 
     from twitch.twitchApiServiceInterface import TwitchApiServiceInterface
     from twitch.twitchBanRequest import TwitchBanRequest
@@ -56,6 +60,7 @@ class CheerActionHelper(CheerActionHelperInterface):
         administratorProvider: AdministratorProviderInterface,
         cheerActionsRepository: CheerActionsRepositoryInterface,
         timber: TimberInterface,
+        ttsManager: Optional[TtsManagerInterface],
         twitchApiService: TwitchApiServiceInterface,
         twitchHandleProvider: TwitchHandleProviderInterface,
         twitchTokensRepository: TwitchTokensRepositoryInterface,
@@ -67,6 +72,8 @@ class CheerActionHelper(CheerActionHelperInterface):
             raise ValueError(f'cheerActionsRepository argument is malformed: \"{cheerActionsRepository}\"')
         elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
+        elif ttsManager is not None and not isinstance(ttsManager, TtsManagerInterface):
+            raise ValueError(f'ttsManager argument is malformed: \"{ttsManager}\"')
         elif not isinstance(twitchApiService, TwitchApiServiceInterface):
             raise ValueError(f'twitchApiService argument is malformed: \"{twitchApiService}\"')
         elif not isinstance(twitchHandleProvider, TwitchHandleProviderInterface):
@@ -79,6 +86,7 @@ class CheerActionHelper(CheerActionHelperInterface):
         self.__administratorProvider: AdministratorProviderInterface = administratorProvider
         self.__cheerActionsRepository: CheerActionsRepositoryInterface = cheerActionsRepository
         self.__timber: TimberInterface = timber
+        self.__ttsManager: Optional[TtsManagerInterface] = ttsManager
         self.__twitchApiService: TwitchApiServiceInterface = twitchApiService
         self.__twitchHandleProvider: TwitchHandleProviderInterface = twitchHandleProvider
         self.__twitchTokensRepository: TwitchTokensRepositoryInterface = twitchTokensRepository
@@ -103,6 +111,7 @@ class CheerActionHelper(CheerActionHelperInterface):
         self,
         bits: int,
         cheerUserId: str,
+        cheerUserName: str,
         message: str,
         user: UserInterface
     ):
@@ -112,6 +121,8 @@ class CheerActionHelper(CheerActionHelperInterface):
             raise ValueError(f'bits argument is out of bounds: {bits}')
         elif not utils.isValidStr(cheerUserId):
             raise ValueError(f'cheerUserId argument is malformed: \"{cheerUserId}\"')
+        elif not utils.isValidStr(cheerUserName):
+            raise ValueError(f'cheerUserName argument is malformed: \"{cheerUserName}\"')
         elif not utils.isValidStr(message):
             raise ValueError(f'message argument is malformed: \"{message}\"')
         elif not isinstance(user, UserInterface):
@@ -145,6 +156,7 @@ class CheerActionHelper(CheerActionHelperInterface):
         actions: List[CheerAction],
         broadcasterUserId: str,
         cheerUserId: str,
+        cheerUserName: str,
         message: str,
         twitchAccessToken: str,
         user: UserInterface
@@ -159,6 +171,8 @@ class CheerActionHelper(CheerActionHelperInterface):
             raise ValueError(f'broadcasterUserId argument is malformed: \"{broadcasterUserId}\"')
         elif not utils.isValidStr(cheerUserId):
             raise ValueError(f'cheerUserId argument is malformed: \"{cheerUserId}\"')
+        elif not utils.isValidStr(cheerUserName):
+            raise ValueError(f'cheerUserName argument is malformed: \"{cheerUserName}\"')
         elif not utils.isValidStr(message):
             raise ValueError(f'message argument is malformed: \"{message}\"')
         elif not utils.isValidStr(twitchAccessToken):
@@ -208,7 +222,10 @@ class CheerActionHelper(CheerActionHelperInterface):
                 await self.__timeoutUser(
                     action = action,
                     broadcasterUserId = broadcasterUserId,
+                    cheerUserId = cheerUserId,
+                    cheerUserName = cheerUserName,
                     moderatorUserId = moderatorUserId,
+                    twitchAccessToken = twitchAccessToken,
                     userIdToTimeout = userIdToTimeout,
                     user = user
                 )
@@ -228,6 +245,8 @@ class CheerActionHelper(CheerActionHelperInterface):
                 await self.__timeoutUser(
                     action = action,
                     broadcasterUserId = broadcasterUserId,
+                    cheerUserId = cheerUserId,
+                    cheerUserName = cheerUserName,
                     moderatorUserId = moderatorUserId,
                     twitchAccessToken = twitchAccessToken,
                     userIdToTimeout = userIdToTimeout,
@@ -242,6 +261,8 @@ class CheerActionHelper(CheerActionHelperInterface):
         self,
         action: CheerAction,
         broadcasterUserId: str,
+        cheerUserId: str,
+        cheerUserName: str,
         moderatorUserId: str,
         twitchAccessToken: str,
         userIdToTimeout: str,
@@ -251,6 +272,10 @@ class CheerActionHelper(CheerActionHelperInterface):
             raise ValueError(f'action argument is malformed: \"{action}\"')
         elif not utils.isValidStr(broadcasterUserId):
             raise ValueError(f'broadcasterUserId argument is malformed: \"{broadcasterUserId}\"')
+        elif not utils.isValidStr(cheerUserId):
+            raise ValueError(f'cheerUserId argument is malformed: \"{cheerUserId}\"')
+        elif not utils.isValidStr(cheerUserName):
+            raise ValueError(f'cheerUserName argument is malformed: \"{cheerUserName}\"')
         elif not utils.isValidStr(moderatorUserId):
             raise ValueError(f'moderatorUserId argument is malformed: \"{moderatorUserId}\"')
         elif not utils.isValidStr(twitchAccessToken):
@@ -281,5 +306,21 @@ class CheerActionHelper(CheerActionHelperInterface):
 
         if exception is not None or response is None:
             self.__timber.log('CheerActionHelper', f'Failed to timeout {userIdToTimeout=} in \"{user.getHandle()}\": {exception}', exception, traceback.format_exc())
-        else:
-            self.__timber.log('CheerActionHelper', f'Timed out {userIdToTimeout=} in \"{user.getHandle()}\": {response}')
+            return
+
+        userLoginToTimeout = await self.__userIdsRepository.requireUserName(
+            userId = userIdToTimeout,
+            twitchAccessToken = twitchAccessToken
+        )
+
+        self.__timber.log('CheerActionHelper', f'Timed out {userLoginToTimeout}:{userIdToTimeout} in \"{user.getHandle()}\" for {action.getDurationSeconds()} second(s): {response}')
+
+        if user.isTtsEnabled() and self.__ttsManager is not None:
+            self.__ttsManager.submitTtsEvent(TtsEvent(
+                message = f'{cheerUserName} has timed out {userLoginToTimeout} for {action.getDurationSeconds()} seconds!',
+                twitchChannel = user.getHandle(),
+                userId = cheerUserId,
+                userName = cheerUserName,
+                donation = None,
+                raidInfo = None
+            ))

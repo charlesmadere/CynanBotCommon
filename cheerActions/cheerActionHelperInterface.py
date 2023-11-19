@@ -13,6 +13,7 @@ class CheerActionHelperInterface(ABC):
         self,
         bits: int,
         cheerUserId: str,
+        cheerUserName: str,
         message: str,
         user: UserInterface
     ):
