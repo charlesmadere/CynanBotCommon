@@ -146,6 +146,7 @@ class CheerActionHelper(CheerActionHelperInterface):
             actions = actions,
             broadcasterUserId = broadcasterUserId,
             cheerUserId = cheerUserId,
+            cheerUserName = cheerUserName,
             message = message,
             twitchAccessToken = twitchAccessToken,
             user = user
