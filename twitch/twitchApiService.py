@@ -369,16 +369,14 @@ class TwitchApiService(TwitchApiServiceInterface):
                 twitchAccessToken = twitchAccessToken,
                 twitchClientId = twitchClientId,
                 bannedUserRequest = bannedUserRequest,
-                pagination = currentPagination
+                currentPagination = currentPagination
             )
 
             if page is None:
                 currentPagination = None
-            elif isinstance(page, TwitchBannedUsersPageResponse):
+            else:
                 pages.append(page)
                 currentPagination = page.getPagination()
-            else:
-                raise RuntimeError(f'Python is stupid and this type check shouldn\'t be necessary ({bannedUserRequest=}) ({firstFetch=}) ({currentPagination=}) ({pages=}) ({page=})')
 
         allUsers: List[TwitchBannedUser] = list()
 
