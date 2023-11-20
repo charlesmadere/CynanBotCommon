@@ -206,7 +206,8 @@ class TwitchApiService(TwitchApiServiceInterface):
                 headers = {
                     'Authorization': f'Bearer {twitchAccessToken}',
                     'Client-Id': twitchClientId
-                }
+                },
+                json = banRequest.toJson()
             )
         except GenericNetworkException as e:
             self.__timber.log('TwitchApiService', f'Encountered network error when banning user ({banRequest=}): {e}', e, traceback.format_exc())
