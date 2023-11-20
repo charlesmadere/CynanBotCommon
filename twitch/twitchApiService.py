@@ -381,7 +381,8 @@ class TwitchApiService(TwitchApiServiceInterface):
         allUsers: List[TwitchBannedUser] = list()
 
         for page in pages:
-            allUsers.extend(page.getUsers())
+            if utils.hasItems(page.getUsers()):
+                allUsers.extend(page.getUsers())
 
         allUsers.sort(key = lambda user: user.getUserLogin().lower())
 
