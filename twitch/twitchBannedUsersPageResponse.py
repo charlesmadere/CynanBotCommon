@@ -27,7 +27,7 @@ class TwitchBannedUsersPageResponse():
     def getPagination(self) -> Optional[TwitchPaginationResponse]:
         return self.__pagination
 
-    def getUsers(self) -> Optional[TwitchBannedUser]:
+    def getUsers(self) -> Optional[List[TwitchBannedUser]]:
         return self.__users
 
     def __repr__(self) -> str:
