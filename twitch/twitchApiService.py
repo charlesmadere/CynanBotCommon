@@ -164,7 +164,7 @@ class TwitchApiService(TwitchApiServiceInterface):
         try:
             response = await clientSession.post(
                 url = f'https://api.twitch.tv/helix/moderation/moderators?broadcaster_id={broadcasterId}&user_id={userId}',
-                json = {
+                headers = {
                     'Authorization': f'Bearer {twitchAccessToken}',
                     'Client-Id': twitchClientId
                 }
@@ -203,7 +203,7 @@ class TwitchApiService(TwitchApiServiceInterface):
         try:
             response = await clientSession.post(
                 url = f'https://api.twitch.tv/helix/moderation/bans?broadcaster_id={banRequest.getBroadcasterUserId()}&moderator_id={banRequest.getModeratorUserId()}',
-                json = {
+                headers = {
                     'Authorization': f'Bearer {twitchAccessToken}',
                     'Client-Id': twitchClientId
                 }
