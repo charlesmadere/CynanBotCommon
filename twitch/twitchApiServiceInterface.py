@@ -16,6 +16,7 @@ try:
         TwitchEventSubResponse
     from CynanBotCommon.twitch.twitchLiveUserDetails import \
         TwitchLiveUserDetails
+    from CynanBotCommon.twitch.twitchModUser import TwitchModUser
     from CynanBotCommon.twitch.twitchTokensDetails import TwitchTokensDetails
     from CynanBotCommon.twitch.twitchUnbanRequest import TwitchUnbanRequest
     from CynanBotCommon.twitch.twitchUserDetails import TwitchUserDetails
@@ -30,6 +31,7 @@ except:
     from twitch.twitchEventSubRequest import TwitchEventSubRequest
     from twitch.twitchEventSubResponse import TwitchEventSubResponse
     from twitch.twitchLiveUserDetails import TwitchLiveUserDetails
+    from twitch.twitchModUser import TwitchModUser
     from twitch.twitchTokensDetails import TwitchTokensDetails
     from twitch.twitchUnbanRequest import TwitchUnbanRequest
     from twitch.twitchUserDetails import TwitchUserDetails
@@ -38,6 +40,15 @@ except:
 
 
 class TwitchApiServiceInterface(ABC):
+
+    @abstractmethod
+    async def addModerator(
+        self,
+        broadcasterId: str,
+        twitchAccessToken: str,
+        userId: str
+    ) -> bool:
+        pass
 
     @abstractmethod
     async def banUser(
@@ -77,6 +88,15 @@ class TwitchApiServiceInterface(ABC):
         twitchAccessToken: str,
         userNames: List[str]
     ) -> List[TwitchLiveUserDetails]:
+        pass
+
+    @abstractmethod
+    async def fetchModerator(
+        self,
+        broadcasterId: str,
+        twitchAccessToken: str,
+        userId: str
+    ) -> Optional[TwitchModUser]:
         pass
 
     @abstractmethod

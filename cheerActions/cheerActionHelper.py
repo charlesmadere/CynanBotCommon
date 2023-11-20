@@ -1,5 +1,6 @@
 import re
 import traceback
+from datetime import datetime, timedelta, timezone
 from typing import List, Optional, Pattern
 
 try:
@@ -18,6 +19,7 @@ try:
     from CynanBotCommon.cheerActions.cheerActionsRepositoryInterface import \
         CheerActionsRepositoryInterface
     from CynanBotCommon.cheerActions.cheerActionType import CheerActionType
+    from CynanBotCommon.simpleDateTime import SimpleDateTime
     from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.tts.ttsEvent import TtsEvent
     from CynanBotCommon.tts.ttsManagerInterface import TtsManagerInterface
@@ -28,6 +30,7 @@ try:
     from CynanBotCommon.twitch.twitchBanRequest import TwitchBanRequest
     from CynanBotCommon.twitch.twitchHandleProviderInterface import \
         TwitchHandleProviderInterface
+    from CynanBotCommon.twitch.twitchModUser import TwitchModUser
     from CynanBotCommon.twitch.twitchTokensRepositoryInterface import \
         TwitchTokensRepositoryInterface
     from CynanBotCommon.users.userIdsRepositoryInterface import \
@@ -46,6 +49,7 @@ except:
     from cheerActions.cheerActionsRepositoryInterface import \
         CheerActionsRepositoryInterface
     from cheerActions.cheerActionType import CheerActionType
+    from simpleDateTime import SimpleDateTime
     from timber.timberInterface import TimberInterface
     from tts.ttsEvent import TtsEvent
     from tts.ttsManagerInterface import TtsManagerInterface
@@ -55,6 +59,7 @@ except:
     from twitch.twitchBanRequest import TwitchBanRequest
     from twitch.twitchHandleProviderInterface import \
         TwitchHandleProviderInterface
+    from twitch.twitchModUser import TwitchModUser
     from twitch.twitchTokensRepositoryInterface import \
         TwitchTokensRepositoryInterface
     from users.userIdsRepositoryInterface import UserIdsRepositoryInterface
@@ -66,16 +71,20 @@ class CheerActionHelper(CheerActionHelperInterface):
     def __init__(
         self,
         administratorProvider: AdministratorProviderInterface,
+        cheerActionRemodHelperInterface: CheerActionRemodHelperInterface,
         cheerActionsRepository: CheerActionsRepositoryInterface,
         timber: TimberInterface,
         ttsManager: Optional[TtsManagerInterface],
         twitchApiService: TwitchApiServiceInterface,
         twitchHandleProvider: TwitchHandleProviderInterface,
         twitchTokensRepository: TwitchTokensRepositoryInterface,
-        userIdsRepository: UserIdsRepositoryInterface
+        userIdsRepository: UserIdsRepositoryInterface,
+        timeZone: timezone = timezone.utc
     ):
         if not isinstance(administratorProvider, AdministratorProviderInterface):
             raise ValueError(f'administratorProvider argument is malformed: \"{administratorProvider}\"')
+        elif not isinstance(cheerActionRemodHelperInterface, CheerActionRemodHelperInterface):
+            raise ValueError(f'cheerActionRemodHelperInterface argument is malformed: \"{cheerActionRemodHelperInterface}\"')
         elif not isinstance(cheerActionsRepository, CheerActionsRepositoryInterface):
             raise ValueError(f'cheerActionsRepository argument is malformed: \"{cheerActionsRepository}\"')
         elif not isinstance(timber, TimberInterface):
@@ -90,8 +99,11 @@ class CheerActionHelper(CheerActionHelperInterface):
             raise ValueError(f'twitchTokensRepository argument is malformed: \"{twitchTokensRepository}\"')
         elif not isinstance(userIdsRepository, UserIdsRepositoryInterface):
             raise ValueError(f'userIdsRepository argument is malformed: \"{userIdsRepository}\"')
+        elif not isinstance(timeZone, timezone):
+            raise ValueError(f'timeZone argument is malformed: \"{timeZone}\"')
 
         self.__administratorProvider: AdministratorProviderInterface = administratorProvider
+        self.__cheerActionRemodHelperInterface: CheerActionRemodHelperInterface = cheerActionRemodHelperInterface
         self.__cheerActionsRepository: CheerActionsRepositoryInterface = cheerActionsRepository
         self.__timber: TimberInterface = timber
         self.__ttsManager: Optional[TtsManagerInterface] = ttsManager
@@ -99,6 +111,7 @@ class CheerActionHelper(CheerActionHelperInterface):
         self.__twitchHandleProvider: TwitchHandleProviderInterface = twitchHandleProvider
         self.__twitchTokensRepository: TwitchTokensRepositoryInterface = twitchTokensRepository
         self.__userIdsRepository: UserIdsRepositoryInterface = userIdsRepository
+        self.__timeZone: timezone = timeZone
 
         self.__userNameRegEx: Pattern = re.compile(r'^(\w+\d+\s+)?@?(\w+)(\s+\w+\d+)?$', re.IGNORECASE)
 
@@ -171,8 +184,18 @@ class CheerActionHelper(CheerActionHelperInterface):
         elif not utils.isValidStr(userIdToTimeout):
             raise ValueError(f'userIdToTimeout argument is malformed: \"{userIdToTimeout}\"')
 
-        # TODO
-        return False
+        moderatorInfo: Optional[TwitchModUser] = None
+
+        try:
+            moderatorInfo = await self.__twitchApiService.fetchModerator(
+                broadcasterId = broadcasterUserId,
+                twitchAccessToken = twitchAccessToken,
+                userId = userIdToTimeout
+            )
+        except Exception as e:
+            self.__timber.log('CheerActionHelper', f'Failed to fetch Twitch moderator info ({broadcasterUserId=}) ({userIdToTimeout=})', e, traceback.format_exc())
+
+        return moderatorInfo is not None
 
     async def __processTimeoutActions(
         self,
@@ -313,7 +336,7 @@ class CheerActionHelper(CheerActionHelperInterface):
                     duration = action.getDurationSeconds(),
                     broadcasterUserId = broadcasterUserId,
                     moderatorUserId = moderatorUserId,
-                    reason = None,
+                    reason = f'cheer timeout from {cheerUserName}',
                     userIdToBan = userIdToTimeout
                 )
             )
@@ -329,8 +352,16 @@ class CheerActionHelper(CheerActionHelperInterface):
         self.__timber.log('CheerActionHelper', f'Timed out {userNameToTimeout}:{userIdToTimeout} in \"{user.getHandle()}\" for {action.getDurationSeconds()} second(s)')
 
         if isMod:
-            self.__timber.log('CheerActionHelper', f'In \"{user.getHandle()}\", {userNameToTimeout}:{userIdToTimeout} is a mod, so they will be given mod back when the time out is over')
-            # TODO
+            self.__timber.log('CheerActionHelper', f'In \"{user.getHandle()}\", {userNameToTimeout}:{userIdToTimeout} is a mod, so they will be given mod back when the timeout is over')
+
+            remodDateTime = datetime.now(self.__timeZone) + timedelta(seconds = action.getDurationSeconds())
+
+            await self.__cheerActionRemodHelperInterface.submitRemodData(CheerActionRemodData(
+                remodDateTime = SimpleDateTime(remodDateTime),
+                broadcasterUserId = broadcasterUserId,
+                broadcasterUserName = user.getHandle(),
+                userId = userIdToTimeout
+            ))
 
         if user.isTtsEnabled() and self.__ttsManager is not None:
             self.__ttsManager.submitTtsEvent(TtsEvent(

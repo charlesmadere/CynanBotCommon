@@ -4,61 +4,107 @@ from typing import Optional
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.administratorProviderInterface import \
+        AdministratorProviderInterface
     from CynanBotCommon.backgroundTaskHelper import BackgroundTaskHelper
     from CynanBotCommon.cheerActions.cheerActionRemodData import \
         CheerActionRemodData
     from CynanBotCommon.cheerActions.cheerActionRemodHelperInterface import \
         CheerActionRemodHelperInterface
+    from CynanBotCommon.cheerActions.cheerActionRemodRepositoryInterface import \
+        CheerActionRemodRepositoryInterface
     from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.twitch.twitchApiServiceInterface import \
         TwitchApiServiceInterface
+    from CynanBotCommon.twitch.twitchTokensRepositoryInterface import \
+        TwitchTokensRepositoryInterface
 except:
     import utils
+    from administratorProviderInterface import AdministratorProviderInterface
     from backgroundTaskHelper import BackgroundTaskHelper
     from cheerActions.cheerActionRemodData import CheerActionRemodData
+    from cheerActions.cheerActionRemodHelperInterface import \
+        CheerActionRemodHelperInterface
+    from cheerActions.cheerActionRemodRepositoryInterface import \
+        CheerActionRemodRepositoryInterface
     from timber.timberInterface import TimberInterface
 
-    from CynanBotCommon.cheerActions.cheerActionRemodHelperInterface import \
-        CheerActionRemodHelperInterface
     from twitch.twitchApiServiceInterface import TwitchApiServiceInterface
+    from twitch.twitchTokensRepositoryInterface import \
+        TwitchTokensRepositoryInterface
 
 
 class CheerActionRemodHelper(CheerActionRemodHelperInterface):
 
     def __init__(
         self,
+        administratorProvider: AdministratorProviderInterface,
         backgroundTaskHelper: BackgroundTaskHelper,
+        cheerActionRemodRepositoryInterface: CheerActionRemodRepositoryInterface,
         timber: TimberInterface,
         twitchApiService: TwitchApiServiceInterface,
-        queueSleepTimeSeconds: float = 3,
-        queueTimeoutSeconds: float = 3
+        twitchTokensRepository: TwitchTokensRepositoryInterface,
+        queueSleepTimeSeconds: float = 3
     ):
+        if not isinstance(administratorProvider, AdministratorProviderInterface):
+            raise ValueError(f'administratorProvider argument is malformed: \"{administratorProvider}\"')
         if not isinstance(backgroundTaskHelper, BackgroundTaskHelper):
             raise ValueError(f'backgroundTaskHelper argument is malformed: \"{backgroundTaskHelper}\"')
+        elif not isinstance(cheerActionRemodRepositoryInterface, CheerActionRemodRepositoryInterface):
+            raise ValueError(f'cheerActionRemodRepositoryInterface argument is malformed: \"{cheerActionRemodRepositoryInterface}\"')
         elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(twitchApiService, TwitchApiServiceInterface):
             raise ValueError(f'twitchApiService argument is malformed: \"{twitchApiService}\"')
+        elif not isinstance(twitchTokensRepository, TwitchTokensRepositoryInterface):
+            raise ValueError(f'twitchTokensRepository argument is malformed: \"{twitchTokensRepository}\"')
         elif not utils.isValidInt(queueSleepTimeSeconds):
             raise ValueError(f'queueSleepTimeSeconds argument is malformed: \"{queueSleepTimeSeconds}\"')
         elif queueSleepTimeSeconds < 1 or queueSleepTimeSeconds > 10:
             raise ValueError(f'queueSleepTimeSeconds argument is out of bounds: {queueSleepTimeSeconds}')
-        elif not utils.isValidInt(queueTimeoutSeconds):
-            raise ValueError(f'queueTimeoutSeconds argument is malformed: \"{queueTimeoutSeconds}\"')
-        elif queueTimeoutSeconds < 1 or queueTimeoutSeconds > 3:
-            raise ValueError(f'queueTimeoutSeconds argument is out of bounds: {queueTimeoutSeconds}')
 
+        self.__administratorProvider: AdministratorProviderInterface = administratorProvider
         self.__backgroundTaskHelper: BackgroundTaskHelper = backgroundTaskHelper
+        self.__cheerActionRemodRepositoryInterface: CheerActionRemodRepositoryInterface = cheerActionRemodRepositoryInterface
         self.__timber: TimberInterface = timber
         self.__twitchApiService: TwitchApiServiceInterface = twitchApiService
+        self.__twitchTokensRepository: TwitchTokensRepositoryInterface = twitchTokensRepository
         self.__queueSleepTimeSeconds: float = queueSleepTimeSeconds
-        self.__queueTimeoutSeconds: float = queueTimeoutSeconds
 
         self.__isStarted: bool = False
 
-    async def clearCaches(self):
-        # TODO
-        self.__timber.log('CheerActionRemodHelper', f'Caches cleared')
+    async def __getTwitchAccessToken(self, userName: str) -> str:
+        if not isinstance(userName, str):
+            raise ValueError(f'userName argument is malformed: \"{userName}\"')
+
+        if await self.__twitchTokensRepository.hasAccessToken(userName):
+            await self.__twitchTokensRepository.validateAndRefreshAccessToken(userName)
+            return await self.__twitchTokensRepository.requireAccessToken(userName)
+        else:
+            administratorUserName = await self.__administratorProvider.getAdministratorUserName()
+            await self.__twitchTokensRepository.validateAndRefreshAccessToken(administratorUserName)
+            return await self.__twitchTokensRepository.requireAccessToken(administratorUserName)
+
+    async def __refresh(self):
+        data = await self.__cheerActionRemodRepositoryInterface.getAll()
+
+        if not utils.hasItems(data):
+            return
+
+        for remodAction in data:
+            twitchAccessToken = await self.__getTwitchAccessToken(remodAction.getBroadcasterUserName())
+
+            if await self.__twitchApiService.addModerator(
+                broadcasterId = remodAction.getBroadcasterUserId(),
+                twitchAccessToken = twitchAccessToken,
+                userId = remodAction.getUserId()
+            ):
+                await self.__cheerActionRemodRepositoryInterface.delete(
+                    broadcasterUserId = remodAction.getBroadcasterUserId(),
+                    userId = remodAction.getUserId()
+                )
+            else:
+                self.__timber.log('CheerActionRemodHelper', f'Failed to re-mod user ({remodAction})')
 
     def start(self):
         if self.__isStarted:
@@ -72,14 +118,11 @@ class CheerActionRemodHelper(CheerActionRemodHelperInterface):
 
     async def __startEventLoop(self):
         while True:
-            # TODO
-            pass
-
+            await self.__refresh()
             await asyncio.sleep(self.__queueSleepTimeSeconds)
 
-    def submitRemodAction(action: CheerActionRemodData):
-        if not isinstance(action, CheerActionRemodData):
-            raise ValueError(f'action argument is malformed: \"{action}\"')
+    async def submitRemodData(self, data: CheerActionRemodData):
+        if not isinstance(data, CheerActionRemodData):
+            raise ValueError(f'data argument is malformed: \"{data}\"')
 
-        # TODO
-        pass
+        await self.__cheerActionRemodRepositoryInterface.add(data)

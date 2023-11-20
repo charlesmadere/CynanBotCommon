@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import List
 
 try:
     from CynanBotCommon.cheerActions.cheerActionRemodData import \
@@ -7,12 +8,16 @@ except:
     from cheerActions.cheerActionRemodData import CheerActionRemodData
 
 
-class CheerActionRemodHelperInterface(ABC):
+class CheerActionRemodRepositoryInterface(ABC):
 
     @abstractmethod
-    def start(self):
+    async def add(self, data: CheerActionRemodData):
         pass
 
     @abstractmethod
-    async def submitRemodData(self, action: CheerActionRemodData):
+    async def delete(self, broadcasterUserId: str, userId: str):
+        pass
+
+    @abstractmethod
+    async def getAll(self) -> List[CheerActionRemodData]:
         pass

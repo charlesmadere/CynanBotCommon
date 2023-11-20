@@ -42,6 +42,7 @@ try:
         TwitchEventSubResponse
     from CynanBotCommon.twitch.twitchLiveUserDetails import \
         TwitchLiveUserDetails
+    from CynanBotCommon.twitch.twitchModUser import TwitchModUser
     from CynanBotCommon.twitch.twitchPaginationResponse import \
         TwitchPaginationResponse
     from CynanBotCommon.twitch.twitchStreamType import TwitchStreamType
@@ -95,6 +96,7 @@ except:
     from twitch.twitchEventSubRequest import TwitchEventSubRequest
     from twitch.twitchEventSubResponse import TwitchEventSubResponse
     from twitch.twitchLiveUserDetails import TwitchLiveUserDetails
+    from twitch.twitchModUser import TwitchModUser
     from twitch.twitchPaginationResponse import TwitchPaginationResponse
     from twitch.twitchStreamType import TwitchStreamType
     from twitch.twitchSubscriberTier import TwitchSubscriberTier
@@ -141,6 +143,48 @@ class TwitchApiService(TwitchApiServiceInterface):
         self.__twitchCredentialsProvider: TwitchCredentialsProviderInterface = twitchCredentialsProvider
         self.__twitchWebsocketJsonMapper: TwitchWebsocketJsonMapperInterface = twitchWebsocketJsonMapper
         self.__timeZone: timezone = timeZone
+
+    async def addModerator(
+        self,
+        broadcasterId: str,
+        twitchAccessToken: str,
+        userId: str
+    ) -> bool:
+        if not utils.isValidStr(broadcasterId):
+            raise ValueError(f'broadcasterId argument is malformed: \"{broadcasterId}\"')
+        elif not utils.isValidStr(twitchAccessToken):
+            raise ValueError(f'twitchAccessToken argument is malformed: \"{twitchAccessToken}\"')
+        elif not utils.isValidStr(userId):
+            raise ValueError(f'userId argument is malformed: \"{userId}\"')
+
+        self.__timber.log('TwitchApiService', f'Adding moderator... ({broadcasterId=}) ({twitchAccessToken=}) ({userId=})')
+        clientSession = await self.__networkClientProvider.get()
+        twitchClientId = await self.__twitchCredentialsProvider.getTwitchClientId()
+
+        try:
+            response = await clientSession.post(
+                url = f'https://api.twitch.tv/helix/moderation/moderators?broadcaster_id={broadcasterId}&user_id={userId}',
+                json = {
+                    'Authorization': f'Bearer {twitchAccessToken}',
+                    'Client-Id': twitchClientId
+                }
+            )
+        except GenericNetworkException as e:
+            self.__timber.log('TwitchApiService', f'Encountered network error when adding moderator ({broadcasterId=}) ({userId=}): {e}', e, traceback.format_exc())
+            raise GenericNetworkException(f'TwitchApiService encountered network when adding moderator ({broadcasterId=}) ({userId=}): {e}')
+
+        if response is None:
+            self.__timber.log('TwitchApiService', f'Encountered unknown network error when adding moderator ({broadcasterId=}) ({userId=}) ({response=})')
+            raise GenericNetworkException(f'TwitchApiService encountered unknown network error when adding moderator ({broadcasterId=}) ({userId=}) ({response=})')
+
+        responseStatusCode = response.getStatusCode()
+        await response.close()
+
+        if responseStatusCode == 204:
+            return True
+        else:
+            self.__timber.log('TwitchApiService', f'Encountered non-200 HTTP status code when adding moderator ({broadcasterId=}) ({userId=}) ({responseStatusCode=})')
+            return False
 
     async def banUser(
         self,
@@ -589,6 +633,58 @@ class TwitchApiService(TwitchApiServiceInterface):
         users.sort(key = lambda user: user.getUserName().lower())
         return users
 
+    async def fetchModerator(
+        self,
+        broadcasterId: str,
+        twitchAccessToken: str,
+        userId: str
+    ) -> Optional[TwitchModUser]:
+        if not utils.isValidStr(broadcasterId):
+            raise ValueError(f'broadcasterId argument is malformed: \"{broadcasterId}\"')
+        elif not utils.isValidStr(twitchAccessToken):
+            raise ValueError(f'twitchAccessToken argument is malformed: \"{twitchAccessToken}\"')
+        elif not utils.isValidStr(userId):
+            raise ValueError(f'userId argument is malformed: \"{userId}\"')
+
+        twitchClientId = await self.__twitchCredentialsProvider.getTwitchClientId()
+        clientSession = await self.__networkClientProvider.get()
+
+        try:
+            response = await clientSession.get(
+                url = f'https://api.twitch.tv/helix/moderation/moderators?first=100&broadcaster_id={broadcasterId}&user_id={userId}',
+                headers = {
+                    'Authorization': f'Bearer {twitchAccessToken}',
+                    'Client-Id': twitchClientId
+                }
+            )
+        except GenericNetworkException as e:
+            self.__timber.log('TwitchApiService', f'Encountered network error when fetching moderator ({broadcasterId=}) ({userId=}): {e}', e, traceback.format_exc())
+            raise GenericNetworkException(f'TwitchApiService encountered network error when fetching when fetching moderator ({broadcasterId=}) ({userId=}): {e}')
+
+        responseStatusCode = response.getStatusCode()
+        jsonResponse: Optional[Dict[str, Any]] = await response.json()
+        await response.close()
+
+        if not utils.hasItems(jsonResponse):
+            self.__timber.log('TwitchApiService', f'Received a null/empty JSON response when fetching moderator ({broadcasterId=}) ({userId=}): {jsonResponse}')
+            raise TwitchJsonException(f'TwitchApiService received a null/empty JSON response when fetching moderator ({broadcasterId=}) ({userId=}): {jsonResponse}')
+        elif responseStatusCode == 401 or ('error' in jsonResponse and len(jsonResponse['error']) >= 1):
+            self.__timber.log('TwitchApiService', f'Received an error ({responseStatusCode}) when fetching moderator ({broadcasterId=}) ({userId=}): {jsonResponse}')
+            raise TwitchTokenIsExpiredException(f'TwitchApiService received an error ({responseStatusCode}) when fetching moderator ({broadcasterId=}) ({userId=}): {jsonResponse}')
+        elif responseStatusCode != 200:
+            self.__timber.log('TwitchApiService', f'Encountered non-200 HTTP status code when fetching moderator ({broadcasterId=}) ({userId=}): {responseStatusCode}')
+            raise GenericNetworkException(f'TwitchApiService encountered non-200 HTTP status code when fetching moderator ({broadcasterId=}) ({userId=}): {responseStatusCode}')
+
+        data: Optional[List[Dict[str, Any]]] = jsonResponse.get('data')
+        if not utils.hasItems(data):
+            return None
+
+        return TwitchModUser(
+            userId = utils.getStrFromDict(data[0], 'user_id'),
+            userLogin = utils.getStrFromDict(data[0], 'user_login'),
+            userName = utils.getStrFromDict(data[0], 'user_name')
+        )
+
     async def fetchTokens(self, code: str) -> TwitchTokensDetails:
         if not utils.isValidStr(code):
             raise ValueError(f'code argument is malformed: \"{code}\"')
@@ -716,7 +812,7 @@ class TwitchApiService(TwitchApiServiceInterface):
     ) -> Optional[TwitchUserSubscriptionDetails]:
         if not utils.isValidStr(broadcasterId):
             raise ValueError(f'broadcasterId argument is malformed: \"{broadcasterId}\"')
-        if not utils.isValidStr(twitchAccessToken):
+        elif not utils.isValidStr(twitchAccessToken):
             raise ValueError(f'twitchAccessToken argument is malformed: \"{twitchAccessToken}\"')
         elif not utils.isValidStr(userId):
             raise ValueError(f'userId argument is malformed: \"{userId}\"')
