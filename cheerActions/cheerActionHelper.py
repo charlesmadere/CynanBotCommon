@@ -9,6 +9,10 @@ try:
     from CynanBotCommon.cheerActions.cheerAction import CheerAction
     from CynanBotCommon.cheerActions.cheerActionHelperInterface import \
         CheerActionHelperInterface
+    from CynanBotCommon.cheerActions.cheerActionRemodData import \
+        CheerActionRemodData
+    from CynanBotCommon.cheerActions.cheerActionRemodHelperInterface import \
+        CheerActionRemodHelperInterface
     from CynanBotCommon.cheerActions.cheerActionRequirement import \
         CheerActionRequirement
     from CynanBotCommon.cheerActions.cheerActionsRepositoryInterface import \
@@ -35,6 +39,9 @@ except:
     from cheerActions.cheerAction import CheerAction
     from cheerActions.cheerActionHelperInterface import \
         CheerActionHelperInterface
+    from cheerActions.cheerActionRemodData import CheerActionRemodData
+    from cheerActions.cheerActionRemodHelperInterface import \
+        CheerActionRemodHelperInterface
     from cheerActions.cheerActionRequirement import CheerActionRequirement
     from cheerActions.cheerActionsRepositoryInterface import \
         CheerActionsRepositoryInterface
@@ -93,8 +100,7 @@ class CheerActionHelper(CheerActionHelperInterface):
         self.__twitchTokensRepository: TwitchTokensRepositoryInterface = twitchTokensRepository
         self.__userIdsRepository: UserIdsRepositoryInterface = userIdsRepository
 
-        self.__cheerMessageRegEx: Pattern = re.compile(r'(^|\s+)[a-z]+[0-9]+(\s+|$)', re.IGNORECASE)
-        self.__userNameRegEx: Pattern = re.compile(r'^\s*@?(\w+)\s*$', re.IGNORECASE)
+        self.__userNameRegEx: Pattern = re.compile(r'^(\w+\d+\s+)?@?(\w+)(\s+\w+\d+)?$', re.IGNORECASE)
 
     async def __getTwitchAccessToken(self, user: UserInterface) -> Optional[str]:
         if not isinstance(user, UserInterface):
@@ -152,6 +158,22 @@ class CheerActionHelper(CheerActionHelperInterface):
             user = user
         )
 
+    async def __isMod(
+        self,
+        broadcasterUserId: str,
+        twitchAccessToken: str,
+        userIdToTimeout: str
+    ) -> bool:
+        if not utils.isValidStr(broadcasterUserId):
+            raise ValueError(f'broadcasterUserId argument is malformed: \"{broadcasterUserId}\"')
+        elif not utils.isValidStr(twitchAccessToken):
+            raise ValueError(f'twitchAccessToken argument is malformed: \"{twitchAccessToken}\"')
+        elif not utils.isValidStr(userIdToTimeout):
+            raise ValueError(f'userIdToTimeout argument is malformed: \"{userIdToTimeout}\"')
+
+        # TODO
+        return False
+
     async def __processTimeoutActions(
         self,
         bits: int,
@@ -191,20 +213,29 @@ class CheerActionHelper(CheerActionHelperInterface):
         if len(timeoutActions) == 0:
             return
 
-        messageWithCheerRemoved = self.__cheerMessageRegEx.sub('', message)
-        if not utils.isValidStr(messageWithCheerRemoved):
+        timeoutActions.sort(key = lambda action: action.getAmount(), reverse = True)
+        timeoutAction: Optional[CheerAction] = None
+
+        for action in timeoutActions:
+            if action.getActionRequirement() is CheerActionRequirement.EXACT and bits == action.getAmount():
+                timeoutAction = action
+                break
+
+        if timeoutAction is None:
+            for action in timeoutActions:
+                if action.getActionRequirement() is CheerActionRequirement.GREATER_THAN_OR_EQUAL_TO and bits >= action.getAmount():
+                    timeoutAction = action
+                    break
+
+        if timeoutAction is None:
             return
 
         userNameToTimeoutMatch = self.__userNameRegEx.fullmatch(message)
-        if userNameToTimeoutMatch is None or not utils.isValidStr(userNameToTimeoutMatch.group(1)):
+        if userNameToTimeoutMatch is None or not utils.isValidStr(userNameToTimeoutMatch.group(2)):
+            self.__timber.log('CheerActionHelper', f'Attempted to timeout from {cheerUserName}:{cheerUserId} in {user.getHandle()}, but was unable to find a user name: ({message=}) ({timeoutAction=})')
             return
 
-        userNameToTimeout = userNameToTimeoutMatch.group(1)
-
-        moderatorUserId = await self.__userIdsRepository.requireUserId(
-            userName = await self.__twitchHandleProvider.getTwitchHandle(),
-            twitchAccessToken = twitchAccessToken
-        )
+        userNameToTimeout = userNameToTimeoutMatch.group(2)
 
         userIdToTimeout = await self.__userIdsRepository.fetchUserId(
             userName = userNameToTimeout,
@@ -212,52 +243,27 @@ class CheerActionHelper(CheerActionHelperInterface):
         )
 
         if not utils.isValidStr(userIdToTimeout):
-            self.__timber.log('CheerActionHelper', f'Unable to find user ID for \"{userNameToTimeout}\" ({message=})')
+            self.__timber.log('CheerActionHelper', f'Attempted to timeout \"{userNameToTimeout}\" from {cheerUserName}:{cheerUserId} in {user.getHandle()}, but was unable to find a user ID: ({message=}) ({timeoutAction=})')
             return
         elif userIdToTimeout.lower() == broadcasterUserId.lower():
             userIdToTimeout = cheerUserId
-            self.__timber.log('CheerActionHelper', f'Attempted to timeout the broadcaster themself ({userIdToTimeout=}) ({broadcasterUserId=}) ({message=}), so will instead time out the user')
-            return
+            self.__timber.log('CheerActionHelper', f'Attempt to timeout the broadcaster themself from {cheerUserName}:{cheerUserId} in {user.getHandle()}, so will instead time out the user: ({message=}) ({timeoutAction=})')
 
-        for action in timeoutActions:
-            if action.getActionRequirement() is CheerActionRequirement.EXACT and action.getAmount() == bits:
-                await self.__timeoutUser(
-                    action = action,
-                    broadcasterUserId = broadcasterUserId,
-                    cheerUserId = cheerUserId,
-                    cheerUserName = cheerUserName,
-                    moderatorUserId = moderatorUserId,
-                    twitchAccessToken = twitchAccessToken,
-                    userIdToTimeout = userIdToTimeout,
-                    user = user
-                )
+        moderatorUserId = await self.__userIdsRepository.requireUserId(
+            userName = await self.__twitchHandleProvider.getTwitchHandle(),
+            twitchAccessToken = twitchAccessToken
+        )
 
-                return
-
-        greaterThanOrEqualToActions: List[CheerAction] = list()
-
-        for action in timeoutActions:
-            if action.getActionRequirement() is CheerActionRequirement.GREATER_THAN_OR_EQUAL_TO:
-                greaterThanOrEqualToActions.append(action)
-
-        greaterThanOrEqualToActions.sort(key = lambda action: action.getAmount(), reverse = True)
-
-        for action in greaterThanOrEqualToActions:
-            if bits >= action.getAmount():
-                await self.__timeoutUser(
-                    action = action,
-                    broadcasterUserId = broadcasterUserId,
-                    cheerUserId = cheerUserId,
-                    cheerUserName = cheerUserName,
-                    moderatorUserId = moderatorUserId,
-                    twitchAccessToken = twitchAccessToken,
-                    userIdToTimeout = userIdToTimeout,
-                    user = user
-                )
-
-                return
-
-        self.__timber.log('CheerActionHelper', f'Unable to find a matching timeout cheer value in \"{user.getHandle()}\" ({userIdToTimeout=}) ({broadcasterUserId=}) ({moderatorUserId=}) ({message=}) ({bits=}) ({timeoutActions=}) ({greaterThanOrEqualToActions=})')
+        await self.__timeoutUser(
+            action = timeoutAction,
+            broadcasterUserId = broadcasterUserId,
+            cheerUserId = cheerUserId,
+            cheerUserName = cheerUserName,
+            moderatorUserId = moderatorUserId,
+            twitchAccessToken = twitchAccessToken,
+            userIdToTimeout = userIdToTimeout,
+            user = user
+        )
 
     async def __timeoutUser(
         self,
@@ -294,6 +300,12 @@ class CheerActionHelper(CheerActionHelperInterface):
         ):
             return
 
+        isMod = await self.__isMod(
+            broadcasterUserId = broadcasterUserId,
+            twitchAccessToken = twitchAccessToken,
+            userIdToTimeout = userIdToTimeout
+        )
+
         try:
             await self.__twitchApiService.banUser(
                 twitchAccessToken = twitchAccessToken,
@@ -309,16 +321,20 @@ class CheerActionHelper(CheerActionHelperInterface):
             self.__timber.log('CheerActionHelper', f'Failed to timeout {userIdToTimeout=} in \"{user.getHandle()}\": {e}', e, traceback.format_exc())
             return
 
-        userLoginToTimeout = await self.__userIdsRepository.requireUserName(
+        userNameToTimeout = await self.__userIdsRepository.requireUserName(
             userId = userIdToTimeout,
             twitchAccessToken = twitchAccessToken
         )
 
-        self.__timber.log('CheerActionHelper', f'Timed out {userLoginToTimeout}:{userIdToTimeout} in \"{user.getHandle()}\" for {action.getDurationSeconds()} second(s)')
+        self.__timber.log('CheerActionHelper', f'Timed out {userNameToTimeout}:{userIdToTimeout} in \"{user.getHandle()}\" for {action.getDurationSeconds()} second(s)')
+
+        if isMod:
+            self.__timber.log('CheerActionHelper', f'In \"{user.getHandle()}\", {userNameToTimeout}:{userIdToTimeout} is a mod, so they will be given mod back when the time out is over')
+            # TODO
 
         if user.isTtsEnabled() and self.__ttsManager is not None:
             self.__ttsManager.submitTtsEvent(TtsEvent(
-                message = f'{cheerUserName} timed out {userLoginToTimeout} for {action.getDurationSeconds()} seconds!',
+                message = f'{cheerUserName} timed out {userNameToTimeout} for {action.getDurationSeconds()} seconds!',
                 twitchChannel = user.getHandle(),
                 userId = cheerUserId,
                 userName = cheerUserName,
