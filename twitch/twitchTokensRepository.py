@@ -342,7 +342,7 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
         accessToken = await self.getAccessToken(twitchChannel)
 
         if not utils.isValidStr(accessToken):
-            raise ValueError(f'\"accessToken\" value for \"{twitchChannel}\" in \"{self.__twitchTokensFile}\" is malformed: \"{accessToken}\"')
+            raise ValueError(f'\"accessToken\" value for \"{twitchChannel}\" is malformed: \"{accessToken}\"')
 
         return accessToken
 
@@ -353,7 +353,7 @@ class TwitchTokensRepository(TwitchTokensRepositoryInterface):
         refreshToken = await self.getRefreshToken(twitchChannel)
 
         if not utils.isValidStr(refreshToken):
-            raise ValueError(f'\"refreshToken\" value for \"{twitchChannel}\" in \"{self.__twitchTokensFile}\" is malformed: \"{refreshToken}\"')
+            raise ValueError(f'\"refreshToken\" value for \"{twitchChannel}\" is malformed: \"{refreshToken}\"')
 
         return refreshToken
 
