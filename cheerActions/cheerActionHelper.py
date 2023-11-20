@@ -115,17 +115,10 @@ class CheerActionHelper(CheerActionHelperInterface):
 
         self.__userNameRegEx: Pattern = re.compile(r'^(\w+\d+\s+)?@?(\w+)(\s+\w+\d+)?$', re.IGNORECASE)
 
-    async def __getTwitchAccessToken(self, user: UserInterface) -> Optional[str]:
-        if not isinstance(user, UserInterface):
-            raise ValueError(f'user argument is malformed: \"{user}\"')
-
-        if await self.__twitchTokensRepository.hasAccessToken(user.getHandle()):
-            await self.__twitchTokensRepository.validateAndRefreshAccessToken(user.getHandle())
-            return await self.__twitchTokensRepository.getAccessToken(user.getHandle())
-        else:
-            administratorUserName = await self.__administratorProvider.getAdministratorUserName()
-            await self.__twitchTokensRepository.validateAndRefreshAccessToken(administratorUserName)
-            return await self.__twitchTokensRepository.getAccessToken(administratorUserName)
+    async def __getTwitchAccessToken(self) -> str:
+        twitchHandle = await self.__twitchHandleProvider.getTwitchHandle()
+        await self.__twitchTokensRepository.validateAndRefreshAccessToken(twitchHandle)
+        return await self.__twitchTokensRepository.requireAccessToken(twitchHandle)
 
     async def handleCheerAction(
         self,
@@ -148,16 +141,21 @@ class CheerActionHelper(CheerActionHelperInterface):
         elif not isinstance(user, UserInterface):
             raise ValueError(f'user argument is malformed: \"{user}\"')
 
-        twitchAccessToken = await self.__getTwitchAccessToken(user)
+        twitchAccessToken = await self.__getTwitchAccessToken()
 
         broadcasterUserId = await self.__userIdsRepository.requireUserId(
             userName = user.getHandle(),
             twitchAccessToken = twitchAccessToken
         )
 
+        moderatorUserId = await self.__userIdsRepository.requireUserId(
+            userName = await self.__twitchHandleProvider.getTwitchHandle(),
+            twitchAccessToken = twitchAccessToken
+        )
+
         actions = await self.__cheerActionsRepository.getActions(broadcasterUserId)
 
-        if not utils.isValidStr(twitchAccessToken) or not utils.hasItems(actions):
+        if not utils.hasItems(actions):
             return
 
         await self.__processTimeoutActions(
@@ -167,6 +165,7 @@ class CheerActionHelper(CheerActionHelperInterface):
             cheerUserId = cheerUserId,
             cheerUserName = cheerUserName,
             message = message,
+            moderatorUserId = moderatorUserId,
             twitchAccessToken = twitchAccessToken,
             user = user
         )
@@ -205,6 +204,7 @@ class CheerActionHelper(CheerActionHelperInterface):
         cheerUserId: str,
         cheerUserName: str,
         message: str,
+        moderatorUserId: str,
         twitchAccessToken: str,
         user: UserInterface
     ):
@@ -222,6 +222,8 @@ class CheerActionHelper(CheerActionHelperInterface):
             raise ValueError(f'cheerUserName argument is malformed: \"{cheerUserName}\"')
         elif not utils.isValidStr(message):
             raise ValueError(f'message argument is malformed: \"{message}\"')
+        elif not utils.isValidStr(moderatorUserId):
+            raise ValueError(f'moderatorUserId argument is malformed: \"{moderatorUserId}\"')
         elif not utils.isValidStr(twitchAccessToken):
             raise ValueError(f'twitchAccessToken argument is malformed: \"{twitchAccessToken}\"')
         elif not isinstance(user, UserInterface):
@@ -271,11 +273,6 @@ class CheerActionHelper(CheerActionHelperInterface):
         elif userIdToTimeout.lower() == broadcasterUserId.lower():
             userIdToTimeout = cheerUserId
             self.__timber.log('CheerActionHelper', f'Attempt to timeout the broadcaster themself from {cheerUserName}:{cheerUserId} in {user.getHandle()}, so will instead time out the user: ({message=}) ({timeoutAction=})')
-
-        moderatorUserId = await self.__userIdsRepository.requireUserId(
-            userName = await self.__twitchHandleProvider.getTwitchHandle(),
-            twitchAccessToken = twitchAccessToken
-        )
 
         await self.__timeoutUser(
             action = timeoutAction,
