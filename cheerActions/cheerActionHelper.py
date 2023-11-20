@@ -71,7 +71,7 @@ class CheerActionHelper(CheerActionHelperInterface):
     def __init__(
         self,
         administratorProvider: AdministratorProviderInterface,
-        cheerActionRemodHelperInterface: CheerActionRemodHelperInterface,
+        cheerActionRemodHelper: CheerActionRemodHelperInterface,
         cheerActionsRepository: CheerActionsRepositoryInterface,
         timber: TimberInterface,
         ttsManager: Optional[TtsManagerInterface],
@@ -83,8 +83,8 @@ class CheerActionHelper(CheerActionHelperInterface):
     ):
         if not isinstance(administratorProvider, AdministratorProviderInterface):
             raise ValueError(f'administratorProvider argument is malformed: \"{administratorProvider}\"')
-        elif not isinstance(cheerActionRemodHelperInterface, CheerActionRemodHelperInterface):
-            raise ValueError(f'cheerActionRemodHelperInterface argument is malformed: \"{cheerActionRemodHelperInterface}\"')
+        elif not isinstance(cheerActionRemodHelper, CheerActionRemodHelperInterface):
+            raise ValueError(f'cheerActionRemodHelper argument is malformed: \"{cheerActionRemodHelper}\"')
         elif not isinstance(cheerActionsRepository, CheerActionsRepositoryInterface):
             raise ValueError(f'cheerActionsRepository argument is malformed: \"{cheerActionsRepository}\"')
         elif not isinstance(timber, TimberInterface):
@@ -103,7 +103,7 @@ class CheerActionHelper(CheerActionHelperInterface):
             raise ValueError(f'timeZone argument is malformed: \"{timeZone}\"')
 
         self.__administratorProvider: AdministratorProviderInterface = administratorProvider
-        self.__cheerActionRemodHelperInterface: CheerActionRemodHelperInterface = cheerActionRemodHelperInterface
+        self.__cheerActionRemodHelper: CheerActionRemodHelperInterface = cheerActionRemodHelper
         self.__cheerActionsRepository: CheerActionsRepositoryInterface = cheerActionsRepository
         self.__timber: TimberInterface = timber
         self.__ttsManager: Optional[TtsManagerInterface] = ttsManager

@@ -40,7 +40,7 @@ class CheerActionRemodHelper(CheerActionRemodHelperInterface):
         self,
         administratorProvider: AdministratorProviderInterface,
         backgroundTaskHelper: BackgroundTaskHelper,
-        cheerActionRemodRepositoryInterface: CheerActionRemodRepositoryInterface,
+        cheerActionRemodRepository: CheerActionRemodRepositoryInterface,
         timber: TimberInterface,
         twitchApiService: TwitchApiServiceInterface,
         twitchTokensRepository: TwitchTokensRepositoryInterface,
@@ -50,8 +50,8 @@ class CheerActionRemodHelper(CheerActionRemodHelperInterface):
             raise ValueError(f'administratorProvider argument is malformed: \"{administratorProvider}\"')
         if not isinstance(backgroundTaskHelper, BackgroundTaskHelper):
             raise ValueError(f'backgroundTaskHelper argument is malformed: \"{backgroundTaskHelper}\"')
-        elif not isinstance(cheerActionRemodRepositoryInterface, CheerActionRemodRepositoryInterface):
-            raise ValueError(f'cheerActionRemodRepositoryInterface argument is malformed: \"{cheerActionRemodRepositoryInterface}\"')
+        elif not isinstance(cheerActionRemodRepository, CheerActionRemodRepositoryInterface):
+            raise ValueError(f'cheerActionRemodRepository argument is malformed: \"{cheerActionRemodRepository}\"')
         elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(twitchApiService, TwitchApiServiceInterface):
@@ -65,7 +65,7 @@ class CheerActionRemodHelper(CheerActionRemodHelperInterface):
 
         self.__administratorProvider: AdministratorProviderInterface = administratorProvider
         self.__backgroundTaskHelper: BackgroundTaskHelper = backgroundTaskHelper
-        self.__cheerActionRemodRepositoryInterface: CheerActionRemodRepositoryInterface = cheerActionRemodRepositoryInterface
+        self.__cheerActionRemodRepository: CheerActionRemodRepositoryInterface = cheerActionRemodRepository
         self.__timber: TimberInterface = timber
         self.__twitchApiService: TwitchApiServiceInterface = twitchApiService
         self.__twitchTokensRepository: TwitchTokensRepositoryInterface = twitchTokensRepository
@@ -86,7 +86,7 @@ class CheerActionRemodHelper(CheerActionRemodHelperInterface):
             return await self.__twitchTokensRepository.requireAccessToken(administratorUserName)
 
     async def __refresh(self):
-        data = await self.__cheerActionRemodRepositoryInterface.getAll()
+        data = await self.__cheerActionRemodRepository.getAll()
 
         if not utils.hasItems(data):
             return
@@ -99,7 +99,7 @@ class CheerActionRemodHelper(CheerActionRemodHelperInterface):
                 twitchAccessToken = twitchAccessToken,
                 userId = remodAction.getUserId()
             ):
-                await self.__cheerActionRemodRepositoryInterface.delete(
+                await self.__cheerActionRemodRepository.delete(
                     broadcasterUserId = remodAction.getBroadcasterUserId(),
                     userId = remodAction.getUserId()
                 )
@@ -125,4 +125,4 @@ class CheerActionRemodHelper(CheerActionRemodHelperInterface):
         if not isinstance(data, CheerActionRemodData):
             raise ValueError(f'data argument is malformed: \"{data}\"')
 
-        await self.__cheerActionRemodRepositoryInterface.add(data)
+        await self.__cheerActionRemodRepository.add(data)
