@@ -115,10 +115,12 @@ class CheerActionHelper(CheerActionHelperInterface):
 
         self.__userNameRegEx: Pattern = re.compile(r'^(\w+\d+\s+)?@?(\w+)(\s+\w+\d+)?$', re.IGNORECASE)
 
-    async def __getTwitchAccessToken(self) -> str:
-        twitchHandle = await self.__twitchHandleProvider.getTwitchHandle()
-        await self.__twitchTokensRepository.validateAndRefreshAccessToken(twitchHandle)
-        return await self.__twitchTokensRepository.requireAccessToken(twitchHandle)
+    async def __getTwitchAccessToken(self, userName: str) -> str:
+        if not utils.isValidStr(userName):
+            raise ValueError(f'userName argument is malformed: \"{userName}\"')
+
+        await self.__twitchTokensRepository.validateAndRefreshAccessToken(userName)
+        return await self.__twitchTokensRepository.requireAccessToken(userName)
 
     async def handleCheerAction(
         self,
@@ -141,16 +143,20 @@ class CheerActionHelper(CheerActionHelperInterface):
         elif not isinstance(user, UserInterface):
             raise ValueError(f'user argument is malformed: \"{user}\"')
 
-        twitchAccessToken = await self.__getTwitchAccessToken()
+        moderatorTwitchAccessToken = await self.__getTwitchAccessToken(
+            userName = await self.__twitchHandleProvider.getTwitchHandle()
+        )
+
+        userTwitchAccessToken = await self.__getTwitchAccessToken(user.getHandle())
 
         broadcasterUserId = await self.__userIdsRepository.requireUserId(
             userName = user.getHandle(),
-            twitchAccessToken = twitchAccessToken
+            twitchAccessToken = userTwitchAccessToken
         )
 
         moderatorUserId = await self.__userIdsRepository.requireUserId(
             userName = await self.__twitchHandleProvider.getTwitchHandle(),
-            twitchAccessToken = twitchAccessToken
+            twitchAccessToken = userTwitchAccessToken
         )
 
         actions = await self.__cheerActionsRepository.getActions(broadcasterUserId)
@@ -165,8 +171,9 @@ class CheerActionHelper(CheerActionHelperInterface):
             cheerUserId = cheerUserId,
             cheerUserName = cheerUserName,
             message = message,
+            moderatorTwitchAccessToken = moderatorTwitchAccessToken,
             moderatorUserId = moderatorUserId,
-            twitchAccessToken = twitchAccessToken,
+            userTwitchAccessToken = userTwitchAccessToken,
             user = user
         )
 
@@ -204,8 +211,9 @@ class CheerActionHelper(CheerActionHelperInterface):
         cheerUserId: str,
         cheerUserName: str,
         message: str,
+        moderatorTwitchAccessToken: str,
         moderatorUserId: str,
-        twitchAccessToken: str,
+        userTwitchAccessToken: str,
         user: UserInterface
     ):
         if not utils.isValidInt(bits):
@@ -222,10 +230,12 @@ class CheerActionHelper(CheerActionHelperInterface):
             raise ValueError(f'cheerUserName argument is malformed: \"{cheerUserName}\"')
         elif not utils.isValidStr(message):
             raise ValueError(f'message argument is malformed: \"{message}\"')
+        elif not utils.isValidStr(moderatorTwitchAccessToken):
+            raise ValueError(f'moderatorTwitchAccessToken argument is malformed: \"{moderatorTwitchAccessToken}\"')
         elif not utils.isValidStr(moderatorUserId):
             raise ValueError(f'moderatorUserId argument is malformed: \"{moderatorUserId}\"')
-        elif not utils.isValidStr(twitchAccessToken):
-            raise ValueError(f'twitchAccessToken argument is malformed: \"{twitchAccessToken}\"')
+        elif not utils.isValidStr(userTwitchAccessToken):
+            raise ValueError(f'userTwitchAccessToken argument is malformed: \"{userTwitchAccessToken}\"')
         elif not isinstance(user, UserInterface):
             raise ValueError(f'user argument is malformed: \"{user}\"')
 
@@ -264,7 +274,7 @@ class CheerActionHelper(CheerActionHelperInterface):
 
         userIdToTimeout = await self.__userIdsRepository.fetchUserId(
             userName = userNameToTimeout,
-            twitchAccessToken = twitchAccessToken
+            twitchAccessToken = userTwitchAccessToken
         )
 
         if not utils.isValidStr(userIdToTimeout):
@@ -279,9 +289,10 @@ class CheerActionHelper(CheerActionHelperInterface):
             broadcasterUserId = broadcasterUserId,
             cheerUserId = cheerUserId,
             cheerUserName = cheerUserName,
+            moderatorTwitchAccessToken = moderatorTwitchAccessToken,
             moderatorUserId = moderatorUserId,
-            twitchAccessToken = twitchAccessToken,
             userIdToTimeout = userIdToTimeout,
+            userTwitchAccessToken = userTwitchAccessToken,
             user = user
         )
 
@@ -291,9 +302,10 @@ class CheerActionHelper(CheerActionHelperInterface):
         broadcasterUserId: str,
         cheerUserId: str,
         cheerUserName: str,
+        moderatorTwitchAccessToken: str,
         moderatorUserId: str,
-        twitchAccessToken: str,
         userIdToTimeout: str,
+        userTwitchAccessToken: str,
         user: UserInterface
     ):
         if not isinstance(action, CheerAction):
@@ -304,31 +316,33 @@ class CheerActionHelper(CheerActionHelperInterface):
             raise ValueError(f'cheerUserId argument is malformed: \"{cheerUserId}\"')
         elif not utils.isValidStr(cheerUserName):
             raise ValueError(f'cheerUserName argument is malformed: \"{cheerUserName}\"')
+        elif not utils.isValidStr(moderatorTwitchAccessToken):
+            raise ValueError(f'moderatorTwitchAccessToken argument is malformed: \"{moderatorTwitchAccessToken}\"')
         elif not utils.isValidStr(moderatorUserId):
             raise ValueError(f'moderatorUserId argument is malformed: \"{moderatorUserId}\"')
-        elif not utils.isValidStr(twitchAccessToken):
-            raise ValueError(f'twitchAccessToken argument is malformed: \"{twitchAccessToken}\"')
         elif not utils.isValidStr(userIdToTimeout):
             raise ValueError(f'userIdToTimeout argument is malformed: \"{userIdToTimeout}\"')
+        elif not utils.isValidStr(userTwitchAccessToken):
+            raise ValueError(f'userTwitchAccessToken argument is malformed: \"{userTwitchAccessToken}\"')
         elif not isinstance(user, UserInterface):
             raise ValueError(f'user argument is malformed: \"{user}\"')
 
         if not await self.__verifyUserCanBeTimedOut(
             broadcasterUserId = broadcasterUserId,
-            twitchAccessToken = twitchAccessToken,
+            twitchAccessToken = userTwitchAccessToken,
             userIdToTimeout = userIdToTimeout
         ):
             return
 
         isMod = await self.__isMod(
             broadcasterUserId = broadcasterUserId,
-            twitchAccessToken = twitchAccessToken,
+            twitchAccessToken = userTwitchAccessToken,
             userIdToTimeout = userIdToTimeout
         )
 
         try:
             await self.__twitchApiService.banUser(
-                twitchAccessToken = twitchAccessToken,
+                twitchAccessToken = moderatorTwitchAccessToken,
                 banRequest = TwitchBanRequest(
                     duration = action.getDurationSeconds(),
                     broadcasterUserId = broadcasterUserId,
@@ -343,7 +357,7 @@ class CheerActionHelper(CheerActionHelperInterface):
 
         userNameToTimeout = await self.__userIdsRepository.requireUserName(
             userId = userIdToTimeout,
-            twitchAccessToken = twitchAccessToken
+            twitchAccessToken = userTwitchAccessToken
         )
 
         self.__timber.log('CheerActionHelper', f'Timed out {userNameToTimeout}:{userIdToTimeout} in \"{user.getHandle()}\" for {action.getDurationSeconds()} second(s)')
@@ -353,7 +367,7 @@ class CheerActionHelper(CheerActionHelperInterface):
 
             remodDateTime = datetime.now(self.__timeZone) + timedelta(seconds = action.getDurationSeconds())
 
-            await self.__cheerActionRemodHelperInterface.submitRemodData(CheerActionRemodData(
+            await self.__cheerActionRemodHelper.submitRemodData(CheerActionRemodData(
                 remodDateTime = SimpleDateTime(remodDateTime),
                 broadcasterUserId = broadcasterUserId,
                 broadcasterUserName = user.getHandle(),
