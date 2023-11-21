@@ -26,11 +26,9 @@ class SimpleDateTime():
 
     def __add__(self, other: Any):
         if isinstance(other, SimpleDateTime):
-            return self.__now + other.__now
-        elif isinstance(other, datetime):
-            return self.__now + other
+            return SimpleDateTime(self.__now + other.__now)
         elif isinstance(other, timedelta):
-            return self.__now + other
+            return SimpleDateTime(self.__now + other)
         else:
             raise ValueError(f'`other` is an unsupported type: \"{other}\"')
 
@@ -40,7 +38,7 @@ class SimpleDateTime():
         elif isinstance(other, datetime):
             return self.__now == other
         else:
-            raise ValueError(f'`other` is an unsupported type: \"{other}\"')
+            return False
 
     def getDateTime(self) -> datetime:
         return self.__now
@@ -51,8 +49,14 @@ class SimpleDateTime():
 
         return f'{self.getYearMonthDayStr()} {self.getTimeStr(includeMillis)}'
 
+    def getDayInt(self) -> int:
+        return self.__now.day
+
     def getDayStr(self) -> str:
         return self.__now.strftime('%d')
+
+    def getHourInt(self) -> int:
+        return self.__now.hour
 
     def getHourStr(self) -> str:
         return self.__now.strftime('%H')
@@ -63,6 +67,9 @@ class SimpleDateTime():
     def getMillisStr(self) -> str:
         return self.__now.strftime('%f')[:-3]
 
+    def getMinuteInt(self) -> int:
+        return self.__now.minute
+
     def getMinuteStr(self) -> str:
         return self.__now.strftime('%M')
 
@@ -71,6 +78,9 @@ class SimpleDateTime():
 
     def getMonthInt(self) -> int:
         return self.__now.month
+
+    def getSecondInt(self) -> int:
+        return self.__now.second
 
     def getSecondStr(self) -> str:
         return self.__now.strftime('%S')
@@ -133,8 +143,6 @@ class SimpleDateTime():
     def __sub__(self, other: Any):
         if isinstance(other, SimpleDateTime):
             return self.__now - other.__now
-        elif isinstance(other, datetime):
-            return self.__now - other
         elif isinstance(other, timedelta):
             return self.__now - other
         else:
