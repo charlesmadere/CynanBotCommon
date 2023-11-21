@@ -30,7 +30,7 @@ class CheerActionRemodRepository(CheerActionRemodRepositoryInterface):
         self,
         backingDatabase: BackingDatabase,
         timber: TimberInterface,
-        remodTimeBuffer: timedelta(seconds = 2)
+        remodTimeBuffer: timedelta = timedelta(seconds = 2)
     ):
         if not isinstance(backingDatabase, BackingDatabase):
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
