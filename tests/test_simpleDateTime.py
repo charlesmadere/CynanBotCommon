@@ -38,7 +38,7 @@ class TestSimpleDateTime():
     def test_getHourStr(self):
         someDate = utils.getDateTimeFromStr('2023-08-25T04:55:21+00:00')
         sdt = SimpleDateTime(someDate)
-        assert sdt.getHourStr() == '4'
+        assert sdt.getHourStr() == '04'
 
     def test_getMinuteInt(self):
         someDate = utils.getDateTimeFromStr('2023-08-25T04:55:21+00:00')
