@@ -70,6 +70,11 @@ class TestSimpleDateTime():
         sdt = SimpleDateTime(someDate)
         assert sdt.getYearStr() == '2023'
 
+    def test_getYearMonthDayStr(self):
+        someDate = utils.getDateTimeFromStr('2023-08-25T04:55:21+00:00')
+        sdt = SimpleDateTime(someDate)
+        assert sdt.getYearMonthDayStr() == '2023/08/25'
+
     def test__repr(self):
         someDate = utils.getDateTimeFromStr('2023-08-25T04:55:21+00:00')
         sdt = SimpleDateTime(someDate)
