@@ -23,7 +23,7 @@ class RecurringActionType(Enum):
             return RecurringActionType.SUPER_TRIVIA
         elif text == 'weather':
             return RecurringActionType.WEATHER
-        elif text in ('wordoftheday', 'word_of_the_day', 'wotd'):
+        elif text in ('word', 'wordoftheday', 'word_of_the_day', 'wotd'):
             return RecurringActionType.WORD_OF_THE_DAY
         else:
             raise ValueError(f'unknown RecurringActionType: \"{text}\"')

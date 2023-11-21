@@ -54,6 +54,9 @@ class TestRecurringActionType():
         assert result is RecurringActionType.WEATHER
 
     def test_fromStr_withWordOfTheDayStrings(self):
+        result = RecurringActionType.fromStr('word')
+        assert result is RecurringActionType.WORD_OF_THE_DAY
+
         result = RecurringActionType.fromStr('wordoftheday')
         assert result is RecurringActionType.WORD_OF_THE_DAY
 
@@ -79,3 +82,27 @@ class TestRecurringActionType():
 
         assert result is None
         assert isinstance(exception, Exception)
+
+    def test_toReadableStr_withWeather(self):
+        result = RecurringActionType.SUPER_TRIVIA.toReadableStr()
+        assert result == 'Super Trivia'
+
+    def test_toReadableStr_withWeather(self):
+        result = RecurringActionType.WEATHER.toReadableStr()
+        assert result == 'Weather'
+
+    def test_toReadableStr_withWordOfTheDay(self):
+        result = RecurringActionType.WORD_OF_THE_DAY.toReadableStr()
+        assert result == 'Word of the Day'
+
+    def test_toStr_withWeather(self):
+        result = RecurringActionType.SUPER_TRIVIA.toStr()
+        assert result == 'super_trivia'
+
+    def test_toStr_withWeather(self):
+        result = RecurringActionType.WEATHER.toStr()
+        assert result == 'weather'
+
+    def test_toStr_withWordOfTheDay(self):
+        result = RecurringActionType.WORD_OF_THE_DAY.toStr()
+        assert result == 'word_of_the_day'
