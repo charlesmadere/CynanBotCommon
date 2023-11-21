@@ -1,3 +1,4 @@
+from datetime import timedelta
 from typing import List
 
 try:
@@ -28,15 +29,19 @@ class CheerActionRemodRepository(CheerActionRemodRepositoryInterface):
     def __init__(
         self,
         backingDatabase: BackingDatabase,
-        timber: TimberInterface
+        timber: TimberInterface,
+        remodTimeBuffer: timedelta(seconds = 2)
     ):
         if not isinstance(backingDatabase, BackingDatabase):
             raise ValueError(f'backingDatabase argument is malformed: \"{backingDatabase}\"')
         elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
+        elif not isinstance(remodTimeBuffer, timedelta):
+            raise ValueError(f'remodTimeBuffer argument is malformed: \"{remodTimeBuffer}\"')
 
         self.__backingDatabase: BackingDatabase = backingDatabase
         self.__timber: TimberInterface = timber
+        self.__remodTimeBuffer: timedelta = remodTimeBuffer
 
         self.__isDatabaseReady: bool = False
 
@@ -92,7 +97,7 @@ class CheerActionRemodRepository(CheerActionRemodRepositoryInterface):
             for record in records:
                 remodDateTime = SimpleDateTime(utils.getDateTimeFromStr(record[0]))
 
-                if remodDateTime >= now:
+                if remodDateTime >= (now + self.__remodTimeBuffer):
                     break
 
                 data.append(CheerActionRemodData(
