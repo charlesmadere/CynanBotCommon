@@ -370,13 +370,29 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
         if 'viewers' in eventJson and utils.isValidInt(eventJson.get('viewers')):
             viewers = utils.getIntFromDict(eventJson, 'viewers')
 
+        endedAt: Optional[SimpleDateTime] = None
+        if 'ended_at' in eventJson and utils.isValidStr(eventJson.get('ended_at')):
+            endedAt = SimpleDateTime(utils.getDateTimeFromStr(utils.getStrFromDict(eventJson, 'ended_at')))
+
         followedAt: Optional[SimpleDateTime] = None
         if 'followed_at' in eventJson and utils.isValidStr(eventJson.get('followed_at')):
             followedAt = SimpleDateTime(utils.getDateTimeFromStr(utils.getStrFromDict(eventJson, 'followed_at')))
 
+        lockedAt: Optional[SimpleDateTime] = None
+        if 'locked_at' in eventJson and utils.isValidStr(eventJson.get('locked_at')):
+            lockedAt = SimpleDateTime(utils.getDateTimeFromStr(utils.getStrFromDict(eventJson, 'locked_at')))
+
+        locksAt: Optional[SimpleDateTime] = None
+        if 'locks_at' in eventJson and utils.isValidStr(eventJson.get('locks_at')):
+            locksAt = SimpleDateTime(utils.getDateTimeFromStr(utils.getStrFromDict(eventJson, 'locks_at')))
+
         redeemedAt: Optional[SimpleDateTime] = None
         if 'redeemed_at' in eventJson and utils.isValidStr(eventJson.get('redeemed_at')):
             redeemedAt = SimpleDateTime(utils.getDateTimeFromStr(utils.getStrFromDict(eventJson, 'redeemed_at')))
+
+        startedAt: Optional[SimpleDateTime] = None
+        if 'started_at' in eventJson and utils.isValidStr(eventJson.get('started_at')):
+            startedAt = SimpleDateTime(utils.getDateTimeFromStr(utils.getStrFromDict(eventJson, 'started_at')))
 
         broadcasterUserId: Optional[str] = None
         if 'broadcaster_user_id' in eventJson and utils.isValidStr(eventJson.get('broadcaster_user_id')):
@@ -499,8 +515,12 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
             cumulativeMonths = cumulativeMonths,
             total = total,
             viewers = viewers,
+            endedAt = endedAt,
             followedAt = followedAt,
+            lockedAt = lockedAt,
+            locksAt = locksAt,
             redeemedAt = redeemedAt,
+            startedAt = startedAt,
             broadcasterUserId = broadcasterUserId,
             broadcasterUserLogin = broadcasterUserLogin,
             broadcasterUserName = broadcasterUserName,

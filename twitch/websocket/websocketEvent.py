@@ -30,8 +30,12 @@ class WebsocketEvent():
         cumulativeMonths: Optional[int] = None,
         total: Optional[int] = None,
         viewers: Optional[int] = None,
+        endedAt: Optional[SimpleDateTime] = None,
         followedAt: Optional[SimpleDateTime] = None,
+        lockedAt: Optional[SimpleDateTime] = None,
+        locksAt: Optional[SimpleDateTime] = None,
         redeemedAt: Optional[SimpleDateTime] = None,
+        startedAt: Optional[SimpleDateTime] = None,
         broadcasterUserId: Optional[str] = None,
         broadcasterUserLogin: Optional[str] = None,
         broadcasterUserName: Optional[str] = None,
@@ -71,10 +75,18 @@ class WebsocketEvent():
             raise ValueError(f'total argument is malformed: \"{total}\"')
         elif viewers is not None and not utils.isValidInt(viewers):
             raise ValueError(f'viewers argument is malformed: \"{viewers}\"')
+        elif endedAt is not None and not isinstance(endedAt, SimpleDateTime):
+            raise ValueError(f'endedAt argument is malformed: \"{endedAt}\"')
         elif followedAt is not None and not isinstance(followedAt, SimpleDateTime):
             raise ValueError(f'followedAt argument is malformed: \"{followedAt}\"')
+        elif lockedAt is not None and not isinstance(lockedAt, SimpleDateTime):
+            raise ValueError(f'lockedAt argument is malformed: \"{lockedAt}\"')
+        elif locksAt is not None and not isinstance(locksAt, SimpleDateTime):
+            raise ValueError(f'locksAt argument is malformed: \"{locksAt}\"')
         elif redeemedAt is not None and not isinstance(redeemedAt, SimpleDateTime):
             raise ValueError(f'redeemedAt argument is malformed: \"{redeemedAt}\"')
+        elif startedAt is not None and not isinstance(startedAt, SimpleDateTime):
+            raise ValueError(f'startedAt argument is malformed: \"{startedAt}\"')
         elif broadcasterUserId is not None and not utils.isValidStr(broadcasterUserId):
             raise ValueError(f'broadcasterUserId argument is malformed: \"{broadcasterUserId}\"')
         elif broadcasterUserLogin is not None and not utils.isValidStr(broadcasterUserLogin):
@@ -131,8 +143,12 @@ class WebsocketEvent():
         self.__cumulativeMonths: Optional[int] = cumulativeMonths
         self.__total: Optional[int] = total
         self.__viewers: Optional[int] = viewers
+        self.__endedAt: Optional[SimpleDateTime] = endedAt
         self.__followedAt: Optional[SimpleDateTime] = followedAt
+        self.__lockedAt: Optional[SimpleDateTime] = lockedAt
+        self.__locksAt: Optional[SimpleDateTime] = locksAt
         self.__redeemedAt: Optional[SimpleDateTime] = redeemedAt
+        self.__startedAt: Optional[SimpleDateTime] = startedAt
         self.__broadcasterUserId: Optional[str] = broadcasterUserId
         self.__broadcasterUserLogin: Optional[str] = broadcasterUserLogin
         self.__broadcasterUserName: Optional[str] = broadcasterUserName
@@ -182,6 +198,9 @@ class WebsocketEvent():
     def getCumulativeMonths(self) -> Optional[int]:
         return self.__cumulativeMonths
 
+    def getEndedAt(self) -> Optional[SimpleDateTime]:
+        return self.__endedAt
+
     def getEventId(self) -> Optional[str]:
         return self.__eventId
 
@@ -196,6 +215,12 @@ class WebsocketEvent():
 
     def getFromBroadcasterUserName(self) -> Optional[str]:
         return self.__fromBroadcasterUserName
+
+    def getLockedAt(self) -> Optional[SimpleDateTime]:
+        return self.__lockedAt
+
+    def getLocksAt(self) -> Optional[SimpleDateTime]:
+        return self.__locksAt
 
     def getMessage(self) -> Optional[str]:
         return self.__message
@@ -214,6 +239,9 @@ class WebsocketEvent():
 
     def getRewardId(self) -> Optional[str]:
         return self.__rewardId
+
+    def getStartedAt(self) -> Optional[SimpleDateTime]:
+        return self.__startedAt
 
     def getText(self) -> Optional[str]:
         return self.__text
@@ -271,17 +299,21 @@ class WebsocketEvent():
             'categoryName': self.__categoryName,
             'communitySubTotal': self.__communitySubTotal,
             'cumulativeMonths': self.__cumulativeMonths,
+            'endedAt': self.__endedAt,
             'eventId': self.__eventId,
             'followedAt': self.__followedAt,
             'fromBroadcasterUserId': self.__fromBroadcasterUserId,
             'fromBroadcasterUserLogin': self.__fromBroadcasterUserLogin,
             'fromBroadcasterUserName': self.__fromBroadcasterUserName,
+            'lockedAt': self.__lockedAt,
+            'locksAt': self.__locksAt,
             'message': self.__message,
-            'notice_type': self.__noticeType,
+            'noticeType': self.__noticeType,
             'outcomes': self.__outcomes,
             'redeemedAt': self.__redeemedAt,
             'reward': self.__reward,
             'rewardId': self.__rewardId,
+            'startedAt': self.__startedAt,
             'text': self.__text,
             'tier': self.__tier,
             'title': self.__title,
