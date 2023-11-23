@@ -5,6 +5,7 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.administratorProviderInterface import \
         AdministratorProviderInterface
+    from CynanBotCommon.timber.timberInterface import TimberInterface
     from CynanBotCommon.timedDict import TimedDict
     from CynanBotCommon.twitch.isLiveOnTwitchRepositoryInterface import \
         IsLiveOnTwitchRepositoryInterface
@@ -16,6 +17,7 @@ try:
 except:
     import utils
     from administratorProviderInterface import AdministratorProviderInterface
+    from timber.timberInterface import TimberInterface
     from timedDict import TimedDict
 
     from twitch.isLiveOnTwitchRepositoryInterface import \
@@ -31,12 +33,15 @@ class IsLiveOnTwitchRepository(IsLiveOnTwitchRepositoryInterface):
     def __init__(
         self,
         administratorProvider: AdministratorProviderInterface,
+        timber: TimberInterface,
         twitchApiService: TwitchApiServiceInterface,
         twitchTokensRepository: TwitchTokensRepositoryInterface,
         cacheTimeDelta: timedelta = timedelta(minutes = 10)
     ):
         if not isinstance(administratorProvider, AdministratorProviderInterface):
             raise ValueError(f'administratorProvider argument is malformed: \"{administratorProvider}\"')
+        elif not isinstance(timber, TimberInterface):
+            raise ValueError(f'timber argument is malformed: \"{timber}\"')
         elif not isinstance(twitchApiService, TwitchApiServiceInterface):
             raise ValueError(f'twitchApiService argument is malformed: \"{twitchApiService}\"')
         elif not isinstance(twitchTokensRepository, TwitchTokensRepositoryInterface):
@@ -45,6 +50,7 @@ class IsLiveOnTwitchRepository(IsLiveOnTwitchRepositoryInterface):
             raise ValueError(f'cacheTimeDelta argument is malformed: \"{cacheTimeDelta}\"')
 
         self.__administratorProvider: AdministratorProviderInterface = administratorProvider
+        self.__timber: TimberInterface = timber
         self.__twitchApiService: TwitchApiServiceInterface = twitchApiService
         self.__twitchTokensRepository: TwitchTokensRepositoryInterface = twitchTokensRepository
 
@@ -52,6 +58,7 @@ class IsLiveOnTwitchRepository(IsLiveOnTwitchRepositoryInterface):
 
     async def clearCaches(self):
         self.__cache.clear()
+        self.__timber.log('IsLiveOnTwitchRepository', 'Caches cleared')
 
     async def __fetchLiveUserDetails(
         self,
