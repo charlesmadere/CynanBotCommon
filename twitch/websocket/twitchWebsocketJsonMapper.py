@@ -588,7 +588,7 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
             return None
 
         channelPoints = utils.getIntFromDict(outcomeJson, 'channel_points', fallback = 0)
-        users = utils.getIntFromDict(outcomeJson, 'users')
+        users = utils.getIntFromDict(outcomeJson, 'users', fallback = 0)
         outcomeId = utils.getStrFromDict(outcomeJson, 'id')
         title = utils.getStrFromDict(outcomeJson, 'title')
         color = WebsocketOutcomeColor.fromStr(utils.getStrFromDict(outcomeJson, 'color'))
