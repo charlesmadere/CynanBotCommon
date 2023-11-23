@@ -1,5 +1,9 @@
 from typing import Any, Dict, List, Optional
 
+from CynanBotCommon.twitch.websocket.websocketCommunitySubGift import \
+    WebsocketCommunitySubGift
+from CynanBotCommon.twitch.websocket.websocketSubGift import WebsocketSubGift
+
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.simpleDateTime import SimpleDateTime
@@ -7,6 +11,8 @@ try:
     from CynanBotCommon.twitch.twitchSubscriberTier import TwitchSubscriberTier
     from CynanBotCommon.twitch.websocket.twitchWebsocketJsonMapperInterface import \
         TwitchWebsocketJsonMapperInterface
+    from CynanBotCommon.twitch.websocket.websocketCommunitySubGift import \
+        WebsocketCommunitySubGift
     from CynanBotCommon.twitch.websocket.websocketCondition import \
         WebsocketCondition
     from CynanBotCommon.twitch.websocket.websocketConnectionStatus import \
@@ -31,6 +37,8 @@ try:
     from CynanBotCommon.twitch.websocket.websocketReward import WebsocketReward
     from CynanBotCommon.twitch.websocket.websocketSession import \
         WebsocketSession
+    from CynanBotCommon.twitch.websocket.websocketSubGift import \
+        WebsocketSubGift
     from CynanBotCommon.twitch.websocket.websocketSubscription import \
         WebsocketSubscription
     from CynanBotCommon.twitch.websocket.websocketSubscriptionType import \
@@ -47,6 +55,8 @@ except:
     from twitch.twitchSubscriberTier import TwitchSubscriberTier
     from twitch.websocket.twitchWebsocketJsonMapperInterface import \
         TwitchWebsocketJsonMapperInterface
+    from twitch.websocket.websocketCommunitySubGift import \
+        WebsocketCommunitySubGift
     from twitch.websocket.websocketCondition import WebsocketCondition
     from twitch.websocket.websocketConnectionStatus import \
         WebsocketConnectionStatus
@@ -62,6 +72,7 @@ except:
     from twitch.websocket.websocketPayload import WebsocketPayload
     from twitch.websocket.websocketReward import WebsocketReward
     from twitch.websocket.websocketSession import WebsocketSession
+    from twitch.websocket.websocketSubGift import WebsocketSubGift
     from twitch.websocket.websocketSubscription import WebsocketSubscription
     from twitch.websocket.websocketSubscriptionType import \
         WebsocketSubscriptionType
@@ -77,6 +88,25 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
 
         self.__timber: TimberInterface = timber
+
+    async def parseWebsocketCommunitySubGift(self, giftJson: Optional[Dict[str, Any]]) -> Optional[WebsocketCommunitySubGift]:
+        if not isinstance(giftJson, Dict) or not utils.hasItems(giftJson):
+            return None
+
+        cumulativeTotal: Optional[int] = None
+        if 'cumulative_total' in giftJson and utils.isValidInt(giftJson.get('cumulative_total')):
+            cumulativeTotal = utils.getIntFromDict(giftJson, 'cumulative_total')
+
+        total = utils.getIntFromDict(giftJson, 'total', fallback = 0)
+        communitySubGiftId = utils.getStrFromDict(giftJson, 'id')
+        subTier = TwitchSubscriberTier.fromStr(utils.getStrFromDict(giftJson, 'sub_tier'))
+
+        return WebsocketCommunitySubGift(
+            cumulativeTotal = cumulativeTotal,
+            total = total,
+            communitySubGiftId = communitySubGiftId,
+            subTier = subTier
+        )
 
     async def parseWebsocketCondition(self, conditionJson: Optional[Dict[str, Any]]) -> Optional[WebsocketCondition]:
         if not isinstance(conditionJson, Dict):
@@ -643,6 +673,31 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
             reconnectUrl = reconnectUrl,
             sessionId = sessionId,
             status = status
+        )
+
+    async def parseWebsocketSubGift(self, giftJson: Optional[Dict[str, Any]]) -> Optional[WebsocketSubGift]:
+        if not isinstance(giftJson, Dict) or not utils.hasItems(giftJson):
+            return None
+
+        cumulativeTotal: Optional[int] = None
+        if 'cumulative_total' in giftJson and utils.isValidInt(giftJson.get('cumulative_total')):
+            cumulativeTotal = utils.getIntFromDict(giftJson, 'cumulative_total')
+
+        durationMonths = utils.getIntFromDict(giftJson, 'duration_months')
+        communityGiftId = utils.getStrFromDict(giftJson, 'community_gift_id')
+        recipientUserId = utils.getStrFromDict(giftJson, 'recipient_user_id')
+        recipientUserLogin = utils.getStrFromDict(giftJson, 'recipient_user_login')
+        recipientUserName = utils.getStrFromDict(giftJson, 'recipient_user_name')
+        subTier = TwitchSubscriberTier.fromStr(utils.getStrFromDict(giftJson, 'sub_tier'))
+
+        return WebsocketSubGift(
+            cumulativeTotal = cumulativeTotal,
+            durationMonths = durationMonths,
+            communityGiftId = communityGiftId,
+            recipientUserId = recipientUserId,
+            recipientUserLogin = recipientUserLogin,
+            recipientUserName = recipientUserName,
+            subTier = subTier
         )
 
     async def parseWebsocketSubscription(self, subscriptionJson: Optional[Dict[str, Any]]) -> Optional[WebsocketSubscription]:

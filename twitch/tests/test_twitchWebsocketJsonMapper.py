@@ -37,6 +37,16 @@ class TestTwitchWebsocketJsonMapper():
     )
 
     @pytest.mark.asyncio
+    async def test_parseWebsocketCommunitySubGift_withEmptyDictionary(self):
+        result = await self.jsonMapper.parseWebsocketCommunitySubGift(dict())
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_parseWebsocketCommunitySubGift_withNone(self):
+        result = await self.jsonMapper.parseWebsocketCommunitySubGift(None)
+        assert result is None
+
+    @pytest.mark.asyncio
     async def test_parseWebsocketCondition_withEmptyDictionary(self):
         result = await self.jsonMapper.parseWebsocketCondition(dict())
         assert isinstance(result, WebsocketCondition)
@@ -147,6 +157,16 @@ class TestTwitchWebsocketJsonMapper():
     @pytest.mark.asyncio
     async def test_parseWebsocketSession_withNone(self):
         result = await self.jsonMapper.parseWebsocketSession(None)
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_parseWebsocketSubGift_withEmptyDictionary(self):
+        result = await self.jsonMapper.parseWebsocketSubGift(dict())
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_parseWebsocketSubGift_withNone(self):
+        result = await self.jsonMapper.parseWebsocketSubGift(None)
         assert result is None
 
     @pytest.mark.asyncio

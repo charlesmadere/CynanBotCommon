@@ -4,19 +4,26 @@ try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.simpleDateTime import SimpleDateTime
     from CynanBotCommon.twitch.twitchSubscriberTier import TwitchSubscriberTier
+    from CynanBotCommon.twitch.websocket.websocketCommunitySubGift import \
+        WebsocketCommunitySubGift
     from CynanBotCommon.twitch.websocket.websocketNoticeType import \
         WebsocketNoticeType
     from CynanBotCommon.twitch.websocket.websocketOutcome import \
         WebsocketOutcome
     from CynanBotCommon.twitch.websocket.websocketReward import WebsocketReward
+    from CynanBotCommon.twitch.websocket.websocketSubGift import \
+        WebsocketSubGift
 except:
     import utils
     from simpleDateTime import SimpleDateTime
 
     from twitch.twitchSubscriberTier import TwitchSubscriberTier
+    from twitch.websocket.websocketCommunitySubGift import \
+        WebsocketCommunitySubGift
     from twitch.websocket.websocketNoticeType import WebsocketNoticeType
     from twitch.websocket.websocketOutcome import WebsocketOutcome
     from twitch.websocket.websocketReward import WebsocketReward
+    from twitch.websocket.websocketSubGift import WebsocketSubGift
 
 
 class WebsocketEvent():
@@ -57,9 +64,11 @@ class WebsocketEvent():
         userLogin: Optional[str] = None,
         userName: Optional[str] = None,
         tier: Optional[TwitchSubscriberTier] = None,
+        communitySubGift: Optional[WebsocketCommunitySubGift] = None,
         noticeType: Optional[WebsocketNoticeType] = None,
         outcomes: Optional[List[WebsocketOutcome]] = None,
-        reward: Optional[WebsocketReward] = None
+        reward: Optional[WebsocketReward] = None,
+        subGift: Optional[WebsocketSubGift] = None
     ):
         if isAnonymous is not None and not utils.isValidBool(isAnonymous):
             raise ValueError(f'isAnonymous argument is malformed: \"{isAnonymous}\"')
@@ -129,12 +138,16 @@ class WebsocketEvent():
             raise ValueError(f'userName argument is malformed: \"{userName}\"')
         elif tier is not None and not isinstance(tier, TwitchSubscriberTier):
             raise ValueError(f'tier argument is malformed: \"{tier}\"')
+        elif communitySubGift is not None and not isinstance(communitySubGift, WebsocketCommunitySubGift):
+            raise ValueError(f'communitySubGift argument is malformed: \"{communitySubGift}\"')
         elif noticeType is not None and not isinstance(noticeType, WebsocketNoticeType):
             raise ValueError(f'noticeType argument is malformed: \"{noticeType}\"')
         elif outcomes is not None and not isinstance(outcomes, List):
             raise ValueError(f'outcomes argument is malformed: \"{outcomes}\"')
         elif reward is not None and not isinstance(reward, WebsocketReward):
             raise ValueError(f'reward argument is malformed: \"{reward}\"')
+        elif subGift is not None and not isinstance(subGift, WebsocketSubGift):
+            raise ValueError(f'subGift argument is malformed: \"{subGift}\"')
 
         self.__isAnonymous: Optional[bool] = isAnonymous
         self.__isGift: Optional[bool] = isGift
@@ -170,9 +183,11 @@ class WebsocketEvent():
         self.__userLogin: Optional[str] = userLogin
         self.__userName: Optional[str] = userName
         self.__tier: Optional[TwitchSubscriberTier] = tier
+        self.__communitySubGift: Optional[WebsocketCommunitySubGift] = communitySubGift
         self.__noticeType: Optional[WebsocketNoticeType] = noticeType
         self.__outcomes: Optional[List[WebsocketOutcome]] = outcomes
         self.__reward: Optional[WebsocketReward] = reward
+        self.__subGift: Optional[WebsocketSubGift] = subGift
 
     def getBits(self) -> Optional[int]:
         return self.__bits
@@ -191,6 +206,9 @@ class WebsocketEvent():
 
     def getCategoryName(self) -> Optional[str]:
         return self.__categoryName
+
+    def getCommunitySubGift(self) -> Optional[WebsocketCommunitySubGift]:
+        return self.__communitySubGift
 
     def getCommunitySubTotal(self) -> Optional[int]:
         return self.__communitySubTotal
@@ -242,6 +260,9 @@ class WebsocketEvent():
 
     def getStartedAt(self) -> Optional[SimpleDateTime]:
         return self.__startedAt
+
+    def getSubGift(self) -> Optional[WebsocketSubGift]:
+        return self.__subGift
 
     def getText(self) -> Optional[str]:
         return self.__text
@@ -297,6 +318,7 @@ class WebsocketEvent():
             'broadcasterUserName': self.__broadcasterUserName,
             'categoryId': self.__categoryId,
             'categoryName': self.__categoryName,
+            'communitySubGift': self.__communitySubGift,
             'communitySubTotal': self.__communitySubTotal,
             'cumulativeMonths': self.__cumulativeMonths,
             'endedAt': self.__endedAt,
@@ -314,6 +336,7 @@ class WebsocketEvent():
             'reward': self.__reward,
             'rewardId': self.__rewardId,
             'startedAt': self.__startedAt,
+            'subGift': self.__subGift,
             'text': self.__text,
             'tier': self.__tier,
             'title': self.__title,

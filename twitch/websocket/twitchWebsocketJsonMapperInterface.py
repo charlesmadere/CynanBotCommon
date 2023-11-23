@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, Optional
 
 try:
+    from CynanBotCommon.twitch.websocket.websocketCommunitySubGift import \
+        WebsocketCommunitySubGift
     from CynanBotCommon.twitch.websocket.websocketCondition import \
         WebsocketCondition
     from CynanBotCommon.twitch.websocket.websocketDataBundle import \
@@ -14,9 +16,13 @@ try:
     from CynanBotCommon.twitch.websocket.websocketReward import WebsocketReward
     from CynanBotCommon.twitch.websocket.websocketSession import \
         WebsocketSession
+    from CynanBotCommon.twitch.websocket.websocketSubGift import \
+        WebsocketSubGift
     from CynanBotCommon.twitch.websocket.websocketSubscription import \
         WebsocketSubscription
 except:
+    from twitch.websocket.websocketCommunitySubGift import \
+        WebsocketCommunitySubGift
     from twitch.websocket.websocketCondition import WebsocketCondition
     from twitch.websocket.websocketDataBundle import WebsocketDataBundle
     from twitch.websocket.websocketEvent import WebsocketEvent
@@ -25,10 +31,15 @@ except:
         WebsocketOutcomePredictor
     from twitch.websocket.websocketReward import WebsocketReward
     from twitch.websocket.websocketSession import WebsocketSession
+    from twitch.websocket.websocketSubGift import WebsocketSubGift
     from twitch.websocket.websocketSubscription import WebsocketSubscription
 
 
 class TwitchWebsocketJsonMapperInterface(ABC):
+
+    @abstractmethod
+    async def parseWebsocketCommunitySubGift(self, giftJson: Optional[Dict[str, Any]]) -> Optional[WebsocketCommunitySubGift]:
+        pass
 
     @abstractmethod
     async def parseWebsocketCondition(self, conditionJson: Optional[Dict[str, Any]]) -> Optional[WebsocketCondition]:
@@ -56,6 +67,10 @@ class TwitchWebsocketJsonMapperInterface(ABC):
 
     @abstractmethod
     async def parseWebsocketSession(self, sessionJson: Optional[Dict[str, Any]]) -> Optional[WebsocketSession]:
+        pass
+
+    @abstractmethod
+    async def parseWebsocketSubGift(self, giftJson: Optional[Dict[str, Any]]) -> Optional[WebsocketSubGift]:
         pass
 
     @abstractmethod
