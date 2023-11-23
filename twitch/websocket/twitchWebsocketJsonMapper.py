@@ -1,9 +1,5 @@
 from typing import Any, Dict, List, Optional
 
-from CynanBotCommon.twitch.websocket.websocketCommunitySubGift import \
-    WebsocketCommunitySubGift
-from CynanBotCommon.twitch.websocket.websocketSubGift import WebsocketSubGift
-
 try:
     import CynanBotCommon.utils as utils
     from CynanBotCommon.simpleDateTime import SimpleDateTime
