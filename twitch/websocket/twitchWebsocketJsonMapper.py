@@ -509,6 +509,10 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
         if 'tier' in eventJson and utils.isValidStr(eventJson.get('tier')):
             tier = TwitchSubscriberTier.fromStr(utils.getStrFromDict(eventJson, 'tier'))
 
+        communitySubGift: Optional[WebsocketCommunitySubGift] = None
+        if 'community_sub_gift' in eventJson:
+            communitySubGift = await self.parseWebsocketCommunitySubGift(eventJson.get('community_sub_gift'))
+
         noticeType: Optional[WebsocketNoticeType] = None
         if 'notice_type' in eventJson and utils.isValidStr(eventJson.get('notice_type')):
             noticeType = WebsocketNoticeType.fromStr(utils.getStrFromDict(eventJson, 'notice_type'))
@@ -532,6 +536,10 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
         reward: Optional[WebsocketReward] = None
         if 'reward' in eventJson:
             reward = await self.parseWebsocketReward(eventJson.get('reward'))
+
+        subGift: Optional[WebsocketSubGift] = None
+        if 'sub_gift' in eventJson:
+            subGift = await self.parseWebsocketSubGift(eventJson.get('sub_gift'))
 
         return WebsocketEvent(
             isAnonymous = isAnonymous,
@@ -568,9 +576,11 @@ class TwitchWebsocketJsonMapper(TwitchWebsocketJsonMapperInterface):
             userLogin = userLogin,
             userName = userName,
             tier = tier,
+            communitySubGift = communitySubGift,
             noticeType = noticeType,
             outcomes = outcomes,
-            reward = reward
+            reward = reward,
+            subGift = subGift
         )
 
     async def parseWebsocketOutcome(self, outcomeJson: Optional[Dict[str, Any]]) -> Optional[WebsocketOutcome]:
