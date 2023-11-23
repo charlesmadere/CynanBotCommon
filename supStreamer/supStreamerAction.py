@@ -17,7 +17,7 @@ class SupStreamerAction():
         broadcasterUserId: str,
         broadcasterUserName: str
     ):
-        if not isinstance(chatters, Set):
+        if not isinstance(chatters, Set) or not utils.hasItems(chatters):
             raise ValueError(f'chatters argument is malformed: \"{chatters}\"')
         elif not utils.isValidStr(broadcasterUserId):
             raise ValueError(f'broadcasterUserId argument is malformed: \"{broadcasterUserId}\"')
