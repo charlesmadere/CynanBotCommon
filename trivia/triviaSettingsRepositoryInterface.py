@@ -92,6 +92,10 @@ class TriviaSettingsRepositoryInterface(Clearable):
         pass
 
     @abstractmethod
+    async def getSuperTriviaFirstQuestionDelaySeconds(self) -> int:
+        pass
+
+    @abstractmethod
     async def getToxicProbability(self) -> float:
         pass
 
