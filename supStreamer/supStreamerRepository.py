@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Set
+from typing import Dict, Optional
 
 try:
     import CynanBotCommon.utils as utils
@@ -47,27 +47,27 @@ class SupStreamerRepository(SupStreamerRepositoryInterface):
         self.__cache.clear()
         self.__timber.log('SupStreamerRepository', 'Caches cleared')
 
-    async def get(self, broadcasterUserId: str) -> Optional[SupStreamerAction]:
-        if not utils.isValidStr(broadcasterUserId):
-            raise ValueError(f'broadcasterUserId argument is malformed: \"{broadcasterUserId}\"')
+    async def get(self, twitchChannelId: str) -> Optional[SupStreamerAction]:
+        if not utils.isValidStr(twitchChannelId):
+            raise ValueError(f'twitchChannelId argument is malformed: \"{twitchChannelId}\"')
 
-        if broadcasterUserId in self.__cache:
-            return self.__cache[broadcasterUserId]
+        if twitchChannelId in self.__cache:
+            return self.__cache[twitchChannelId]
 
         connection = await self.__getDatabaseConnection()
         records = await connection.fetchRows(
             '''
-                SELECT supstreamerchatters.mostrecentsup, supstreamerchatters.userid, userids.username FROM supstreamerchatters
+                SELECT supstreamerchatters.mostrecentsup, supstreamerchatters.chatteruserid, userids.username FROM supstreamerchatters
                 INNER JOIN userids ON supstreamerchatters.twitchchannelid = userids.userid
                 ORDER BY supstreamerchatters.mostrecentsup ASC
                 WHERE supstreamerchatters.twitchchannelid = $1
             ''',
-            broadcasterUserId
+            twitchChannelId
         )
 
         await connection.close()
-        broadcasterUserName: Optional[str] = None
-        chatters: Set[SupStreamerChatter] = set()
+        twitchChannelName: Optional[str] = None
+        chatters: Dict[str, Optional[SupStreamerChatter]] = dict()
 
         if utils.hasItems(records):
             for record in records:
@@ -76,22 +76,26 @@ class SupStreamerRepository(SupStreamerRepositoryInterface):
                 if utils.isValidStr(record[0]):
                     mostRecentSup = SimpleDateTime(utils.getDateTimeFromStr(mostRecentSup))
 
-                chatters.add(SupStreamerChatter(
+                chatterUserId: str = record[1]
+
+                chatters[chatterUserId] = SupStreamerChatter(
                     mostRecentSup = mostRecentSup,
-                    userId = record[1]
-                ))
+                    userId = chatterUserId
+                )
 
-                if broadcasterUserName is None:
-                    broadcasterUserName = record[2]
+                if not utils.isValidStr(twitchChannelName):
+                    twitchChannelName = record[2]
 
-        if utils.isValidStr(broadcasterUserName):
+        action: Optional[SupStreamerAction] = None
+
+        if utils.isValidStr(twitchChannelName):
             action = SupStreamerAction(
                 chatters = chatters,
-                broadcasterUserId = broadcasterUserId,
-                broadcasterUserName = broadcasterUserName
+                broadcasterUserId = twitchChannelId,
+                broadcasterUserName = twitchChannelName
             )
 
-        self.__cache[broadcasterUserId] = action
+        self.__cache[twitchChannelId] = action
         return action
 
     async def __getDatabaseConnection(self) -> DatabaseConnection:
@@ -110,7 +114,7 @@ class SupStreamerRepository(SupStreamerRepositoryInterface):
                 '''
                     CREATE TABLE IF NOT EXISTS supstreamerchatters (
                         mostrecentsup text NOT NULL,
-                        userid public.citext NOT NULL,
+                        chatteruserid public.citext NOT NULL,
                         twitchchannelid public.citext NOT NULL
                     )
                 '''
@@ -120,7 +124,7 @@ class SupStreamerRepository(SupStreamerRepositoryInterface):
                 '''
                     CREATE TABLE IF NOT EXISTS supstreamerchatters (
                         mostrecentsup TEXT NOT NULL,
-                        userid TEXT NOT NULL COLLATE NOCASE,
+                        chatteruserid TEXT NOT NULL COLLATE NOCASE,
                         twitchchannelid TEXT NOT NULL COLLATE NOCASE
                     )
                 '''
@@ -129,3 +133,32 @@ class SupStreamerRepository(SupStreamerRepositoryInterface):
             raise RuntimeError(f'Encountered unexpected DatabaseType when trying to create tables: \"{connection.getDatabaseType()}\"')
 
         await connection.close()
+
+    async def update(self, chatterUserId: str, twitchChannelId: str):
+        if not utils.isValidStr(chatterUserId):
+            raise ValueError(f'chatterUserId argument is malformed: \"{chatterUserId}\"')
+        elif not utils.isValidStr(twitchChannelId):
+            raise ValueError(f'twitchChannelId argument is malformed: \"{twitchChannelId}\"')
+
+        now = SimpleDateTime()
+
+        connection = await self.__getDatabaseConnection()
+        await connection.execute(
+            '''
+                INSERT INTO supstreamerchatters (mostrecentsup, chatteruserid, twitchchannelid)
+                VALUES ($1, $2, $3)
+                ON CONFLICT (mostrecentsup, chatteruserid, twitchchannelid) DO UPDATE SET mostrecentsup = EXCLUDED.mostrecentsup
+            ''',
+            now.getIsoFormatStr(), chatterUserId, twitchChannelId
+        )
+
+        await connection.close()
+        action = await self.get(twitchChannelId)
+
+        if action is None:
+            return
+
+        action.updateChatter(SupStreamerChatter(
+            mostRecentSup = now,
+            userId = chatterUserId
+        ))

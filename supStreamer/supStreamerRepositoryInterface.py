@@ -12,5 +12,9 @@ except:
 class SupStreamerRepositoryInterface(Clearable):
 
     @abstractmethod
-    async def get(self, broadcasterUserId: str) -> Optional[SupStreamerAction]:
+    async def get(self, twitchChannelId: str) -> Optional[SupStreamerAction]:
+        pass
+
+    @abstractmethod
+    async def update(self, chatterUserId: str, twitchChannelId: str):
         pass
