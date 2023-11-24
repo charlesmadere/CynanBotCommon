@@ -702,7 +702,7 @@ class TriviaGameMachine(TriviaGameMachineInterface):
 
         if isSuperTriviaGameCurrentlyInProgress:
             return
-        elif not self.__superTriviaCooldownHelper[action.getTwitchChannel()]:
+        elif self.__superTriviaCooldownHelper.isTwitchChannelInCooldown(action.getTwitchChannel()):
             # re-add this action back into the queue to try processing again later, as we are on cooldown
             self.submitAction(action)
             return

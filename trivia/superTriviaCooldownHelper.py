@@ -29,14 +29,7 @@ class SuperTriviaCooldownHelper():
 
         self.__values: Dict[str, datetime] = defaultdict(lambda: datetime.now(timeZone) - timedelta(days = 1))
 
-    def __getitem__(self, twitchChannel: str) -> bool:
-        if not utils.isValidStr(twitchChannel):
-            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
-
-        now = datetime.now(self.__timeZone)
-        return now > self.__values[twitchChannel.lower()]
-
-    async def getTwitchChannelsInCooldown(self) -> List[str]:
+    async def getTwitchChannelsInCooldown(self) -> Set[str]:
         twitchChannels: Set[str] = set()
         now = datetime.now(self.__timeZone)
 
@@ -44,7 +37,14 @@ class SuperTriviaCooldownHelper():
             if cooldown > now:
                 twitchChannels.add(twitchChannel.lower())
 
-        return list(twitchChannels)
+        return twitchChannels
+
+    def isTwitchChannelInCooldown(self, twitchChannel: str) -> bool:
+        if not utils.isValidStr(twitchChannel):
+            raise ValueError(f'twitchChannel argument is malformed: \"{twitchChannel}\"')
+
+        now = datetime.now(self.__timeZone)
+        return now <= self.__values[twitchChannel.lower()]
 
     async def update(self, twitchChannel: str):
         if not utils.isValidStr(twitchChannel):
