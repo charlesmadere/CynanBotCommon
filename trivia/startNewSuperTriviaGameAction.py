@@ -2,11 +2,13 @@ import locale
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.simpleDateTime import SimpleDateTime
     from CynanBotCommon.trivia.absTriviaAction import AbsTriviaAction
     from CynanBotCommon.trivia.triviaActionType import TriviaActionType
     from CynanBotCommon.trivia.triviaFetchOptions import TriviaFetchOptions
 except:
     import utils
+    from simpleDateTime import SimpleDateTime
     from trivia.absTriviaAction import AbsTriviaAction
     from trivia.triviaActionType import TriviaActionType
     from trivia.triviaFetchOptions import TriviaFetchOptions
@@ -89,8 +91,13 @@ class StartNewSuperTriviaGameAction(AbsTriviaAction):
         self.__twitchChannel: str = twitchChannel
         self.__triviaFetchOptions: TriviaFetchOptions = triviaFetchOptions
 
+        self.__creationTime = SimpleDateTime()
+
     def consumeQueueAction(self):
         self.__isQueueActionConsumed = True
+
+    def getCreationTime(self) -> SimpleDateTime:
+        return self.__creationTime
 
     def getNumberOfGames(self) -> int:
         return self.__numberOfGames

@@ -1,7 +1,7 @@
 import asyncio
 import queue
 import traceback
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from queue import SimpleQueue
 from typing import Any, Dict, List, Optional, Set
 
@@ -87,6 +87,8 @@ try:
         TriviaRepositoryInterface
     from CynanBotCommon.trivia.triviaScoreRepository import \
         TriviaScoreRepository
+    from CynanBotCommon.trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
     from CynanBotCommon.trivia.wrongUserCheckAnswerTriviaEvent import \
         WrongUserCheckAnswerTriviaEvent
     from CynanBotCommon.twitch.twitchTokensRepositoryInterface import \
@@ -163,6 +165,8 @@ except:
     from trivia.triviaRepositories.triviaRepositoryInterface import \
         TriviaRepositoryInterface
     from trivia.triviaScoreRepository import TriviaScoreRepository
+    from trivia.triviaSettingsRepositoryInterface import \
+        TriviaSettingsRepositoryInterface
     from trivia.wrongUserCheckAnswerTriviaEvent import \
         WrongUserCheckAnswerTriviaEvent
 
@@ -187,6 +191,7 @@ class TriviaGameMachine(TriviaGameMachineInterface):
         triviaGameStore: TriviaGameStoreInterface,
         triviaRepository: TriviaRepositoryInterface,
         triviaScoreRepository: TriviaScoreRepository,
+        triviaSettingsRepository: TriviaSettingsRepositoryInterface,
         twitchTokensRepository: TwitchTokensRepositoryInterface,
         userIdsRepository: UserIdsRepositoryInterface,
         sleepTimeSeconds: float = 0.5,
@@ -217,6 +222,8 @@ class TriviaGameMachine(TriviaGameMachineInterface):
             raise ValueError(f'triviaRepository argument is malformed: \"{triviaRepository}\"')
         elif not isinstance(triviaScoreRepository, TriviaScoreRepository):
             raise ValueError(f'triviaScoreRepository argument is malformed: \"{triviaScoreRepository}\"')
+        elif not isinstance(triviaSettingsRepository, TriviaSettingsRepositoryInterface):
+            raise ValueError(f'triviaSettingsRepository argument is malformed: \"{triviaSettingsRepository}\"')
         elif not isinstance(twitchTokensRepository, TwitchTokensRepositoryInterface):
             raise ValueError(f'twitchTokensRepositoryInterface argument is malformed: \"{twitchTokensRepository}\"')
         elif not isinstance(userIdsRepository, UserIdsRepositoryInterface):
@@ -244,6 +251,7 @@ class TriviaGameMachine(TriviaGameMachineInterface):
         self.__triviaGameStore: TriviaGameStoreInterface = triviaGameStore
         self.__triviaRepository: TriviaRepositoryInterface = triviaRepository
         self.__triviaScoreRepository: TriviaScoreRepository = triviaScoreRepository
+        self.__triviaSettingsRepository: TriviaSettingsRepositoryInterface = triviaSettingsRepository
         self.__twitchTokensRepository: TwitchTokensRepositoryInterface = twitchTokensRepository
         self.__userIdsRepository: UserIdsRepositoryInterface = userIdsRepository
         self.__sleepTimeSeconds: float = sleepTimeSeconds
@@ -704,7 +712,22 @@ class TriviaGameMachine(TriviaGameMachineInterface):
         if isSuperTriviaGameCurrentlyInProgress:
             return
         elif self.__superTriviaCooldownHelper.isTwitchChannelInCooldown(action.getTwitchChannel()):
-            # re-add this action back into the queue to try processing again later, as we are on cooldown
+            # Let's re-add this action back into the queue to try processing again later, as this Twitch
+            # channel is on cooldown. This situation occurs if this Twitch channel just finished answering
+            # a super trivia question, and prevents us from just immediately jumping into the next super
+            # trivia question.
+            self.submitAction(action)
+            return
+
+        superTriviaFirstQuestionDelay = timedelta(
+            seconds = await self.__triviaSettingsRepository.getSuperTriviaFirstQuestionDelaySeconds()
+        )
+
+        if action.getCreationTime() + superTriviaFirstQuestionDelay >= now:
+            # Let's re-add this action back into the queue to try processing again later, as this action
+            # was created too recently. We don't want super trivia questions to start instantaneously, as
+            # it could mean that some people in chat are not ready to answer at first. So this minor delay
+            # helps prevent such a situation.
             self.submitAction(action)
             return
 
