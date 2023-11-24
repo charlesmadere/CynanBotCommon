@@ -59,8 +59,8 @@ try:
         StartNewTriviaGameAction
     from CynanBotCommon.trivia.superGameNotReadyCheckAnswerTriviaEvent import \
         SuperGameNotReadyCheckAnswerTriviaEvent
-    from CynanBotCommon.trivia.superTriviaCooldownHelper import \
-        SuperTriviaCooldownHelper
+    from CynanBotCommon.trivia.superTriviaCooldownHelperInterface import \
+        SuperTriviaCooldownHelperInterface
     from CynanBotCommon.trivia.superTriviaGameState import SuperTriviaGameState
     from CynanBotCommon.trivia.toxicTriviaHelper import ToxicTriviaHelper
     from CynanBotCommon.trivia.toxicTriviaPunishment import \
@@ -141,7 +141,8 @@ except:
     from trivia.startNewTriviaGameAction import StartNewTriviaGameAction
     from trivia.superGameNotReadyCheckAnswerTriviaEvent import \
         SuperGameNotReadyCheckAnswerTriviaEvent
-    from trivia.superTriviaCooldownHelper import SuperTriviaCooldownHelper
+    from trivia.superTriviaCooldownHelperInterface import \
+        SuperTriviaCooldownHelperInterface
     from trivia.superTriviaGameState import SuperTriviaGameState
     from trivia.toxicTriviaHelper import ToxicTriviaHelper
     from trivia.toxicTriviaPunishment import ToxicTriviaPunishment
@@ -178,7 +179,7 @@ class TriviaGameMachine(TriviaGameMachineInterface):
         cutenessRepository: CutenessRepositoryInterface,
         queuedTriviaGameStore: QueuedTriviaGameStoreInterface,
         shinyTriviaHelper: ShinyTriviaHelper,
-        superTriviaCooldownHelper: SuperTriviaCooldownHelper,
+        superTriviaCooldownHelper: SuperTriviaCooldownHelperInterface,
         timber: TimberInterface,
         toxicTriviaHelper: ToxicTriviaHelper,
         triviaAnswerChecker: TriviaAnswerChecker,
@@ -200,7 +201,7 @@ class TriviaGameMachine(TriviaGameMachineInterface):
             raise ValueError(f'queuedTriviaGameStore argument is malformed: \"{queuedTriviaGameStore}\"')
         elif not isinstance(shinyTriviaHelper, ShinyTriviaHelper):
             raise ValueError(f'shinyTriviaHelper argument is malformed: \"{shinyTriviaHelper}\"')
-        elif not isinstance(superTriviaCooldownHelper, SuperTriviaCooldownHelper):
+        elif not isinstance(superTriviaCooldownHelper, SuperTriviaCooldownHelperInterface):
             raise ValueError(f'superTriviaCooldownHelper argument is malformed: \"{superTriviaCooldownHelper}\"')
         elif not isinstance(timber, TimberInterface):
             raise ValueError(f'timber argument is malformed: \"{timber}\"')
@@ -235,7 +236,7 @@ class TriviaGameMachine(TriviaGameMachineInterface):
         self.__cutenessRepository: CutenessRepositoryInterface = cutenessRepository
         self.__queuedTriviaGameStore: QueuedTriviaGameStoreInterface = queuedTriviaGameStore
         self.__shinyTriviaHelper: ShinyTriviaHelper = shinyTriviaHelper
-        self.__superTriviaCooldownHelper: SuperTriviaCooldownHelper = superTriviaCooldownHelper
+        self.__superTriviaCooldownHelper: SuperTriviaCooldownHelperInterface = superTriviaCooldownHelper
         self.__timber: TimberInterface = timber
         self.__toxicTriviaHelper: ToxicTriviaHelper = toxicTriviaHelper
         self.__triviaAnswerChecker: TriviaAnswerChecker = triviaAnswerChecker

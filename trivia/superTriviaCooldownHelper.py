@@ -1,18 +1,22 @@
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
-from typing import Dict, List, Set
+from typing import Dict, Set
 
 try:
     import CynanBotCommon.utils as utils
+    from CynanBotCommon.trivia.superTriviaCooldownHelperInterface import \
+        SuperTriviaCooldownHelperInterface
     from CynanBotCommon.trivia.triviaSettingsRepositoryInterface import \
         TriviaSettingsRepositoryInterface
 except:
     import utils
+    from trivia.superTriviaCooldownHelperInterface import \
+        SuperTriviaCooldownHelperInterface
     from trivia.triviaSettingsRepositoryInterface import \
         TriviaSettingsRepositoryInterface
 
 
-class SuperTriviaCooldownHelper():
+class SuperTriviaCooldownHelper(SuperTriviaCooldownHelperInterface):
 
     def __init__(
         self,
