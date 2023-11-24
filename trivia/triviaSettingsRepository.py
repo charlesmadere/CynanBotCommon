@@ -44,7 +44,7 @@ class TriviaSettingsRepository(TriviaSettingsRepositoryInterface):
 
         triviaSourcesJson: Dict[str, Any] = jsonContents['trivia_sources']
         if not utils.hasItems(triviaSourcesJson):
-            raise RuntimeError(f'\"trivia_sources\" field in \"{self.__settingsFile}\" is malformed: \"{triviaSourcesJson}\"')
+            raise RuntimeError(f'\"trivia_sources\" field is malformed: \"{triviaSourcesJson}\"')
 
         triviaSources: Dict[TriviaSource, int] = dict()
 
@@ -57,7 +57,7 @@ class TriviaSettingsRepository(TriviaSettingsRepositoryInterface):
 
             weight = utils.getIntFromDict(triviaSourceJson, 'weight', 1)
             if weight < 1:
-                raise ValueError(f'triviaSource \"{triviaSource}\" in \"{self.__settingsFile}\" has an invalid weight: \"{weight}\"')
+                raise ValueError(f'triviaSource \"{triviaSource}\" has an invalid weight: \"{weight}\"')
 
             triviaSources[triviaSource] = weight
 
